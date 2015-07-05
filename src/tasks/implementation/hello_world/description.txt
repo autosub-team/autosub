@@ -1,0 +1,13 @@
+Hello World!
+
+Write a simple C program which writes the Message "Hello World!"
+to the console.
+
+For this task, submit only one file called hello.c.
+Send the file asan  attachments - the mail body may be emty
+while the subject-line shall contain "Task1" and "result"
+
+For now - keep it simply - do what is required but stay away from
+fancy stuff.
+
+You get 1 Bonus Point for solving this task.

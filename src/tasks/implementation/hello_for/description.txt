@@ -1,0 +1,36 @@
+Hi!
+
+As you probably already know, most programs that are called on the commandline
+take options. In this task, you will have to look at how this is done.
+
+You may already know, how options are passed on to your program. If not, you
+can find a good explaination here at [0]. Efficient and complete parsing of
+those options can be tricky and it is easy to miss something. Fortunetly there
+are simple and effictive functions that can be used. In this task you shall use
+the getopt() function to add the following options to your program:
+
+hello [-i iterations] [-r]
+
+Here are some examples:
+
+andi@aepfelchen:~/examples$ ./hello -i 4
+Hello world 1
+Hello world 2
+Hello world 3
+Hello world 4
+andi@aepfelchen:~/examples$ ./hello -i 4 -r
+Hello world 4
+Hello world 3
+Hello world 2
+Hello world 1
+
+
+You can find proper documentation of the getopt() function in the man pages of
+your system! (But I guess you already now that!)
+
+As in the last examples, you are expected to submit just one file: hello.c
+
+Looking forward to you submission!
+You get 1 Bonus Point for solving this task.
+
+[0] http://publications.gbdirect.co.uk/c_book/chapter10/arguments_to_main.html
