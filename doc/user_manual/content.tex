@@ -1,0 +1,123 @@
+\section{Introduction}
+
+TODO: some intro blabla
+
+
+In the following, we distinguish between two parts of the configuration.
+While the first part in Section \ref{sec:confautosub} deals with the configuration
+of the Autosub framework itself, the second part in Section \ref{sec:writingtasks}
+explains how to implement new tasks -- from the description to the tests -- so they
+can be used by Autosub.
+
+
+\cleardoublepage
+\section{Autosub Configuration}\label{sec:confautosub}
+
+The configuration of the Autsub framework is -- again -- comprised of two parts:
+
+\begin{itemize}
+\item The configuration file is described in Section \ref{sec:conffile} and can
+is used to configure the framework. Things like the mail address and mail server
+that shall be used can be configured here.
+\item Autosub has some messages that are sent on events that not part of the
+process of sending responses to new tasks. These messages can be {\it ``personalized``}.
+Section \ref{sec:personal} explains, how this is done.
+\end{itemize}
+
+\subsection{The Configuration File}\label{sec:conffile}
+
+\begin{verbatim}
+[imapserver]
+servername: imap.gmail.com
+serverport: 587
+username: fhcw.submission@gmail.com
+password: nopasswd
+email: fhcw.submission@gmail.com
+
+[smtpserver]
+servername: smtp.gmail.com
+username: fhcw.submission@gmail.com
+password: nopasswd
+email: fhcw.submission@gmail.com
+
+[general]
+num_workers: 3
+
+[challenge]
+num_tasks: 3
+\end{verbatim}
+
+\subsection{Personalizing Autosub}\label{sec:personal}
+
+\begin{description}
+\item [welcome.txt]
+\item [usage.txt]
+\item [question.txt]  
+\end{description}
+
+
+
+\cleardoublepage
+\section{Writing Tasks}\label{sec:writingtasks}
+
+Implementing new tasks for Autosub is rather simple, there are just a few basic
+naming conventions that have to be followed, in order to allow the Autosub
+framework to correctly handle tasks.
+
+These naming conventions are not very complicated, there are only four elements:
+
+\begin{description}
+\item [description.txt:] Contains a textual task description. For most tasks this will
+be sufficient. The text in description.txt is sent to the user as the body of the e-mail
+that contains a new task description that is sent after the last task was solved
+\footnote{The notable exception is the first task that is sent after the users first e-mail
+that subscribed him to Autosub.}.
+\item [attachments:] For those cases, where a textual task description is not sufficient,
+one or more attachments may be added to the e-mail that is sent to the user. For these cases
+all you have to do, is to create a directory named {\it attachments}, and put all the files
+you want to attach to the task description e-mail into that directory.
+\item [tests.sh:] The Autosub framework itself does not know how to test the tasks. In order
+to allow a simple implementation of the tests that check the hand-ins, we chose to use a
+shell script as a basis. This has a number of advantages: Shell scripts are rather easy to
+understand, so even if you do not know how to write them you can learn with a rather small
+effort to use those couple of constructs you need to use them. At least to the point were
+you are able to call a program written in your favorite programming language from that Shell
+script. Furthermore, the use of a shell script removes the requirement of knowing the tests
+that shall be run on the Autosub framework itself.
+Another big advantage of using the shell script like this is, that the tests for each task
+can be tested independently of the Autosub framework.
+The rules are simple, just write a Shell script called {\it tests.sh} and let it return a 0
+if all went well and a 1 if one of your tests failed. Depending on that, Autosub will decide
+what to do -- if a 0 is returned it will send out the next task to the user and if a 1 is
+returned, it will send an error message that describes what part of the submitted results
+was wrong.
+\item [error\_msg:] As described above, the {\it tests.sh} script may signal the Autosub
+framework that submitted result was tested, and the test failed. In this case an error message
+is needed that describes what kind of failure happened, and what kind of problem remains
+to be fixed by the student, so he may go on to the next task. This is done using a file
+called {\it error\_msg}. So the tests just write their error message into that file, and the
+Autosub framework checks, whether such a file is available. If so, the content is included
+into the body of the submission rejection mail.
+\end{description}
+
+The above describes already how a task is implemented. To clear the last ambiguities, let's
+look at some example tasks now.
+
+\subsection{Example Task: Hello World}
+
+\cleardoublepage
+\section{The first start of Autosub}
+
+
+
+\subsection{Files Created by Autosub}
+
+The following files are created by Autosub, when it is executed. If you run into troubles,
+they will give you information on where to look for problems, and how to solve them.
+
+\begin{description}
+\item [autosub.log]
+\item [autosub.db]
+\item [autosub.pid]
+
+\end{description}
