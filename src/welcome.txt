@@ -1,0 +1,37 @@
+Welcome to this course on Operating Systems.
+
+You just sent your first e-mail to <submission@gmail.com>. This way
+you subscribed to this part of the course. Very shortly you will receive
+an e-mail with your first task. But to start you need to know a little
+more than just the task. Most importantely: all e-mails sent to this
+address are automatically handled by me, a stupid little computer program.
+
+In order to submit your results, you need to know how to communicate with
+me. I only accept specially formatted emails, notably the subject has to
+be formatted in one of the following ways:
+
+Results:
+   If you want to commit a result, the Subject of your email has to contain
+   the string "result" as well as the task this submission is concerning.
+   So for example, if you want to submit results for Task1 your subject
+   could be "Result Task1" or "I am Submitting my ReSuLtS for TAsk1"
+   the exact phrase does not matter, only that some form of the string
+   "result" and "task1" are in the subject.
+
+Questions:
+   If you have any questions that are not answered by the e-mails sent by
+   me, you can send me an e-mail that contains the string "question" in the
+   subject line. If you do so, I will redirect your e-mail to a human being
+   who will take care of it as soon as possible (this might take a couple of
+   days though!)
+
+Other:
+   If your subject does not follow the above explained rules, I will send
+   you an e-mail similar to this one, because clearly you did not understand
+   how to communicate with me.
+
+Hope this clears things on how to communicate with me! Now I am looking
+forward to hearing from you in a structured and (for me!) understandable
+way!
+
+so long, and thanks for all the fish!

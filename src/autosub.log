@@ -1,0 +1,83 @@
+2015-06-20 20:29:04,733 [sender      ] INFO: Starting Mail Sender Thread!
+2015-06-20 20:29:04,733 [fetcher     ] INFO: Starting Mail Fetcher Thread!
+2015-06-20 20:29:04,733 [Main        ] INFO: Used config-file: default.cfg
+2015-06-20 20:29:04,734 [Worker1     ] INFO: Starting Worker1
+2015-06-20 20:29:04,734 [Main        ] INFO: All threads started successfully
+2015-06-20 20:29:04,734 [Main        ] INFO: All threads started successfully
+2015-06-20 20:29:04,734 [Worker2     ] INFO: Starting Worker2
+2015-06-20 20:29:04,734 [Worker3     ] INFO: Starting Worker3
+2015-06-20 20:29:04,734 [Main        ] INFO: All threads started successfully
+2015-06-20 20:29:04,734 [fetcher     ] DEBUG: table Users does not exist
+2015-06-20 20:29:05,259 [fetcher     ] DEBUG: table TaskStats does not exist
+2015-06-20 20:29:06,252 [fetcher     ] DEBUG: table StatCounters does not exist
+2015-06-20 20:29:07,224 [fetcher     ] DEBUG: Created directory users!
+2015-06-20 20:29:08,551 [fetcher     ] INFO: closed connection to imapserver
+2015-06-20 20:36:32,812 [sender      ] INFO: Starting Mail Sender Thread!
+2015-06-20 20:36:32,813 [fetcher     ] INFO: Starting Mail Fetcher Thread!
+2015-06-20 20:36:32,813 [Main        ] INFO: Used config-file: default.cfg
+2015-06-20 20:36:32,813 [Worker1     ] INFO: Starting Worker1
+2015-06-20 20:36:32,813 [Main        ] INFO: All threads started successfully
+2015-06-20 20:36:32,813 [fetcher     ] DEBUG: table Users exists
+2015-06-20 20:36:32,813 [Worker2     ] INFO: Starting Worker2
+2015-06-20 20:36:32,814 [Main        ] INFO: All threads started successfully
+2015-06-20 20:36:32,814 [fetcher     ] DEBUG: table TaskStats exists
+2015-06-20 20:36:32,814 [Worker3     ] INFO: Starting Worker3
+2015-06-20 20:36:32,814 [Main        ] INFO: All threads started successfully
+2015-06-20 20:36:32,814 [fetcher     ] DEBUG: table StatCounters exists
+2015-06-20 20:36:32,814 [fetcher     ] WARNING: Directory users already exists!
+2015-06-20 20:36:34,126 [fetcher     ] INFO: closed connection to imapserver
+2015-06-21 08:06:29,078 [fetcher     ] ERROR: Got an unknown exception when trying to connect to the imap server. Trying to connect again ...
+2015-06-21 08:06:44,526 [fetcher     ] INFO: Failed to select inbox
+2015-06-22 15:55:38,851 [sender      ] INFO: Starting Mail Sender Thread!
+2015-06-22 15:55:38,857 [fetcher     ] INFO: Starting Mail Fetcher Thread!
+2015-06-22 15:55:38,857 [Main        ] INFO: Used config-file: default.cfg
+2015-06-22 15:55:38,858 [Worker1     ] INFO: Starting Worker1
+2015-06-22 15:55:38,858 [Main        ] INFO: All threads started successfully
+2015-06-22 15:55:38,858 [Worker2     ] INFO: Starting Worker2
+2015-06-22 15:55:38,858 [Main        ] INFO: All threads started successfully
+2015-06-22 15:55:38,858 [Worker3     ] INFO: Starting Worker3
+2015-06-22 15:55:38,858 [Main        ] INFO: All threads started successfully
+2015-06-22 15:55:38,937 [fetcher     ] DEBUG: table Users exists
+2015-06-22 15:55:38,937 [fetcher     ] DEBUG: table TaskStats exists
+2015-06-22 15:55:38,937 [fetcher     ] DEBUG: table StatCounters exists
+2015-06-22 15:55:38,938 [fetcher     ] WARNING: Directory users already exists!
+2015-06-22 15:55:40,101 [fetcher     ] INFO: closed connection to imapserver
+2015-06-22 15:56:40,969 [fetcher     ] INFO: closed connection to imapserver
+2015-06-22 15:57:41,827 [fetcher     ] INFO: closed connection to imapserver
+2015-06-22 15:58:43,133 [fetcher     ] INFO: closed connection to imapserver
+2015-06-22 15:59:43,995 [fetcher     ] INFO: closed connection to imapserver
+2015-06-22 16:00:45,080 [fetcher     ] INFO: closed connection to imapserver
+2015-06-22 16:01:45,990 [fetcher     ] INFO: closed connection to imapserver
+2015-06-22 16:02:46,780 [fetcher     ] INFO: closed connection to imapserver
+2015-06-22 16:03:48,693 [fetcher     ] INFO: closed connection to imapserver
+2015-06-22 16:04:49,529 [fetcher     ] INFO: closed connection to imapserver
+2015-06-22 16:05:51,255 [fetcher     ] INFO: closed connection to imapserver
+2015-06-22 16:06:52,739 [fetcher     ] INFO: closed connection to imapserver
+2015-06-22 16:07:59,529 [fetcher     ] INFO: closed connection to imapserver
+2015-06-22 16:09:00,294 [fetcher     ] INFO: closed connection to imapserver
+2015-06-22 16:10:01,288 [fetcher     ] INFO: closed connection to imapserver
+2015-06-22 16:11:02,825 [fetcher     ] INFO: closed connection to imapserver
+2015-06-22 16:12:03,573 [fetcher     ] INFO: closed connection to imapserver
+2015-06-22 16:13:05,179 [fetcher     ] INFO: closed connection to imapserver
+2015-06-22 16:14:06,814 [fetcher     ] INFO: closed connection to imapserver
+2015-06-22 16:15:08,322 [fetcher     ] INFO: closed connection to imapserver
+2015-06-22 16:16:09,234 [fetcher     ] INFO: closed connection to imapserver
+2015-06-22 16:17:10,339 [fetcher     ] INFO: closed connection to imapserver
+2015-06-22 16:18:11,296 [fetcher     ] INFO: closed connection to imapserver
+2015-06-22 16:19:12,584 [fetcher     ] INFO: closed connection to imapserver
+2015-06-22 16:20:13,854 [fetcher     ] INFO: closed connection to imapserver
+2015-06-22 16:21:14,906 [fetcher     ] INFO: closed connection to imapserver
+2015-06-22 16:22:16,093 [fetcher     ] INFO: closed connection to imapserver
+2015-06-22 16:23:17,174 [fetcher     ] INFO: closed connection to imapserver
+2015-06-22 16:24:18,832 [fetcher     ] INFO: closed connection to imapserver
+2015-06-22 16:25:19,748 [fetcher     ] INFO: closed connection to imapserver
+2015-06-22 16:26:20,981 [fetcher     ] INFO: closed connection to imapserver
+2015-06-22 16:27:22,025 [fetcher     ] INFO: closed connection to imapserver
+2015-06-22 16:28:22,882 [fetcher     ] INFO: closed connection to imapserver
+2015-06-22 16:29:23,717 [fetcher     ] INFO: closed connection to imapserver
+2015-06-22 16:30:24,461 [fetcher     ] INFO: closed connection to imapserver
+2015-06-22 16:31:25,354 [fetcher     ] INFO: closed connection to imapserver
+2015-06-22 16:32:26,707 [fetcher     ] INFO: closed connection to imapserver
+2015-06-22 16:33:27,539 [fetcher     ] INFO: closed connection to imapserver
+2015-06-22 16:34:28,372 [fetcher     ] INFO: closed connection to imapserver
+2015-06-22 16:35:29,085 [fetcher     ] INFO: closed connection to imapserver
