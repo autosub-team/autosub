@@ -27,6 +27,9 @@ class mailSender (threading.Thread):
       self.logger_queue = logger_queue
       self.numTasks = numTasks
 
+   def backup_message(self, messageid):
+      print "backup not implemented yet; messageid: " + messageid
+
    def run(self):
       self.logger_queue.put(dict({"msg": "Starting Mail Sender Thread!", "type": "INFO", "loggername": self.name}))
 
@@ -130,6 +133,8 @@ class mailSender (threading.Thread):
             fp = open(path_to_msg, 'r')
             TEXT = fp.read()
             fp.close()
+            messageid = str(next_send_msg.get('MessageId'))
+            self.backup_message(messageid)
          else:
             self.logger_queue.put(dict({"msg": "Unkown Message Type in the sender_queue!", "type": "ERROR", "loggername": self.name}))
 

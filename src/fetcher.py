@@ -36,7 +36,8 @@ class mailFetcher (threading.Thread):
 
       # the new user has now been added to the database. Next we need
       # to send him an email with the first task.
-      self.sender_queue.put(dict({"recipient": user_email, "message_type": "Task", "Task": "1"}))
+      # NOTE: messageid is empty, cause this will be sent out by the welcome message!
+      self.sender_queue.put(dict({"recipient": user_email, "message_type": "Task", "Task": "1", "MessageId": ""}))
 
       # read back the new users UserId and create a directory for putting his
       # submissions in:
@@ -188,7 +189,7 @@ class mailFetcher (threading.Thread):
             self.logger_queue.put(dict({"msg": logmsg, "type": "ERROR", "loggername": self.name}))
 
          try:
-            m.select("inbox") # here you a can choose a mail box like INBOX instead
+            m.select("Inbox") # here you a can choose a mail box like INBOX instead
             # use m.list() to get all the mailboxes
          except:
             logmsg = "Failed to select inbox"
@@ -206,6 +207,10 @@ class mailFetcher (threading.Thread):
             resp, data = m.fetch(emailid, "(RFC822)") # fetching the mail, "`(RFC822)`" means "get the whole stuff", but you can ask for headers only, etc
             email_body = data[0][1] # getting the mail content
             mail = email.message_from_string(email_body) # parsing the mail content to get a mail object
+            messageid = mail.get('Message-ID')
+            messageid = "42"
+            logmsg="message-id: " + messageid
+            self.logger_queue.put(dict({"msg": logmsg, "type": "INFO", "loggername": self.name}))
 
             from_header = mail['from']
             split_header = from_header.split("<");
@@ -232,23 +237,23 @@ class mailFetcher (threading.Thread):
                   else:
                      logmsg = 'Given Task number is higher than actual Number of Tasks!'
                      self.logger_queue.put(dict({"msg": logmsg, "type": "DEBUG", "loggername": self.name}))
-                     self.sender_queue.put(dict({"recipient": user_email, "UserId": "" ,"message_type": "InvalidTask", "Task": ""}))
+                     self.sender_queue.put(dict({"recipient": user_email, "UserId": "" ,"message_type": "InvalidTask", "Task": "", "MessageId": messageid}))
                elif re.search('[Qq][Uu][Ee][Ss][Tt][Ii][Oo][Nn]', mail_subject):
                   logmsg = 'The user has a question, please manually take care of that!'
                   self.logger_queue.put(dict({"msg": logmsg, "type": "DEBUG", "loggername": self.name}))
-                  self.sender_queue.put(dict({"recipient": user_email, "UserId": "" ,"message_type": "Question", "Task": ""}))
-                  self.sender_queue.put(dict({"recipient": self.admin_mail, "UserId": "" ,"message_type": "QFwd", "Task": "", "Body": mail}))
+                  self.sender_queue.put(dict({"recipient": user_email, "UserId": "" ,"message_type": "Question", "Task": "", "MessageId": ""}))
+                  self.sender_queue.put(dict({"recipient": self.admin_mail, "UserId": "" ,"message_type": "QFwd", "Task": "", "Body": mail, "MessageId": messageid}))
                   sql_cmd = "UPDATE StatCounters SET value=(SELECT value FROM StatCounters WHERE Name=='nr_questions_received')+1 WHERE Name=='nr_questions_received';"
                   cur.execute(sql_cmd)
                   con.commit();
                else:
                   logmsg = 'Got a kind of message I do not understand. Sending a usage mail...' 
                   self.logger_queue.put(dict({"msg": logmsg, "type": "DEBUG", "loggername": self.name}))
-                  self.sender_queue.put(dict({"recipient": user_email, "UserId": "" ,"message_type": "Usage", "Task": ""}))
+                  self.sender_queue.put(dict({"recipient": user_email, "UserId": "" ,"message_type": "Usage", "Task": "", "MessageId": messageid}))
 
             else:
-               self.sender_queue.put(dict({"recipient": user_email, "UserId": "" ,"message_type": "Welcome", "Task": ""}))
-               self.add_new_user(user_name, user_email, cur, con)      
+               self.add_new_user(user_name, user_email, cur, con)
+               self.sender_queue.put(dict({"recipient": user_email, "UserId": "" ,"message_type": "Welcome", "Task": "", "MessageId": messageid}))
 
          try:
             m.close()
