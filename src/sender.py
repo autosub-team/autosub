@@ -42,6 +42,7 @@ class mailSender (threading.Thread):
 
          attachments = ''
 
+         # prepare fields for the e-mail
          msg = MIMEMultipart()
          msg['From'] = self.gmail_user
          msg['To'] = str(next_send_msg.get('recipient'))
@@ -50,13 +51,13 @@ class mailSender (threading.Thread):
          TaskNr = str(next_send_msg.get('Task'))
          messageid = str(next_send_msg.get('MessageId'))
 
+         has_text = 0;
+
          if (str(next_send_msg.get('message_type')) == "Task"):
             if (self.numTasks+1 == int(TaskNr)): # last task solved!
                msg['Subject'] = "Congratulations!" 
                path_to_msg = "congratulations.txt"
-               fp = open(path_to_msg, 'r')
-               TEXT = fp.read()
-               fp.close()
+               has_text = 1;
                sql_cmd = "SELECT last_done FROM users WHERE UserId==" + next_send_msg.get('UserId') + ";"
                cur.execute(sql_cmd)
                res = cur.fetchone();
@@ -64,17 +65,15 @@ class mailSender (threading.Thread):
                   sql_cmd = "UPDATE users SET last_done=" + str(int(time.time())) + " where UserId==" + next_send_msg.get('UserId') + ";"
                   cur.execute(sql_cmd)
                   con.commit();
-                  #logmsg = "UserId: " + str(next_send_msg.get('UserId') + ": just solved the last task!"
-                  #self.logger_queue.put(dict({"msg": logmsg, "type": "DEBUG", "loggername": self.name}))
+
             else: # at least one more task to do: send out the description
                msg['Subject'] = "Description Task" + TaskNr 
                path_to_msg = "tasks/task" + TaskNr + "/description.txt"
-               fp = open(path_to_msg, 'r')
-               TEXT = fp.read()
-               fp.close()
+               has_text = 1;
                path_to_attachments = "tasks/task" + TaskNr + "/attachments"
                if os.path.exists(path_to_attachments):
                   attachments = os.listdir(path_to_attachments)
+
                # this means that TaskNr-1 has been completed successfully -> update database
                sql_cmd = "UPDATE Users SET current_task='" + str(int(TaskNr)) + "' where UserId=='" + str(next_send_msg.get('UserId')) + "';"
                cur.execute(sql_cmd)
@@ -85,6 +84,7 @@ class mailSender (threading.Thread):
             sql_cmd = "UPDATE TaskStats SET nr_successful=(SELECT nr_successful FROM TaskStats WHERE TaskId==" + str(int(TaskNr)-1) + ")+1 WHERE TaskId==" + str(int(TaskNr)-1) + ";"
             cur.execute(sql_cmd)
             con.commit();
+
             self.backup_message(messageid)
          elif (str(next_send_msg.get('message_type')) == "Failed"):
             sql_cmd = "UPDATE TaskStats SET nr_submissions=(SELECT nr_submissions FROM TaskStats WHERE TaskId==" + TaskNr + ")+1 WHERE TaskId==" + TaskNr + ";"
@@ -92,20 +92,14 @@ class mailSender (threading.Thread):
             con.commit();
             UserId = str(next_send_msg.get('UserId'))
 	    path_to_msg = "users/"+ UserId + "/Task" + TaskNr + "/error_msg"
-            fp = open(path_to_msg, 'r')
-            error_msg = fp.read()
-            fp.close()
-            #emsg=error_msg.decode('latin-1').encode('utf-8')
+            has_text = 1;
             msg['Subject'] = "Task" + TaskNr + ": submission rejected"
             TEXT = "Error report:\n\n"""+error_msg
             self.backup_message(messageid)
          elif (str(next_send_msg.get('message_type')) == "SecAlert"):
             msg['To'] = "andi.platschek@gmail.com"
 	    path_to_msg = "users/"+ next_send_msg.get('UserId') + "/Task" + TaskNr + "/error_msg"
-            fp = open(path_to_msg, 'r')
-            error_msg = fp.read()
-            fp.close()
-            #emsg=error_msg.decode('latin-1').encode('utf-8')
+            has_text = 1;
             msg['Subject'] = "Autosub Security Alert User:" +   next_send_msg.get('recipient') 
             TEXT = "Error report:\n\n"""+error_msg
             self.backup_message(messageid)
@@ -117,23 +111,17 @@ class mailSender (threading.Thread):
          elif (str(next_send_msg.get('message_type')) == "InvalidTask"):
             msg['Subject'] = "Invalid Task Number"
 	    path_to_msg = "invalidtask.txt"
-            fp = open(path_to_msg, 'r')
-            TEXT = fp.read()
-            fp.close()
+            has_text = 1;
             self.backup_message(messageid)
          elif (str(next_send_msg.get('message_type')) == "Usage"):
             msg['Subject'] = "Autosub Usage"
 	    path_to_msg = "usage.txt"
-            fp = open(path_to_msg, 'r')
-            TEXT =  fp.read()
-            fp.close()
+            has_text = 1;
             self.backup_message(messageid)
          elif (str(next_send_msg.get('message_type')) == "Question"):
             msg['Subject'] = "Question received"
 	    path_to_msg = "question.txt"
-            fp = open(path_to_msg, 'r')
-            TEXT = fp.read()
-            fp.close()
+            has_text = 1;
             self.backup_message(messageid)
          elif (str(next_send_msg.get('message_type')) == "QFwd"):
             orig_mail = next_send_msg.get('Body')
@@ -143,13 +131,17 @@ class mailSender (threading.Thread):
          elif (str(next_send_msg.get('message_type')) == "Welcome"):
             msg['Subject'] = "Welcome!"
 	    path_to_msg = "welcome.txt"
-            fp = open(path_to_msg, 'r')
-            TEXT = fp.read()
-            fp.close()
+            has_text = 1;
             self.backup_message(messageid)
          else:
             self.logger_queue.put(dict({"msg": "Unkown Message Type in the sender_queue!", "type": "ERROR", "loggername": self.name}))
             self.backup_message(messageid)
+
+         # Read Text for E-Mail Body from a config file
+         if has_text:
+            fp = open(path_to_msg, 'r')
+            TEXT = fp.read()
+            fp.close()
 
          msg.attach( MIMEText(TEXT, 'plain', 'utf-8') )
 

@@ -16,7 +16,7 @@ import logging
 import ConfigParser
 
 def sig_handler(signum, frame):
-   print 'Shutting down autosub...'
+   logger_queue.put(dict({"msg": "Shutting down autosub...", "type": "INFO", "loggername": "Main"}))
    exit_flag = 1
 
 ########################################
@@ -82,3 +82,5 @@ while (threadID <= numThreads + 3):
 
 while (not exit_flag):
    time.sleep(100)
+
+time.sleep(1) 
