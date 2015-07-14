@@ -109,6 +109,11 @@ class mailSender (threading.Thread):
             msg['Subject'] = "Autosub Security Alert User:" +   next_send_msg.get('recipient') 
             TEXT = "Error report:\n\n"""+error_msg
             self.backup_message(messageid)
+         elif (str(next_send_msg.get('message_type')) == "Success"):
+            msg['Subject'] = "Task " + TaskNr + " submitted successfully"
+            TEXT = "Congratulations!"
+            # no backup of message -- this is done after the new task
+            # description was sent to the user!
          elif (str(next_send_msg.get('message_type')) == "InvalidTask"):
             msg['Subject'] = "Invalid Task Number"
 	    path_to_msg = "invalidtask.txt"

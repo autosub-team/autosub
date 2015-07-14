@@ -20,10 +20,6 @@ class autosubLogger (threading.Thread):
 
       FORMAT = "%(asctime)-15s [%(loggername)-12s] %(levelname)s: %(logmsg)s"
       logging.basicConfig(format=FORMAT, filename='autosub.log',level=logging.DEBUG, encoding='utf-8')
-      #autosub_log = logging.getLogger()
-      #autosub_log.setLevel(logging.DEBUG)
-
-      #autosub_fh = logging.FileHandler('autosub.log')
 
       while True:
          next_log_msg = self.logger_queue.get(True)

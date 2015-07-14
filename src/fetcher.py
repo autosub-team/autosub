@@ -211,7 +211,7 @@ class mailFetcher (threading.Thread):
    ####
    # fetch new (unseen) e-mails from the Inbox 
    ####
-   def fetch_new_emails(m)
+   def fetch_new_emails(self, m):
       try:
          m.select("Inbox") # here you a can choose a mail box like INBOX instead
          # use m.list() to get all the mailboxes
