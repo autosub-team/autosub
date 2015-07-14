@@ -191,6 +191,36 @@ class mailFetcher (threading.Thread):
       cur.execute(sql_cmd)
       con.commit();
 
+   def connect_to_imapserver(self):
+      try:
+         # connecting to the gmail imap server
+         m = imaplib.IMAP4_SSL(self.imapserver)
+         m.login(self.gmail_user,self.gmail_pwd)
+      except imaplib.IMAP4.abort:
+         logmsg = "Login to server was aborted (probably a server-side problem). Trying to connect again ..."
+         self.logger_queue.put(dict({"msg": logmsg, "type": "ERROR", "loggername": self.name}))
+         #m.close()
+      except imaplib.IMAP4.error:
+         logmsg = "Got an error when trying to connect to the imap server. Trying to connect again ..."
+         self.logger_queue.put(dict({"msg": logmsg, "type": "ERROR", "loggername": self.name}))
+      except:
+         logmsg = "Got an unknown exception when trying to connect to the imap server. Trying to connect again ..."
+         self.logger_queue.put(dict({"msg": logmsg, "type": "ERROR", "loggername": self.name}))
+      return m
+
+   ####
+   # fetch new (unseen) e-mails from the Inbox 
+   ####
+   def fetch_new_emails(m)
+      try:
+         m.select("Inbox") # here you a can choose a mail box like INBOX instead
+         # use m.list() to get all the mailboxes
+      except:
+         logmsg = "Failed to select inbox"
+         self.logger_queue.put(dict({"msg": logmsg, "type": "INFO", "loggername": self.name}))
+
+      resp, items = m.search(None, "UNSEEN") # you could filter using the IMAP rules here (check http://www.example-code.com/csharp/imap-search-critera.asp)
+      return items[0].split() # getting the mails id
 
    ####
    # The "main" routine of the fetcher thread.
@@ -205,31 +235,12 @@ class mailFetcher (threading.Thread):
       while True:
          con = lite.connect('autosub.db')
          cur = con.cursor()
-         try:
-            # connecting to the gmail imap server
-            m = imaplib.IMAP4_SSL(self.imapserver)
-            m.login(self.gmail_user,self.gmail_pwd)
-         except imaplib.IMAP4.abort:
-            logmsg = "Login to server was aborted (probably a server-side problem). Trying to connect again ..."
-            self.logger_queue.put(dict({"msg": logmsg, "type": "ERROR", "loggername": self.name}))
-            #m.close()
-         except imaplib.IMAP4.error:
-            logmsg = "Got an error when trying to connect to the imap server. Trying to connect again ..."
-            self.logger_queue.put(dict({"msg": logmsg, "type": "ERROR", "loggername": self.name}))
-         except:
-            logmsg = "Got an unknown exception when trying to connect to the imap server. Trying to connect again ..."
-            self.logger_queue.put(dict({"msg": logmsg, "type": "ERROR", "loggername": self.name}))
 
-         try:
-            m.select("Inbox") # here you a can choose a mail box like INBOX instead
-            # use m.list() to get all the mailboxes
-         except:
-            logmsg = "Failed to select inbox"
-            self.logger_queue.put(dict({"msg": logmsg, "type": "INFO", "loggername": self.name}))
+         m = self.connect_to_imapserver()
 
-         resp, items = m.search(None, "UNSEEN") # you could filter using the IMAP rules here (check http://www.example-code.com/csharp/imap-search-critera.asp)
-         items = items[0].split() # getting the mails id
+         items = self.fetch_new_emails(m)
 
+         # iterate over all new e-mails and take action according to the structure of the subject line
          for emailid in items:
 
             sql_cmd = "UPDATE StatCounters SET value=(SELECT value FROM StatCounters WHERE Name=='nr_mails_fetched')+1 WHERE Name=='nr_mails_fetched';"
@@ -296,7 +307,6 @@ class mailFetcher (threading.Thread):
          finally:   
             logmsg = "closed connection to imapserver"
             self.logger_queue.put(dict({"msg": logmsg, "type": "INFO", "loggername": self.name}))
-         
    
          con.close() # close connection to sqlite db, so others can use it as well.
          time.sleep(60) # it's enough to check e-mails every minute
