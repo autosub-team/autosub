@@ -180,7 +180,7 @@ class mailFetcher (threading.Thread):
    ####
    # Process a question that was asked by a student
    ###
-   def a_question_was_asked(self, cur, con):
+   def a_question_was_asked(self, cur, con, user_email, mail, messageid):
       logmsg = 'The user has a question, please manually take care of that!'
       self.logger_queue.put(dict({"msg": logmsg, "type": "DEBUG", "loggername": self.name}))
 
@@ -271,7 +271,7 @@ class mailFetcher (threading.Thread):
                      self.logger_queue.put(dict({"msg": logmsg, "type": "DEBUG", "loggername": self.name}))
                      self.sender_queue.put(dict({"recipient": user_email, "UserId": "" ,"message_type": "InvalidTask", "Task": "", "MessageId": messageid}))
                elif re.search('[Qq][Uu][Ee][Ss][Tt][Ii][Oo][Nn]', mail_subject):
-                  self.a_question_was_asked(cur,con)
+                  self.a_question_was_asked(cur, con, user_email, mail, messageid)
                else:
                   logmsg = 'Got a kind of message I do not understand. Sending a usage mail...' 
                   self.logger_queue.put(dict({"msg": logmsg, "type": "DEBUG", "loggername": self.name}))
