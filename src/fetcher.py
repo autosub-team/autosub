@@ -249,20 +249,20 @@ class mailFetcher (threading.Thread):
 
             resp, data = m.fetch(emailid, "(RFC822)") # fetching the mail, "`(RFC822)`" means "get the whole stuff", but you can ask for headers only, etc
             email_body = data[0][1] # getting the mail content
-            mail = email.message_from_string(email_body) # parsing the mail content to get a mail object
+            mail = email.message_from_string(str(email_body)) # parsing the mail content to get a mail object
             messageid = mail.get('Message-ID')
 #            messageid = "42"
-            logmsg="message-id: " + messageid
+            logmsg="message-id: " + str(messageid)
             self.logger_queue.put(dict({"msg": logmsg, "type": "INFO", "loggername": self.name}))
 
-            from_header = mail['from']
+            from_header = str(mail['from'])
             split_header = from_header.split("<");
             user_name = split_header[0];
             try:
                user_email = split_header[1].split(">")[0];
             except:
-               user_email = mail['from']
-            mail_subject = mail['subject']
+               user_email = str(mail['from'])
+            mail_subject = str(mail['subject'])
 
             sql_cmd="SELECT UserId FROM Users WHERE email='" + user_email +"';"
             cur.execute(sql_cmd);

@@ -2,13 +2,13 @@
 
 if [ $1 = "start" ]
 then
-#   python autosub.py > autosub.log & 
+#   python3 autosub.py > autosub.log & 
    if [ -z "$2" ]
    then
-      python autosub.py & 
+      python3 autosub.py & 
       echo $! > autosub.pid
    else
-      python autosub.py --config-file $2 & 
+      python3 autosub.py --config-file $2 & 
       echo $! > autosub.pid
    fi
 elif [ $1 = "stop" ]

@@ -1,6 +1,6 @@
 ########################################################################
 # sender.py -- send out e-mails based on the info given by fetcher.py
-# 	or worker.py
+#       or worker.py
 #
 # Copyright (C) 2015 Andreas Platschek <andi.platschek@gmail.com>
 # License GPL V2 or later (see http://www.gnu.org/licenses/gpl2.txt)
@@ -91,14 +91,14 @@ class mailSender (threading.Thread):
             cur.execute(sql_cmd)
             con.commit();
             UserId = str(next_send_msg.get('UserId'))
-	    path_to_msg = "users/"+ UserId + "/Task" + TaskNr + "/error_msg"
+            path_to_msg = "users/"+ UserId + "/Task" + TaskNr + "/error_msg"
             has_text = 1;
             msg['Subject'] = "Task" + TaskNr + ": submission rejected"
             TEXT = "Error report:\n\n"""+error_msg
             self.backup_message(messageid)
          elif (str(next_send_msg.get('message_type')) == "SecAlert"):
             msg['To'] = "andi.platschek@gmail.com"
-	    path_to_msg = "users/"+ next_send_msg.get('UserId') + "/Task" + TaskNr + "/error_msg"
+            path_to_msg = "users/"+ next_send_msg.get('UserId') + "/Task" + TaskNr + "/error_msg"
             has_text = 1;
             msg['Subject'] = "Autosub Security Alert User:" +   next_send_msg.get('recipient') 
             TEXT = "Error report:\n\n"""+error_msg
@@ -110,17 +110,17 @@ class mailSender (threading.Thread):
             # description was sent to the user!
          elif (str(next_send_msg.get('message_type')) == "InvalidTask"):
             msg['Subject'] = "Invalid Task Number"
-	    path_to_msg = "invalidtask.txt"
+            path_to_msg = "invalidtask.txt"
             has_text = 1;
             self.backup_message(messageid)
          elif (str(next_send_msg.get('message_type')) == "Usage"):
             msg['Subject'] = "Autosub Usage"
-	    path_to_msg = "usage.txt"
+            path_to_msg = "usage.txt"
             has_text = 1;
             self.backup_message(messageid)
          elif (str(next_send_msg.get('message_type')) == "Question"):
             msg['Subject'] = "Question received"
-	    path_to_msg = "question.txt"
+            path_to_msg = "question.txt"
             has_text = 1;
             self.backup_message(messageid)
          elif (str(next_send_msg.get('message_type')) == "QFwd"):
@@ -130,7 +130,7 @@ class mailSender (threading.Thread):
             self.backup_message(messageid)
          elif (str(next_send_msg.get('message_type')) == "Welcome"):
             msg['Subject'] = "Welcome!"
-	    path_to_msg = "welcome.txt"
+            path_to_msg = "welcome.txt"
             has_text = 1;
             self.backup_message(messageid)
          else:

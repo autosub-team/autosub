@@ -6,14 +6,14 @@
 # License GPL V2 or later (see http://www.gnu.org/licenses/gpl2.txt)
 ########################################################################
 
-import threading, Queue
+import threading, queue
 import email, getpass, imaplib, os, time
 import sqlite3 as lite
 import fetcher, worker, sender, logger
 import optparse
 import signal
 import logging
-import ConfigParser
+import configparser
 
 def sig_handler(signum, frame):
    logger_queue.put(dict({"msg": "Shutting down autosub...", "type": "INFO", "loggername": "Main"}))
@@ -24,9 +24,9 @@ threadID = 1
 worker_t = []
 exit_flag = 0
 
-job_queue = Queue.Queue(200)
-sender_queue = Queue.Queue(200)
-logger_queue = Queue.Queue(200)
+job_queue = queue.Queue(200)
+sender_queue = queue.Queue(200)
+logger_queue = queue.Queue(200)
 
 #Before we do anything else: start the logger thread, so we can log whats going on
 logger_t = logger.autosubLogger(threadID, "logger", logger_queue)#, logging.DEBUG)
@@ -42,7 +42,7 @@ parser.add_option("-c", "--config-file", dest="configfile", type="string",
 parser.set_defaults(configfile="default.cfg")
 opts, args = parser.parse_args()
 
-config = ConfigParser.ConfigParser()
+config = configparser.ConfigParser()
 config.readfp(open(opts.configfile))
 imapserver = config.get('imapserver', 'servername')
 mail_user = config.get('imapserver', 'username')
