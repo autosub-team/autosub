@@ -28,7 +28,8 @@ class mailSender (threading.Thread):
       self.numTasks = numTasks
 
    def backup_message(self, messageid):
-      print "backup not implemented yet; messageid: " + messageid
+      logmsg= "backup not implemented yet; messageid: " + messageid
+      self.logger_queue.put(dict({"msg": logmsg, "type": "DEBUG", "loggername": self.name}))
 
    def run(self):
       self.logger_queue.put(dict({"msg": "Starting Mail Sender Thread!", "type": "INFO", "loggername": self.name}))
@@ -47,6 +48,7 @@ class mailSender (threading.Thread):
          msg['Date'] = formatdate(localtime = True)
 
          TaskNr = str(next_send_msg.get('Task'))
+         messageid = str(next_send_msg.get('MessageId'))
 
          if (str(next_send_msg.get('message_type')) == "Task"):
             if (self.numTasks+1 == int(TaskNr)): # last task solved!
@@ -83,7 +85,7 @@ class mailSender (threading.Thread):
             sql_cmd = "UPDATE TaskStats SET nr_successful=(SELECT nr_successful FROM TaskStats WHERE TaskId==" + str(int(TaskNr)-1) + ")+1 WHERE TaskId==" + str(int(TaskNr)-1) + ";"
             cur.execute(sql_cmd)
             con.commit();
-
+            self.backup_message(messageid)
          elif (str(next_send_msg.get('message_type')) == "Failed"):
             sql_cmd = "UPDATE TaskStats SET nr_submissions=(SELECT nr_submissions FROM TaskStats WHERE TaskId==" + TaskNr + ")+1 WHERE TaskId==" + TaskNr + ";"
             cur.execute(sql_cmd)
@@ -96,6 +98,7 @@ class mailSender (threading.Thread):
             #emsg=error_msg.decode('latin-1').encode('utf-8')
             msg['Subject'] = "Task" + TaskNr + ": submission rejected"
             TEXT = "Error report:\n\n"""+error_msg
+            self.backup_message(messageid)
          elif (str(next_send_msg.get('message_type')) == "SecAlert"):
             msg['To'] = "andi.platschek@gmail.com"
 	    path_to_msg = "users/"+ next_send_msg.get('UserId') + "/Task" + TaskNr + "/error_msg"
@@ -105,38 +108,43 @@ class mailSender (threading.Thread):
             #emsg=error_msg.decode('latin-1').encode('utf-8')
             msg['Subject'] = "Autosub Security Alert User:" +   next_send_msg.get('recipient') 
             TEXT = "Error report:\n\n"""+error_msg
+            self.backup_message(messageid)
          elif (str(next_send_msg.get('message_type')) == "InvalidTask"):
             msg['Subject'] = "Invalid Task Number"
 	    path_to_msg = "invalidtask.txt"
             fp = open(path_to_msg, 'r')
             TEXT = fp.read()
             fp.close()
+            self.backup_message(messageid)
          elif (str(next_send_msg.get('message_type')) == "Usage"):
             msg['Subject'] = "Autosub Usage"
 	    path_to_msg = "usage.txt"
             fp = open(path_to_msg, 'r')
             TEXT =  fp.read()
             fp.close()
+            self.backup_message(messageid)
          elif (str(next_send_msg.get('message_type')) == "Question"):
             msg['Subject'] = "Question received"
 	    path_to_msg = "question.txt"
             fp = open(path_to_msg, 'r')
             TEXT = fp.read()
             fp.close()
+            self.backup_message(messageid)
          elif (str(next_send_msg.get('message_type')) == "QFwd"):
             orig_mail = next_send_msg.get('Body')
             msg['Subject'] = "Question from " + orig_mail['from']
             TEXT = "Original subject: " + orig_mail['subject'] + "\n\n" + orig_mail.get_payload()
+            self.backup_message(messageid)
          elif (str(next_send_msg.get('message_type')) == "Welcome"):
             msg['Subject'] = "Welcome!"
 	    path_to_msg = "welcome.txt"
             fp = open(path_to_msg, 'r')
             TEXT = fp.read()
             fp.close()
-            messageid = str(next_send_msg.get('MessageId'))
             self.backup_message(messageid)
          else:
             self.logger_queue.put(dict({"msg": "Unkown Message Type in the sender_queue!", "type": "ERROR", "loggername": self.name}))
+            self.backup_message(messageid)
 
          msg.attach( MIMEText(TEXT, 'plain', 'utf-8') )
 

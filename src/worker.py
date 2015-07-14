@@ -27,6 +27,7 @@ class worker (threading.Thread):
              TaskNr=nextjob.get('taskNr')
              UserId=nextjob.get('UserId')
              user_email=nextjob.get('UserEmail')
+             messageid=nextjob.get('MessageId')
              logmsg = self.name + ": got a new job: " + str(TaskNr) + "from the user with id: " + str(UserId)
              self.logger_queue.put(dict({"msg": logmsg, "type": "INFO", "loggername": self.name}))
 
@@ -37,12 +38,13 @@ class worker (threading.Thread):
              if test_res:
                 logmsg = "Test failed! User: " + str(UserId) + " Task: " + str(TaskNr) + "return value:" + str(test_res)
                 self.logger_queue.put(dict({"msg": logmsg, "type": "INFO", "loggername": self.name}))
-                self.sender_queue.put(dict({"recipient": user_email, "UserId": str(UserId), "message_type": "Failed", "Task": str(int(TaskNr))}))
+                self.sender_queue.put(dict({"recipient": user_email, "UserId": str(UserId), "message_type": "Failed", "Task": str(int(TaskNr)), "MessageId": messageid}))
                 if test_res == 512: # Need to read up on this but os.system() returns 256 when the script returns 1 and 512 when the script returns 2!
                    logmsg = "SecAlert: This test failed due to probable attack by user!"
                    self.logger_queue.put(dict({"msg": logmsg, "type": "INFO", "loggername": self.name}))
-                   self.sender_queue.put(dict({"recipient": user_email, "UserId": str(UserId), "message_type": "SecAlert", "Task": str(int(TaskNr))}))
+                   self.sender_queue.put(dict({"recipient": user_email, "UserId": str(UserId), "message_type": "SecAlert", "Task": str(int(TaskNr)), "MessageId": messageid}))
              else:
                 logmsg = "Test succeeded! User: " + str(UserId) + " Task: " + str(TaskNr)
                 self.logger_queue.put(dict({"msg": logmsg, "type": "INFO", "loggername": self.name}))
-                self.sender_queue.put(dict({"recipient": user_email, "UserId": str(UserId), "message_type": "Task", "Task": str(int(TaskNr)+1)}))
+#                self.sender_queue.put(dict({"recipient": user_email, "UserId": str(UserId), "message_type": "Success", "Task": TaskNr, "MessageId": ""}))
+                self.sender_queue.put(dict({"recipient": user_email, "UserId": str(UserId), "message_type": "Task", "Task": str(int(TaskNr)+1), "MessageId": messageid}))
