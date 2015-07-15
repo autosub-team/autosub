@@ -83,4 +83,4 @@ while (threadID <= numThreads + 3):
 while (not exit_flag):
    time.sleep(100)
 
-time.sleep(1) 
+time.sleep(1) # give the logger thread a little time write the last log message 

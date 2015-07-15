@@ -95,14 +95,18 @@ class mailSender (threading.Thread):
             con.commit();
             UserId = str(next_send_msg.get('UserId'))
             path_to_msg = "users/"+ UserId + "/Task" + TaskNr + "/error_msg"
-            has_text = 1;
+            fp = open(path_to_msg, 'r')
+            error_msg = fp.read()
+            fp.close()
             msg['Subject'] = "Task" + TaskNr + ": submission rejected"
             TEXT = "Error report:\n\n""" + error_msg
             self.backup_message(messageid)
          elif (str(next_send_msg.get('message_type')) == "SecAlert"):
             msg['To'] = "andi.platschek@gmail.com"
             path_to_msg = "users/"+ next_send_msg.get('UserId') + "/Task" + TaskNr + "/error_msg"
-            has_text = 1;
+            fp = open(path_to_msg, 'r')
+            error_msg = fp.read()
+            fp.close()
             msg['Subject'] = "Autosub Security Alert User:" + str(next_send_msg.get('recipient'))
             TEXT = "Error report:\n\n""" + error_msg
             self.backup_message(messageid)
