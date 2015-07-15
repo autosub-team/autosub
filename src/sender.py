@@ -27,12 +27,18 @@ class mailSender (threading.Thread):
       self.logger_queue = logger_queue
       self.numTasks = numTasks
 
+   ####
+   # log_a_msg()
+   ####
+   def log_a_msg(self, msg, loglevel):
+         self.logger_queue.put(dict({"msg": msg, "type": loglevel, "loggername": self.name}))
+
    def backup_message(self, messageid):
       logmsg= "backup not implemented yet; messageid: " + messageid
-      self.logger_queue.put(dict({"msg": logmsg, "type": "DEBUG", "loggername": self.name}))
+      self.log_a_msg(logmsg, "DEBUG")
 
    def run(self):
-      self.logger_queue.put(dict({"msg": "Starting Mail Sender Thread!", "type": "INFO", "loggername": self.name}))
+      self.log_a_msg("Starting Mail Sender Thread!", "INFO")
 
       while True:
          next_send_msg = self.sender_queue.get(True) #blocking wait on sender_queue
@@ -47,7 +53,7 @@ class mailSender (threading.Thread):
          msg['From'] = self.gmail_user
          msg['To'] = str(next_send_msg.get('recipient'))
          logmsg= "RECIPIENT: " + str(next_send_msg.get('recipient'))
-         self.logger_queue.put(dict({"msg": logmsg, "type": "DEBUG", "loggername": self.name}))
+         self.log_a_msg(logmsg, "DEBUG")
          
          msg['Date'] = formatdate(localtime = True)
 
@@ -141,7 +147,7 @@ class mailSender (threading.Thread):
             has_text = 1;
             self.backup_message(messageid)
          else:
-            self.logger_queue.put(dict({"msg": "Unkown Message Type in the sender_queue!", "type": "ERROR", "loggername": self.name}))
+            self.log_a_msg("Unkown Message Type in the sender_queue!","ERROR")
             self.backup_message(messageid)
 
          # Read Text for E-Mail Body from a config file
@@ -165,7 +171,7 @@ class mailSender (threading.Thread):
             msg.attach(part)
 
          logmsg = "Prepared message: \n" + str(msg)
-         self.logger_queue.put(dict({"msg": logmsg, "type": "DEBUG", "loggername": self.name}))
+         self.log_a_msg(logmsg, "DEBUG")
  
          try:
             server = smtplib.SMTP(self.smtpserver, 587) # port 465 doesn't seem to work!
@@ -174,11 +180,11 @@ class mailSender (threading.Thread):
             server.login(self.gmail_user, self.gmail_pwd)
             server.sendmail(self.gmail_user, str(next_send_msg.get('recipient')), msg.as_string())
             server.close()
-            self.logger_queue.put(dict({"msg": "Successfully sent an e-mail!", "type": "DEBUG", "loggername": self.name}))
+            self.log_a_msg("Successfully sent an e-mail!", "DEBUG")
             sql_cmd = "UPDATE StatCounters SET value=(SELECT value FROM StatCounters WHERE Name=='nr_mails_sent')+1 WHERE Name=='nr_mails_sent';"
             cur.execute(sql_cmd)
             con.commit();
          except:
-            self.logger_queue.put(dict({"msg": "Failed to send out an e-mail!", "type": "ERROR", "loggername": self.name}))
+            self.log_a_msg("Failed to send out an e-mail!", "ERROR")
 
          con.close()

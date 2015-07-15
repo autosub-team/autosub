@@ -26,7 +26,7 @@ class mailFetcher (threading.Thread):
       self.numTasks = numTasks
 
    ####
-   # logmsg()
+   # log_a_msg()
    ####
    def log_a_msg(self, msg, loglevel):
          self.logger_queue.put(dict({"msg": msg, "type": loglevel, "loggername": self.name}))
