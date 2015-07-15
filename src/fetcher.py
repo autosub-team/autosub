@@ -26,6 +26,12 @@ class mailFetcher (threading.Thread):
       self.numTasks = numTasks
 
    ####
+   # logmsg()
+   ####
+   def log_a_msg(self, msg, loglevel):
+         self.logger_queue.put(dict({"msg": msg, "type": loglevel, "loggername": self.name}))
+
+   ####
    #  connect_to_db()
    ####
    def connect_to_db(self, dbname):
@@ -34,7 +40,7 @@ class mailFetcher (threading.Thread):
          con = lite.connect(dbname)
       except:
          logmsg = "Failed to connect to database: " + dbname
-         self.logger_queue.put(dict({"msg": logmsg, "type": "ERROR", "loggername": self.name}))
+         self.log_a_msg(logmsg, "ERROR")
 
       cur = con.cursor()
       return cur, con
@@ -51,10 +57,10 @@ class mailFetcher (threading.Thread):
       res = cur.fetchall()
       if res:
          logmsg = 'table Users exists'
-         self.logger_queue.put(dict({"msg": logmsg, "type": "DEBUG", "loggername": self.name}))
+         self.log_a_msg(logmsg, "DEBUG")
       else:
          logmsg = 'table Users does not exist'
-         self.logger_queue.put(dict({"msg": logmsg, "type": "DEBUG", "loggername": self.name}))
+         self.log_a_msg(logmsg, "DEBUG")
          con.execute("CREATE TABLE Users(UserId INTEGER PRIMARY KEY AUTOINCREMENT, Name TEXT, email TEXT, first_mail INT, last_done INT, current_task INT)")
 
       # ... do the same for the Task_Stats table
@@ -62,13 +68,14 @@ class mailFetcher (threading.Thread):
       res = cur.fetchall()
       if res:
          logmsg = 'table TaskStats exists'
-         self.logger_queue.put(dict({"msg": logmsg, "type": "DEBUG", "loggername": self.name}))
+         self.log_a_msg(logmsg, "DEBUG")
          #TODO: in this case, we might want to check if one entry per task is already there, and add new
          #      empty entries in case a task does not have one. This is only a problem, if the number of
          #      tasks in the config file is changed AFTER the TaskStats table has been changed!
       else:
          logmsg = 'table TaskStats does not exist'
-         self.logger_queue.put(dict({"msg": logmsg, "type": "DEBUG", "loggername": self.name}))
+         self.log_a_msg(logmsg, "DEBUG")
+
          con.execute("CREATE TABLE TaskStats(TaskId INTEGER PRIMARY KEY, nr_submissions INT, nr_successful INT)")
          for t in range (1, self.numTasks+1):
             sql_cmd="INSERT INTO TaskStats (TaskId, nr_submissions, nr_successful) VALUES("+ str(t) + ", 0, 0);"
@@ -80,10 +87,10 @@ class mailFetcher (threading.Thread):
       res = cur.fetchall()
       if res:
          logmsg = 'table StatCounters exists'
-         self.logger_queue.put(dict({"msg": logmsg, "type": "DEBUG", "loggername": self.name}))
+         self.log_a_msg(logmsg, "DEBUG")
       else:
          logmsg = 'table StatCounters does not exist'
-         self.logger_queue.put(dict({"msg": logmsg, "type": "DEBUG", "loggername": self.name}))
+         self.log_a_msg(logmsg, "DEBUG")
          con.execute("CREATE TABLE StatCounters(CounterId INTEGER PRIMARY KEY AUTOINCREMENT, Name TEXT, value INT)")
          # add the stat counter entries and initialize them to 0:
          sql_cmd="INSERT INTO StatCounters (CounterId, Name, value) VALUES(NULL, 'nr_mails_fetched', 0);"
@@ -97,10 +104,10 @@ class mailFetcher (threading.Thread):
       if not os.path.exists("users"):
          os.mkdir("users")
          logmsg = "Created directory users!"
-         self.logger_queue.put(dict({"msg": logmsg, "type": "DEBUG", "loggername": self.name}))
+         self.log_a_msg(logmsg, "DEBUG")
       else:
          logmsg = "Directory users already exists!"
-         self.logger_queue.put(dict({"msg": logmsg, "type": "WARNING", "loggername": self.name}))
+         self.log_a_msg(logmsg, "WARNING")
 
       con.close() # close here, since we re-open the databse in the while(True) loop
 
@@ -109,9 +116,8 @@ class mailFetcher (threading.Thread):
    # to the database
    ####
    def add_new_user(self, user_name, user_email, cur, con):
-      self.logger_queue.put(dict({"msg": "Got mail from a new user - creating a new account:", "type": "DEBUG", "loggername": self.name}))
-      logmsg= 'New User: %s' % user_name 
-      self.logger_queue.put(dict({"msg": logmsg, "type": "DEBUG", "loggername": self.name}))
+      logmsg = 'New Account: User: %s' % user_name 
+      self.log_a_msg(logmsg, "DEBUG")
 
       sql_cmd="INSERT INTO Users (UserId, Name, email, first_mail, last_done, current_task) VALUES(NULL, '" + user_name + "', '" + user_email + "', '" + str(int(time.time())) + "', NULL, 1);"
       cur.execute(sql_cmd);
@@ -132,7 +138,7 @@ class mailFetcher (threading.Thread):
          os.mkdir(dirname)
       else:
          logmsg= "Warning: a directory for the new users ID already exists!"
-         self.logger_queue.put(dict({"msg": logmsg, "type": "WARNING", "loggername": self.name}))
+         self.log_a_msg(logmsg, "WARNING")
 
    ####
    # 
@@ -194,8 +200,8 @@ class mailFetcher (threading.Thread):
    # Process a question that was asked by a student
    ###
    def a_question_was_asked(self, cur, con, user_email, mail, messageid):
-      logmsg = 'The user has a question, please manually take care of that!'
-      self.logger_queue.put(dict({"msg": logmsg, "type": "DEBUG", "loggername": self.name}))
+      logmsg = 'The user has a question, please take care of that!'
+      self.log_a_msg(logmsg, "DEBUG")
 
       self.sender_queue.put(dict({"recipient": user_email, "UserId": "" ,"message_type": "Question", "Task": "", "MessageId": ""}))
       self.sender_queue.put(dict({"recipient": self.admin_mail, "UserId": "" ,"message_type": "QFwd", "Task": "", "Body": mail, "MessageId": messageid}))
@@ -211,17 +217,17 @@ class mailFetcher (threading.Thread):
          m.login(self.gmail_user,self.gmail_pwd)
       except imaplib.IMAP4.abort:
          logmsg = "Login to server was aborted (probably a server-side problem). Trying to connect again ..."
-         self.logger_queue.put(dict({"msg": logmsg, "type": "ERROR", "loggername": self.name}))
+         self.log_a_msg(logmsg, "ERROR")
          #m.close()
       except imaplib.IMAP4.error:
          logmsg = "Got an error when trying to connect to the imap server. Trying to connect again ..."
-         self.logger_queue.put(dict({"msg": logmsg, "type": "ERROR", "loggername": self.name}))
+         self.log_a_msg(logmsg, "ERROR")
       except:
          logmsg = "Got an unknown exception when trying to connect to the imap server. Trying to connect again ..."
-         self.logger_queue.put(dict({"msg": logmsg, "type": "ERROR", "loggername": self.name}))
+         self.log_a_msg(logmsg, "ERROR")
 
       logmsg = "Successfully logged into imap server"
-      self.logger_queue.put(dict({"msg": logmsg, "type": "DEBUG", "loggername": self.name}))
+      self.log_a_msg(logmsg, "DEBUG")
       return m
 
    ####
@@ -233,7 +239,7 @@ class mailFetcher (threading.Thread):
          # use m.list() to get all the mailboxes
       except:
          logmsg = "Failed to select inbox"
-         self.logger_queue.put(dict({"msg": logmsg, "type": "INFO", "loggername": self.name}))
+         self.log_a_msg(logmsg, "INFO")
 
       resp, items = m.search(None, "UNSEEN") # you could filter using the IMAP rules here (check http://www.example-code.com/csharp/imap-search-critera.asp)
       return items[0].split() # getting the mails id
@@ -242,7 +248,7 @@ class mailFetcher (threading.Thread):
    # The "main" routine of the fetcher thread.
    ####
    def run(self):
-      self.logger_queue.put(dict({"msg": "Starting Mail Fetcher Thread!", "type": "INFO", "loggername": self.name}))
+      self.log_a_msg("Starting Mail Fetcher Thread!", "INFO")
 
       self.init_ressources()
 
@@ -282,23 +288,23 @@ class mailFetcher (threading.Thread):
             res = cur.fetchall();
             if res:
                logmsg = "Got mail from an already known user!"
-               self.logger_queue.put(dict({"msg": logmsg, "type": "INFO", "loggername": self.name}))
+               self.log_a_msg(logmsg, "INFO")
 
                if re.search('[Rr][Ee][Ss][Uu][Ll][Tt]', mail_subject):
                   searchObj = re.search( '[0-9]+', mail_subject, )
                   if (int(searchObj.group()) <= self.numTasks):
                      logmsg = 'Processing a Result'
-                     self.logger_queue.put(dict({"msg": logmsg, "type": "DEBUG", "loggername": self.name}))
+                     self.log_a_msg(logmsg, "DEBUG")
                      self.take_new_results(user_email, searchObj.group(), cur, con, mail, messageid)
                   else:
                      logmsg = 'Given Task number is higher than actual Number of Tasks!'
-                     self.logger_queue.put(dict({"msg": logmsg, "type": "DEBUG", "loggername": self.name}))
+                     self.log_a_msg(logmsg, "DEBUG")
                      self.sender_queue.put(dict({"recipient": user_email, "UserId": "" ,"message_type": "InvalidTask", "Task": "", "MessageId": messageid}))
                elif re.search('[Qq][Uu][Ee][Ss][Tt][Ii][Oo][Nn]', mail_subject):
                   self.a_question_was_asked(cur, con, user_email, mail, messageid)
                else:
                   logmsg = 'Got a kind of message I do not understand. Sending a usage mail...' 
-                  self.logger_queue.put(dict({"msg": logmsg, "type": "DEBUG", "loggername": self.name}))
+                  self.log_a_msg(logmsg, "DEBUG")
                   self.sender_queue.put(dict({"recipient": user_email, "UserId": "" ,"message_type": "Usage", "Task": "", "MessageId": messageid}))
 
             else:
@@ -309,21 +315,21 @@ class mailFetcher (threading.Thread):
             m.close()
          except imaplib.IMAP4.abort:
             logmsg = "Closing connection to server was aborted (probably a server-side problem). Trying to connect again ..."
-            self.logger_queue.put(dict({"msg": logmsg, "type": "ERROR", "loggername": self.name}))
+            self.log_a_msg(logmsg, "ERROR")
             #m.close()
          except imaplib.IMAP4.error:
             logmsg = "Got an error when trying to connect to the imap server. Trying to connect again ..."
-            self.logger_queue.put(dict({"msg": logmsg, "type": "ERROR", "loggername": self.name}))
+            self.log_a_msg(logmsg, "ERROR")
          except:
             logmsg = "Got an unknown exception when trying to connect to the imap server. Trying to connect again ..."
-            self.logger_queue.put(dict({"msg": logmsg, "type": "ERROR", "loggername": self.name}))
+            self.log_a_msg(logmsg, "ERROR")
          finally:   
             logmsg = "closed connection to imapserver"
-            self.logger_queue.put(dict({"msg": logmsg, "type": "INFO", "loggername": self.name}))
+            self.log_a_msg(logmsg, "INFO")
    
          con.close() # close connection to sqlite db, so others can use it as well.
          time.sleep(60) # it's enough to check e-mails every minute
 
       logmsg = "Exiting fetcher - this should NEVER happen!"
-      self.logger_queue.put(dict({"msg": logmsg, "type": "ERROR", "loggername": self.name}))
+      self.log_a_msg(logmsg, "ERROR")
 
