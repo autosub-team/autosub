@@ -42,7 +42,7 @@ class mailFetcher (threading.Thread):
    ####
    # init_deb_statvalue()
    ####
-   def init_db_statvalue(countername, value):
+   def init_db_statvalue(self, countername, value):
          sql_cmd="INSERT INTO StatCounters (CounterId, Name, value) VALUES(NULL, "+ countername + ", " + str(value) + ");"
          cur.execute(sql_cmd);
          con.commit();
@@ -60,6 +60,16 @@ class mailFetcher (threading.Thread):
 
       cur = con.cursor()
       return cur, con
+
+   def check_dir_mkdir(self, directory): 
+      if not os.path.exists(directory):
+         os.mkdir(directory)
+         logmsg = "Created directory: " + directory
+         self.log_a_msg(logmsg, "DEBUG")
+      else:
+         logmsg = "Directory already exists: " + directory
+         self.log_a_msg(logmsg, "WARNING")
+
 
    ####
    # Check if all databases, tables, etc. are available, or if they have to be created.
@@ -107,20 +117,15 @@ class mailFetcher (threading.Thread):
       else:
          logmsg = 'table StatCounters does not exist'
          self.log_a_msg(logmsg, "DEBUG")
+
          con.execute("CREATE TABLE StatCounters(CounterId INTEGER PRIMARY KEY AUTOINCREMENT, Name TEXT, value INT)")
 
          # add the stat counter entries and initialize them to 0:
          self.init_db_statvalue('nr_mails_fetched', 0);
          self.init_db_statvalue('nr_mails_sent', 0);
          self.init_db_statvalue('nr_questions_received', 0);
- 
-      if not os.path.exists("users"):
-         os.mkdir("users")
-         logmsg = "Created directory users!"
-         self.log_a_msg(logmsg, "DEBUG")
-      else:
-         logmsg = "Directory users already exists!"
-         self.log_a_msg(logmsg, "WARNING")
+
+      self.check_dir_mkdir("users")
 
       con.close() # close here, since we re-open the databse in the while(True) loop
 
@@ -147,11 +152,7 @@ class mailFetcher (threading.Thread):
       cur.execute(sql_cmd);
       res = cur.fetchone();
       dirname = 'users/'+str(res[0])
-      if not os.path.exists(dirname):
-         os.mkdir(dirname)
-      else:
-         logmsg= "Warning: a directory for the new users ID already exists!"
-         self.log_a_msg(logmsg, "WARNING")
+      self.check_dir_mkdir(dirname)
 
    ####
    # 
@@ -162,15 +163,14 @@ class mailFetcher (threading.Thread):
       sql_cmd="SELECT UserId FROM Users WHERE email='" + user_email +"';"
       cur.execute(sql_cmd);
       user_id = cur.fetchone();
-      detach_dir = 'users/'+str(user_id[0])+"/Task"+str(TaskNr)
 
-      if not os.path.exists(detach_dir):
-         os.mkdir(detach_dir)
+      detach_dir = 'users/'+str(user_id[0])+"/Task"+str(TaskNr)
+      self.check_dir_mkdir(detach_dir)
            
       ts = datetime.datetime.now()
       current_dir = detach_dir + "/Task"+str(TaskNr)+"_" + str(ts.year) + str(ts.month) + str(ts.day) + "_" + str(ts.hour) + "_" + str(ts.minute) + "_" +  str(ts.second) + "_" +  str(ts.microsecond) 
-      if not os.path.exists(current_dir):
-         os.mkdir(current_dir)
+      self.check_dir_mkdir(current_dir)
+
 
       # we use walk to create a generator so we can iterate on the parts and forget about the recursive headach
       for part in mail.walk():
