@@ -17,9 +17,15 @@ class worker (threading.Thread):
       self.sender_queue = sender_queue
       self.logger_queue = logger_queue
 
+   ####
+   # log_a_msg()
+   ####
+   def log_a_msg(self, msg, loglevel):
+         self.logger_queue.put(dict({"msg": msg, "type": loglevel, "loggername": self.name}))
+
    def run(self):
       logmsg = "Starting " + self.name
-      self.logger_queue.put(dict({"msg": logmsg, "type": "INFO", "loggername": self.name}))
+      self.log_a_msg(logmsg, "INFO")
 
       while True:
          nextjob = self.job_queue.get(True)
@@ -30,7 +36,7 @@ class worker (threading.Thread):
              messageid=nextjob.get('MessageId')
 
              logmsg = self.name + ": got a new job: " + str(TaskNr) + "from the user with id: " + str(UserId)
-             self.logger_queue.put(dict({"msg": logmsg, "type": "INFO", "loggername": self.name}))
+             self.log_a_msg(logmsg, "INFO")
 
              scriptpath = "tasks/task" + str(TaskNr) + "/tests.sh"
              command = "sh "+scriptpath+" " + str(UserId) + " " + str(TaskNr) + " >> autosub.stdout 2>>autosub.stderr"
@@ -39,21 +45,21 @@ class worker (threading.Thread):
              if test_res:
 
                 logmsg = "Test failed! User: " + str(UserId) + " Task: " + str(TaskNr) + "return value:" + str(test_res)
-                self.logger_queue.put(dict({"msg": logmsg, "type": "INFO", "loggername": self.name}))
+                self.log_a_msg(logmsg, "INFO")
 
                 self.sender_queue.put(dict({"recipient": user_email, "UserId": str(UserId), "message_type": "Failed", "Task": str(int(TaskNr)), "MessageId": messageid}))
 
                 if test_res == 512: # Need to read up on this but os.system() returns 
                                     # 256 when the script returns 1 and 512 when the script returns 2!
                    logmsg = "SecAlert: This test failed due to probable attack by user!"
-                   self.logger_queue.put(dict({"msg": logmsg, "type": "INFO", "loggername": self.name}))
+                   self.log_a_msg(logmsg, "INFO")
 
                    self.sender_queue.put(dict({"recipient": user_email, "UserId": str(UserId), "message_type": "SecAlert", "Task": str(int(TaskNr)), "MessageId": messageid}))
 
              else:
 
                 logmsg = "Test succeeded! User: " + str(UserId) + " Task: " + str(TaskNr)
-                self.logger_queue.put(dict({"msg": logmsg, "type": "INFO", "loggername": self.name}))
+                self.log_a_msg(logmsg, "INFO")
 
                 self.sender_queue.put(dict({"recipient": user_email, "UserId": str(UserId), "message_type": "Success", "Task": TaskNr, "MessageId": ""}))
                 self.sender_queue.put(dict({"recipient": user_email, "UserId": str(UserId), "message_type": "Task", "Task": str(int(TaskNr)+1), "MessageId": messageid}))
