@@ -26,14 +26,27 @@ class mailFetcher (threading.Thread):
       self.numTasks = numTasks
 
    ####
+   #  connect_to_db()
+   ####
+   def connect_to_db(self, dbname):
+      # connect to sqlite database ...
+      try:
+         con = lite.connect(dbname)
+      except:
+         logmsg = "Failed to connect to database: " + dbname
+         self.logger_queue.put(dict({"msg": logmsg, "type": "ERROR", "loggername": self.name}))
+
+      cur = con.cursor()
+      return cur, con
+
+   ####
    # Check if all databases, tables, etc. are available, or if they have to be created.
    # if non-existent --> create them
    ####
    def init_ressources(self):
-      # connect to sqlite database ...
-      con = lite.connect('autosub.db')
+      cur,con = self.connect_to_db('autosub.db')
+
       # ... and check whether the Users table exists. If not: create it
-      cur = con.cursor()
       cur.execute("SELECT name FROM sqlite_master WHERE type == 'table' AND name = 'Users';")
       res = cur.fetchall()
       if res:
@@ -236,8 +249,7 @@ class mailFetcher (threading.Thread):
       # This thread is running as a daemon thread, this is the while(1) loop that is running until
       # the thread is stopped by the main thread
       while True:
-         con = lite.connect('autosub.db')
-         cur = con.cursor()
+         cur,con = self.connect_to_db('autosub.db')
 
          m = self.connect_to_imapserver()
 
