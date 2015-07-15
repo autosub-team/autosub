@@ -49,6 +49,11 @@ class mailSender (threading.Thread):
       cur.execute(sql_cmd)
       con.commit();
 
+   def user_set_current_task(self, cur, con, tasknr, userid):
+      sql_cmd = "UPDATE Users SET current_task='" + str(tasknr) + "' where UserId=='" + str(userid) + "';"
+      cur.execute(sql_cmd)
+      con.commit();
+
    def backup_message(self, messageid):
       logmsg= "backup not implemented yet; messageid: " + messageid
       self.log_a_msg(logmsg, "DEBUG")
@@ -90,6 +95,8 @@ class mailSender (threading.Thread):
                   sql_cmd = "UPDATE users SET last_done=" + str(int(time.time())) + " where UserId==" + next_send_msg.get('UserId') + ";"
                   cur.execute(sql_cmd)
                   con.commit();
+            
+               self.user_set_current_task(cur, con, TaskNr, str(next_send_msg.get('UserId')))
 
             else: # at least one more task to do: send out the description
                msg['Subject'] = "Description Task" + TaskNr 
@@ -99,10 +106,7 @@ class mailSender (threading.Thread):
                if os.path.exists(path_to_attachments):
                   attachments = os.listdir(path_to_attachments)
 
-               # this means that TaskNr-1 has been completed successfully -> update database
-               sql_cmd = "UPDATE Users SET current_task='" + str(int(TaskNr)) + "' where UserId=='" + str(next_send_msg.get('UserId')) + "';"
-               cur.execute(sql_cmd)
-               con.commit();
+               self.user_set_current_task(cur, con, TaskNr, str(next_send_msg.get('UserId')))
 
             # we are sending out the description for TaskNr, but we want to
             # update the stats for TaskNr-1 !

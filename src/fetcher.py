@@ -42,8 +42,8 @@ class mailFetcher (threading.Thread):
    ####
    # init_deb_statvalue()
    ####
-   def init_db_statvalue(self, countername, value):
-         sql_cmd="INSERT INTO StatCounters (CounterId, Name, value) VALUES(NULL, "+ countername + ", " + str(value) + ");"
+   def init_db_statvalue(self, cur, con, countername, value):
+         sql_cmd="INSERT INTO StatCounters (CounterId, Name, value) VALUES(NULL, '" + countername + "', " + str(value) + ");"
          cur.execute(sql_cmd);
          con.commit();
 
@@ -121,9 +121,9 @@ class mailFetcher (threading.Thread):
          con.execute("CREATE TABLE StatCounters(CounterId INTEGER PRIMARY KEY AUTOINCREMENT, Name TEXT, value INT)")
 
          # add the stat counter entries and initialize them to 0:
-         self.init_db_statvalue('nr_mails_fetched', 0);
-         self.init_db_statvalue('nr_mails_sent', 0);
-         self.init_db_statvalue('nr_questions_received', 0);
+         self.init_db_statvalue(cur, con, 'nr_mails_fetched', 0)
+         self.init_db_statvalue(cur, con, 'nr_mails_sent', 0)
+         self.init_db_statvalue(cur, con, 'nr_questions_received', 0)
 
       self.check_dir_mkdir("users")
 
