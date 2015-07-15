@@ -32,6 +32,14 @@ class mailFetcher (threading.Thread):
          self.logger_queue.put(dict({"msg": msg, "type": loglevel, "loggername": self.name}))
 
    ####
+   # increment_db_statcounter()
+   ####
+   def increment_db_statcounter(self, cur, con, countername):
+      sql_cmd = "UPDATE StatCounters SET value=(SELECT value FROM StatCounters WHERE Name=='" + countername + "')+1 WHERE Name=='" + countername + "';"
+      cur.execute(sql_cmd)
+      con.commit();
+
+   ####
    #  connect_to_db()
    ####
    def connect_to_db(self, dbname):
@@ -206,9 +214,7 @@ class mailFetcher (threading.Thread):
       self.sender_queue.put(dict({"recipient": user_email, "UserId": "" ,"message_type": "Question", "Task": "", "MessageId": ""}))
       self.sender_queue.put(dict({"recipient": self.admin_mail, "UserId": "" ,"message_type": "QFwd", "Task": "", "Body": mail, "MessageId": messageid}))
 
-      sql_cmd = "UPDATE StatCounters SET value=(SELECT value FROM StatCounters WHERE Name=='nr_questions_received')+1 WHERE Name=='nr_questions_received';"
-      cur.execute(sql_cmd)
-      con.commit();
+      self.increment_db_statcounter(cur, con, 'nr_questions_received')
 
    def connect_to_imapserver(self):
       try:
@@ -264,9 +270,7 @@ class mailFetcher (threading.Thread):
          # iterate over all new e-mails and take action according to the structure of the subject line
          for emailid in items:
 
-            sql_cmd = "UPDATE StatCounters SET value=(SELECT value FROM StatCounters WHERE Name=='nr_mails_fetched')+1 WHERE Name=='nr_mails_fetched';"
-            cur.execute(sql_cmd)
-            con.commit();
+            self.increment_db_statcounter(cur, con, 'nr_mails_fetched')
 
             resp, data = m.fetch(emailid, "(RFC822)") # fetching the mail, "`(RFC822)`" means "get the whole stuff", but you can ask for headers only, etc
 

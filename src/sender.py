@@ -33,6 +33,22 @@ class mailSender (threading.Thread):
    def log_a_msg(self, msg, loglevel):
          self.logger_queue.put(dict({"msg": msg, "type": loglevel, "loggername": self.name}))
 
+   ####
+   # increment_db_statcounter()
+   ####
+   def increment_db_statcounter(self, cur, con, countername):
+      sql_cmd = "UPDATE StatCounters SET value=(SELECT value FROM StatCounters WHERE Name=='" + countername + "')+1 WHERE Name=='" + countername + "';"
+      cur.execute(sql_cmd)
+      con.commit();
+
+   ####
+   # increment_db_taskcounter()
+   ####
+   def increment_db_taskcounter(self, cur, con, countername, tasknr):
+      sql_cmd = "UPDATE TaskStats SET " + countername + "=(SELECT "+ countername + " FROM TaskStats WHERE TaskId==" + tasknr + ")+1 WHERE TaskId==" + tasknr + ";"
+      cur.execute(sql_cmd)
+      con.commit();
+
    def backup_message(self, messageid):
       logmsg= "backup not implemented yet; messageid: " + messageid
       self.log_a_msg(logmsg, "DEBUG")
@@ -88,17 +104,14 @@ class mailSender (threading.Thread):
                cur.execute(sql_cmd)
                con.commit();
 
-            sql_cmd = "UPDATE TaskStats SET nr_submissions=(SELECT nr_submissions FROM TaskStats WHERE TaskId==" + str(int(TaskNr)-1) + ")+1 WHERE TaskId==" + str(int(TaskNr)-1) + ";"
-            cur.execute(sql_cmd)
-            sql_cmd = "UPDATE TaskStats SET nr_successful=(SELECT nr_successful FROM TaskStats WHERE TaskId==" + str(int(TaskNr)-1) + ")+1 WHERE TaskId==" + str(int(TaskNr)-1) + ";"
-            cur.execute(sql_cmd)
-            con.commit();
+            # we are sending out the description for TaskNr, but we want to
+            # update the stats for TaskNr-1 !
+            self.increment_db_taskcounter(cur, con, 'nr_submissions', str(int(TaskNr)-1))
+            self.increment_db_taskcounter(cur, con, 'nr_successful', str(int(TaskNr)-1))
 
             self.backup_message(messageid)
          elif (str(next_send_msg.get('message_type')) == "Failed"):
-            sql_cmd = "UPDATE TaskStats SET nr_submissions=(SELECT nr_submissions FROM TaskStats WHERE TaskId==" + TaskNr + ")+1 WHERE TaskId==" + TaskNr + ";"
-            cur.execute(sql_cmd)
-            con.commit();
+            self.increment_db_taskcounter(cur, con, 'nr_submissions', TaskNr)
             UserId = str(next_send_msg.get('UserId'))
             path_to_msg = "users/"+ UserId + "/Task" + TaskNr + "/error_msg"
             fp = open(path_to_msg, 'r')
@@ -181,9 +194,7 @@ class mailSender (threading.Thread):
             server.sendmail(self.gmail_user, str(next_send_msg.get('recipient')), msg.as_string())
             server.close()
             self.log_a_msg("Successfully sent an e-mail!", "DEBUG")
-            sql_cmd = "UPDATE StatCounters SET value=(SELECT value FROM StatCounters WHERE Name=='nr_mails_sent')+1 WHERE Name=='nr_mails_sent';"
-            cur.execute(sql_cmd)
-            con.commit();
+            self.increment_db_statcounter(cur, con, 'nr_mails_sent')
          except:
             self.log_a_msg("Failed to send out an e-mail!", "ERROR")
 
