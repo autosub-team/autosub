@@ -40,6 +40,14 @@ class mailFetcher (threading.Thread):
       con.commit();
 
    ####
+   # init_deb_statvalue()
+   ####
+   def init_db_statvalue(countername, value):
+         sql_cmd="INSERT INTO StatCounters (CounterId, Name, value) VALUES(NULL, "+ countername + ", " + str(value) + ");"
+         cur.execute(sql_cmd);
+         con.commit();
+
+   ####
    #  connect_to_db()
    ####
    def connect_to_db(self, dbname):
@@ -100,14 +108,11 @@ class mailFetcher (threading.Thread):
          logmsg = 'table StatCounters does not exist'
          self.log_a_msg(logmsg, "DEBUG")
          con.execute("CREATE TABLE StatCounters(CounterId INTEGER PRIMARY KEY AUTOINCREMENT, Name TEXT, value INT)")
+
          # add the stat counter entries and initialize them to 0:
-         sql_cmd="INSERT INTO StatCounters (CounterId, Name, value) VALUES(NULL, 'nr_mails_fetched', 0);"
-         cur.execute(sql_cmd);
-         sql_cmd="INSERT INTO StatCounters (CounterId, Name, value) VALUES(NULL, 'nr_mails_sent', 0);"
-         cur.execute(sql_cmd);
-         sql_cmd="INSERT INTO StatCounters (CounterId, Name, value) VALUES(NULL, 'nr_questions_received', 0);"
-         cur.execute(sql_cmd);
-         con.commit();
+         self.init_db_statvalue('nr_mails_fetched', 0);
+         self.init_db_statvalue('nr_mails_sent', 0);
+         self.init_db_statvalue('nr_questions_received', 0);
  
       if not os.path.exists("users"):
          os.mkdir("users")
