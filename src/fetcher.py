@@ -206,6 +206,9 @@ class mailFetcher (threading.Thread):
       except:
          logmsg = "Got an unknown exception when trying to connect to the imap server. Trying to connect again ..."
          self.logger_queue.put(dict({"msg": logmsg, "type": "ERROR", "loggername": self.name}))
+
+      logmsg = "Successfully logged into imap server"
+      self.logger_queue.put(dict({"msg": logmsg, "type": "DEBUG", "loggername": self.name}))
       return m
 
    ####
@@ -248,23 +251,35 @@ class mailFetcher (threading.Thread):
             con.commit();
 
             resp, data = m.fetch(emailid, "(RFC822)") # fetching the mail, "`(RFC822)`" means "get the whole stuff", but you can ask for headers only, etc
-            email_body = data[0][1] # getting the mail content
-            mail = email.message_from_string(str(email_body)) # parsing the mail content to get a mail object
+
+            mail = email.message_from_bytes(data[0][1]) # parsing the mail content to get a mail object
+            logmsg="FULL MAIL:\n" + str(mail)
+            self.logger_queue.put(dict({"msg": logmsg, "type": "DEBUG", "loggername": self.name}))
+
+            mail_subject = str(mail['subject'])
+            logmsg="SUBJECT: " + str(mail_subject)
+            self.logger_queue.put(dict({"msg": logmsg, "type": "DEBUG", "loggername": self.name}))
+            from_header = str(mail['From'])
+            logmsg="FROM_HEADER: " + str(from_header)
+            self.logger_queue.put(dict({"msg": logmsg, "type": "DEBUG", "loggername": self.name}))
+            split_header = str(from_header).split("<")
+            logmsg="SPLIT_HEADER: " + str(split_header)
+            self.logger_queue.put(dict({"msg": logmsg, "type": "DEBUG", "loggername": self.name}))
+            user_name = split_header[0]
+            try:
+               user_email = str(split_header[1].split(">")[0])
+               logmsg="USER_EMAIL: " + user_email
+               self.logger_queue.put(dict({"msg": logmsg, "type": "DEBUG", "loggername": self.name}))
+            except:
+               user_email = str(mail['From'])
+
             messageid = mail.get('Message-ID')
 #            messageid = "42"
             logmsg="message-id: " + str(messageid)
             self.logger_queue.put(dict({"msg": logmsg, "type": "INFO", "loggername": self.name}))
 
-            from_header = str(mail['from'])
-            split_header = from_header.split("<");
-            user_name = split_header[0];
-            try:
-               user_email = split_header[1].split(">")[0];
-            except:
-               user_email = str(mail['from'])
-            mail_subject = str(mail['subject'])
 
-            sql_cmd="SELECT UserId FROM Users WHERE email='" + user_email +"';"
+            sql_cmd="SELECT UserId FROM Users WHERE email='" + str(user_email) +"';"
             cur.execute(sql_cmd);
             res = cur.fetchall();
             if res:

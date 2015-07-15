@@ -46,6 +46,9 @@ class mailSender (threading.Thread):
          msg = MIMEMultipart()
          msg['From'] = self.gmail_user
          msg['To'] = str(next_send_msg.get('recipient'))
+         logmsg= "RECIPIENT: " + str(next_send_msg.get('recipient'))
+         self.logger_queue.put(dict({"msg": logmsg, "type": "DEBUG", "loggername": self.name}))
+         
          msg['Date'] = formatdate(localtime = True)
 
          TaskNr = str(next_send_msg.get('Task'))
@@ -94,14 +97,14 @@ class mailSender (threading.Thread):
             path_to_msg = "users/"+ UserId + "/Task" + TaskNr + "/error_msg"
             has_text = 1;
             msg['Subject'] = "Task" + TaskNr + ": submission rejected"
-            TEXT = "Error report:\n\n"""+error_msg
+            TEXT = "Error report:\n\n""" + error_msg
             self.backup_message(messageid)
          elif (str(next_send_msg.get('message_type')) == "SecAlert"):
             msg['To'] = "andi.platschek@gmail.com"
             path_to_msg = "users/"+ next_send_msg.get('UserId') + "/Task" + TaskNr + "/error_msg"
             has_text = 1;
-            msg['Subject'] = "Autosub Security Alert User:" +   next_send_msg.get('recipient') 
-            TEXT = "Error report:\n\n"""+error_msg
+            msg['Subject'] = "Autosub Security Alert User:" + str(next_send_msg.get('recipient'))
+            TEXT = "Error report:\n\n""" + error_msg
             self.backup_message(messageid)
          elif (str(next_send_msg.get('message_type')) == "Success"):
             msg['Subject'] = "Task " + TaskNr + " submitted successfully"
