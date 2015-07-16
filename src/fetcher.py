@@ -146,16 +146,28 @@ class mailFetcher (threading.Thread):
 
       # the new user has now been added to the database. Next we need
       # to send him an email with the first task.
-      # NOTE: messageid is empty, cause this will be sent out by the welcome message!
-      common.send_email(self.sender_queue, user_email, "", "Task", "1", "", "")
 
       # read back the new users UserId and create a directory for putting his
       # submissions in:
       sql_cmd="SELECT UserId FROM Users WHERE email='" + user_email +"';"
       cur.execute(sql_cmd);
       res = cur.fetchone();
-      dirname = 'users/'+str(res[0])
+      userid = str(res[0])
+      dirname = 'users/'+ userid
       self.check_dir_mkdir(dirname)
+
+      # NOTE: messageid is empty, cause this will be sent out by the welcome message!
+      curc, conc = self.connect_to_db('course.db')
+      sql_cmd="SELECT GeneratorExecutable FROM TaskConfiguration WHERE TaskNr == 1"
+      curc.execute(sql_cmd);
+      res = curc.fetchone();
+      conc.close() 
+     
+      logmsg="RES: " + res[0] 
+      self.log_a_msg(logmsg, "DEBUG")
+
+      common.send_email(self.sender_queue, user_email, userid, "Task", "1", "", "")
+
 
    ####
    # take_new_result()

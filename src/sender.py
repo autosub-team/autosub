@@ -1,4 +1,4 @@
-########################################################################
+#######################################################################
 # sender.py -- send out e-mails based on the info given by fetcher.py
 #       or worker.py
 #
@@ -130,10 +130,17 @@ class mailSender (threading.Thread):
                msg['Subject'] = "Description Task" + TaskNr 
                path_to_msg = "tasks/task" + TaskNr + "/description.txt"
                has_text = 1;
-               path_to_attachments = "tasks/task" + TaskNr + "/attachments"
-               if os.path.exists(path_to_attachments):
-                  attachments = os.listdir(path_to_attachments)
+               logmsg="used sql comand: SELECT TaskAttachments FROM UserTasks WHERE TaskNr == " + TaskNr + " AND UserId == '"+ str(next_send_msg.get('UserId')) + "';"
+               self.log_a_msg(logmsg, "DEBUG");
 
+               sql_cmd="SELECT TaskAttachments FROM UserTasks WHERE TaskNr == " + TaskNr + " AND UserId == '"+ str(next_send_msg.get('UserId')) + "';"
+               cur.execute(sql_cmd)
+               res = cur.fetchone()
+
+               logmsg = "got the following attachments: " + str(res)
+               self.log_a_msg(logmsg, "DEBUG")
+               attachments = str(res[0]).split()
+ 
                self.user_set_current_task(cur, con, TaskNr, str(next_send_msg.get('UserId')))
 
             # we are sending out the description for TaskNr, but we want to
@@ -207,13 +214,13 @@ class mailSender (threading.Thread):
          # add some attachments. those are assumed to be located in
          # directory called attachments, the list of the files
          # in that directory was retrieved earlier.
-         for f in attachments:
-            part = MIMEBase('application', "octet-stream")
-            full_f = path_to_attachments + "/" + f
-            part.set_payload( open(full_f,"rb").read() )
-            encoders.encode_base64(part)
-            part.add_header('Content-Disposition', 'attachment; filename="{0}"'.format(os.path.basename(f)))
-            msg.attach(part)
+         if str(attachments) != 'None':
+            for f in attachments:
+               part = MIMEBase('application', "octet-stream")
+               part.set_payload( open(f,"rb").read() )
+               encoders.encode_base64(part)
+               part.add_header('Content-Disposition', 'attachment; filename="{0}"'.format(os.path.basename(f)))
+               msg.attach(part)
 
          logmsg = "Prepared message: \n" + str(msg)
          self.log_a_msg(logmsg, "DEBUG")
