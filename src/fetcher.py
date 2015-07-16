@@ -32,6 +32,12 @@ class mailFetcher (threading.Thread):
          self.logger_queue.put(dict({"msg": msg, "type": loglevel, "loggername": self.name}))
 
    ####
+   # send_email()
+   ####
+   def send_email(self, recipient, userid, messagetype, tasknr, body, messageid):
+      self.sender_queue.put(dict({"recipient": recipient, "UserId": userid ,"message_type": messagetype, "Task": tasknr, "Body": body, "MessageId": messageid}))
+
+   ####
    # increment_db_statcounter()
    ####
    def increment_db_statcounter(self, cur, con, countername):
@@ -146,7 +152,7 @@ class mailFetcher (threading.Thread):
       # the new user has now been added to the database. Next we need
       # to send him an email with the first task.
       # NOTE: messageid is empty, cause this will be sent out by the welcome message!
-      self.sender_queue.put(dict({"recipient": user_email, "message_type": "Task", "Task": "1", "MessageId": ""}))
+      self.send_email(user_email, "", "Task", "1", "", "")
 
       # read back the new users UserId and create a directory for putting his
       # submissions in:
@@ -223,8 +229,8 @@ class mailFetcher (threading.Thread):
       logmsg = 'The user has a question, please take care of that!'
       self.log_a_msg(logmsg, "DEBUG")
 
-      self.sender_queue.put(dict({"recipient": user_email, "UserId": "" ,"message_type": "Question", "Task": "", "MessageId": ""}))
-      self.sender_queue.put(dict({"recipient": self.admin_mail, "UserId": "" ,"message_type": "QFwd", "Task": "", "Body": mail, "MessageId": messageid}))
+      self.send_email(user_email, "", "Question", "", "", "")
+      self.send_email(self.admin_mail, "", "QFwd", "", mail, messageid)
 
       self.increment_db_statcounter(cur, con, 'nr_questions_received')
 
@@ -318,17 +324,17 @@ class mailFetcher (threading.Thread):
                   else:
                      logmsg = 'Given Task number is higher than actual Number of Tasks!'
                      self.log_a_msg(logmsg, "DEBUG")
-                     self.sender_queue.put(dict({"recipient": user_email, "UserId": "" ,"message_type": "InvalidTask", "Task": "", "MessageId": messageid}))
+                     self.send_email(user_email, "", "InvalidTask", "", "", messageid)
                elif re.search('[Qq][Uu][Ee][Ss][Tt][Ii][Oo][Nn]', mail_subject):
                   self.a_question_was_asked(cur, con, user_email, mail, messageid)
                else:
                   logmsg = 'Got a kind of message I do not understand. Sending a usage mail...' 
                   self.log_a_msg(logmsg, "DEBUG")
-                  self.sender_queue.put(dict({"recipient": user_email, "UserId": "" ,"message_type": "Usage", "Task": "", "MessageId": messageid}))
+                  self.send_email(user_email, "", "Usage", "", "", messageid)
 
             else:
                self.add_new_user(user_name, user_email, cur, con)
-               self.sender_queue.put(dict({"recipient": user_email, "UserId": "" ,"message_type": "Welcome", "Task": "", "MessageId": messageid}))
+               self.send_email(user_email, "", "Welcome", "", "", messageid)
 
          try:
             m.close()
