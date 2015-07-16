@@ -49,10 +49,30 @@ class mailSender (threading.Thread):
       cur.execute(sql_cmd)
       con.commit();
 
+   ####
+   # user_set_current_task()
+   ####
    def user_set_current_task(self, cur, con, tasknr, userid):
       sql_cmd = "UPDATE Users SET current_task='" + str(tasknr) + "' where UserId=='" + str(userid) + "';"
       cur.execute(sql_cmd)
       con.commit();
+
+
+   ####
+   #
+   ####
+   def check_and_set_last_done(self, cur, con, userid):
+      sql_cmd = "SELECT last_done FROM users WHERE UserId==" + userid + ";"
+      cur.execute(sql_cmd)
+      res = cur.fetchone();
+      logmsg = "RES: "+ str(res[0])
+      self.log_a_msg(logmsg, "DEBUG")
+
+      if str(res[0]) == "None":
+         sql_cmd = "UPDATE users SET last_done=" + str(int(time.time())) + " where UserId==" + userid + ";"
+         cur.execute(sql_cmd)
+         con.commit();
+
 
    def backup_message(self, messageid):
       logmsg= "backup not implemented yet; messageid: " + messageid
@@ -88,15 +108,9 @@ class mailSender (threading.Thread):
                msg['Subject'] = "Congratulations!" 
                path_to_msg = "congratulations.txt"
                has_text = 1;
-               sql_cmd = "SELECT last_done FROM users WHERE UserId==" + next_send_msg.get('UserId') + ";"
-               cur.execute(sql_cmd)
-               res = cur.fetchone();
-               if not res:
-                  sql_cmd = "UPDATE users SET last_done=" + str(int(time.time())) + " where UserId==" + next_send_msg.get('UserId') + ";"
-                  cur.execute(sql_cmd)
-                  con.commit();
-            
+
                self.user_set_current_task(cur, con, TaskNr, str(next_send_msg.get('UserId')))
+               self.check_and_set_last_done(cur, con, next_send_msg.get('UserId'))
 
             else: # at least one more task to do: send out the description
                msg['Subject'] = "Description Task" + TaskNr 
