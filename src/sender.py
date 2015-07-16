@@ -51,15 +51,21 @@ class mailSender (threading.Thread):
 
    ####
    # user_set_current_task()
+   #
+   # Set the current_task of the user with userid to tasknr.
    ####
    def user_set_current_task(self, cur, con, tasknr, userid):
       sql_cmd = "UPDATE Users SET current_task='" + str(tasknr) + "' where UserId=='" + str(userid) + "';"
       cur.execute(sql_cmd)
       con.commit();
 
-
    ####
+   # check_and_set_last_done()
    #
+   # Check if the timestamp in last_done has been set. If so, leave the old one
+   # as we want to know when the user submitted the correct version of the last
+   # task for the very first time.
+   # If this is the first time, write the current timestamp into the database.
    ####
    def check_and_set_last_done(self, cur, con, userid):
       sql_cmd = "SELECT last_done FROM users WHERE UserId==" + userid + ";"
@@ -73,11 +79,19 @@ class mailSender (threading.Thread):
          cur.execute(sql_cmd)
          con.commit();
 
-
+   ####
+   # backup_message()
+   #
+   # Just a stub, in the future, the message with the messageid shall be moved
+   # into an archive folder on the mailserver.
+   ####
    def backup_message(self, messageid):
       logmsg= "backup not implemented yet; messageid: " + messageid
       self.log_a_msg(logmsg, "DEBUG")
 
+   ####
+   # thread code of the sender thread.
+   ####
    def run(self):
       self.log_a_msg("Starting Mail Sender Thread!", "INFO")
 

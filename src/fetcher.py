@@ -41,6 +41,8 @@ class mailFetcher (threading.Thread):
 
    ####
    # init_deb_statvalue()
+   #
+   # Add entries for the statistics counters, and initialize them to 0.
    ####
    def init_db_statvalue(self, cur, con, countername, value):
          sql_cmd="INSERT INTO StatCounters (CounterId, Name, value) VALUES(NULL, '" + countername + "', " + str(value) + ");"
@@ -155,7 +157,10 @@ class mailFetcher (threading.Thread):
       self.check_dir_mkdir(dirname)
 
    ####
-   # 
+   # take_new_result()
+   #
+   # A new result for task TaskNr has been submitted -- store in the users directory
+   # structure.
    ####
    def take_new_results(self, user_email, TaskNr, cur, con, mail, messageid):
       # read back the new users UserId and create a directory for putting his
@@ -210,6 +215,8 @@ class mailFetcher (threading.Thread):
       self.job_queue.put(dict({"UserId": user_id[0], "UserEmail": user_email,"message_type": "Task", "taskNr": TaskNr, "MessageId": messageid}))
 
    ####
+   # a_question_was_asked()
+   #
    # Process a question that was asked by a student
    ###
    def a_question_was_asked(self, cur, con, user_email, mail, messageid):
@@ -221,6 +228,9 @@ class mailFetcher (threading.Thread):
 
       self.increment_db_statcounter(cur, con, 'nr_questions_received')
 
+   ####
+   # connect_to_imapserver()
+   ####
    def connect_to_imapserver(self):
       try:
          # connecting to the gmail imap server
@@ -256,7 +266,7 @@ class mailFetcher (threading.Thread):
       return items[0].split() # getting the mails id
 
    ####
-   # The "main" routine of the fetcher thread.
+   # thread code for the fetcher thread.
    ####
    def run(self):
       self.log_a_msg("Starting Mail Fetcher Thread!", "INFO")
