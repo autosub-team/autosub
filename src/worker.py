@@ -7,6 +7,7 @@
 
 import threading
 import os
+import common
 
 class worker (threading.Thread):
    def __init__(self, threadID, name, job_queue, sender_queue, logger_queue):
@@ -22,12 +23,6 @@ class worker (threading.Thread):
    ####
    def log_a_msg(self, msg, loglevel):
          self.logger_queue.put(dict({"msg": msg, "type": loglevel, "loggername": self.name}))
-
-   ####
-   # send_email()
-   ####
-   def send_email(self, recipient, userid, messagetype, tasknr, body, messageid):
-      self.sender_queue.put(dict({"recipient": recipient, "UserId": userid ,"message_type": messagetype, "Task": tasknr, "Body": body, "MessageId": messageid}))
 
    def run(self):
       logmsg = "Starting " + self.name
@@ -54,19 +49,19 @@ class worker (threading.Thread):
                 logmsg = logmsg + "return value:" + str(test_res)
                 self.log_a_msg(logmsg, "INFO")
 
-                self.send_email(user_email, UserId, "Failed", str(TaskNr), "", messageid)
+                common.send_email(self.sender_queue, user_email, UserId, "Failed", str(TaskNr), "", messageid)
 
                 if test_res == 512: # Need to read up on this but os.system() returns 
                                     # 256 when the script returns 1 and 512 when the script returns 2!
                    logmsg = "SecAlert: This test failed due to probable attack by user!"
                    self.log_a_msg(logmsg, "INFO")
 
-                   self.send_email(user_email, str(UserId), "SecAlert", str(TaskNr), "", messageid)
+                   common.send_email(self.sender_queue, user_email, str(UserId), "SecAlert", str(TaskNr), "", messageid)
 
              else:
 
                 logmsg = "Test succeeded! User: " + str(UserId) + " Task: " + str(TaskNr)
                 self.log_a_msg(logmsg, "INFO")
 
-                self.send_email(user_email, str(UserId), "Success", str(TaskNr), "", "")
-                self.send_email(user_email, str(UserId), "Task", str(int(TaskNr)+1), "", messageid)
+                common.send_email(self.sender_queue, user_email, str(UserId), "Success", str(TaskNr), "", "")
+                common.send_email(self.sender_queue, user_email, str(UserId), "Task", str(int(TaskNr)+1), "", messageid)

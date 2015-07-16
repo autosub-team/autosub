@@ -10,6 +10,7 @@ import email, imaplib, os, time
 import sqlite3 as lite
 import re #regex
 import datetime
+import common
 
 class mailFetcher (threading.Thread):
    def __init__(self, threadID, name, job_queue, sender_queue, autosub_mail, autosub_passwd, autosub_imapserver, logger_queue, numTasks):
@@ -30,12 +31,6 @@ class mailFetcher (threading.Thread):
    ####
    def log_a_msg(self, msg, loglevel):
          self.logger_queue.put(dict({"msg": msg, "type": loglevel, "loggername": self.name}))
-
-   ####
-   # send_email()
-   ####
-   def send_email(self, recipient, userid, messagetype, tasknr, body, messageid):
-      self.sender_queue.put(dict({"recipient": recipient, "UserId": userid ,"message_type": messagetype, "Task": tasknr, "Body": body, "MessageId": messageid}))
 
    ####
    # increment_db_statcounter()
@@ -152,7 +147,7 @@ class mailFetcher (threading.Thread):
       # the new user has now been added to the database. Next we need
       # to send him an email with the first task.
       # NOTE: messageid is empty, cause this will be sent out by the welcome message!
-      self.send_email(user_email, "", "Task", "1", "", "")
+      common.send_email(self.sender_queue, user_email, "", "Task", "1", "", "")
 
       # read back the new users UserId and create a directory for putting his
       # submissions in:
@@ -229,8 +224,8 @@ class mailFetcher (threading.Thread):
       logmsg = 'The user has a question, please take care of that!'
       self.log_a_msg(logmsg, "DEBUG")
 
-      self.send_email(user_email, "", "Question", "", "", "")
-      self.send_email(self.admin_mail, "", "QFwd", "", mail, messageid)
+      common.send_email(self.sender_queue, user_email, "", "Question", "", "", "")
+      common.send_email(self.sender_queue, self.admin_mail, "", "QFwd", "", mail, messageid)
 
       self.increment_db_statcounter(cur, con, 'nr_questions_received')
 
@@ -324,17 +319,17 @@ class mailFetcher (threading.Thread):
                   else:
                      logmsg = 'Given Task number is higher than actual Number of Tasks!'
                      self.log_a_msg(logmsg, "DEBUG")
-                     self.send_email(user_email, "", "InvalidTask", "", "", messageid)
+                     common.send_email(self.sender_queue, user_email, "", "InvalidTask", "", "", messageid)
                elif re.search('[Qq][Uu][Ee][Ss][Tt][Ii][Oo][Nn]', mail_subject):
                   self.a_question_was_asked(cur, con, user_email, mail, messageid)
                else:
                   logmsg = 'Got a kind of message I do not understand. Sending a usage mail...' 
                   self.log_a_msg(logmsg, "DEBUG")
-                  self.send_email(user_email, "", "Usage", "", "", messageid)
+                  common.send_email(self.sender_queue, user_email, "", "Usage", "", "", messageid)
 
             else:
                self.add_new_user(user_name, user_email, cur, con)
-               self.send_email(user_email, "", "Welcome", "", "", messageid)
+               common.send_email(self.sender_queue, user_email, "", "Welcome", "", "", messageid)
 
          try:
             m.close()
