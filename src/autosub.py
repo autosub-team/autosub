@@ -9,7 +9,7 @@
 import threading, queue
 import email, getpass, imaplib, os, time
 import sqlite3 as lite
-import fetcher, worker, sender, logger
+import fetcher, worker, sender, logger, generator
 import optparse
 import signal
 import logging
@@ -27,6 +27,7 @@ exit_flag = 0
 job_queue = queue.Queue(200)
 sender_queue = queue.Queue(200)
 logger_queue = queue.Queue(200)
+gen_queue = queue.Queue(200)
 
 #Before we do anything else: start the logger thread, so we can log whats going on
 logger_t = logger.autosubLogger(threadID, "logger", logger_queue)#, logging.DEBUG)
@@ -64,6 +65,12 @@ fetcher_t = fetcher.mailFetcher(threadID, "fetcher", job_queue, sender_queue, au
 fetcher_t.daemon = True # make the fetcher thread a daemon, this way the main
                         # will clean it up before terminating!
 fetcher_t.start()
+threadID += 1
+
+generator_t = generator.taskGenerator(threadID, "generator", gen_queue, sender_queue, logger_queue)
+generator_t.daemon = True # make the fetcher thread a daemon, this way the main
+                          # will clean it up before terminating!
+generator_t.start()
 threadID += 1
 
 msg_config = "Used config-file: " + opts.configfile
