@@ -98,7 +98,7 @@ class mailSender (threading.Thread):
       while True:
          next_send_msg = self.sender_queue.get(True) #blocking wait on sender_queue
 
-         con = lite.connect('autosub.db')
+         con = lite.connect('semester.db')
          cur = con.cursor()
 
          attachments = ''

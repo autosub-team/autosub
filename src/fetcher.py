@@ -79,7 +79,7 @@ class mailFetcher (threading.Thread):
    # if non-existent --> create them
    ####
    def init_ressources(self):
-      cur,con = self.connect_to_db('autosub.db')
+      cur,con = self.connect_to_db('semester.db')
 
       # ... and check whether the Users table exists. If not: create it
       cur.execute("SELECT name FROM sqlite_master WHERE type == 'table' AND name = 'Users';")
@@ -277,7 +277,7 @@ class mailFetcher (threading.Thread):
       # This thread is running as a daemon thread, this is the while(1) loop that is running until
       # the thread is stopped by the main thread
       while True:
-         cur,con = self.connect_to_db('autosub.db')
+         cur,con = self.connect_to_db('semester.db')
 
          m = self.connect_to_imapserver()
 
