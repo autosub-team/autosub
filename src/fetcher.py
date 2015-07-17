@@ -13,12 +13,13 @@ import datetime
 import common
 
 class mailFetcher (threading.Thread):
-   def __init__(self, threadID, name, job_queue, sender_queue, autosub_user, autosub_passwd, autosub_imapserver, logger_queue, numTasks):
+   def __init__(self, threadID, name, job_queue, sender_queue, gen_queue, autosub_user, autosub_passwd, autosub_imapserver, logger_queue, numTasks):
       threading.Thread.__init__(self)
       self.threadID = threadID
       self.name = name
       self.job_queue = job_queue
       self.sender_queue = sender_queue
+      self.gen_queue = gen_queue
       self.autosub_user = autosub_user
       self.autosub_pwd = autosub_passwd
       self.imapserver = autosub_imapserver
@@ -73,6 +74,29 @@ class mailFetcher (threading.Thread):
          logmsg = "Directory already exists: " + directory
          self.log_a_msg(logmsg, "WARNING")
 
+   ####
+   #
+   ####
+   def check_and_init_db_table(self, cur, con, tablename, fields):
+      # ... do the same for the UserTasks table
+      sqlcmd = "SELECT name FROM sqlite_master WHERE type == 'table' AND name = '" + tablename + "';"
+      cur.execute(sqlcmd)
+      res = cur.fetchall()
+      if res:
+         logmsg = 'table ' + tablename +'exists'
+         self.log_a_msg(logmsg, "DEBUG")
+         #TODO: in this case, we might want to check if one entry per task is already there, and add new
+         #      empty entries in case a task does not have one. This is only a problem, if the number of
+         #      tasks in the config file is changed AFTER the TaskStats table has been changed!
+         return 0
+      else:
+         logmsg = 'table ' + tablename +'does not exist'
+         self.log_a_msg(logmsg, "DEBUG")
+
+         sqlcmd = "CREATE TABLE " + tablename + "(" + fields + ");"
+         cur.execute(sqlcmd)
+         con.commit()
+         return 1
 
    ####
    # Check if all databases, tables, etc. are available, or if they have to be created.
@@ -81,52 +105,22 @@ class mailFetcher (threading.Thread):
    def init_ressources(self):
       cur,con = self.connect_to_db('semester.db')
 
-      # ... and check whether the Users table exists. If not: create it
-      cur.execute("SELECT name FROM sqlite_master WHERE type == 'table' AND name = 'Users';")
-      res = cur.fetchall()
-      if res:
-         logmsg = 'table Users exists'
-         self.log_a_msg(logmsg, "DEBUG")
-      else:
-         logmsg = 'table Users does not exist'
-         self.log_a_msg(logmsg, "DEBUG")
-         con.execute("CREATE TABLE Users(UserId INTEGER PRIMARY KEY AUTOINCREMENT, Name TEXT, email TEXT, first_mail INT, last_done INT, current_task INT)")
-
-      # ... do the same for the Task_Stats table
-      cur.execute("SELECT name FROM sqlite_master WHERE type == 'table' AND name = 'TaskStats';")
-      res = cur.fetchall()
-      if res:
-         logmsg = 'table TaskStats exists'
-         self.log_a_msg(logmsg, "DEBUG")
-         #TODO: in this case, we might want to check if one entry per task is already there, and add new
-         #      empty entries in case a task does not have one. This is only a problem, if the number of
-         #      tasks in the config file is changed AFTER the TaskStats table has been changed!
-      else:
-         logmsg = 'table TaskStats does not exist'
-         self.log_a_msg(logmsg, "DEBUG")
-
-         con.execute("CREATE TABLE TaskStats(TaskId INTEGER PRIMARY KEY, nr_submissions INT, nr_successful INT)")
+      self.check_and_init_db_table(cur, con, "Users", "UserId INTEGER PRIMARY KEY AUTOINCREMENT, Name TEXT, email TEXT, first_mail INT, last_done INT, current_task INT")
+      ret = self.check_and_init_db_table(cur, con, "TaskStats", "TaskId INTEGER PRIMARY KEY, nr_submissions INT, nr_successful INT")
+      if ret:
          for t in range (1, self.numTasks+1):
             sql_cmd="INSERT INTO TaskStats (TaskId, nr_submissions, nr_successful) VALUES("+ str(t) + ", 0, 0);"
             cur.execute(sql_cmd);
          con.commit();
 
-      # ... do the same for the StatCounters table
-      cur.execute("SELECT name FROM sqlite_master WHERE type == 'table' AND name = 'StatCounters';")
-      res = cur.fetchall()
-      if res:
-         logmsg = 'table StatCounters exists'
-         self.log_a_msg(logmsg, "DEBUG")
-      else:
-         logmsg = 'table StatCounters does not exist'
-         self.log_a_msg(logmsg, "DEBUG")
-
-         con.execute("CREATE TABLE StatCounters(CounterId INTEGER PRIMARY KEY AUTOINCREMENT, Name TEXT, value INT)")
-
+      ret = self.check_and_init_db_table(cur, con, "StatCounters", "CounterId INTEGER PRIMARY KEY AUTOINCREMENT, Name TEXT, value INT")
+      if ret:
          # add the stat counter entries and initialize them to 0:
          self.init_db_statvalue(cur, con, 'nr_mails_fetched', 0)
          self.init_db_statvalue(cur, con, 'nr_mails_sent', 0)
          self.init_db_statvalue(cur, con, 'nr_questions_received', 0)
+
+      ret = self.check_and_init_db_table(cur, con, "UserTasks", "uniqeID INTEGER PRIMARY KEY AUTOINCREMENT, TaskNr INT, UserId INT, TaskParameters TEXT, TaskDescription TEXT, TaskAttachments TEXT")
 
       self.check_dir_mkdir("users")
 
@@ -166,8 +160,13 @@ class mailFetcher (threading.Thread):
       if str(res[0]) != 'None':
          logmsg="Calling Generator Script: " + str(res[0])
          self.log_a_msg(logmsg, "DEBUG")
-
-      common.send_email(self.sender_queue, user_email, userid, "Task", "1", "", "")
+         logmsg="UserID " + userid + ",UserEmail " + user_email 
+         self.log_a_msg(logmsg, "DEBUG")
+         self.gen_queue.put(dict({"UserId": userid, "UserEmail": user_email, "TaskNr": "1", "MessageId": ""}))
+      else:
+         # If there is no generator script, we assume, that there is a static description.txt
+         # which shall be used.
+         common.send_email(self.sender_queue, user_email, userid, "Task", "1", "", "")
 
 
    ####

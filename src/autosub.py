@@ -61,7 +61,7 @@ sender_t.daemon = True # make the sender thread a daemon, this way the main
 sender_t.start()
 threadID += 1
 
-fetcher_t = fetcher.mailFetcher(threadID, "fetcher", job_queue, sender_queue, autosub_user, autosub_passwd, imapserver, logger_queue, numTasks)
+fetcher_t = fetcher.mailFetcher(threadID, "fetcher", job_queue, sender_queue, gen_queue, autosub_user, autosub_passwd, imapserver, logger_queue, numTasks)
 fetcher_t.daemon = True # make the fetcher thread a daemon, this way the main
                         # will clean it up before terminating!
 fetcher_t.start()
