@@ -26,11 +26,15 @@ class taskGenerator (threading.Thread):
          next_gen_msg = self.gen_queue.get(True) #blocking wait on gen_queue
 
          scriptpath = "tasks/task" + str(next_gen_msg.get('TaskNr')) + "/generator.sh"
-         command = "sh "+scriptpath+" " + str(next_gen_msg.get('UserId')) + " " + str(next_gen_msg.get('TaskNr')) + " >> autosub.stdout 2>>autosub.stderr"
+#         command = "cd "+ scriptpath + ">> autosub.stdout 2>>autosub.stderr"
+#         test_res = os.system(command)
+         command = "sh "+ scriptpath + " " + str(next_gen_msg.get('UserId')) + " " + str(next_gen_msg.get('TaskNr')) + "  >> autosub.stdout 2>>autosub.stderr"
          test_res = os.system(command)
          if test_res:
             logmsg = "Failed to call generator script, return value: " + str(test_res)
             self.log_a_msg(logmsg, "DEBUG")
+#         command = "cd - >> autosub.stdout 2>>autosub.stderr"
+#         test_res = os.system(command)
 
          logmsg = "Generated individual task for user/tasknr:" + str(next_gen_msg.get('UserId')) + "/" + str(next_gen_msg.get('TaskNr'))
          self.log_a_msg(logmsg, "DEBUG")
