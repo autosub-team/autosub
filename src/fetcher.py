@@ -13,14 +13,14 @@ import datetime
 import common
 
 class mailFetcher (threading.Thread):
-   def __init__(self, threadID, name, job_queue, sender_queue, autosub_mail, autosub_passwd, autosub_imapserver, logger_queue, numTasks):
+   def __init__(self, threadID, name, job_queue, sender_queue, autosub_user, autosub_passwd, autosub_imapserver, logger_queue, numTasks):
       threading.Thread.__init__(self)
       self.threadID = threadID
       self.name = name
       self.job_queue = job_queue
       self.sender_queue = sender_queue
-      self.gmail_user = autosub_mail
-      self.gmail_pwd = autosub_passwd
+      self.autosub_user = autosub_user
+      self.autosub_pwd = autosub_passwd
       self.imapserver = autosub_imapserver
       self.logger_queue = logger_queue
       self.admin_mail = "andi.platschek@gmail.com"
@@ -162,9 +162,10 @@ class mailFetcher (threading.Thread):
       curc.execute(sql_cmd);
       res = curc.fetchone();
       conc.close() 
-     
-      logmsg="RES: " + res[0] 
-      self.log_a_msg(logmsg, "DEBUG")
+    
+      if str(res[0]) != 'None':
+         logmsg="Calling Generator Script: " + str(res[0])
+         self.log_a_msg(logmsg, "DEBUG")
 
       common.send_email(self.sender_queue, user_email, userid, "Task", "1", "", "")
 
@@ -248,7 +249,7 @@ class mailFetcher (threading.Thread):
       try:
          # connecting to the gmail imap server
          m = imaplib.IMAP4_SSL(self.imapserver)
-         m.login(self.gmail_user,self.gmail_pwd)
+         m.login(self.autosub_user,self.autosub_pwd)
       except imaplib.IMAP4.abort:
          logmsg = "Login to server was aborted (probably a server-side problem). Trying to connect again ..."
          self.log_a_msg(logmsg, "ERROR")
@@ -283,6 +284,10 @@ class mailFetcher (threading.Thread):
    ####
    def run(self):
       self.log_a_msg("Starting Mail Fetcher Thread!", "INFO")
+
+      logmsg = "Imapserver: '" + self.imapserver + "'"
+      self.log_a_msg(logmsg, "DEBUG")
+
 
       self.init_ressources()
 

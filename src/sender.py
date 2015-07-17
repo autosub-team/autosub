@@ -16,11 +16,12 @@ from email import encoders
 import sqlite3 as lite
 
 class mailSender (threading.Thread):
-   def __init__(self, threadID, name, sender_queue, autosub_mail, autosub_passwd, autosub_smtpserver, logger_queue, numTasks):
+   def __init__(self, threadID, name, sender_queue, autosub_mail, autosub_user, autosub_passwd, autosub_smtpserver, logger_queue, numTasks):
       threading.Thread.__init__(self)
       self.threadID = threadID
       self.name = name
       self.sender_queue = sender_queue
+      self.autosub_user = autosub_user
       self.gmail_user = autosub_mail
       self.gmail_pwd = autosub_passwd
       self.smtpserver = autosub_smtpserver
@@ -229,7 +230,7 @@ class mailSender (threading.Thread):
             server = smtplib.SMTP(self.smtpserver, 587) # port 465 doesn't seem to work!
             server.ehlo()
             server.starttls()
-            server.login(self.gmail_user, self.gmail_pwd)
+            server.login(self.autosub_user, self.gmail_pwd)
             server.sendmail(self.gmail_user, str(next_send_msg.get('recipient')), msg.as_string())
             server.close()
             self.log_a_msg("Successfully sent an e-mail!", "DEBUG")
