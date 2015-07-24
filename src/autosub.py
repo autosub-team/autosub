@@ -19,6 +19,124 @@ def sig_handler(signum, frame):
    logger_queue.put(dict({"msg": "Shutting down autosub...", "type": "INFO", "loggername": "Main"}))
    exit_flag = 1
 
+
+########################################
+####
+# log_a_msg()
+####
+def log_a_msg(msg, loglevel):
+      logger_queue.put(dict({"msg": msg, "type": loglevel, "loggername": "autosub.py"}))
+
+####
+#  connect_to_db()
+####
+def connect_to_db(dbname):
+   # connect to sqlite database ...
+   try:
+      con = lite.connect(dbname)
+   except:
+      logmsg = "Failed to connect to database: " + dbname
+      log_a_msg(logmsg, "ERROR")
+
+   cur = con.cursor()
+   return cur, con
+
+####
+#
+####
+def check_and_init_db_table(cur, con, tablename, fields):
+   sqlcmd = "SELECT name FROM sqlite_master WHERE type == 'table' AND name = '" + tablename + "';"
+   cur.execute(sqlcmd)
+   res = cur.fetchall()
+   if res:
+      logmsg = 'table ' + tablename +'exists'
+      log_a_msg(logmsg, "DEBUG")
+      #TODO: in this case, we might want to check if one entry per task is already there, and add new
+      #      empty entries in case a task does not have one. This is only a problem, if the number of
+      #      tasks in the config file is changed AFTER the TaskStats table has been changed!
+      return 0
+   else:
+      logmsg = 'table ' + tablename +'does not exist'
+      log_a_msg(logmsg, "DEBUG")
+
+      sqlcmd = "CREATE TABLE " + tablename + "(" + fields + ");"
+      cur.execute(sqlcmd)
+      con.commit()
+      return 1
+
+####
+# init_deb_statvalue()
+#
+# Add entries for the statistics counters, and initialize them to 0.
+####
+def init_db_statvalue(cur, con, countername, value):
+      sql_cmd="INSERT INTO StatCounters (CounterId, Name, value) VALUES(NULL, '" + countername + "', " + str(value) + ");"
+      cur.execute(sql_cmd);
+      con.commit();
+
+def check_dir_mkdir(directory): 
+   if not os.path.exists(directory):
+      os.mkdir(directory)
+      logmsg = "Created directory: " + directory
+      log_a_msg(logmsg, "DEBUG")
+   else:
+      logmsg = "Directory already exists: " + directory
+      log_a_msg(logmsg, "WARNING")
+
+####
+# load_specialmessage_to_db()
+####
+def load_specialmessage_to_db(cur, con, msgname, filename):
+     with open (filename, "r") as smfp:
+        data=smfp.read()
+     smfp.close()
+     sql_cmd="INSERT INTO SpecialMessages (EventName, EventText) VALUES('" + msgname + "', '" + data + "');"
+     cur.execute(sql_cmd);
+     con.commit();
+
+####
+# Check if all databases, tables, etc. are available, or if they have to be created.
+# if non-existent --> create them
+####
+def init_ressources(numTasks):
+   cur,con = connect_to_db('semester.db') 
+
+   check_and_init_db_table(cur, con, "Users", "UserId INTEGER PRIMARY KEY AUTOINCREMENT, Name TEXT, email TEXT, first_mail INT, last_done INT, current_task INT")
+   ret = check_and_init_db_table(cur, con, "TaskStats", "TaskId INTEGER PRIMARY KEY, nr_submissions INT, nr_successful INT")
+   if ret:
+      for t in range (1, numTasks+1):
+         sql_cmd="INSERT INTO TaskStats (TaskId, nr_submissions, nr_successful) VALUES("+ str(t) + ", 0, 0);"
+         cur.execute(sql_cmd);
+      con.commit();
+
+   ret = check_and_init_db_table(cur, con, "StatCounters", "CounterId INTEGER PRIMARY KEY AUTOINCREMENT, Name TEXT, value INT")
+   if ret:
+      # add the stat counter entries and initialize them to 0:
+      init_db_statvalue(cur, con, 'nr_mails_fetched', 0)
+      init_db_statvalue(cur, con, 'nr_mails_sent', 0)
+      init_db_statvalue(cur, con, 'nr_questions_received', 0)
+
+   ret = check_and_init_db_table(cur, con, "UserTasks", "uniqeID INTEGER PRIMARY KEY AUTOINCREMENT, TaskNr INT, UserId INT, TaskParameters TEXT, TaskDescription TEXT, TaskAttachments TEXT")
+
+   check_dir_mkdir("users")
+   con.close() # close here, since we re-open the databse in the while(True) loop
+
+   cur,con = connect_to_db('course.db')
+   ret = check_and_init_db_table(cur, con, "SpecialMessages", "EventName TEXT PRIMARY KEY, EventText TEXT")
+   if ret: # that table did not exists, therefore we use the .txt files to initialize it!
+      load_specialmessage_to_db(cur, con, 'WELCOME', 'welcome.txt')
+      load_specialmessage_to_db(cur, con, 'USAGE', 'usage.txt')
+      load_specialmessage_to_db(cur, con, 'QUESTION', 'question.txt')
+      load_specialmessage_to_db(cur, con, 'INVALID', 'invalidtask.txt')
+      load_specialmessage_to_db(cur, con, 'CONGRATS', 'congratulations.txt')
+
+   ret = check_and_init_db_table(cur, con, "TaskConfiguration", "TaskNr INT PRIMARY KEY, TaskStart INT, TaskDeadline INT, PathToTask TEXT, GeneratorExecutable TEXT, TestExecutable TEXT, Score INT, TaskOperator TEXT")
+
+   ret = check_and_init_db_table(cur, con, "GeneralConfig", "ConfigItem Text PRIMARY KEY, Content TEXT")
+   #TODO: Init those general config values
+   con.close()
+
+
 ########################################
 threadID = 1
 worker_t = []
@@ -55,6 +173,8 @@ logger_t.start()
 threadID += 1
 
 signal.signal(signal.SIGUSR1, sig_handler)
+
+init_ressources(numTasks)
 
 sender_t = sender.mailSender(threadID, "sender", sender_queue, autosub_mail, autosub_user, autosub_passwd, smtpserver, logger_queue, numTasks)
 sender_t.daemon = True # make the sender thread a daemon, this way the main

@@ -42,25 +42,6 @@ class mailFetcher (threading.Thread):
       con.commit();
 
    ####
-   # init_deb_statvalue()
-   #
-   # Add entries for the statistics counters, and initialize them to 0.
-   ####
-   def init_db_statvalue(self, cur, con, countername, value):
-         sql_cmd="INSERT INTO StatCounters (CounterId, Name, value) VALUES(NULL, '" + countername + "', " + str(value) + ");"
-         cur.execute(sql_cmd);
-         con.commit();
-
-
-   def load_specialmessage_to_db(self, cur, con, msgname, filename):
-        with open (filename, "r") as smfp:
-           data=smfp.read()
-        smfp.close()
-        sql_cmd="INSERT INTO SpecialMessages (EventName, EventText) VALUES('" + msgname + "', '" + data + "');"
-        cur.execute(sql_cmd);
-        con.commit();
-
-   ####
    #  connect_to_db()
    ####
    def connect_to_db(self, dbname):
@@ -82,69 +63,6 @@ class mailFetcher (threading.Thread):
       else:
          logmsg = "Directory already exists: " + directory
          self.log_a_msg(logmsg, "WARNING")
-
-   ####
-   #
-   ####
-   def check_and_init_db_table(self, cur, con, tablename, fields):
-      # ... do the same for the UserTasks table
-      sqlcmd = "SELECT name FROM sqlite_master WHERE type == 'table' AND name = '" + tablename + "';"
-      cur.execute(sqlcmd)
-      res = cur.fetchall()
-      if res:
-         logmsg = 'table ' + tablename +'exists'
-         self.log_a_msg(logmsg, "DEBUG")
-         #TODO: in this case, we might want to check if one entry per task is already there, and add new
-         #      empty entries in case a task does not have one. This is only a problem, if the number of
-         #      tasks in the config file is changed AFTER the TaskStats table has been changed!
-         return 0
-      else:
-         logmsg = 'table ' + tablename +'does not exist'
-         self.log_a_msg(logmsg, "DEBUG")
-
-         sqlcmd = "CREATE TABLE " + tablename + "(" + fields + ");"
-         cur.execute(sqlcmd)
-         con.commit()
-         return 1
-
-   ####
-   # Check if all databases, tables, etc. are available, or if they have to be created.
-   # if non-existent --> create them
-   ####
-   def init_ressources(self):
-      cur,con = self.connect_to_db('semester.db')
-
-      self.check_and_init_db_table(cur, con, "Users", "UserId INTEGER PRIMARY KEY AUTOINCREMENT, Name TEXT, email TEXT, first_mail INT, last_done INT, current_task INT")
-      ret = self.check_and_init_db_table(cur, con, "TaskStats", "TaskId INTEGER PRIMARY KEY, nr_submissions INT, nr_successful INT")
-      if ret:
-         for t in range (1, self.numTasks+1):
-            sql_cmd="INSERT INTO TaskStats (TaskId, nr_submissions, nr_successful) VALUES("+ str(t) + ", 0, 0);"
-            cur.execute(sql_cmd);
-         con.commit();
-
-      ret = self.check_and_init_db_table(cur, con, "StatCounters", "CounterId INTEGER PRIMARY KEY AUTOINCREMENT, Name TEXT, value INT")
-      if ret:
-         # add the stat counter entries and initialize them to 0:
-         self.init_db_statvalue(cur, con, 'nr_mails_fetched', 0)
-         self.init_db_statvalue(cur, con, 'nr_mails_sent', 0)
-         self.init_db_statvalue(cur, con, 'nr_questions_received', 0)
-
-      ret = self.check_and_init_db_table(cur, con, "UserTasks", "uniqeID INTEGER PRIMARY KEY AUTOINCREMENT, TaskNr INT, UserId INT, TaskParameters TEXT, TaskDescription TEXT, TaskAttachments TEXT")
-
-      self.check_dir_mkdir("users")
-      con.close() # close here, since we re-open the databse in the while(True) loop
-
-      cur,con = self.connect_to_db('course.db')
-      ret = self.check_and_init_db_table(cur, con, "SpecialMessages", "EventName TEXT PRIMARY KEY, EventText TEXT")
-      if ret: # that table did not exists, therefore we use the .txt files to initialize it!
-         self.load_specialmessage_to_db(cur, con, 'WELCOME', 'welcome.txt')
-         self.load_specialmessage_to_db(cur, con, 'USAGE', 'usage.txt')
-         self.load_specialmessage_to_db(cur, con, 'QUESTION', 'question.txt')
-         self.load_specialmessage_to_db(cur, con, 'INVALID', 'invalidtask.txt')
-         self.load_specialmessage_to_db(cur, con, 'CONGRATS', 'congratulations.txt')
-
-      ret = self.check_and_init_db_table(cur, con, "TaskConfiguration", "TaskNr INT PRIMARY KEY, TaskStart INT, TaskDeadline INT, PathToTask TEXT, GeneratorExecutable TEXT, TestExecutable TEXT, Score INT, TaskOperator TEXT")
-      con.close() 
 
    ####
    # If a new user registers, add_new_user() is used to add the necessary entries
@@ -306,9 +224,6 @@ class mailFetcher (threading.Thread):
 
       logmsg = "Imapserver: '" + self.imapserver + "'"
       self.log_a_msg(logmsg, "DEBUG")
-
-
-      self.init_ressources()
 
       # This thread is running as a daemon thread, this is the while(1) loop that is running until
       # the thread is stopped by the main thread
