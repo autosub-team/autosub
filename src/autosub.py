@@ -159,6 +159,7 @@ smtpserver = config.get('smtpserver', 'servername')
 numThreads = config.getint('general', 'num_workers')
 numTasks = config.getint('challenge', 'num_tasks')
 queueSize = config.getint('general', 'queue_size')
+poll_period = config.getint('general', 'poll_period')
 
 job_queue = queue.Queue(queueSize)
 sender_queue = queue.Queue(queueSize)
@@ -167,7 +168,7 @@ gen_queue = queue.Queue(queueSize)
 
 #Before we do anything else: start the logger thread, so we can log whats going on
 logger_t = logger.autosubLogger(threadID, "logger", logger_queue)#, logging.DEBUG)
-logger_t.daemon = True # make the fetcher thread a daemon, this way the main
+logger_t.daemon = True # make the logger thread a daemon, this way the main
                        # will clean it up before terminating!
 logger_t.start()
 threadID += 1
@@ -182,7 +183,7 @@ sender_t.daemon = True # make the sender thread a daemon, this way the main
 sender_t.start()
 threadID += 1
 
-fetcher_t = fetcher.mailFetcher(threadID, "fetcher", job_queue, sender_queue, gen_queue, autosub_user, autosub_passwd, imapserver, logger_queue, numTasks)
+fetcher_t = fetcher.mailFetcher(threadID, "fetcher", job_queue, sender_queue, gen_queue, autosub_user, autosub_passwd, imapserver, logger_queue, numTasks, poll_period)
 fetcher_t.daemon = True # make the fetcher thread a daemon, this way the main
                         # will clean it up before terminating!
 fetcher_t.start()

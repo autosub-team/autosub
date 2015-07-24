@@ -13,7 +13,7 @@ import datetime
 import common
 
 class mailFetcher (threading.Thread):
-   def __init__(self, threadID, name, job_queue, sender_queue, gen_queue, autosub_user, autosub_passwd, autosub_imapserver, logger_queue, numTasks):
+   def __init__(self, threadID, name, job_queue, sender_queue, gen_queue, autosub_user, autosub_passwd, autosub_imapserver, logger_queue, numTasks, poll_period):
       threading.Thread.__init__(self)
       self.threadID = threadID
       self.name = name
@@ -26,6 +26,7 @@ class mailFetcher (threading.Thread):
       self.logger_queue = logger_queue
       self.admin_mail = "andi.platschek@gmail.com"
       self.numTasks = numTasks
+      self.poll_period = poll_period
 
    ####
    # log_a_msg()
@@ -299,7 +300,7 @@ class mailFetcher (threading.Thread):
             self.log_a_msg(logmsg, "INFO")
    
          con.close() # close connection to sqlite db, so others can use it as well.
-         time.sleep(60) # it's enough to check e-mails every minute
+         time.sleep(self.poll_period) # it's enough to check e-mails every minute
 
       logmsg = "Exiting fetcher - this should NEVER happen!"
       self.log_a_msg(logmsg, "ERROR")
