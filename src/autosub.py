@@ -24,17 +24,6 @@ threadID = 1
 worker_t = []
 exit_flag = 0
 
-job_queue = queue.Queue(200)
-sender_queue = queue.Queue(200)
-logger_queue = queue.Queue(200)
-gen_queue = queue.Queue(200)
-
-#Before we do anything else: start the logger thread, so we can log whats going on
-logger_t = logger.autosubLogger(threadID, "logger", logger_queue)#, logging.DEBUG)
-logger_t.daemon = True # make the fetcher thread a daemon, this way the main
-                       # will clean it up before terminating!
-logger_t.start()
-threadID += 1
 
 parser = optparse.OptionParser()
 parser.add_option("-c", "--config-file", dest="configfile", type="string",
@@ -52,6 +41,19 @@ autosub_mail = config.get('imapserver', 'email')
 smtpserver = config.get('smtpserver', 'servername')
 numThreads = config.getint('general', 'num_workers')
 numTasks = config.getint('challenge', 'num_tasks')
+queueSize = config.getint('general', 'queue_size')
+
+job_queue = queue.Queue(queueSize)
+sender_queue = queue.Queue(queueSize)
+logger_queue = queue.Queue(queueSize)
+gen_queue = queue.Queue(queueSize)
+
+#Before we do anything else: start the logger thread, so we can log whats going on
+logger_t = logger.autosubLogger(threadID, "logger", logger_queue)#, logging.DEBUG)
+logger_t.daemon = True # make the fetcher thread a daemon, this way the main
+                       # will clean it up before terminating!
+logger_t.start()
+threadID += 1
 
 signal.signal(signal.SIGUSR1, sig_handler)
 
