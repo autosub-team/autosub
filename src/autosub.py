@@ -84,6 +84,15 @@ def check_dir_mkdir(directory):
       log_a_msg(logmsg, "WARNING")
 
 ####
+# set_general_config_param()
+####
+def set_general_config_param(cur, con, configitem, content):
+     sql_cmd="INSERT INTO GeneralConfig (ConfigItem, Content) VALUES('" + configitem + "', '" + content + "');"
+     cur.execute(sql_cmd);
+     con.commit();
+
+
+####
 # load_specialmessage_to_db()
 ####
 def load_specialmessage_to_db(cur, con, msgname, filename):
@@ -98,7 +107,7 @@ def load_specialmessage_to_db(cur, con, msgname, filename):
 # Check if all databases, tables, etc. are available, or if they have to be created.
 # if non-existent --> create them
 ####
-def init_ressources(numTasks):
+def init_ressources(numThreads, numTasks):
    cur,con = connect_to_db('semester.db') 
 
    check_and_init_db_table(cur, con, "Users", "UserId INTEGER PRIMARY KEY AUTOINCREMENT, Name TEXT, email TEXT, first_mail INT, last_done INT, current_task INT")
@@ -133,7 +142,9 @@ def init_ressources(numTasks):
    ret = check_and_init_db_table(cur, con, "TaskConfiguration", "TaskNr INT PRIMARY KEY, TaskStart INT, TaskDeadline INT, PathToTask TEXT, GeneratorExecutable TEXT, TestExecutable TEXT, Score INT, TaskOperator TEXT")
 
    ret = check_and_init_db_table(cur, con, "GeneralConfig", "ConfigItem Text PRIMARY KEY, Content TEXT")
-   #TODO: Init those general config values
+   if ret: # if that table did not exist, load the defaults given in the configuration file
+      set_general_config_param(cur, con, 'num_workers', str(numThreads))
+      set_general_config_param(cur, con, 'num_tasks', str(numTasks))
    con.close()
 
 
@@ -175,7 +186,7 @@ threadID += 1
 
 signal.signal(signal.SIGUSR1, sig_handler)
 
-init_ressources(numTasks)
+init_ressources(numThreads, numTasks)
 
 sender_t = sender.mailSender(threadID, "sender", sender_queue, autosub_mail, autosub_user, autosub_passwd, smtpserver, logger_queue, numTasks)
 sender_t.daemon = True # make the sender thread a daemon, this way the main
