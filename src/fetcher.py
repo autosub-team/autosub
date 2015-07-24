@@ -52,7 +52,7 @@ class mailFetcher (threading.Thread):
          con.commit();
 
 
-   def read_specialmessage(self, cur, con, msgname, filename):
+   def load_specialmessage_to_db(self, cur, con, msgname, filename):
         with open (filename, "r") as smfp:
            data=smfp.read()
         smfp.close()
@@ -137,11 +137,13 @@ class mailFetcher (threading.Thread):
       cur,con = self.connect_to_db('course.db')
       ret = self.check_and_init_db_table(cur, con, "SpecialMessages", "EventName TEXT PRIMARY KEY, EventText TEXT")
       if ret: # that table did not exists, therefore we use the .txt files to initialize it!
-         self.read_specialmessage(cur, con, 'WELCOME', 'welcome.txt')
-         self.read_specialmessage(cur, con, 'USAGE', 'usage.txt')
-         self.read_specialmessage(cur, con, 'QUESTION', 'question.txt')
-         self.read_specialmessage(cur, con, 'INVALID', 'invalidtask.txt')
-         self.read_specialmessage(cur, con, 'CONGRATS', 'congratulations.txt')
+         self.load_specialmessage_to_db(cur, con, 'WELCOME', 'welcome.txt')
+         self.load_specialmessage_to_db(cur, con, 'USAGE', 'usage.txt')
+         self.load_specialmessage_to_db(cur, con, 'QUESTION', 'question.txt')
+         self.load_specialmessage_to_db(cur, con, 'INVALID', 'invalidtask.txt')
+         self.load_specialmessage_to_db(cur, con, 'CONGRATS', 'congratulations.txt')
+
+      ret = self.check_and_init_db_table(cur, con, "TaskConfiguration", "TaskNr INT PRIMARY KEY, TaskStart INT, TaskDeadline INT, PathToTask TEXT, GeneratorExecutable TEXT, TestExecutable TEXT, Score INT, TaskOperator TEXT")
       con.close() 
 
    ####

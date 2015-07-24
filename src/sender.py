@@ -35,6 +35,21 @@ class mailSender (threading.Thread):
          self.logger_queue.put(dict({"msg": msg, "type": loglevel, "loggername": self.name}))
 
    ####
+   #  connect_to_db()
+   ####
+   def connect_to_db(self, dbname):
+      # connect to sqlite database ...
+      try:
+         con = lite.connect(dbname)
+      except:
+         logmsg = "Failed to connect to database: " + dbname
+         self.log_a_msg(logmsg, "ERROR")
+
+      cur = con.cursor()
+      return cur, con
+
+
+   ####
    # increment_db_statcounter()
    ####
    def increment_db_statcounter(self, cur, con, countername):
@@ -81,6 +96,17 @@ class mailSender (threading.Thread):
          con.commit();
 
    ####
+   #
+   ####
+   def read_specialmessage(self, msgname):
+      curc, conc = self.connect_to_db('course.db')
+      sqlcmd = "SELECT EventText FROM SpecialMessages WHERE EventName=='" + msgname + "';"
+      curc.execute(sqlcmd)
+      res = curc.fetchone();
+      conc.close()
+      return str(res[0])
+
+   ####
    # backup_message()
    #
    # Just a stub, in the future, the message with the messageid shall be moved
@@ -99,8 +125,7 @@ class mailSender (threading.Thread):
       while True:
          next_send_msg = self.sender_queue.get(True) #blocking wait on sender_queue
 
-         con = lite.connect('semester.db')
-         cur = con.cursor()
+         cur, con = self.connect_to_db('semester.db')
 
          attachments = ''
 
@@ -121,8 +146,7 @@ class mailSender (threading.Thread):
          if (str(next_send_msg.get('message_type')) == "Task"):
             if (self.numTasks+1 == int(TaskNr)): # last task solved!
                msg['Subject'] = "Congratulations!" 
-               path_to_msg = "congratulations.txt"
-               has_text = 1;
+               TEXT = self.read_specialmessage('CONGRATS')
 
                self.user_set_current_task(cur, con, TaskNr, str(next_send_msg.get('UserId')))
                self.check_and_set_last_done(cur, con, next_send_msg.get('UserId'))
@@ -176,18 +200,15 @@ class mailSender (threading.Thread):
             # description was sent to the user!
          elif (str(next_send_msg.get('message_type')) == "InvalidTask"):
             msg['Subject'] = "Invalid Task Number"
-            path_to_msg = "invalidtask.txt"
-            has_text = 1;
+            TEXT = self.read_specialmessage('INVALID')
             self.backup_message(messageid)
          elif (str(next_send_msg.get('message_type')) == "Usage"):
             msg['Subject'] = "Autosub Usage"
-            path_to_msg = "usage.txt"
-            has_text = 1;
+            TEXT = self.read_specialmessage('USAGE')
             self.backup_message(messageid)
          elif (str(next_send_msg.get('message_type')) == "Question"):
             msg['Subject'] = "Question received"
-            path_to_msg = "question.txt"
-            has_text = 1;
+            TEXT = self.read_specialmessage('QUESTION')
             self.backup_message(messageid)
          elif (str(next_send_msg.get('message_type')) == "QFwd"):
             orig_mail = next_send_msg.get('Body')
@@ -196,8 +217,7 @@ class mailSender (threading.Thread):
             self.backup_message(messageid)
          elif (str(next_send_msg.get('message_type')) == "Welcome"):
             msg['Subject'] = "Welcome!"
-            path_to_msg = "welcome.txt"
-            has_text = 1;
+            TEXT = self.read_specialmessage('WELCOME')
             self.backup_message(messageid)
          else:
             self.log_a_msg("Unkown Message Type in the sender_queue!","ERROR")
