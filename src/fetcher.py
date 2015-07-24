@@ -51,6 +51,15 @@ class mailFetcher (threading.Thread):
          cur.execute(sql_cmd);
          con.commit();
 
+
+   def read_specialmessage(self, cur, con, msgname, filename):
+        with open (filename, "r") as smfp:
+           data=smfp.read()
+        smfp.close()
+        sql_cmd="INSERT INTO SpecialMessages (EventName, EventText) VALUES('" + msgname + "', '" + data + "');"
+        cur.execute(sql_cmd);
+        con.commit();
+
    ####
    #  connect_to_db()
    ####
@@ -123,8 +132,17 @@ class mailFetcher (threading.Thread):
       ret = self.check_and_init_db_table(cur, con, "UserTasks", "uniqeID INTEGER PRIMARY KEY AUTOINCREMENT, TaskNr INT, UserId INT, TaskParameters TEXT, TaskDescription TEXT, TaskAttachments TEXT")
 
       self.check_dir_mkdir("users")
-
       con.close() # close here, since we re-open the databse in the while(True) loop
+
+      cur,con = self.connect_to_db('course.db')
+      ret = self.check_and_init_db_table(cur, con, "SpecialMessages", "EventName TEXT PRIMARY KEY, EventText TEXT")
+      if ret: # that table did not exists, therefore we use the .txt files to initialize it!
+         self.read_specialmessage(cur, con, 'WELCOME', 'welcome.txt')
+         self.read_specialmessage(cur, con, 'USAGE', 'usage.txt')
+         self.read_specialmessage(cur, con, 'QUESTION', 'question.txt')
+         self.read_specialmessage(cur, con, 'INVALID', 'invalidtask.txt')
+         self.read_specialmessage(cur, con, 'CONGRATS', 'congratulations.txt')
+      con.close() 
 
    ####
    # If a new user registers, add_new_user() is used to add the necessary entries
