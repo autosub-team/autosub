@@ -1,4 +1,4 @@
-########################################################################
+#######################################################################
 # sender.py -- send out e-mails based on the info given by fetcher.py
 #       or worker.py
 #
@@ -16,11 +16,12 @@ from email import encoders
 import sqlite3 as lite
 
 class mailSender (threading.Thread):
-   def __init__(self, threadID, name, sender_queue, autosub_mail, autosub_passwd, autosub_smtpserver, logger_queue, numTasks):
+   def __init__(self, threadID, name, sender_queue, autosub_mail, autosub_user, autosub_passwd, autosub_smtpserver, logger_queue, numTasks):
       threading.Thread.__init__(self)
       self.threadID = threadID
       self.name = name
       self.sender_queue = sender_queue
+      self.autosub_user = autosub_user
       self.gmail_user = autosub_mail
       self.gmail_pwd = autosub_passwd
       self.smtpserver = autosub_smtpserver
@@ -32,6 +33,21 @@ class mailSender (threading.Thread):
    ####
    def log_a_msg(self, msg, loglevel):
          self.logger_queue.put(dict({"msg": msg, "type": loglevel, "loggername": self.name}))
+
+   ####
+   #  connect_to_db()
+   ####
+   def connect_to_db(self, dbname):
+      # connect to sqlite database ...
+      try:
+         con = lite.connect(dbname)
+      except:
+         logmsg = "Failed to connect to database: " + dbname
+         self.log_a_msg(logmsg, "ERROR")
+
+      cur = con.cursor()
+      return cur, con
+
 
    ####
    # increment_db_statcounter()
@@ -80,6 +96,17 @@ class mailSender (threading.Thread):
          con.commit();
 
    ####
+   #
+   ####
+   def read_specialmessage(self, msgname):
+      curc, conc = self.connect_to_db('course.db')
+      sqlcmd = "SELECT EventText FROM SpecialMessages WHERE EventName=='" + msgname + "';"
+      curc.execute(sqlcmd)
+      res = curc.fetchone();
+      conc.close()
+      return str(res[0])
+
+   ####
    # backup_message()
    #
    # Just a stub, in the future, the message with the messageid shall be moved
@@ -98,8 +125,7 @@ class mailSender (threading.Thread):
       while True:
          next_send_msg = self.sender_queue.get(True) #blocking wait on sender_queue
 
-         con = lite.connect('semester.db')
-         cur = con.cursor()
+         cur, con = self.connect_to_db('semester.db')
 
          attachments = ''
 
@@ -120,8 +146,7 @@ class mailSender (threading.Thread):
          if (str(next_send_msg.get('message_type')) == "Task"):
             if (self.numTasks+1 == int(TaskNr)): # last task solved!
                msg['Subject'] = "Congratulations!" 
-               path_to_msg = "congratulations.txt"
-               has_text = 1;
+               TEXT = self.read_specialmessage('CONGRATS')
 
                self.user_set_current_task(cur, con, TaskNr, str(next_send_msg.get('UserId')))
                self.check_and_set_last_done(cur, con, next_send_msg.get('UserId'))
@@ -130,10 +155,17 @@ class mailSender (threading.Thread):
                msg['Subject'] = "Description Task" + TaskNr 
                path_to_msg = "tasks/task" + TaskNr + "/description.txt"
                has_text = 1;
-               path_to_attachments = "tasks/task" + TaskNr + "/attachments"
-               if os.path.exists(path_to_attachments):
-                  attachments = os.listdir(path_to_attachments)
+               logmsg="used sql comand: SELECT TaskAttachments FROM UserTasks WHERE TaskNr == " + TaskNr + " AND UserId == '"+ str(next_send_msg.get('UserId')) + "';"
+               self.log_a_msg(logmsg, "DEBUG");
 
+               sql_cmd="SELECT TaskAttachments FROM UserTasks WHERE TaskNr == " + TaskNr + " AND UserId == '"+ str(next_send_msg.get('UserId')) + "';"
+               cur.execute(sql_cmd)
+               res = cur.fetchone()
+
+               logmsg = "got the following attachments: " + str(res)
+               self.log_a_msg(logmsg, "DEBUG")
+               attachments = str(res[0]).split()
+ 
                self.user_set_current_task(cur, con, TaskNr, str(next_send_msg.get('UserId')))
 
             # we are sending out the description for TaskNr, but we want to
@@ -168,18 +200,15 @@ class mailSender (threading.Thread):
             # description was sent to the user!
          elif (str(next_send_msg.get('message_type')) == "InvalidTask"):
             msg['Subject'] = "Invalid Task Number"
-            path_to_msg = "invalidtask.txt"
-            has_text = 1;
+            TEXT = self.read_specialmessage('INVALID')
             self.backup_message(messageid)
          elif (str(next_send_msg.get('message_type')) == "Usage"):
             msg['Subject'] = "Autosub Usage"
-            path_to_msg = "usage.txt"
-            has_text = 1;
+            TEXT = self.read_specialmessage('USAGE')
             self.backup_message(messageid)
          elif (str(next_send_msg.get('message_type')) == "Question"):
             msg['Subject'] = "Question received"
-            path_to_msg = "question.txt"
-            has_text = 1;
+            TEXT = self.read_specialmessage('QUESTION')
             self.backup_message(messageid)
          elif (str(next_send_msg.get('message_type')) == "QFwd"):
             orig_mail = next_send_msg.get('Body')
@@ -188,8 +217,7 @@ class mailSender (threading.Thread):
             self.backup_message(messageid)
          elif (str(next_send_msg.get('message_type')) == "Welcome"):
             msg['Subject'] = "Welcome!"
-            path_to_msg = "welcome.txt"
-            has_text = 1;
+            TEXT = self.read_specialmessage('WELCOME')
             self.backup_message(messageid)
          else:
             self.log_a_msg("Unkown Message Type in the sender_queue!","ERROR")
@@ -207,13 +235,13 @@ class mailSender (threading.Thread):
          # add some attachments. those are assumed to be located in
          # directory called attachments, the list of the files
          # in that directory was retrieved earlier.
-         for f in attachments:
-            part = MIMEBase('application', "octet-stream")
-            full_f = path_to_attachments + "/" + f
-            part.set_payload( open(full_f,"rb").read() )
-            encoders.encode_base64(part)
-            part.add_header('Content-Disposition', 'attachment; filename="{0}"'.format(os.path.basename(f)))
-            msg.attach(part)
+         if str(attachments) != 'None':
+            for f in attachments:
+               part = MIMEBase('application', "octet-stream")
+               part.set_payload( open(f,"rb").read() )
+               encoders.encode_base64(part)
+               part.add_header('Content-Disposition', 'attachment; filename="{0}"'.format(os.path.basename(f)))
+               msg.attach(part)
 
          logmsg = "Prepared message: \n" + str(msg)
          self.log_a_msg(logmsg, "DEBUG")
@@ -222,7 +250,7 @@ class mailSender (threading.Thread):
             server = smtplib.SMTP(self.smtpserver, 587) # port 465 doesn't seem to work!
             server.ehlo()
             server.starttls()
-            server.login(self.gmail_user, self.gmail_pwd)
+            server.login(self.autosub_user, self.gmail_pwd)
             server.sendmail(self.gmail_user, str(next_send_msg.get('recipient')), msg.as_string())
             server.close()
             self.log_a_msg("Successfully sent an e-mail!", "DEBUG")

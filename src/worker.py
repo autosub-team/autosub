@@ -8,6 +8,7 @@
 import threading
 import os
 import common
+import sqlite3 as lite
 
 class worker (threading.Thread):
    def __init__(self, threadID, name, job_queue, sender_queue, logger_queue):
@@ -24,6 +25,20 @@ class worker (threading.Thread):
    def log_a_msg(self, msg, loglevel):
          self.logger_queue.put(dict({"msg": msg, "type": loglevel, "loggername": self.name}))
 
+   ####
+   #  connect_to_db()
+   ####
+   def connect_to_db(self, dbname):
+      # connect to sqlite database ...
+      try:
+         con = lite.connect(dbname)
+      except:
+         logmsg = "Failed to connect to database: " + dbname
+         self.log_a_msg(logmsg, "ERROR")
+
+      cur = con.cursor()
+      return cur, con
+
    def run(self):
       logmsg = "Starting " + self.name
       self.log_a_msg(logmsg, "INFO")
@@ -39,7 +54,25 @@ class worker (threading.Thread):
              logmsg = self.name + ": got a new job: " + str(TaskNr) + "from the user with id: " + str(UserId)
              self.log_a_msg(logmsg, "INFO")
 
-             scriptpath = "tasks/task" + str(TaskNr) + "/tests.sh"
+             # check if there is a test executble configured in the database -- if not fall back on static
+             # test script.
+             curc, conc = self.connect_to_db('course.db')
+             sql_cmd="SELECT TestExecutable FROM TaskConfiguration WHERE TaskNr == 1"
+             curc.execute(sql_cmd);
+             testname = curc.fetchone();
+    
+             if str(testname[0]) != 'None':
+                sql_cmd="SELECT PathToTask FROM TaskConfiguration WHERE TaskNr == 1"
+                curc.execute(sql_cmd);
+                path = curc.fetchone();
+                scriptpath = str(path[0]) + "/" + str(testname[0])
+             else:
+                scriptpath = "tasks/task" + str(TaskNr) + "/tests.sh"
+             
+             conc.close() 
+
+             logmsg = "Running test script: " + scriptpath 
+             self.log_a_msg(logmsg, "INFO")
              command = "sh "+scriptpath+" " + str(UserId) + " " + str(TaskNr) + " >> autosub.stdout 2>>autosub.stderr"
              test_res = os.system(command)
 

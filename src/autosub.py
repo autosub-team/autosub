@@ -9,7 +9,7 @@
 import threading, queue
 import email, getpass, imaplib, os, time
 import sqlite3 as lite
-import fetcher, worker, sender, logger
+import fetcher, worker, sender, logger, generator
 import optparse
 import signal
 import logging
@@ -34,7 +34,7 @@ opts, args = parser.parse_args()
 config = configparser.ConfigParser()
 config.readfp(open(opts.configfile))
 imapserver = config.get('imapserver', 'servername')
-mail_user = config.get('imapserver', 'username')
+autosub_user = config.get('imapserver', 'username')
 autosub_passwd = config.get('imapserver', 'password')
 autosub_mail = config.get('imapserver', 'email')
 smtpserver = config.get('smtpserver', 'servername')
@@ -56,16 +56,22 @@ threadID += 1
 
 signal.signal(signal.SIGUSR1, sig_handler)
 
-sender_t = sender.mailSender(threadID, "sender", sender_queue, autosub_mail, autosub_passwd, smtpserver, logger_queue, numTasks)
+sender_t = sender.mailSender(threadID, "sender", sender_queue, autosub_mail, autosub_user, autosub_passwd, smtpserver, logger_queue, numTasks)
 sender_t.daemon = True # make the sender thread a daemon, this way the main
                        # will clean it up before terminating!
 sender_t.start()
 threadID += 1
 
-fetcher_t = fetcher.mailFetcher(threadID, "fetcher", job_queue, sender_queue, autosub_mail, autosub_passwd, imapserver, logger_queue, numTasks)
+fetcher_t = fetcher.mailFetcher(threadID, "fetcher", job_queue, sender_queue, gen_queue, autosub_user, autosub_passwd, imapserver, logger_queue, numTasks)
 fetcher_t.daemon = True # make the fetcher thread a daemon, this way the main
                         # will clean it up before terminating!
 fetcher_t.start()
+threadID += 1
+
+generator_t = generator.taskGenerator(threadID, "generator", gen_queue, sender_queue, logger_queue)
+generator_t.daemon = True # make the fetcher thread a daemon, this way the main
+                          # will clean it up before terminating!
+generator_t.start()
 threadID += 1
 
 msg_config = "Used config-file: " + opts.configfile
