@@ -227,12 +227,11 @@ class mailFetcher (threading.Thread):
       cur.execute(sqlcmd);
       res = cur.fetchone();
       if res != None:
-         logmsg = "Got Mail from a User on the WhiteList: " + user_email
-         self.log_a_msg(logmsg, "Warning");
          return 1
       else:
          logmsg = "Got Mail from a User not on the WhiteList: " + user_email
          self.log_a_msg(logmsg, "Warning");
+         self.increment_db_statcounter(cur, con, 'nr_non_registered')
          return 0
 
    ####
