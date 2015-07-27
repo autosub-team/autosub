@@ -304,6 +304,9 @@ class mailFetcher (threading.Thread):
                   self.add_new_user(user_name, user_email, cur, con)
                   common.send_email(self.sender_queue, user_email, "", "Welcome", "", "", messageid)
 
+            else:
+                  common.send_email(self.sender_queue, user_email, "", "NotAllowed", "", "", messageid)
+
          try:
             m.close()
          except imaplib.IMAP4.abort:

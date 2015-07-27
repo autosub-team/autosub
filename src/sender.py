@@ -219,6 +219,9 @@ class mailSender (threading.Thread):
             msg['Subject'] = "Welcome!"
             TEXT = self.read_specialmessage('WELCOME')
             self.backup_message(messageid)
+         elif (str(next_send_msg.get('message_type')) == "NotAllowed"):
+            msg['Subject'] = "Registration Not Successful."
+            TEXT = self.read_specialmessage('NOTALLOWED')
          else:
             self.log_a_msg("Unkown Message Type in the sender_queue!","ERROR")
             self.backup_message(messageid)
