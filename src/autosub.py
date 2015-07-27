@@ -50,14 +50,14 @@ def check_and_init_db_table(cur, con, tablename, fields):
    cur.execute(sqlcmd)
    res = cur.fetchall()
    if res:
-      logmsg = 'table ' + tablename +'exists'
+      logmsg = 'table ' + tablename + ' exists'
       log_a_msg(logmsg, "DEBUG")
       #TODO: in this case, we might want to check if one entry per task is already there, and add new
       #      empty entries in case a task does not have one. This is only a problem, if the number of
       #      tasks in the config file is changed AFTER the TaskStats table has been changed!
       return 0
    else:
-      logmsg = 'table ' + tablename +'does not exist'
+      logmsg = 'table ' + tablename + ' does not exist'
       log_a_msg(logmsg, "DEBUG")
 
       sqlcmd = "CREATE TABLE " + tablename + "(" + fields + ");"
@@ -169,7 +169,7 @@ def init_ressources(numThreads, numTasks):
    ####################
    #### Whitelist #####
    ####################
-   ret = check_and_init_db_table(cur, con, " Whitelist", "UniqeID INTEGER PRIMARY KEY AUTOINCREMENT, Email TEXT")
+   ret = check_and_init_db_table(cur, con, "Whitelist", "UniqeID INTEGER PRIMARY KEY AUTOINCREMENT, Email TEXT")
 
 
    #####################
