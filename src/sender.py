@@ -106,6 +106,16 @@ class mailSender (threading.Thread):
       conc.close()
       return str(res[0])
 
+   def generate_status_update(self, cur, con, user_email):
+      sqlcmd = "SELECT Name FROM users WHERE email=='" + user_email + "';"
+      cur.execute(sqlcmd)
+      uname = cur.fetchone();
+      sqlcmd = "SELECT current_task FROM users WHERE email=='" + user_email + "';"
+      cur.execute(sqlcmd)
+      curtask = cur.fetchone();
+
+      return "Username: " + str(uname[0]) + "\nEmail: " + user_email + "\nCurrent Task: " + str(curtask[0]) # + "\nRestration Date: " + str(rdate[0]) + "\nRegistration Time: " + str(rtime[0])
+
    ####
    # backup_message()
    #
@@ -200,8 +210,7 @@ class mailSender (threading.Thread):
             # description was sent to the user!
          elif (str(next_send_msg.get('message_type')) == "Status"):
             msg['Subject'] = "Your Current Status"
-            TEXT = "STATUSUPDATE"
-            # TBD: content to the e-mail
+            TEXT = self.generate_status_update(cur, con, str(next_send_msg.get('recipient')))
          elif (str(next_send_msg.get('message_type')) == "InvalidTask"):
             msg['Subject'] = "Invalid Task Number"
             TEXT = self.read_specialmessage('INVALID')
