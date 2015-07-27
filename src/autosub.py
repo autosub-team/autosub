@@ -133,6 +133,13 @@ def init_ressources(numThreads, numTasks):
       init_db_statvalue(cur, con, 'nr_mails_fetched', 0)
       init_db_statvalue(cur, con, 'nr_mails_sent', 0)
       init_db_statvalue(cur, con, 'nr_questions_received', 0)
+      init_db_statvalue(cur, con, 'nr_non_registered', 0)
+
+   ####################
+   #### Whitelist #####
+   ####################
+   ret = check_and_init_db_table(cur, con, "Whitelist", "UniqeID INTEGER PRIMARY KEY AUTOINCREMENT, Email TEXT")
+
    ####################
    ##### UserTasks ####
    ####################
@@ -173,6 +180,11 @@ def init_ressources(numThreads, numTasks):
    ####################
    ret = check_and_init_db_table(cur, con, "GeneralConfig", "ConfigItem Text PRIMARY KEY, Content TEXT")
    
+   #TODO: Find useful values to inizialize GeneralConfig
+
+   #####################
+   # Num workers,tasks #
+   #####################
    if ret: # if that table did not exist, load the defaults given in the configuration file
       set_general_config_param(cur, con, 'num_workers', str(numThreads))
       set_general_config_param(cur, con, 'num_tasks', str(numTasks))
