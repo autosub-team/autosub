@@ -218,6 +218,24 @@ class mailFetcher (threading.Thread):
       return items[0].split() # getting the mails id
 
    ####
+   #  check_if_whitelisted(user_email)
+   #
+   #  check if the given e-mail address is in the whitelist
+   ####
+   def check_if_whitelisted(self, cur, con, user_email):
+      sqlcmd = "SELECT * FROM WhiteList WHERE Email == '"+ user_email + "';"
+      cur.execute(sqlcmd);
+      res = cur.fetchone();
+      if res != None:
+         logmsg = "Got Mail from a User on the WhiteList: " + user_email
+         self.log_a_msg(logmsg, "Warning");
+         return 1
+      else:
+         logmsg = "Got Mail from a User not on the WhiteList: " + user_email
+         self.log_a_msg(logmsg, "Warning");
+         return 0
+
+   ####
    # thread code for the fetcher thread.
    ####
    def run(self):
@@ -255,33 +273,37 @@ class mailFetcher (threading.Thread):
 
             messageid = mail.get('Message-ID')
 
-            sql_cmd="SELECT UserId FROM Users WHERE email='" + str(user_email) +"';"
-            cur.execute(sql_cmd);
-            res = cur.fetchall();
-            if res:
-               logmsg = "Got mail from an already known user!"
-               self.log_a_msg(logmsg, "INFO")
+            whitelisted = self.check_if_whitelisted(cur, con, user_email)
 
-               if re.search('[Rr][Ee][Ss][Uu][Ll][Tt]', mail_subject):
-                  searchObj = re.search( '[0-9]+', mail_subject, )
-                  if (int(searchObj.group()) <= self.numTasks):
-                     logmsg = 'Processing a Result'
-                     self.log_a_msg(logmsg, "DEBUG")
-                     self.take_new_results(user_email, searchObj.group(), cur, con, mail, messageid)
+            if whitelisted:
+
+               sql_cmd="SELECT UserId FROM Users WHERE email='" + str(user_email) +"';"
+               cur.execute(sql_cmd);
+               res = cur.fetchall();
+               if res:
+                  logmsg = "Got mail from an already known user!"
+                  self.log_a_msg(logmsg, "INFO")
+
+                  if re.search('[Rr][Ee][Ss][Uu][Ll][Tt]', mail_subject):
+                     searchObj = re.search( '[0-9]+', mail_subject, )
+                     if (int(searchObj.group()) <= self.numTasks):
+                        logmsg = 'Processing a Result'
+                        self.log_a_msg(logmsg, "DEBUG")
+                        self.take_new_results(user_email, searchObj.group(), cur, con, mail, messageid)
+                     else:
+                        logmsg = 'Given Task number is higher than actual Number of Tasks!'
+                        self.log_a_msg(logmsg, "DEBUG")
+                        common.send_email(self.sender_queue, user_email, "", "InvalidTask", "", "", messageid)
+                  elif re.search('[Qq][Uu][Ee][Ss][Tt][Ii][Oo][Nn]', mail_subject):
+                     self.a_question_was_asked(cur, con, user_email, mail, messageid)
                   else:
-                     logmsg = 'Given Task number is higher than actual Number of Tasks!'
+                     logmsg = 'Got a kind of message I do not understand. Sending a usage mail...' 
                      self.log_a_msg(logmsg, "DEBUG")
-                     common.send_email(self.sender_queue, user_email, "", "InvalidTask", "", "", messageid)
-               elif re.search('[Qq][Uu][Ee][Ss][Tt][Ii][Oo][Nn]', mail_subject):
-                  self.a_question_was_asked(cur, con, user_email, mail, messageid)
-               else:
-                  logmsg = 'Got a kind of message I do not understand. Sending a usage mail...' 
-                  self.log_a_msg(logmsg, "DEBUG")
-                  common.send_email(self.sender_queue, user_email, "", "Usage", "", "", messageid)
+                     common.send_email(self.sender_queue, user_email, "", "Usage", "", "", messageid)
 
-            else:
-               self.add_new_user(user_name, user_email, cur, con)
-               common.send_email(self.sender_queue, user_email, "", "Welcome", "", "", messageid)
+               else:
+                  self.add_new_user(user_name, user_email, cur, con)
+                  common.send_email(self.sender_queue, user_email, "", "Welcome", "", "", messageid)
 
          try:
             m.close()
