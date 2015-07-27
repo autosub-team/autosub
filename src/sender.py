@@ -198,6 +198,10 @@ class mailSender (threading.Thread):
             TEXT = "Congratulations!"
             # no backup of message -- this is done after the new task
             # description was sent to the user!
+         elif (str(next_send_msg.get('message_type')) == "Status"):
+            msg['Subject'] = "Your Current Status"
+            TEXT = "STATUSUPDATE"
+            # TBD: content to the e-mail
          elif (str(next_send_msg.get('message_type')) == "InvalidTask"):
             msg['Subject'] = "Invalid Task Number"
             TEXT = self.read_specialmessage('INVALID')
