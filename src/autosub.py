@@ -101,16 +101,8 @@ def load_specialmessage_to_db(cur, con, msgname, filename):
         data=smfp.read()
      smfp.close()
      sql_cmd="INSERT INTO SpecialMessages (EventName, EventText) VALUES('" + msgname + "', '" + data + "');"
-     cur.execute(sql_cmd);
-     con.commit();
-
-####
-# load_generalconfig_to_db()
-####
-def load_generalconfig_to_db(cur, con, configItem, content):
-     sql_cmd="INSERT INTO GeneralConfig (ConfigItem, Content) VALUES('" + configItem + "', '" + content + "');"
-     cur.execute(sql_cmd);
-     con.commit();
+     cur.execute(sql_cmd)
+     con.commit()
 
 ####
 # Check if all databases, tables, etc. are available, or if they have to be created.
@@ -145,6 +137,12 @@ def init_ressources(numThreads, numTasks):
    ##### UserTasks ####
    ####################
    ret = check_and_init_db_table(cur, con, "UserTasks", "uniqeID INTEGER PRIMARY KEY AUTOINCREMENT, TaskNr INT, UserId INT, TaskParameters TEXT, TaskDescription TEXT, TaskAttachments TEXT")
+
+   ####################
+   #### Whitelist #####
+   ####################
+   ret = check_and_init_db_table(cur, con, "Whitelist", "UniqueId INTEGER PRIMARY KEY AUTOINCREMENT, Email TEXT")
+
    ####################
    # Directory users ##
    ####################
@@ -165,6 +163,7 @@ def init_ressources(numThreads, numTasks):
       load_specialmessage_to_db(cur, con, 'INVALID', 'SpecialMessages/invalidtask.txt')
       load_specialmessage_to_db(cur, con, 'CONGRATS', 'SpecialMessages/congratulations.txt')
       load_specialmessage_to_db(cur, con, 'REGOVER', 'SpecialMessages/registrationover.txt')
+      load_specialmessage_to_db(cur, con, 'NOTALLOWED', 'SpecialMessages/notallowed.txt')
    #####################
    # TaskConfiguration #
    #####################
@@ -173,21 +172,14 @@ def init_ressources(numThreads, numTasks):
    ### GeneralConfig ##
    ####################
    ret = check_and_init_db_table(cur, con, "GeneralConfig", "ConfigItem Text PRIMARY KEY, Content TEXT")
-   #TODO: Find useful values to inizialize GeneralConfig
-   #use load_generalconfig_to_db 
-
-   ####################
-   #### Whitelist #####
-   ####################
-   ret = check_and_init_db_table(cur, con, "Whitelist", "UniqeID INTEGER PRIMARY KEY AUTOINCREMENT, Email TEXT")
-
-
-   #####################
-   # Num workers,tasks #
-   #####################
+   
    if ret: # if that table did not exist, load the defaults given in the configuration file
       set_general_config_param(cur, con, 'num_workers', str(numThreads))
       set_general_config_param(cur, con, 'num_tasks', str(numTasks))
+      set_general_config_param(cur, con, 'registration_deadline', 'NULL')
+      set_general_config_param(cur, con, 'archive_dir','archive/')
+   
+
    con.close()
 
 
