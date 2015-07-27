@@ -105,6 +105,14 @@ def load_specialmessage_to_db(cur, con, msgname, filename):
      con.commit();
 
 ####
+# load_generalconfig_to_db()
+####
+def load_generalconfig_to_db(cur, con, configItem, content):
+     sql_cmd="INSERT INTO GeneralConfig (ConfigItem, Content) VALUES('" + configItem + "', '" + content + "');"
+     cur.execute(sql_cmd);
+     con.commit();
+
+####
 # Check if all databases, tables, etc. are available, or if they have to be created.
 # if non-existent --> create them
 ####
@@ -151,11 +159,12 @@ def init_ressources(numThreads, numTasks):
    ####################
    ret = check_and_init_db_table(cur, con, "SpecialMessages", "EventName TEXT PRIMARY KEY, EventText TEXT")
    if ret: # that table did not exists, therefore we use the .txt files to initialize it!
-      load_specialmessage_to_db(cur, con, 'WELCOME', 'welcome.txt')
-      load_specialmessage_to_db(cur, con, 'USAGE', 'usage.txt')
-      load_specialmessage_to_db(cur, con, 'QUESTION', 'question.txt')
-      load_specialmessage_to_db(cur, con, 'INVALID', 'invalidtask.txt')
-      load_specialmessage_to_db(cur, con, 'CONGRATS', 'congratulations.txt')
+      load_specialmessage_to_db(cur, con, 'WELCOME', 'SpecialMessages/welcome.txt')
+      load_specialmessage_to_db(cur, con, 'USAGE', 'SpecialMessages/usage.txt')
+      load_specialmessage_to_db(cur, con, 'QUESTION', 'SpecialMessages/question.txt')
+      load_specialmessage_to_db(cur, con, 'INVALID', 'SpecialMessages/invalidtask.txt')
+      load_specialmessage_to_db(cur, con, 'CONGRATS', 'SpecialMessages/congratulations.txt')
+      load_specialmessage_to_db(cur, con, 'REGOVER', 'SpecialMessages/registrationover.txt')
    #####################
    # TaskConfiguration #
    #####################
@@ -165,6 +174,7 @@ def init_ressources(numThreads, numTasks):
    ####################
    ret = check_and_init_db_table(cur, con, "GeneralConfig", "ConfigItem Text PRIMARY KEY, Content TEXT")
    #TODO: Find useful values to inizialize GeneralConfig
+   #use load_generalconfig_to_db 
 
    ####################
    #### Whitelist #####
