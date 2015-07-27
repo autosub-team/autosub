@@ -22,8 +22,8 @@ class mailSender (threading.Thread):
       self.name = name
       self.sender_queue = sender_queue
       self.autosub_user = autosub_user
-      self.gmail_user = autosub_mail
-      self.gmail_pwd = autosub_passwd
+      self.mail_user = autosub_mail
+      self.mail_pwd = autosub_passwd
       self.smtpserver = autosub_smtpserver
       self.logger_queue = logger_queue
       self.numTasks = numTasks
@@ -131,7 +131,7 @@ class mailSender (threading.Thread):
 
          # prepare fields for the e-mail
          msg = MIMEMultipart()
-         msg['From'] = self.gmail_user
+         msg['From'] = self.mail_user
          msg['To'] = str(next_send_msg.get('recipient'))
          logmsg= "RECIPIENT: " + str(next_send_msg.get('recipient'))
          self.log_a_msg(logmsg, "DEBUG")
@@ -250,8 +250,8 @@ class mailSender (threading.Thread):
             server = smtplib.SMTP(self.smtpserver, 587) # port 465 doesn't seem to work!
             server.ehlo()
             server.starttls()
-            server.login(self.autosub_user, self.gmail_pwd)
-            server.sendmail(self.gmail_user, str(next_send_msg.get('recipient')), msg.as_string())
+            server.login(self.autosub_user, self.mail_pwd)
+            server.sendmail(self.mail_user, str(next_send_msg.get('recipient')), msg.as_string())
             server.close()
             self.log_a_msg("Successfully sent an e-mail!", "DEBUG")
             self.increment_db_statcounter(cur, con, 'nr_mails_sent')

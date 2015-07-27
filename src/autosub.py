@@ -3,6 +3,7 @@
 #       threads, and cleans up if autosub is stopped using SIGUSR2.
 #
 # Copyright (C) 2015 Andreas Platschek <andi.platschek@gmail.com>
+#                    Martin  Mosbeck   <martin.mosbeck@gmx.at>
 # License GPL V2 or later (see http://www.gnu.org/licenses/gpl2.txt)
 ########################################################################
 
@@ -110,27 +111,44 @@ def load_specialmessage_to_db(cur, con, msgname, filename):
 def init_ressources(numThreads, numTasks):
    cur,con = connect_to_db('semester.db') 
 
+   ####################
+   ####### Users ######
+   ####################
    check_and_init_db_table(cur, con, "Users", "UserId INTEGER PRIMARY KEY AUTOINCREMENT, Name TEXT, email TEXT, first_mail INT, last_done INT, current_task INT")
+   ####################
+   ##### TaskStats ####
+   ####################
    ret = check_and_init_db_table(cur, con, "TaskStats", "TaskId INTEGER PRIMARY KEY, nr_submissions INT, nr_successful INT")
    if ret:
       for t in range (1, numTasks+1):
          sql_cmd="INSERT INTO TaskStats (TaskId, nr_submissions, nr_successful) VALUES("+ str(t) + ", 0, 0);"
          cur.execute(sql_cmd);
       con.commit();
-
+   ####################
+   ### StatCounters ###
+   ####################
    ret = check_and_init_db_table(cur, con, "StatCounters", "CounterId INTEGER PRIMARY KEY AUTOINCREMENT, Name TEXT, value INT")
    if ret:
       # add the stat counter entries and initialize them to 0:
       init_db_statvalue(cur, con, 'nr_mails_fetched', 0)
       init_db_statvalue(cur, con, 'nr_mails_sent', 0)
       init_db_statvalue(cur, con, 'nr_questions_received', 0)
-
+   ####################
+   ##### UserTasks ####
+   ####################
    ret = check_and_init_db_table(cur, con, "UserTasks", "uniqeID INTEGER PRIMARY KEY AUTOINCREMENT, TaskNr INT, UserId INT, TaskParameters TEXT, TaskDescription TEXT, TaskAttachments TEXT")
-
+   ####################
+   # Directory users ##
+   ####################
    check_dir_mkdir("users")
    con.close() # close here, since we re-open the databse in the while(True) loop
 
+
    cur,con = connect_to_db('course.db')
+
+   ####################
+   ## SpecialMessages #
+   ####################
    ret = check_and_init_db_table(cur, con, "SpecialMessages", "EventName TEXT PRIMARY KEY, EventText TEXT")
    if ret: # that table did not exists, therefore we use the .txt files to initialize it!
       load_specialmessage_to_db(cur, con, 'WELCOME', 'welcome.txt')
@@ -138,10 +156,25 @@ def init_ressources(numThreads, numTasks):
       load_specialmessage_to_db(cur, con, 'QUESTION', 'question.txt')
       load_specialmessage_to_db(cur, con, 'INVALID', 'invalidtask.txt')
       load_specialmessage_to_db(cur, con, 'CONGRATS', 'congratulations.txt')
-
+   #####################
+   # TaskConfiguration #
+   #####################
    ret = check_and_init_db_table(cur, con, "TaskConfiguration", "TaskNr INT PRIMARY KEY, TaskStart INT, TaskDeadline INT, PathToTask TEXT, GeneratorExecutable TEXT, TestExecutable TEXT, Score INT, TaskOperator TEXT")
-
+   ####################
+   ### GeneralConfig ##
+   ####################
    ret = check_and_init_db_table(cur, con, "GeneralConfig", "ConfigItem Text PRIMARY KEY, Content TEXT")
+   #TODO: Find useful values to inizialize GeneralConfig
+
+   ####################
+   #### Whitelist #####
+   ####################
+   ret = check_and_init_db_table(cur, con, " Whitelist", "UniqeID INTEGER PRIMARY KEY AUTOINCREMENT, Email TEXT")
+
+
+   #####################
+   # Num workers,tasks #
+   #####################
    if ret: # if that table did not exist, load the defaults given in the configuration file
       set_general_config_param(cur, con, 'num_workers', str(numThreads))
       set_general_config_param(cur, con, 'num_tasks', str(numTasks))

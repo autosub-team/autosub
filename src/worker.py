@@ -54,7 +54,7 @@ class worker (threading.Thread):
              logmsg = self.name + ": got a new job: " + str(TaskNr) + "from the user with id: " + str(UserId)
              self.log_a_msg(logmsg, "INFO")
 
-             # check if there is a test executble configured in the database -- if not fall back on static
+             # check if there is a test executable configured in the database -- if not fall back on static
              # test script.
              curc, conc = self.connect_to_db('course.db')
              sql_cmd="SELECT TestExecutable FROM TaskConfiguration WHERE TaskNr == 1"
