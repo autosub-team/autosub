@@ -163,8 +163,16 @@ class mailSender (threading.Thread):
                self.check_and_set_lastDone(cur, con, next_send_msg.get('UserId'))
 
             else: # at least one more task to do: send out the description
-               msg['Subject'] = "Description Task" + TaskNr 
-               path_to_msg = "tasks/task" + TaskNr + "/description.txt"
+               msg['Subject'] = "Description Task" + str(TaskNr) 
+
+               curcCourse, concCourse = self.connect_to_db('course.db')
+               sql_cmd="SELECT PathToTask FROM TaskConfiguration WHERE TaskNr == "+str(TaskNr)
+               curcCourse.execute(sql_cmd)
+               paths = curcCourse.fetchone()
+               path_to_task = str(paths[0])
+               concCourse.close() 
+
+               path_to_msg = path_to_task + "/description.txt"
                has_text = 1;
                logmsg="used sql comand: SELECT TaskAttachments FROM UserTasks WHERE TaskNr == " + TaskNr + " AND UserId == '"+ str(next_send_msg.get('UserId')) + "';"
                self.log_a_msg(logmsg, "DEBUG");

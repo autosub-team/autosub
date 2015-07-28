@@ -27,6 +27,20 @@ class taskGenerator (threading.Thread):
    def log_a_msg(self, msg, loglevel):
       self.logger_queue.put(dict({"msg": msg, "type": loglevel, "loggername": self.name}))
 
+   ####
+   #  connect_to_db()
+   ####
+   def connect_to_db(self, dbname):
+      # connect to sqlite database ...
+      try:
+         con = lite.connect(dbname)
+      except:
+         logmsg = "Failed to connect to database: " + dbname
+         self.log_a_msg(logmsg, "ERROR")
+
+      cur = con.cursor()
+      return cur, con
+
    def run(self):
       self.log_a_msg("Task Generator thread started", "INFO")
 
@@ -41,13 +55,13 @@ class taskGenerator (threading.Thread):
          # generator script.
          curc, conc = self.connect_to_db('course.db')
          sql_cmd="SELECT GeneratorExecutable FROM TaskConfiguration WHERE TaskNr == "+str(TaskNr)
-         curc.execute(sql_cmd);
-         generatorname = curc.fetchone();
+         curc.execute(sql_cmd)
+         generatorname = curc.fetchone()
     
          if str(generatorname[0]) != 'None':
             sql_cmd="SELECT PathToTask FROM TaskConfiguration WHERE TaskNr == "+str(TaskNr)
-            curc.execute(sql_cmd);
-            path = curc.fetchone();
+            curc.execute(sql_cmd)
+            path = curc.fetchone()
             scriptpath = str(path[0]) + "/" + str(generatorname[0])
          else:
             scriptpath = "tasks/task" + str(TaskNr) + "/generator.sh"

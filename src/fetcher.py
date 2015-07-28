@@ -56,7 +56,10 @@ class mailFetcher (threading.Thread):
 
       cur = con.cursor()
       return cur, con
-
+  
+   ####
+   #  check_dir_mkdir
+   ####
    def check_dir_mkdir(self, directory): 
       if not os.path.exists(directory):
          os.mkdir(directory)
@@ -89,6 +92,10 @@ class mailFetcher (threading.Thread):
       userid = str(res[0])
       dirname = 'users/'+ userid
       self.check_dir_mkdir(dirname)
+
+      #generate the directory for the first task
+      detach_dir = 'users/'+str(userid)+"/Task1"
+      self.check_dir_mkdir(detach_dir)
 
       # NOTE: messageid is empty, cause this will be sent out by the welcome message!
       curc, conc = self.connect_to_db('course.db')
