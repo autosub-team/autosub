@@ -134,6 +134,7 @@ def init_ressources(numThreads, numTasks):
       init_db_statvalue(cur, con, 'nr_mails_sent', 0)
       init_db_statvalue(cur, con, 'nr_questions_received', 0)
       init_db_statvalue(cur, con, 'nr_non_registered', 0)
+      init_db_statvalue(cur, con, 'nr_status_requests', 0)
 
    ####################
    ##### UserTasks ####

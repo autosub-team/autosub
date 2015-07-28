@@ -181,6 +181,10 @@ class mailFetcher (threading.Thread):
 
       self.increment_db_statcounter(cur, con, 'nr_questions_received')
 
+   def a_status_is_requested(self, cur, con, user_email, messageid):
+      common.send_email(self.sender_queue, user_email, "", "Status", "", "", "")
+      self.increment_db_statcounter(cur, con, 'nr_status_requests')
+
    ####
    # connect_to_imapserver()
    ####
@@ -296,6 +300,8 @@ class mailFetcher (threading.Thread):
                         common.send_email(self.sender_queue, user_email, "", "InvalidTask", "", "", messageid)
                   elif re.search('[Qq][Uu][Ee][Ss][Tt][Ii][Oo][Nn]', mail_subject):
                      self.a_question_was_asked(cur, con, user_email, mail, messageid)
+                  elif re.search('[Ss][Tt][Aa][Tt][Uu][Ss]', mail_subject):
+                     self.a_status_is_requested(cur, con, user_email, messageid)
                   else:
                      logmsg = 'Got a kind of message I do not understand. Sending a usage mail...' 
                      self.log_a_msg(logmsg, "DEBUG")

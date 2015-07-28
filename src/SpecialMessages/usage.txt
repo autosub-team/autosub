@@ -18,6 +18,11 @@ Results:
    the exact phrase does not matter, only that some form of the string
    "result" and "task1" are in the subject.
 
+Status:
+   If you want to know your current status in the course (what tasks did
+   you complete, how many points do you have, etc.), just send an e-mail
+   in which the subject contains the word "Status".
+
 Questions:
    If you have any questions that are not answered by the e-mails sent by
    me, you can send me an e-mail that contains the string "question".
