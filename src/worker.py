@@ -49,8 +49,8 @@ class worker (threading.Thread):
          if nextjob:
              TaskNr=nextjob.get('taskNr')
              UserId=nextjob.get('UserId')
-             user_email=nextjob.get('UserEmail')
-             messageid=nextjob.get('MessageId')
+             UserEmail=nextjob.get('UserEmail')
+             MessageId=nextjob.get('MessageId')
 
              logmsg = self.name + ": got a new job: " + str(TaskNr) + "from the user with id: " + str(UserId)
              self.log_a_msg(logmsg, "INFO")
@@ -58,12 +58,12 @@ class worker (threading.Thread):
              # check if there is a test executable configured in the database -- if not fall back on static
              # test script.
              curc, conc = self.connect_to_db('course.db')
-             sql_cmd="SELECT TestExecutable FROM TaskConfiguration WHERE TaskNr == 1"
+             sql_cmd="SELECT TestExecutable FROM TaskConfiguration WHERE TaskNr == "+str(TaskNr)
              curc.execute(sql_cmd);
              testname = curc.fetchone();
     
              if str(testname[0]) != 'None':
-                sql_cmd="SELECT PathToTask FROM TaskConfiguration WHERE TaskNr == 1"
+                sql_cmd="SELECT PathToTask FROM TaskConfiguration WHERE TaskNr == "+str(TaskNr)
                 curc.execute(sql_cmd);
                 path = curc.fetchone();
                 scriptpath = str(path[0]) + "/" + str(testname[0])
@@ -83,19 +83,19 @@ class worker (threading.Thread):
                 logmsg = logmsg + "return value:" + str(test_res)
                 self.log_a_msg(logmsg, "INFO")
 
-                common.send_email(self.sender_queue, user_email, UserId, "Failed", str(TaskNr), "", messageid)
+                common.send_email(self.sender_queue, str(UserEmail), str(UserId), "Failed", str(TaskNr), "", str(MessageId))
 
                 if test_res == 512: # Need to read up on this but os.system() returns 
                                     # 256 when the script returns 1 and 512 when the script returns 2!
                    logmsg = "SecAlert: This test failed due to probable attack by user!"
                    self.log_a_msg(logmsg, "INFO")
 
-                   common.send_email(self.sender_queue, user_email, str(UserId), "SecAlert", str(TaskNr), "", messageid)
+                   common.send_email(self.sender_queue, str(UserEmail), str(UserId), "SecAlert", str(TaskNr), "", str(MessageId))
 
              else:
 
                 logmsg = "Test succeeded! User: " + str(UserId) + " Task: " + str(TaskNr)
                 self.log_a_msg(logmsg, "INFO")
 
-                common.send_email(self.sender_queue, user_email, str(UserId), "Success", str(TaskNr), "", "")
-                common.send_email(self.sender_queue, user_email, str(UserId), "Task", str(int(TaskNr)+1), "", messageid)
+                common.send_email(self.sender_queue, str(UserEmail), str(UserId), "Success", str(TaskNr), "", "")
+                common.send_email(self.sender_queue, str(UserEmail), str(UserId), "Task", str(int(TaskNr)+1), "", str(MessageId))

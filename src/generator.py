@@ -32,23 +32,33 @@ class taskGenerator (threading.Thread):
 
       while True:
          next_gen_msg = self.gen_queue.get(True) #blocking wait on gen_queue
+         TaskNr=next_gen_msg.get('TaskNr')
+         UserId=next_gen_msg.get('UserId')
+         UserEmail=next_gen_msg.get('UserEmail')
+         MessageId=next_gen_msg.get('MessageId')
 
-         scriptpath = "tasks/task" + str(next_gen_msg.get('TaskNr')) + "/generator.sh"
-#         command = "cd "+ scriptpath + ">> autosub.stdout 2>>autosub.stderr"
-#         test_res = os.system(command)
-         command = "sh "+ scriptpath + " " + str(next_gen_msg.get('UserId')) + " " + str(next_gen_msg.get('TaskNr')) + "  >> autosub.stdout 2>>autosub.stderr"
-         test_res = os.system(command)
-         if test_res:
-            logmsg = "Failed to call generator script, return value: " + str(test_res)
+         # check if there is a generator executable configured in the database -- if not fall back on static
+         # generator script.
+         curc, conc = self.connect_to_db('course.db')
+         sql_cmd="SELECT GeneratorExecutable FROM TaskConfiguration WHERE TaskNr == "+str(TaskNr)
+         curc.execute(sql_cmd);
+         generatorname = curc.fetchone();
+    
+         if str(generatorname[0]) != 'None':
+            sql_cmd="SELECT PathToTask FROM TaskConfiguration WHERE TaskNr == "+str(TaskNr)
+            curc.execute(sql_cmd);
+            path = curc.fetchone();
+            scriptpath = str(path[0]) + "/" + str(generatorname[0])
+         else:
+            scriptpath = "tasks/task" + str(TaskNr) + "/generator.sh"
+
+         command = "sh "+ scriptpath + " " + str(UserId) + " " + str(TaskNr) + "  >> autosub.stdout 2>>autosub.stderr"
+         generator_res = os.system(command)
+         if generator_res:
+            logmsg = "Failed to call generator script, return value: " + str(generator_res)
             self.log_a_msg(logmsg, "DEBUG")
-#         command = "cd - >> autosub.stdout 2>>autosub.stderr"
-#         test_res = os.system(command)
 
-         logmsg = "Generated individual task for user/tasknr:" + str(next_gen_msg.get('UserId')) + "/" + str(next_gen_msg.get('TaskNr'))
+         logmsg = "Generated individual task for user/tasknr:" + str(UserId) + "/" + str(TaskNr)
          self.log_a_msg(logmsg, "DEBUG")
 
-         common.send_email(self.sender_queue, str(next_gen_msg.get('UserEmail')), str(next_gen_msg.get('UserId')), "Task", str(next_gen_msg.get('TaskNr')), "Your personal example", str(next_gen_msg.get('MessageId')))
-
-
-
-         
+         common.send_email(self.sender_queue, str(UserEmail), str(UserId), "Task", str(TaskNr), "Your personal example", str(MessageId))
