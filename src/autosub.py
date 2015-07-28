@@ -170,7 +170,7 @@ def init_ressources(numThreads, numTasks):
    #####################
    # TaskConfiguration #
    #####################
-   ret = check_and_init_db_table(cur, con, "TaskConfiguration", "TaskNr INT PRIMARY KEY, TaskStart INT, TaskDeadline INT, PathToTask TEXT, GeneratorExecutable TEXT, TestExecutable TEXT, Score INT, TaskOperator TEXT")
+   ret = check_and_init_db_table(cur, con, "TaskConfiguration", "TaskNr INT PRIMARY KEY, TaskStart DATETIME, TaskDeadline DATETIME, PathToTask TEXT, GeneratorExecutable TEXT, TestExecutable TEXT, Score INT, TaskOperator TEXT")
    ####################
    ### GeneralConfig ##
    ####################

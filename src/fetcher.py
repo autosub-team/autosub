@@ -83,7 +83,7 @@ class mailFetcher (threading.Thread):
 
       # read back the new users UserId and create a directory for putting his
       # submissions in:
-      sql_cmd="SELECT UserId FROM Users WHERE email='" + user_email +"';"
+      sql_cmd="SELECT UserId FROM Users WHERE Email='" + user_email +"';"
       cur.execute(sql_cmd);
       res = cur.fetchone();
       userid = str(res[0])
@@ -118,7 +118,7 @@ class mailFetcher (threading.Thread):
    def take_new_results(self, user_email, TaskNr, cur, con, mail, messageid):
       # read back the new users UserId and create a directory for putting his
       # submissions in:
-      sql_cmd="SELECT UserId FROM Users WHERE email='" + user_email +"';"
+      sql_cmd="SELECT UserId FROM Users WHERE Email='" + user_email +"';"
       cur.execute(sql_cmd);
       user_id = cur.fetchone();
 
@@ -281,7 +281,7 @@ class mailFetcher (threading.Thread):
 
             if whitelisted:
 
-               sql_cmd="SELECT UserId FROM Users WHERE email='" + str(user_email) +"';"
+               sql_cmd="SELECT UserId FROM Users WHERE Email='" + str(user_email) +"';"
                cur.execute(sql_cmd);
                res = cur.fetchall();
                if res:

@@ -1,27 +1,31 @@
+Conventions
+===========
+Tables and fields are written in camel case with a leading uppercase letter.
+
 semester.db:
 ============
 
-1. Table users:
+1. Table Users:
 
    Associates e-mail addresses to a unique Autosub ID.
    In addition we want to know for each user, which task he is currently working on, the date + time when he first sent an e-mail and
    when he first successfully submitted the last task.
 
-   CREATE TABLE Users(UserId INTEGER PRIMARY KEY AUTOINCREMENT, Name TEXT, email TEXT, first_mail DATETIME, last_done INT, current_task INT)
+   CREATE TABLE Users(UserId INTEGER PRIMARY KEY AUTOINCREMENT, Name TEXT, Email TEXT, FirstMail DATETIME, LastDone INT, CurrentTask INT);
 
    Table created by: Fetcher
    UserId: set upon entry creation -> CONSTANT
    Name: set upon entry creation -> CONSTANT
-   email: set upon entry creation -> CONSTANT
-   first_mail: set upon entry creation -> CONSTANT
-   last_done:  initilized to NULL upon creation, set by worker thread
-   current_task: updated by worker thread 
+   Email: set upon entry creation -> CONSTANT
+   FirstMail: set upon entry creation -> CONSTANT
+   LastDone:  initilized to NULL upon creation, set by worker thread
+   CurrentTask: updated by worker thread 
 
 2. Task statistics:
 
    Logs for each tasks, how often a submission was done and how often the task was submitted successfully.
    
-   CREATE TABLE Users(TaskId INTEGER PRIMARY KEY, nr_submissions INT, nr_successful INT)
+   CREATE TABLE TaskStats(TaskId INTEGER PRIMARY KEY, NrSubmissions INT, NrSuccessful INT);
 
    all maintained by the worker threads.
 
@@ -32,23 +36,32 @@ semester.db:
     - number of e-mails sent --> Sender
     - number of questions received --> Fetcher
 
-   CREATE TABLE Users(CounterId INTEGER PRIMARY KEY AUTOINCREMENT, Name TEXT, value INT)
+   CREATE TABLE StatCounters(CounterId INTEGER PRIMARY KEY AUTOINCREMENT, Name TEXT, Value INT);
 
 4. UserTasks: Map users to generated tasks.
 
-   CREATE TABLE UserTasks(uniqeID INTEGER PRIMARY KEY AUTOINCREMENT, TaskNr INT, UserId INT, TaskParameters TEXT, TaskDescription TEXT, TaskAttachements TEXT);
+   CREATE TABLE UserTasks(UniqueId INTEGER PRIMARY KEY AUTOINCREMENT, TaskNr INT, UserId INT, TaskParameters TEXT, TaskDescription TEXT, TaskAttachments TEXT);
 
 5. UserWhiteList:
- CREATE TABLE UserWhiteList(UniqueId INTEGER PRIMARY KEY AUTOINCREMENT, Email TEXT);
+ CREATE TABLE WhiteList(UniqueId INTEGER PRIMARY KEY AUTOINCREMENT, Email TEXT);
 
 
 -------------------------------------
 course.db
 =========
 
-CREATE TABLE SpecialMessages(EventName TEXT PRIMARY KEY, EventText TEXT);
+1. Special Messages to send to User.
 
-CREATE TABLE TaskConfiguration(TaskNr INT PRIMARY KEY, TaskStart INT, TaskDeadline INT, PathToTask TEXT, GeneratorExecutable TEXT, TestExecutable TEXT, Score INT, TaskOperator TEXT);
+   CREATE TABLE SpecialMessages(EventName TEXT PRIMARY KEY, EventText TEXT);
+
+2. Task Configuration:
+
+   CREATE TABLE TaskConfiguration(TaskNr INT PRIMARY KEY, TaskStart DATETIME, TaskDeadline DATETIME, PathToTask TEXT, GeneratorExecutable TEXT, TestExecutable TEXT, Score INT, TaskOperator TEXT);
+
+3. General Config:
+   CREATE TABLE GeneralConfig(ConfigItem Text PRIMARY KEY, Content TEXT);
+
+--------------------------------------
 
 Testconfig for TaskConfiguraion task truthtable:
 INSERT into TaskConfiguration (TaskNr, TaskStart, TaskDeadline, PathToTask, GeneratorExecutable, TestExecutable, Score, TaskOperator) VALUES (1,'', '', '/home/andi/working_git/autosub_internal/tests/truth_table', 'generator.sh', 'tester.sh', 1, 'andi.platschek@gmail.com');

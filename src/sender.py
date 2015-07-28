@@ -85,14 +85,14 @@ class mailSender (threading.Thread):
    # If this is the first time, write the current timestamp into the database.
    ####
    def check_and_set_lastDone(self, cur, con, userid):
-      sql_cmd = "SELECT LastDone FROM users WHERE UserId==" + userid + ";"
+      sql_cmd = "SELECT LastDone FROM Users WHERE UserId==" + userid + ";"
       cur.execute(sql_cmd)
       res = cur.fetchone();
       logmsg = "RES: "+ str(res[0])
       self.log_a_msg(logmsg, "DEBUG")
 
       if str(res[0]) == "None":
-         sql_cmd = "UPDATE users SET LastDone=" + str(int(time.time())) + " where UserId==" + userid + ";"
+         sql_cmd = "UPDATE Users SET LastDone=" + str(int(time.time())) + " where UserId==" + userid + ";"
          cur.execute(sql_cmd)
          con.commit();
 
@@ -108,10 +108,10 @@ class mailSender (threading.Thread):
       return str(res[0])
 
    def generate_status_update(self, cur, con, user_email):
-      sqlcmd = "SELECT Name FROM users WHERE email=='" + user_email + "';"
+      sqlcmd = "SELECT Name FROM Users WHERE Email=='" + user_email + "';"
       cur.execute(sqlcmd)
       uname = cur.fetchone();
-      sqlcmd = "SELECT current_task FROM users WHERE email=='" + user_email + "';"
+      sqlcmd = "SELECT CurrentTask FROM Users WHERE Email=='" + user_email + "';"
       cur.execute(sqlcmd)
       curtask = cur.fetchone();
 
