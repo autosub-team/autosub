@@ -3,6 +3,7 @@
 #       or worker.py
 #
 # Copyright (C) 2015 Andreas Platschek <andi.platschek@gmail.com>
+#                    Martin  Mosbeck   <martin.mosbeck@gmx.at>
 # License GPL V2 or later (see http://www.gnu.org/licenses/gpl2.txt)
 ########################################################################
 
@@ -53,7 +54,7 @@ class mailSender (threading.Thread):
    # increment_db_statcounter()
    ####
    def increment_db_statcounter(self, cur, con, countername):
-      sql_cmd = "UPDATE StatCounters SET value=(SELECT value FROM StatCounters WHERE Name=='" + countername + "')+1 WHERE Name=='" + countername + "';"
+      sql_cmd = "UPDATE StatCounters SET Value=(SELECT Value FROM StatCounters WHERE Name=='" + countername + "')+1 WHERE Name=='" + countername + "';"
       cur.execute(sql_cmd)
       con.commit();
 
@@ -66,32 +67,32 @@ class mailSender (threading.Thread):
       con.commit();
 
    ####
-   # user_set_current_task()
+   # user_set_currentTask()
    #
-   # Set the current_task of the user with userid to tasknr.
+   # Set the currentTask of the user with userid to tasknr.
    ####
-   def user_set_current_task(self, cur, con, tasknr, userid):
-      sql_cmd = "UPDATE Users SET current_task='" + str(tasknr) + "' where UserId=='" + str(userid) + "';"
+   def user_set_currentTask(self, cur, con, tasknr, userid):
+      sql_cmd = "UPDATE Users SET CurrentTask='" + str(tasknr) + "' where UserId=='" + str(userid) + "';"
       cur.execute(sql_cmd)
       con.commit();
 
    ####
-   # check_and_set_last_done()
+   # check_and_set_lastDone()
    #
-   # Check if the timestamp in last_done has been set. If so, leave the old one
+   # Check if the timestamp in lastDone has been set. If so, leave the old one
    # as we want to know when the user submitted the correct version of the last
    # task for the very first time.
    # If this is the first time, write the current timestamp into the database.
    ####
-   def check_and_set_last_done(self, cur, con, userid):
-      sql_cmd = "SELECT last_done FROM users WHERE UserId==" + userid + ";"
+   def check_and_set_lastDone(self, cur, con, userid):
+      sql_cmd = "SELECT LastDone FROM users WHERE UserId==" + userid + ";"
       cur.execute(sql_cmd)
       res = cur.fetchone();
       logmsg = "RES: "+ str(res[0])
       self.log_a_msg(logmsg, "DEBUG")
 
       if str(res[0]) == "None":
-         sql_cmd = "UPDATE users SET last_done=" + str(int(time.time())) + " where UserId==" + userid + ";"
+         sql_cmd = "UPDATE users SET LastDone=" + str(int(time.time())) + " where UserId==" + userid + ";"
          cur.execute(sql_cmd)
          con.commit();
 
@@ -148,8 +149,8 @@ class mailSender (threading.Thread):
                msg['Subject'] = "Congratulations!" 
                TEXT = self.read_specialmessage('CONGRATS')
 
-               self.user_set_current_task(cur, con, TaskNr, str(next_send_msg.get('UserId')))
-               self.check_and_set_last_done(cur, con, next_send_msg.get('UserId'))
+               self.user_set_currentTask(cur, con, TaskNr, str(next_send_msg.get('UserId')))
+               self.check_and_set_lastDone(cur, con, next_send_msg.get('UserId'))
 
             else: # at least one more task to do: send out the description
                msg['Subject'] = "Description Task" + TaskNr 
@@ -166,16 +167,16 @@ class mailSender (threading.Thread):
                self.log_a_msg(logmsg, "DEBUG")
                attachments = str(res[0]).split()
  
-               self.user_set_current_task(cur, con, TaskNr, str(next_send_msg.get('UserId')))
+               self.user_set_currentTask(cur, con, TaskNr, str(next_send_msg.get('UserId')))
 
             # we are sending out the description for TaskNr, but we want to
             # update the stats for TaskNr-1 !
-            self.increment_db_taskcounter(cur, con, 'nr_submissions', str(int(TaskNr)-1))
-            self.increment_db_taskcounter(cur, con, 'nr_successful', str(int(TaskNr)-1))
+            self.increment_db_taskcounter(cur, con, 'NrSubmissions', str(int(TaskNr)-1))
+            self.increment_db_taskcounter(cur, con, 'NrSuccessful', str(int(TaskNr)-1))
 
             self.backup_message(messageid)
          elif (str(next_send_msg.get('message_type')) == "Failed"):
-            self.increment_db_taskcounter(cur, con, 'nr_submissions', TaskNr)
+            self.increment_db_taskcounter(cur, con, 'NrSubmissions', TaskNr)
             UserId = str(next_send_msg.get('UserId'))
             path_to_msg = "users/"+ UserId + "/Task" + TaskNr + "/error_msg"
             fp = open(path_to_msg, 'r')

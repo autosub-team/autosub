@@ -2,6 +2,7 @@
 # fetcher.py -- fetch e-mails from the mailbox
 #
 # Copyright (C) 2015 Andreas Platschek <andi.platschek@gmail.com>
+#                    Martin  Mosbeck   <martin.mosbeck@gmx.at>
 # License GPL V2 or later (see http://www.gnu.org/licenses/gpl2.txt)
 ########################################################################
 
@@ -38,7 +39,7 @@ class mailFetcher (threading.Thread):
    # increment_db_statcounter()
    ####
    def increment_db_statcounter(self, cur, con, countername):
-      sql_cmd = "UPDATE StatCounters SET value=(SELECT value FROM StatCounters WHERE Name=='" + countername + "')+1 WHERE Name=='" + countername + "';"
+      sql_cmd = "UPDATE StatCounters SET Value=(SELECT Value FROM StatCounters WHERE Name=='" + countername + "')+1 WHERE Name=='" + countername + "';"
       cur.execute(sql_cmd)
       con.commit();
 
@@ -73,7 +74,7 @@ class mailFetcher (threading.Thread):
       logmsg = 'New Account: User: %s' % user_name 
       self.log_a_msg(logmsg, "DEBUG")
 
-      sql_cmd="INSERT INTO Users (UserId, Name, email, first_mail, last_done, current_task) VALUES(NULL, '" + user_name + "', '" + user_email + "'," + "datetime('now')" + ", NULL, 1);"
+      sql_cmd="INSERT INTO Users (UserId, Name, Email, FirstMail, LastDone, CurrentTask) VALUES(NULL, '" + user_name + "', '" + user_email + "'," + "datetime('now')" + ", NULL, 1);"
       cur.execute(sql_cmd);
       con.commit();
 

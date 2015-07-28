@@ -71,7 +71,7 @@ def check_and_init_db_table(cur, con, tablename, fields):
 # Add entries for the statistics counters, and initialize them to 0.
 ####
 def init_db_statvalue(cur, con, countername, value):
-      sql_cmd="INSERT INTO StatCounters (CounterId, Name, value) VALUES(NULL, '" + countername + "', " + str(value) + ");"
+      sql_cmd="INSERT INTO StatCounters (CounterId, Name, Value) VALUES(NULL, '" + countername + "', " + str(value) + ");"
       cur.execute(sql_cmd);
       con.commit();
 
@@ -114,20 +114,20 @@ def init_ressources(numThreads, numTasks):
    ####################
    ####### Users ######
    ####################
-   check_and_init_db_table(cur, con, "Users", "UserId INTEGER PRIMARY KEY AUTOINCREMENT, Name TEXT, email TEXT, first_mail DATETIME, last_done INT, current_task INT")
+   check_and_init_db_table(cur, con, "Users", "UserId INTEGER PRIMARY KEY AUTOINCREMENT, Name TEXT, Email TEXT, FirstMail DATETIME, LastDone INT, CurrentTask INT")
    ####################
    ##### TaskStats ####
    ####################
-   ret = check_and_init_db_table(cur, con, "TaskStats", "TaskId INTEGER PRIMARY KEY, nr_submissions INT, nr_successful INT")
+   ret = check_and_init_db_table(cur, con, "TaskStats", "TaskId INTEGER PRIMARY KEY, NrSubmissions INT, NrSuccessful INT")
    if ret:
       for t in range (1, numTasks+1):
-         sql_cmd="INSERT INTO TaskStats (TaskId, nr_submissions, nr_successful) VALUES("+ str(t) + ", 0, 0);"
+         sql_cmd="INSERT INTO TaskStats (TaskId, NrSubmissions, NrSuccessful) VALUES("+ str(t) + ", 0, 0);"
          cur.execute(sql_cmd);
       con.commit();
    ####################
    ### StatCounters ###
    ####################
-   ret = check_and_init_db_table(cur, con, "StatCounters", "CounterId INTEGER PRIMARY KEY AUTOINCREMENT, Name TEXT, value INT")
+   ret = check_and_init_db_table(cur, con, "StatCounters", "CounterId INTEGER PRIMARY KEY AUTOINCREMENT, Name TEXT, Value INT")
    if ret:
       # add the stat counter entries and initialize them to 0:
       init_db_statvalue(cur, con, 'nr_mails_fetched', 0)
@@ -136,14 +136,9 @@ def init_ressources(numThreads, numTasks):
       init_db_statvalue(cur, con, 'nr_non_registered', 0)
 
    ####################
-   #### Whitelist #####
-   ####################
-   ret = check_and_init_db_table(cur, con, "Whitelist", "UniqeID INTEGER PRIMARY KEY AUTOINCREMENT, Email TEXT")
-
-   ####################
    ##### UserTasks ####
    ####################
-   ret = check_and_init_db_table(cur, con, "UserTasks", "uniqeID INTEGER PRIMARY KEY AUTOINCREMENT, TaskNr INT, UserId INT, TaskParameters TEXT, TaskDescription TEXT, TaskAttachments TEXT")
+   ret = check_and_init_db_table(cur, con, "UserTasks", "UniqueId INTEGER PRIMARY KEY AUTOINCREMENT, TaskNr INT, UserId INT, TaskParameters TEXT, TaskDescription TEXT, TaskAttachments TEXT")
 
    ####################
    #### Whitelist #####
