@@ -93,10 +93,6 @@ class mailFetcher (threading.Thread):
       dirname = 'users/'+ userid
       self.check_dir_mkdir(dirname)
 
-      #generate the directory for the first task
-      detach_dir = 'users/'+str(userid)+"/Task1"
-      self.check_dir_mkdir(detach_dir)
-
       # NOTE: messageid is empty, cause this will be sent out by the welcome message!
       curc, conc = self.connect_to_db('course.db')
       sql_cmd="SELECT GeneratorExecutable FROM TaskConfiguration WHERE TaskNr == 1"
