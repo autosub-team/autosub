@@ -185,7 +185,13 @@ class mailFetcher (threading.Thread):
       self.increment_db_statcounter(cur, con, 'nr_questions_received')
 
    def a_status_is_requested(self, cur, con, user_email, messageid):
-      common.send_email(self.sender_queue, user_email, "", "Status", "", "", "")
+      sqlcmd = "SELECT UserId,CurrentTask FROM Users WHERE Email=='"+user_email+"';"
+      cur.execute(sqlcmd);
+      res = cur.fetchone();
+
+      UserId=res[0]
+      CurrentTask=res[1]
+      common.send_email(self.sender_queue, user_email, UserId, "Status", CurrentTask, "", "")
       self.increment_db_statcounter(cur, con, 'nr_status_requests')
 
    ####
