@@ -45,10 +45,10 @@ class worker (threading.Thread):
    #  look up the taskParmeters, that were generated from the generator for
    #  a indididual task
    ####
-   def get_taskParameters(self, curc, con, UserId, TaskNr):
+   def get_taskParameters(self, curs, cons, UserId, TaskNr):
       sql_cmd="SELECT TaskParameters FROM UserTasks WHERE TaskNr == "+str(TaskNr)+" AND UserId== "+str(UserId)
-      curc.execute(sql_cmd);
-      taskParameters = curc.fetchone();
+      curs.execute(sql_cmd)
+      taskParameters = curs.fetchone()[0]
       return taskParameters
 
    ####
@@ -83,17 +83,18 @@ class worker (threading.Thread):
                 scriptpath = str(path[0]) + "/" + str(testname[0])
              else:
                 scriptpath = "tasks/task" + str(TaskNr) + "/tests.sh"
+             conc.close()  
              
-             conc.close() 
              
              # get the taskParameters
-             curc, conc = self.connect_to_db('semester.db')
-             taskParameters= get_taskParameters(curc,con,UserId,TaskNr)
-
+             curs, cons = self.connect_to_db('semester.db')
+             taskParameters= self.get_taskParameters(curs,cons,UserId,TaskNr)
+             cons.close()
+             
              # run the test script
              logmsg = "Running test script: " + scriptpath 
              self.log_a_msg(logmsg, "INFO")
-             command = "sh "+scriptpath+" " + str(UserId) + " " + str(TaskNr) + " " + taskParameters+" >> autosub.stdout 2>>autosub.stderr"
+             command = "sh "+scriptpath+" " + str(UserId) + " " + str(TaskNr) + " " + str(taskParameters) +" >> autosub.stdout 2>>autosub.stderr"
              test_res = os.system(command)
 
              if test_res:
