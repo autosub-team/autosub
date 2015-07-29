@@ -40,12 +40,12 @@ class worker (threading.Thread):
       cur = con.cursor()
       return cur, con
    ####
-   #  get_taskParameter
+   #  get_taskParameters
    #
    #  look up the taskParmeters, that were generated from the generator for
    #  a indididual task
    ####
-   def get_taskParameters(cur,con,UserId,TaskNr):
+   def get_taskParameters(self, curc, con, UserId, TaskNr):
       sql_cmd="SELECT TaskParameters FROM UserTasks WHERE TaskNr == "+str(TaskNr)+" AND UserId== "+str(UserId)
       curc.execute(sql_cmd);
       taskParameters = curc.fetchone();
@@ -88,7 +88,7 @@ class worker (threading.Thread):
              
              # get the taskParameters
              curc, conc = self.connect_to_db('semester.db')
-             taskParameters=get_taskParameter(curc,con,UserId,TaskNr)
+             taskParameters= get_taskParameters(curc,con,UserId,TaskNr)
 
              # run the test script
              logmsg = "Running test script: " + scriptpath 

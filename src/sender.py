@@ -222,7 +222,6 @@ class mailSender (threading.Thread):
             TEXT = self.generate_status_update(cur, con, str(next_send_msg.get('recipient')))
             #also attach current task
             sql_cmd="SELECT TaskAttachments FROM UserTasks WHERE TaskNr == " + str(TaskNr) + " AND UserId == '"+ str(next_send_msg.get('UserId')) + "';"
-            print(sql_cmd)
             cur.execute(sql_cmd)
             res = cur.fetchone()
             logmsg = "got the following attachments: " + str(res)
