@@ -11,7 +11,7 @@ semester.db:
    In addition we want to know for each user, which task he is currently working on, the date + time when he first sent an e-mail and
    when he first successfully submitted the last task.
 
-   CREATE TABLE Users(UserId INTEGER PRIMARY KEY AUTOINCREMENT, Name TEXT, Email TEXT, FirstMail DATETIME, LastDone INT, CurrentTask INT);
+   CREATE TABLE Users(UserId INTEGER PRIMARY KEY AUTOINCREMENT, Name TEXT, Email TEXT, FirstMail DATETIME, LastDone DATETIME, CurrentTask INT);
 
    Table created by: Fetcher
    UserId: set upon entry creation -> CONSTANT

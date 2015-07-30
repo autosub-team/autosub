@@ -114,7 +114,7 @@ def init_ressources(numThreads, numTasks):
    ####################
    ####### Users ######
    ####################
-   check_and_init_db_table(cur, con, "Users", "UserId INTEGER PRIMARY KEY AUTOINCREMENT, Name TEXT, Email TEXT, FirstMail DATETIME, LastDone INT, CurrentTask INT")
+   check_and_init_db_table(cur, con, "Users", "UserId INTEGER PRIMARY KEY AUTOINCREMENT, Name TEXT, Email TEXT, FirstMail DATETIME, LastDone DATETIME, CurrentTask INT")
    ####################
    ##### TaskStats ####
    ####################
