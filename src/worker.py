@@ -82,7 +82,7 @@ class worker (threading.Thread):
                 path = curc.fetchone();
                 scriptpath = str(path[0]) + "/" + str(testname[0])
              else:
-                scriptpath = "tasks/task" + str(TaskNr) + "/tests.sh"
+                scriptpath = "tasks/task" + str(TaskNr) + "/./tests.sh"
              conc.close()  
              
              
@@ -94,7 +94,7 @@ class worker (threading.Thread):
              # run the test script
              logmsg = "Running test script: " + scriptpath 
              self.log_a_msg(logmsg, "INFO")
-             command = "sh "+scriptpath+" " + str(UserId) + " " + str(TaskNr) + " " + str(taskParameters) +" >> autosub.stdout 2>>autosub.stderr"
+             command = ""+scriptpath+" " + str(UserId) + " " + str(TaskNr) + " " + str(taskParameters) +" >> autosub.stdout 2>>autosub.stderr"
              test_res = os.system(command)
 
              if test_res:

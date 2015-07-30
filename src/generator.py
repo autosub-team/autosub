@@ -99,9 +99,9 @@ class taskGenerator (threading.Thread):
             path = curc.fetchone()
             scriptpath = str(path[0]) + "/" + str(generatorname[0])
          else:
-            scriptpath = "tasks/task" + str(TaskNr) + "/generator.sh"
+            scriptpath = "tasks/task" + str(TaskNr) + "/./generator.sh"
 
-         command = "sh "+ scriptpath + " " + str(UserId) + " " + str(TaskNr) + "  >> autosub.stdout 2>>autosub.stderr"
+         command = scriptpath + " " + str(UserId) + " " + str(TaskNr) + "  >> autosub.stdout 2>>autosub.stderr"
          generator_res = os.system(command)
          if generator_res:
             logmsg = "Failed to call generator script, return value: " + str(generator_res)
