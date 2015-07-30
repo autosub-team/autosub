@@ -255,7 +255,7 @@ logger_queue.put(dict({"msg": msg_config, "type": "INFO", "loggername": "Main"})
 
 while (threadID <= numThreads + 3):
    tName = "Worker" + str(threadID-3)
-   t = worker.worker(threadID, tName, job_queue, sender_queue, logger_queue)
+   t = worker.worker(threadID, tName, job_queue, gen_queue, sender_queue, logger_queue)
    t.daemon = True
    t.start()
    worker_t.append(t)

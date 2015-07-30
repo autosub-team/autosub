@@ -12,13 +12,14 @@ import common
 import sqlite3 as lite
 
 class worker (threading.Thread):
-   def __init__(self, threadID, name, job_queue, sender_queue, logger_queue):
+   def __init__(self, threadID, name, job_queue, gen_queue, sender_queue, logger_queue):
       threading.Thread.__init__(self)
       self.threadID = threadID
       self.name = name
       self.job_queue = job_queue
       self.sender_queue = sender_queue
       self.logger_queue = logger_queue
+      self.gen_queue = gen_queue
 
    ####
    # log_a_msg()
@@ -118,4 +119,17 @@ class worker (threading.Thread):
                 self.log_a_msg(logmsg, "INFO")
 
                 common.send_email(self.sender_queue, str(UserEmail), str(UserId), "Success", str(TaskNr), "", "")
-                common.send_email(self.sender_queue, str(UserEmail), str(UserId), "Task", str(int(TaskNr)+1), "", str(MessageId))
+                curc, conc = self.connect_to_db('course.db')
+                sql_cmd="SELECT GeneratorExecutable FROM TaskConfiguration WHERE TaskNr == " + str(int(TaskNr)+1) + ";"
+                curc.execute(sql_cmd);
+                res = curc.fetchone();
+                conc.close() 
+    
+                if str(res[0]) != 'None':
+                   logmsg="Calling Generator Script: " + str(res[0])
+                   self.log_a_msg(logmsg, "DEBUG")
+                   logmsg="UserID " + str(UserId) + ",UserEmail " + str(UserEmail)
+                   self.log_a_msg(logmsg, "DEBUG")
+                   self.gen_queue.put(dict({"UserId": str(UserId), "UserEmail": str(UserEmail), "TaskNr": str(int(TaskNr)+1), "MessageId": ""}))
+                else:
+                   common.send_email(self.sender_queue, str(UserEmail), str(UserId), "Task", str(int(TaskNr)+1), "", str(MessageId))
