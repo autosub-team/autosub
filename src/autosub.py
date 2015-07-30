@@ -29,6 +29,19 @@ def log_a_msg(msg, loglevel):
       logger_queue.put(dict({"msg": msg, "type": loglevel, "loggername": "autosub.py"}))
 
 ####
+# get_numTasks()
+####
+def get_num_Tasks():
+   curc, conc = self.connect_to_db('course.db')
+   sqlcmd = "SELECT Content FROM GeneralConfig WHERE ConfigItem == 'num_tasks'"
+   curc.execute(sqlcmd)
+   numTasks = int(curc.fetchone()[0])
+   conc.close()
+
+   return numTasks
+
+
+####
 #  connect_to_db()
 ####
 def connect_to_db(dbname):
@@ -108,7 +121,7 @@ def load_specialmessage_to_db(cur, con, msgname, filename):
 # Check if all databases, tables, etc. are available, or if they have to be created.
 # if non-existent --> create them
 ####
-def init_ressources(numThreads, numTasks):
+def init_ressources(numThreads):
    cur,con = connect_to_db('semester.db') 
 
    ####################
@@ -120,6 +133,7 @@ def init_ressources(numThreads, numTasks):
    ####################
    ret = check_and_init_db_table(cur, con, "TaskStats", "TaskId INTEGER PRIMARY KEY, NrSubmissions INT, NrSuccessful INT")
    if ret:
+      numTasks = get_num_Tasks()
       for t in range (1, numTasks+1):
          sql_cmd="INSERT INTO TaskStats (TaskId, NrSubmissions, NrSuccessful) VALUES("+ str(t) + ", 0, 0);"
          cur.execute(sql_cmd);
@@ -176,8 +190,6 @@ def init_ressources(numThreads, numTasks):
    ####################
    ret = check_and_init_db_table(cur, con, "GeneralConfig", "ConfigItem Text PRIMARY KEY, Content TEXT")
    
-   #TODO: Find useful values to inizialize GeneralConfig
-
    #####################
    # Num workers,tasks #
    #####################
@@ -211,7 +223,6 @@ autosub_passwd = config.get('imapserver', 'password')
 autosub_mail = config.get('imapserver', 'email')
 smtpserver = config.get('smtpserver', 'servername')
 numThreads = config.getint('general', 'num_workers')
-numTasks = config.getint('challenge', 'num_tasks')
 queueSize = config.getint('general', 'queue_size')
 poll_period = config.getint('general', 'poll_period')
 
@@ -229,15 +240,15 @@ threadID += 1
 
 signal.signal(signal.SIGUSR1, sig_handler)
 
-init_ressources(numThreads, numTasks)
+init_ressources(numThreads)
 
-sender_t = sender.mailSender(threadID, "sender", sender_queue, autosub_mail, autosub_user, autosub_passwd, smtpserver, logger_queue, numTasks)
+sender_t = sender.mailSender(threadID, "sender", sender_queue, autosub_mail, autosub_user, autosub_passwd, smtpserver, logger_queue)
 sender_t.daemon = True # make the sender thread a daemon, this way the main
                        # will clean it up before terminating!
 sender_t.start()
 threadID += 1
 
-fetcher_t = fetcher.mailFetcher(threadID, "fetcher", job_queue, sender_queue, gen_queue, autosub_user, autosub_passwd, imapserver, logger_queue, numTasks, poll_period)
+fetcher_t = fetcher.mailFetcher(threadID, "fetcher", job_queue, sender_queue, gen_queue, autosub_user, autosub_passwd, imapserver, logger_queue, poll_period)
 fetcher_t.daemon = True # make the fetcher thread a daemon, this way the main
                         # will clean it up before terminating!
 fetcher_t.start()

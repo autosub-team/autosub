@@ -17,7 +17,7 @@ from email import encoders
 import sqlite3 as lite
 
 class mailSender (threading.Thread):
-   def __init__(self, threadID, name, sender_queue, autosub_mail, autosub_user, autosub_passwd, autosub_smtpserver, logger_queue, numTasks):
+   def __init__(self, threadID, name, sender_queue, autosub_mail, autosub_user, autosub_passwd, autosub_smtpserver, logger_queue):
       threading.Thread.__init__(self)
       self.threadID = threadID
       self.name = name
@@ -27,7 +27,6 @@ class mailSender (threading.Thread):
       self.mail_pwd = autosub_passwd
       self.smtpserver = autosub_smtpserver
       self.logger_queue = logger_queue
-      self.numTasks = numTasks
 
    ####
    # log_a_msg()
@@ -107,6 +106,18 @@ class mailSender (threading.Thread):
       conc.close()
       return str(res[0])
 
+   ####
+   # get_numTasks()
+   ####
+   def get_num_Tasks(self):
+      curc, conc = self.connect_to_db('course.db')
+      sqlcmd = "SELECT Content FROM GeneralConfig WHERE ConfigItem == 'num_tasks'"
+      curc.execute(sqlcmd)
+      numTasks = int(curc.fetchone()[0])
+      conc.close()
+
+      return numTasks
+
    def generate_status_update(self, cur, con, user_email):
       sqlcmd = "SELECT Name FROM Users WHERE Email=='" + user_email + "';"
       cur.execute(sqlcmd)
@@ -167,7 +178,8 @@ class mailSender (threading.Thread):
          has_text = 0;
 
          if (str(next_send_msg.get('message_type')) == "Task"):
-            if (self.numTasks+1 == int(TaskNr)): # last task solved!
+            numTasks = self.get_num_Tasks()
+            if (numTasks+1 == int(TaskNr)): # last task solved!
                msg['Subject'] = "Congratulations!" 
                TEXT = self.read_specialmessage('CONGRATS')
 

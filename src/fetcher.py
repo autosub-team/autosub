@@ -14,7 +14,7 @@ import datetime
 import common
 
 class mailFetcher (threading.Thread):
-   def __init__(self, threadID, name, job_queue, sender_queue, gen_queue, autosub_user, autosub_passwd, autosub_imapserver, logger_queue, numTasks, poll_period):
+   def __init__(self, threadID, name, job_queue, sender_queue, gen_queue, autosub_user, autosub_passwd, autosub_imapserver, logger_queue, poll_period):
       threading.Thread.__init__(self)
       self.threadID = threadID
       self.name = name
@@ -26,7 +26,6 @@ class mailFetcher (threading.Thread):
       self.imapserver = autosub_imapserver
       self.logger_queue = logger_queue
       self.admin_mail = "andi.platschek@gmail.com"
-      self.numTasks = numTasks
       self.poll_period = poll_period
 
    ####
@@ -249,6 +248,18 @@ class mailFetcher (threading.Thread):
          return 0
 
    ####
+   # get_numTasks()
+   ####
+   def get_num_Tasks(self):
+      curc, conc = self.connect_to_db('course.db')
+      sqlcmd = "SELECT Content FROM GeneralConfig WHERE ConfigItem == 'num_tasks'"
+      curc.execute(sqlcmd)
+      numTasks = int(curc.fetchone()[0])
+      conc.close()
+
+      return numTasks
+
+   ####
    # thread code for the fetcher thread.
    ####
    def run(self):
@@ -299,7 +310,7 @@ class mailFetcher (threading.Thread):
 
                   if re.search('[Rr][Ee][Ss][Uu][Ll][Tt]', mail_subject):
                      searchObj = re.search( '[0-9]+', mail_subject, )
-                     if (int(searchObj.group()) <= self.numTasks):
+                     if (int(searchObj.group()) <= self.get_num_Tasks()):
                         logmsg = 'Processing a Result'
                         self.log_a_msg(logmsg, "DEBUG")
                         self.take_new_results(user_email, searchObj.group(), cur, con, mail, messageid)
