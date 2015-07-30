@@ -76,7 +76,7 @@ class mailFetcher (threading.Thread):
       logmsg = 'New Account: User: %s' % user_name 
       self.log_a_msg(logmsg, "DEBUG")
 
-      sql_cmd="INSERT INTO Users (UserId, Name, Email, FirstMail, LastDone, CurrentTask) VALUES(NULL, '" + user_name + "', '" + user_email + "'," + "datetime("+time.time()+",'localtime')" + ", NULL, 1);"
+      sql_cmd="INSERT INTO Users (UserId, Name, Email, FirstMail, LastDone, CurrentTask) VALUES(NULL, '" + user_name + "', '" + user_email + "'," + "datetime("+str(int(time.time()))+", 'unixepoch', 'localtime')" + ", NULL, 1);"
       cur.execute(sql_cmd);
       con.commit();
 
