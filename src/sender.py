@@ -110,12 +110,24 @@ class mailSender (threading.Thread):
    def generate_status_update(self, cur, con, user_email):
       sqlcmd = "SELECT Name FROM Users WHERE Email=='" + user_email + "';"
       cur.execute(sqlcmd)
-      uname = cur.fetchone();
+      uname = cur.fetchone()
       sqlcmd = "SELECT CurrentTask FROM Users WHERE Email=='" + user_email + "';"
       cur.execute(sqlcmd)
-      curtask = cur.fetchone();
+      curtask = cur.fetchone()
 
-      return "Username: " + str(uname[0]) + "\nEmail: " + user_email + "\nCurrent Task: " + str(curtask[0]) # + "\nRestration Date: " + str(rdate[0]) + "\nRegistration Time: " + str(rtime[0])
+      conc = lite.connect('course.db')
+      curc = conc.cursor()
+      sqlcmd = "SELECT sum(Score) FROM TaskConfiguration WHERE TaskNr <" + str(curtask[0])
+      curc.execute(sqlcmd)
+      curscore = curc.fetchone()
+      curc.close()
+
+      if str(curscore[0]) == 'None':
+         tmpscore = 0
+      else:
+         tmpscore = curscore[0]
+
+      return "Username: " + str(uname[0]) + "\nEmail: " + user_email + "\nCurrent Task: " + str(curtask[0]) + "\n Your current Score: " + str(tmpscore) # + "\nRestration Date: " + str(rdate[0]) + "\nRegistration Time: " + str(rtime[0])
 
    ####
    # backup_message()
