@@ -22,6 +22,21 @@ class taskGenerator (threading.Thread):
       self.logger_queue = logger_queue
 
    ####
+   #  connect_to_db()
+   ####
+   def connect_to_db(self, dbname):
+      # connect to sqlite database ...
+      try:
+         con = lite.connect(dbname)
+      except:
+         logmsg = "Failed to connect to database: " + dbname
+         self.log_a_msg(logmsg, "ERROR")
+
+      cur = con.cursor()
+      return cur, con
+
+
+   ####
    # log_a_msg()
    ####
    def log_a_msg(self, msg, loglevel):
