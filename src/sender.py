@@ -92,7 +92,7 @@ class mailSender (threading.Thread):
       self.log_a_msg(logmsg, "DEBUG")
 
       if str(res[0]) == "None":
-         sql_cmd = "UPDATE Users SET LastDone=" + str(int(time.time())) + " where UserId==" + userid + ";"
+         sql_cmd = "UPDATE Users SET LastDone=" + "datetime("+time.time()+",'localtime')" + " where UserId==" + userid + ";"
          cur.execute(sql_cmd)
          con.commit();
 
