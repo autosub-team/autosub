@@ -90,7 +90,7 @@ class mailSender (threading.Thread):
       logmsg = "RES: "+ str(res[0])
       self.log_a_msg(logmsg, "DEBUG")
 
-      if str(res[0]) == "None":
+      if len(res) == 0:
          sql_cmd = "UPDATE Users SET LastDone=" + "datetime("+str(int(time.time()))+", 'unixepoch', 'localtime')" + " where UserId==" + str(userid) + ";"
          cur.execute(sql_cmd)
          con.commit();
@@ -118,6 +118,9 @@ class mailSender (threading.Thread):
 
       return numTasks
 
+   ####
+   # generate_status_update()
+   ####
    def generate_status_update(self, cur, con, user_email):
       sqlcmd = "SELECT Name FROM Users WHERE Email=='" + user_email + "';"
       cur.execute(sqlcmd)

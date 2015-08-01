@@ -125,8 +125,6 @@ class mailFetcher (threading.Thread):
       user_id = cur.fetchone();
 
       detach_dir = 'users/'+str(user_id[0])+"/Task"+str(TaskNr)
-      self.check_dir_mkdir(detach_dir)
-           
       ts = datetime.datetime.now()
       current_dir = detach_dir + "/Task"+str(TaskNr)+"_" + str(ts.year) + str(ts.month) + str(ts.day) + "_" + str(ts.hour) + "_" + str(ts.minute) + "_" +  str(ts.second) + "_" +  str(ts.microsecond) 
       self.check_dir_mkdir(current_dir)

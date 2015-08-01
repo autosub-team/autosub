@@ -22,24 +22,12 @@ def sig_handler(signum, frame):
 
 
 ########################################
+
 ####
 # log_a_msg()
 ####
 def log_a_msg(msg, loglevel):
       logger_queue.put(dict({"msg": msg, "type": loglevel, "loggername": "autosub.py"}))
-
-####
-# get_numTasks()
-####
-def get_num_Tasks():
-   curc, conc = self.connect_to_db('course.db')
-   sqlcmd = "SELECT Content FROM GeneralConfig WHERE ConfigItem == 'num_tasks'"
-   curc.execute(sqlcmd)
-   numTasks = int(curc.fetchone()[0])
-   conc.close()
-
-   return numTasks
-
 
 ####
 #  connect_to_db()
@@ -56,7 +44,7 @@ def connect_to_db(dbname):
    return cur, con
 
 ####
-#
+#   check_and_init_db_table
 ####
 def check_and_init_db_table(cur, con, tablename, fields):
    sqlcmd = "SELECT name FROM sqlite_master WHERE type == 'table' AND name = '" + tablename + "';"
@@ -87,7 +75,9 @@ def init_db_statvalue(cur, con, countername, value):
       sql_cmd="INSERT INTO StatCounters (CounterId, Name, Value) VALUES(NULL, '" + countername + "', " + str(value) + ");"
       cur.execute(sql_cmd);
       con.commit();
-
+####
+#   check_dir_mkdir
+####
 def check_dir_mkdir(directory): 
    if not os.path.exists(directory):
       os.mkdir(directory)
@@ -121,7 +111,7 @@ def load_specialmessage_to_db(cur, con, msgname, filename):
 # Check if all databases, tables, etc. are available, or if they have to be created.
 # if non-existent --> create them
 ####
-def init_ressources(numThreads):
+def init_ressources(numThreads,numTasks):
    cur,con = connect_to_db('semester.db') 
 
    ####################
@@ -133,7 +123,7 @@ def init_ressources(numThreads):
    ####################
    ret = check_and_init_db_table(cur, con, "TaskStats", "TaskId INTEGER PRIMARY KEY, NrSubmissions INT, NrSuccessful INT")
    if ret:
-      numTasks = get_num_Tasks()
+      numTasks = numTasks
       for t in range (1, numTasks+1):
          sql_cmd="INSERT INTO TaskStats (TaskId, NrSubmissions, NrSuccessful) VALUES("+ str(t) + ", 0, 0);"
          cur.execute(sql_cmd);
@@ -225,6 +215,8 @@ smtpserver = config.get('smtpserver', 'servername')
 numThreads = config.getint('general', 'num_workers')
 queueSize = config.getint('general', 'queue_size')
 poll_period = config.getint('general', 'poll_period')
+numTasks = config.getint('challenge','num_tasks')
+
 
 job_queue = queue.Queue(queueSize)
 sender_queue = queue.Queue(queueSize)
@@ -240,7 +232,7 @@ threadID += 1
 
 signal.signal(signal.SIGUSR1, sig_handler)
 
-init_ressources(numThreads)
+init_ressources(numThreads,numTasks)
 
 sender_t = sender.mailSender(threadID, "sender", sender_queue, autosub_mail, autosub_user, autosub_passwd, smtpserver, logger_queue)
 sender_t.daemon = True # make the sender thread a daemon, this way the main

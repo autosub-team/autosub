@@ -83,8 +83,11 @@ class taskGenerator (threading.Thread):
          MessageId=next_gen_msg.get('MessageId')
 
          #generate the directory for the task
-         detach_dir = 'users/'+str(UserId)+"/Task"+str(TaskNr)
-         self.check_dir_mkdir(detach_dir)
+         task_dir = 'users/'+str(UserId)+"/Task"+str(TaskNr)
+         self.check_dir_mkdir(task_dir)
+         #and the task description
+         desc_dir = task_dir+"/desc"
+         self.check_dir_mkdir(desc_dir)
 
          # check if there is a generator executable configured in the database -- if not fall back on static
          # generator script.

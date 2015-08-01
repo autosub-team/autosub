@@ -125,7 +125,7 @@ class worker (threading.Thread):
                 res = curc.fetchone();
                 conc.close() 
     
-                if str(res[0]) != 'None':
+                if len(res) != 0:
                    logmsg="Calling Generator Script: " + str(res[0])
                    self.log_a_msg(logmsg, "DEBUG")
                    logmsg="UserID " + str(UserId) + ",UserEmail " + str(UserEmail)
