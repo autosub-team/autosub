@@ -77,7 +77,7 @@ class worker (threading.Thread):
              curc.execute(sql_cmd);
              testname = curc.fetchone();
     
-             if str(testname[0]) != 'None':
+             if testname != None:
                 sql_cmd="SELECT PathToTask FROM TaskConfiguration WHERE TaskNr == "+str(TaskNr)
                 curc.execute(sql_cmd);
                 path = curc.fetchone();
@@ -125,7 +125,7 @@ class worker (threading.Thread):
                 res = curc.fetchone();
                 conc.close() 
     
-                if len(res) != 0:
+                if res != None:
                    logmsg="Calling Generator Script: " + str(res[0])
                    self.log_a_msg(logmsg, "DEBUG")
                    logmsg="UserID " + str(UserId) + ",UserEmail " + str(UserEmail)

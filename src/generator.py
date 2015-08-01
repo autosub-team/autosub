@@ -96,7 +96,7 @@ class taskGenerator (threading.Thread):
          curc.execute(sql_cmd)
          generatorname = curc.fetchone()
     
-         if str(generatorname[0]) != 'None':
+         if generatorname != None:
             sql_cmd="SELECT PathToTask FROM TaskConfiguration WHERE TaskNr == "+str(TaskNr)
             curc.execute(sql_cmd)
             path = curc.fetchone()

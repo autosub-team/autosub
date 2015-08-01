@@ -1,6 +1,6 @@
 Welcome to this course on Operating Systems.
 
-You just sent your first e-mail to <submission@gmail.com>. This way
+You just sent your first e-mail to <vhdlabgabe+e384@tuwien.ac.at>. This way
 you subscribed to this part of the course. Very shortly you will receive
 an e-mail with your first task. But to start you need to know a little
 more than just the task. Most importantely: all e-mails sent to this

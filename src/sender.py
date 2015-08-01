@@ -136,7 +136,7 @@ class mailSender (threading.Thread):
       curscore = curc.fetchone()
       curc.close()
 
-      if str(curscore[0]) == 'None':
+      if curscore == None:
          tmpscore = 0
       else:
          tmpscore = curscore[0]
