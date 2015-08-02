@@ -247,13 +247,15 @@ class mailSender (threading.Thread):
          elif (str(next_send_msg.get('message_type')) == "Status"):
             msg['Subject'] = "Your Current Status"
             TEXT = self.generate_status_update(cur, con, str(next_send_msg.get('recipient')))
-            #also attach current task
-            sql_cmd="SELECT TaskAttachments FROM UserTasks WHERE TaskNr == " + str(TaskNr) + " AND UserId == '"+ str(next_send_msg.get('UserId')) + "';"
-            cur.execute(sql_cmd)
-            res = cur.fetchone()
-            logmsg = "got the following attachments: " + str(res)
-            self.log_a_msg(logmsg, "DEBUG")
-            attachments = str(res[0]).split()
+            numTasks = self.get_num_Tasks()
+            if (int(numTasks) > int(TaskNr)):
+               #also attach current task
+               sql_cmd="SELECT TaskAttachments FROM UserTasks WHERE TaskNr == " + str(TaskNr) + " AND UserId == '"+ str(next_send_msg.get('UserId')) + "';"
+               cur.execute(sql_cmd)
+               res = cur.fetchone()
+               logmsg = "got the following attachments: " + str(res)
+               self.log_a_msg(logmsg, "DEBUG")
+               attachments = str(res[0]).split()
          elif (str(next_send_msg.get('message_type')) == "InvalidTask"):
             msg['Subject'] = "Invalid Task Number"
             TEXT = self.read_specialmessage('INVALID')
