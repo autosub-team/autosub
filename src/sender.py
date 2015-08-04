@@ -214,7 +214,8 @@ class mailSender (threading.Thread):
 
                   logmsg = "got the following attachments: " + str(res)
                   self.log_a_msg(logmsg, "DEBUG")
-                  attachments = str(res[0]).split()
+                  if res:
+                     attachments = str(res[0]).split()
  
                   self.user_set_currentTask(cur, con, TaskNr, str(next_send_msg.get('UserId')))
 
@@ -259,7 +260,8 @@ class mailSender (threading.Thread):
                res = cur.fetchone()
                logmsg = "got the following attachments: " + str(res)
                self.log_a_msg(logmsg, "DEBUG")
-               attachments = str(res[0]).split()
+               if res:
+                  attachments = str(res[0]).split()
          elif (str(next_send_msg.get('message_type')) == "InvalidTask"):
             msg['Subject'] = "Invalid Task Number"
             TEXT = self.read_specialmessage('INVALID')
@@ -290,9 +292,13 @@ class mailSender (threading.Thread):
 
          # Read Text for E-Mail Body from a config file
          if has_text:
-            fp = open(path_to_msg, 'r')
-            TEXT = fp.read()
-            fp.close()
+            try:
+               fp = open(path_to_msg, 'r')
+               TEXT = fp.read()
+               fp.close()
+            except:
+               TEXT = "Even the static file was not available!"
+               self.log_a_msg("Failed to read from config file", "WARNING")
 
          msg.attach( MIMEText(TEXT, 'plain', 'utf-8') )
 
