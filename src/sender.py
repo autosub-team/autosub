@@ -196,23 +196,26 @@ class mailSender (threading.Thread):
                sql_cmd="SELECT PathToTask FROM TaskConfiguration WHERE TaskNr == "+str(TaskNr)
                curcCourse.execute(sql_cmd)
                paths = curcCourse.fetchone()
-               path_to_task = str(paths[0])
-               concCourse.close() 
+               if not paths:
+                  self.log_a_msg("It seems, the Path to Task "+ str(TaskNr) + " is not configured.", "WARNING")
+               else:
+                  path_to_task = str(paths[0])
+                  concCourse.close() 
 
-               path_to_msg = path_to_task + "/description.txt"
-               has_text = 1;
-               logmsg="used sql comand: SELECT TaskAttachments FROM UserTasks WHERE TaskNr == " + TaskNr + " AND UserId == '"+ str(next_send_msg.get('UserId')) + "';"
-               self.log_a_msg(logmsg, "DEBUG");
+                  path_to_msg = path_to_task + "/description.txt"
+                  has_text = 1;
+                  logmsg="used sql comand: SELECT TaskAttachments FROM UserTasks WHERE TaskNr == " + TaskNr + " AND UserId == '"+ str(next_send_msg.get('UserId')) + "';"
+                  self.log_a_msg(logmsg, "DEBUG");
 
-               sql_cmd="SELECT TaskAttachments FROM UserTasks WHERE TaskNr == " + TaskNr + " AND UserId == '"+ str(next_send_msg.get('UserId')) + "';"
-               cur.execute(sql_cmd)
-               res = cur.fetchone()
+                  sql_cmd="SELECT TaskAttachments FROM UserTasks WHERE TaskNr == " + TaskNr + " AND UserId == '"+ str(next_send_msg.get('UserId')) + "';"
+                  cur.execute(sql_cmd)
+                  res = cur.fetchone()
 
-               logmsg = "got the following attachments: " + str(res)
-               self.log_a_msg(logmsg, "DEBUG")
-               attachments = str(res[0]).split()
+                  logmsg = "got the following attachments: " + str(res)
+                  self.log_a_msg(logmsg, "DEBUG")
+                  attachments = str(res[0]).split()
  
-               self.user_set_currentTask(cur, con, TaskNr, str(next_send_msg.get('UserId')))
+                  self.user_set_currentTask(cur, con, TaskNr, str(next_send_msg.get('UserId')))
 
             # we are sending out the description for TaskNr, but we want to
             # update the stats for TaskNr-1 !
