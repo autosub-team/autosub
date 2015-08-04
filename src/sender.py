@@ -198,6 +198,7 @@ class mailSender (threading.Thread):
                paths = curcCourse.fetchone()
                if not paths:
                   self.log_a_msg("It seems, the Path to Task "+ str(TaskNr) + " is not configured.", "WARNING")
+                  TEXT = "Sorry, but something went wrong... probably misconfiguration or missing configuration of Task " + str(TaskNr)
                else:
                   path_to_task = str(paths[0])
                   concCourse.close() 
