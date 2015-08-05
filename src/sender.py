@@ -253,7 +253,7 @@ class mailSender (threading.Thread):
             msg['Subject'] = "Your Current Status"
             TEXT = self.generate_status_update(cur, con, str(next_send_msg.get('recipient')))
             numTasks = self.get_num_Tasks()
-            if (int(numTasks) > int(TaskNr)):
+            if (int(numTasks) >=  int(TaskNr)):
                #also attach current task
                sql_cmd="SELECT TaskAttachments FROM UserTasks WHERE TaskNr == " + str(TaskNr) + " AND UserId == '"+ str(next_send_msg.get('UserId')) + "';"
                cur.execute(sql_cmd)
