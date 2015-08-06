@@ -73,19 +73,29 @@ class worker (threading.Thread):
              # check if there is a test executable configured in the database -- if not fall back on static
              # test script.
              curc, conc = self.connect_to_db('course.db')
-             sql_cmd="SELECT TestExecutable FROM TaskConfiguration WHERE TaskNr == "+str(TaskNr)
-             curc.execute(sql_cmd);
-             testname = curc.fetchone();
+             try:
+                sql_cmd="SELECT TestExecutable FROM TaskConfiguration WHERE TaskNr == "+str(TaskNr)
+                curc.execute(sql_cmd);
+                testname = curc.fetchone();
+             except:
+                logmsg = "Failed to fetch TestExecutable for Tasknr: "+ str(TaskNr) 
+                logmsg = logmsg + "from the Database! Table TaskConfiguration corrupted?"
+                self.log_a_msg(logmsg, "ERROR")
     
              if testname != None:
-                sql_cmd="SELECT PathToTask FROM TaskConfiguration WHERE TaskNr == "+str(TaskNr)
-                curc.execute(sql_cmd);
-                path = curc.fetchone();
-                scriptpath = str(path[0]) + "/" + str(testname[0])
-             else:
+                try:
+                   sql_cmd="SELECT PathToTask FROM TaskConfiguration WHERE TaskNr == "+str(TaskNr)
+                   curc.execute(sql_cmd);
+                   path = curc.fetchone();
+                   scriptpath = str(path[0]) + "/" + str(testname[0])
+                except: #if a testname was given, then a Path should be there as well!
+                   logmsg = "Failed to fetch Path to Tasknr: "+ str(TaskNr) 
+                   logmsg = logmsg + "from the Database! Table TaskConfiguration corrupted?"
+                   self.log_a_msg(logmsg, "ERROR")
+
+             else: # in case no testname was given, we fall back to the static directory structure
                 scriptpath = "tasks/task" + str(TaskNr) + "/./tests.sh"
              conc.close()  
-             
              
              # get the taskParameters
              curs, cons = self.connect_to_db('semester.db')
@@ -120,10 +130,16 @@ class worker (threading.Thread):
 
                 common.send_email(self.sender_queue, str(UserEmail), str(UserId), "Success", str(TaskNr), "", "")
                 curc, conc = self.connect_to_db('course.db')
-                sql_cmd="SELECT GeneratorExecutable FROM TaskConfiguration WHERE TaskNr == " + str(int(TaskNr)+1) + ";"
-                curc.execute(sql_cmd);
-                res = curc.fetchone();
-                conc.close() 
+                try:
+                   sql_cmd="SELECT GeneratorExecutable FROM TaskConfiguration WHERE TaskNr == " + str(int(TaskNr)+1) + ";"
+                   curc.execute(sql_cmd);
+                   res = curc.fetchone();
+                except:
+                   logmsg = "Failed to fetch Generator Script for Tasknr: "+ str(TaskNr) 
+                   logmsg = logmsg + "from the Database! Table TaskConfiguration corrupted?"
+                   self.log_a_msg(logmsg, "ERROR")
+                finally:
+                    conc.close() 
     
                 if res != None:
                    logmsg="Calling Generator Script: " + str(res[0])
