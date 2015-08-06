@@ -143,7 +143,7 @@ def init_ressources(numThreads,numTasks):
    ####################
    ##### UserTasks ####
    ####################
-   ret = check_and_init_db_table(cur, con, "UserTasks", "UniqueId INTEGER PRIMARY KEY AUTOINCREMENT, TaskNr INT, UserId INT, TaskParameters TEXT, TaskDescription TEXT, TaskAttachments TEXT")
+   ret = check_and_init_db_table(cur, con, "UserTasks", "UniqueId INTEGER PRIMARY KEY AUTOINCREMENT, TaskNr INT, UserId INT, TaskParameters TEXT, TaskDescription TEXT, TaskAttachments TEXT, NrSubmissions INTEGER, FirstSuccessful INTEGER")
 
    ####################
    #### Whitelist #####
