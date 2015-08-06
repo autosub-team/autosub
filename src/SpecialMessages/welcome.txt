@@ -1,4 +1,4 @@
-Welcome to this course on Operating Systems.
+Welcome to this course on VHDL.
 
 You just sent your first e-mail to <vhdlabgabe+e384@tuwien.ac.at>. This way
 you subscribed to this part of the course. Very shortly you will receive
