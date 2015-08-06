@@ -76,6 +76,19 @@ class mailSender (threading.Thread):
       con.commit();
 
    ####
+   # user_get_currentTask()
+   #
+   # Get the surrentTask of the user with userid.
+   ####
+   def user_get_currentTask(self, cur, con, userid):
+      sql_cmd = "Select CurrentTask from Users where UserId=='" + str(userid) + "';"
+      cur.execute(sql_cmd)
+      res = cur.fetchone();
+      return str(res[0]);
+
+
+
+   ####
    # check_and_set_lastDone()
    #
    # Check if the timestamp in lastDone has been set. If so, leave the old one
@@ -182,12 +195,18 @@ class mailSender (threading.Thread):
 
          if (str(next_send_msg.get('message_type')) == "Task"):
             numTasks = self.get_num_Tasks()
+            ctasknr=self.user_get_currentTask(cur, con, str(next_send_msg.get('UserId')))
+            print ("currenttask: %i" % (int(ctasknr)))
+            print ("tasknr: %i" % (int(TaskNr)-1))
             if (numTasks+1 == int(TaskNr)): # last task solved!
                msg['Subject'] = "Congratulations!" 
                TEXT = self.read_specialmessage('CONGRATS')
 
-               self.user_set_currentTask(cur, con, TaskNr, str(next_send_msg.get('UserId')))
-               self.check_and_set_lastDone(cur, con, next_send_msg.get('UserId'))
+               if ((int(TaskNr)-1) == (int(ctasknr))):
+                  #statistics shall only be udated on the firs succesful submission
+                  self.user_set_currentTask(cur, con, TaskNr, str(next_send_msg.get('UserId')))
+                  self.increment_db_taskcounter(cur, con, 'NrSuccessful', str(int(TaskNr)-1))
+                  self.check_and_set_lastDone(cur, con, next_send_msg.get('UserId'))
 
             else: # at least one more task to do: send out the description
                msg['Subject'] = "Description Task" + str(TaskNr) 
@@ -217,12 +236,12 @@ class mailSender (threading.Thread):
                   if res:
                      attachments = str(res[0]).split()
  
-                  self.user_set_currentTask(cur, con, TaskNr, str(next_send_msg.get('UserId')))
+                  if ((int(TaskNr)-1) == (int(ctasknr))):
+                     #statistics shall only be udated on the firs succesful submission
+                     self.user_set_currentTask(cur, con, TaskNr, str(next_send_msg.get('UserId')))
+                     self.increment_db_taskcounter(cur, con, 'NrSuccessful', str(int(TaskNr)-1))
 
-            # we are sending out the description for TaskNr, but we want to
-            # update the stats for TaskNr-1 !
             self.increment_db_taskcounter(cur, con, 'NrSubmissions', str(int(TaskNr)-1))
-            self.increment_db_taskcounter(cur, con, 'NrSuccessful', str(int(TaskNr)-1))
 
             self.backup_message(messageid)
          elif (str(next_send_msg.get('message_type')) == "Failed"):
