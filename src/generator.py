@@ -9,7 +9,8 @@
 import threading
 import sqlite3 as lite
 import datetime
-import logger, common
+import logger
+import common as c
 import os
 
 class taskGenerator (threading.Thread):
@@ -30,17 +31,10 @@ class taskGenerator (threading.Thread):
          con = lite.connect(dbname)
       except:
          logmsg = "Failed to connect to database: " + dbname
-         self.log_a_msg(logmsg, "ERROR")
+         c.log_a_msg(self.logger_queue, self.name, logmsg, "ERROR")
 
       cur = con.cursor()
       return cur, con
-
-
-   ####
-   # log_a_msg()
-   ####
-   def log_a_msg(self, msg, loglevel):
-      self.logger_queue.put(dict({"msg": msg, "type": loglevel, "loggername": self.name}))
 
    ####
    #  connect_to_db()
@@ -51,7 +45,7 @@ class taskGenerator (threading.Thread):
          con = lite.connect(dbname)
       except:
          logmsg = "Failed to connect to database: " + dbname
-         self.log_a_msg(logmsg, "ERROR")
+         c.log_a_msg(self.logger_queue, self.name, logmsg, "ERROR")
 
       cur = con.cursor()
       return cur, con
@@ -63,17 +57,17 @@ class taskGenerator (threading.Thread):
       if not os.path.exists(directory):
          os.mkdir(directory)
          logmsg = "Created directory: " + directory
-         self.log_a_msg(logmsg, "DEBUG")
+         c.log_a_msg(self.logger_queue, self.name, logmsg, "DEBUG")
       else:
          logmsg = "Directory already exists: " + directory
-         self.log_a_msg(logmsg, "WARNING")
+         c.log_a_msg(self.logger_queue, self.name, logmsg, "WARNING")
 
 
    ####
    # thread code for the generator thread.
    ####
    def run(self):
-      self.log_a_msg("Task Generator thread started", "INFO")
+      c.log_a_msg(self.logger_queue, self.name, "Task Generator thread started", "INFO")
 
       while True:
          next_gen_msg = self.gen_queue.get(True) #blocking wait on gen_queue
@@ -108,9 +102,9 @@ class taskGenerator (threading.Thread):
          generator_res = os.system(command)
          if generator_res:
             logmsg = "Failed to call generator script, return value: " + str(generator_res)
-            self.log_a_msg(logmsg, "DEBUG")
+            c.log_a_msg(self.logger_queue, self.name, logmsg, "DEBUG")
 
          logmsg = "Generated individual task for user/tasknr:" + str(UserId) + "/" + str(TaskNr)
-         self.log_a_msg(logmsg, "DEBUG")
+         c.log_a_msg(self.logger_queue, self.name, logmsg, "DEBUG")
 
          common.send_email(self.sender_queue, str(UserEmail), str(UserId), "Task", str(TaskNr), "Your personal example", str(MessageId))

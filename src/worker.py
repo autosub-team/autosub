@@ -8,7 +8,7 @@
 
 import threading
 import os
-import common
+import common as c
 import sqlite3 as lite
 
 class worker (threading.Thread):
@@ -36,7 +36,7 @@ class worker (threading.Thread):
          con = lite.connect(dbname)
       except:
          logmsg = "Failed to connect to database: " + dbname
-         self.log_a_msg(logmsg, "ERROR")
+         c.log_a_msg(self.logger_queue, self.name, logmsg, "ERROR")
 
       cur = con.cursor()
       return cur, con
@@ -57,7 +57,7 @@ class worker (threading.Thread):
    ####
    def run(self):
       logmsg = "Starting " + self.name
-      self.log_a_msg(logmsg, "INFO")
+      c.log_a_msg(self.logger_queue, self.name, logmsg, "INFO")
 
       while True:
          nextjob = self.job_queue.get(True)
@@ -68,7 +68,7 @@ class worker (threading.Thread):
              MessageId=nextjob.get('MessageId')
 
              logmsg = self.name + ": got a new job: " + str(TaskNr) + "from the user with id: " + str(UserId)
-             self.log_a_msg(logmsg, "INFO")
+             c.log_a_msg(self.logger_queue, self.name, logmsg, "INFO")
 
              # check if there is a test executable configured in the database -- if not fall back on static
              # test script.
@@ -80,7 +80,7 @@ class worker (threading.Thread):
              except:
                 logmsg = "Failed to fetch TestExecutable for Tasknr: "+ str(TaskNr) 
                 logmsg = logmsg + "from the Database! Table TaskConfiguration corrupted?"
-                self.log_a_msg(logmsg, "ERROR")
+                c.log_a_msg(self.logger_queue, self.name, logmsg, "ERROR")
     
              if testname != None:
                 try:
@@ -91,7 +91,7 @@ class worker (threading.Thread):
                 except: #if a testname was given, then a Path should be there as well!
                    logmsg = "Failed to fetch Path to Tasknr: "+ str(TaskNr) 
                    logmsg = logmsg + "from the Database! Table TaskConfiguration corrupted?"
-                   self.log_a_msg(logmsg, "ERROR")
+                   c.log_a_msg(self.logger_queue, self.name, logmsg, "ERROR")
 
              else: # in case no testname was given, we fall back to the static directory structure
                 scriptpath = "tasks/task" + str(TaskNr) + "/./tests.sh"
@@ -104,7 +104,7 @@ class worker (threading.Thread):
              
              # run the test script
              logmsg = "Running test script: " + scriptpath 
-             self.log_a_msg(logmsg, "INFO")
+             c.log_a_msg(self.logger_queue, self.name, logmsg, "INFO")
              command = ""+scriptpath+" " + str(UserId) + " " + str(TaskNr) + " " + str(taskParameters) +" >> autosub.stdout 2>>autosub.stderr"
              test_res = os.system(command)
 
@@ -112,23 +112,23 @@ class worker (threading.Thread):
 
                 logmsg = "Test failed! User: " + str(UserId) + " Task: " + str(TaskNr)
                 logmsg = logmsg + "return value:" + str(test_res)
-                self.log_a_msg(logmsg, "INFO")
+                c.log_a_msg(self.logger_queue, self.name, logmsg, "INFO")
 
-                common.send_email(self.sender_queue, str(UserEmail), str(UserId), "Failed", str(TaskNr), "", str(MessageId))
+                c.send_email(self.sender_queue, str(UserEmail), str(UserId), "Failed", str(TaskNr), "", str(MessageId))
 
                 if test_res == 512: # Need to read up on this but os.system() returns 
                                     # 256 when the script returns 1 and 512 when the script returns 2!
                    logmsg = "SecAlert: This test failed due to probable attack by user!"
-                   self.log_a_msg(logmsg, "INFO")
+                   c.log_a_msg(self.logger_queue, self.name, logmsg, "INFO")
 
-                   common.send_email(self.sender_queue, str(UserEmail), str(UserId), "SecAlert", str(TaskNr), "", str(MessageId))
+                   c.send_email(self.sender_queue, str(UserEmail), str(UserId), "SecAlert", str(TaskNr), "", str(MessageId))
 
              else:
 
                 logmsg = "Test succeeded! User: " + str(UserId) + " Task: " + str(TaskNr)
-                self.log_a_msg(logmsg, "INFO")
+                c.log_a_msg(self.logger_queue, self.name, logmsg, "INFO")
 
-                common.send_email(self.sender_queue, str(UserEmail), str(UserId), "Success", str(TaskNr), "", "")
+                c.send_email(self.sender_queue, str(UserEmail), str(UserId), "Success", str(TaskNr), "", "")
                 curc, conc = self.connect_to_db('course.db')
                 try:
                    sql_cmd="SELECT GeneratorExecutable FROM TaskConfiguration WHERE TaskNr == " + str(int(TaskNr)+1) + ";"
@@ -137,15 +137,15 @@ class worker (threading.Thread):
                 except:
                    logmsg = "Failed to fetch Generator Script for Tasknr: "+ str(TaskNr) 
                    logmsg = logmsg + "from the Database! Table TaskConfiguration corrupted?"
-                   self.log_a_msg(logmsg, "ERROR")
+                   c.log_a_msg(self.logger_queue, self.name, logmsg, "ERROR")
                 finally:
                     conc.close() 
     
                 if res != None:
                    logmsg="Calling Generator Script: " + str(res[0])
-                   self.log_a_msg(logmsg, "DEBUG")
+                   c.log_a_msg(self.logger_queue, self.name, logmsg, "DEBUG")
                    logmsg="UserID " + str(UserId) + ",UserEmail " + str(UserEmail)
-                   self.log_a_msg(logmsg, "DEBUG")
+                   c.log_a_msg(self.logger_queue, self.name, logmsg, "DEBUG")
                    self.gen_queue.put(dict({"UserId": str(UserId), "UserEmail": str(UserEmail), "TaskNr": str(int(TaskNr)+1), "MessageId": ""}))
                 else:
-                   common.send_email(self.sender_queue, str(UserEmail), str(UserId), "Task", str(int(TaskNr)+1), "", str(MessageId))
+                   c.send_email(self.sender_queue, str(UserEmail), str(UserId), "Task", str(int(TaskNr)+1), "", str(MessageId))

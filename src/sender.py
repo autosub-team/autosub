@@ -15,6 +15,7 @@ from email.mime.text import MIMEText
 from email.utils import formatdate
 from email import encoders
 import sqlite3 as lite
+import common as c
 
 class mailSender (threading.Thread):
    def __init__(self, threadID, name, sender_queue, autosub_mail, autosub_user, autosub_passwd, autosub_smtpserver, logger_queue):
@@ -27,12 +28,6 @@ class mailSender (threading.Thread):
       self.mail_pwd = autosub_passwd
       self.smtpserver = autosub_smtpserver
       self.logger_queue = logger_queue
-
-   ####
-   # log_a_msg()
-   ####
-   def log_a_msg(self, msg, loglevel):
-         self.logger_queue.put(dict({"msg": msg, "type": loglevel, "loggername": self.name}))
 
    ####
    # get_admin_email()
@@ -55,7 +50,7 @@ class mailSender (threading.Thread):
          con = lite.connect(dbname)
       except:
          logmsg = "Failed to connect to database: " + dbname
-         self.log_a_msg(logmsg, "ERROR")
+         c.log_a_msg(self.logger_queue, self.name, logmsg, "ERROR")
 
       cur = con.cursor()
       return cur, con
@@ -113,7 +108,7 @@ class mailSender (threading.Thread):
       cur.execute(sql_cmd)
       res = cur.fetchone();
       logmsg = "RES: "+ str(res[0])
-      self.log_a_msg(logmsg, "DEBUG")
+      c.log_a_msg(self.logger_queue, self.name, logmsg, "DEBUG")
 
       if str(res[0]) == 'None':
          sql_cmd = "UPDATE Users SET LastDone=" + "datetime("+str(int(time.time()))+", 'unixepoch', 'localtime')" + " where UserId==" + str(userid) + ";"
@@ -176,7 +171,7 @@ class mailSender (threading.Thread):
    ####
    def backup_message(self, messageid):
       logmsg= "backup not implemented yet; messageid: " + messageid
-      self.log_a_msg(logmsg, "DEBUG")
+      c.log_a_msg(self.logger_queue, self.name, logmsg, "DEBUG")
 
    def send_out_email(self, recipient, message, cur, con):
       try:
@@ -186,10 +181,10 @@ class mailSender (threading.Thread):
          server.login(self.autosub_user, self.mail_pwd)
          server.sendmail(self.mail_user, recipient, message)
          server.close()
-         self.log_a_msg("Successfully sent an e-mail!", "DEBUG")
+         c.log_a_msg(self.logger_queue, self.name, "Successfully sent an e-mail!", "DEBUG")
          self.increment_db_statcounter(cur, con, 'nr_mails_sent')
       except:
-         self.log_a_msg("Failed to send out an e-mail!", "ERROR")
+         c.log_a_msg(self.logger_queue, self.name, "Failed to send out an e-mail!", "ERROR")
 
    def read_text_file(self, path_to_msg):
       try:
@@ -198,7 +193,7 @@ class mailSender (threading.Thread):
          fp.close()
       except:
          TEXT = "Even the static file was not available!"
-         self.log_a_msg("Failed to read from config file", "WARNING")
+         c.log_a_msg(self.logger_queue, self.name, "Failed to read from config file", "WARNING")
 
       return TEXT
 
@@ -218,14 +213,14 @@ class mailSender (threading.Thread):
             msg.attach(part)
 
       logmsg = "Prepared message: \n" + str(msg)
-      self.log_a_msg(logmsg, "DEBUG")
+      c.log_a_msg(self.logger_queue, self.name, logmsg, "DEBUG")
       return msg
 
    ####
    # thread code of the sender thread.
    ####
    def run(self):
-      self.log_a_msg("Starting Mail Sender Thread!", "INFO")
+      c.log_a_msg(self.logger_queue, self.name, "Starting Mail Sender Thread!", "INFO")
 
       while True:
          next_send_msg = self.sender_queue.get(True) #blocking wait on sender_queue
@@ -239,7 +234,7 @@ class mailSender (threading.Thread):
          msg['From'] = self.mail_user
          msg['To'] = str(next_send_msg.get('recipient'))
          logmsg= "RECIPIENT: " + str(next_send_msg.get('recipient'))
-         self.log_a_msg(logmsg, "DEBUG")
+         c.log_a_msg(self.logger_queue, self.name, logmsg, "DEBUG")
          
          msg['Date'] = formatdate(localtime = True)
 
@@ -272,7 +267,7 @@ class mailSender (threading.Thread):
                   curcCourse.execute(sql_cmd)
                   paths = curcCourse.fetchone()
                   if not paths:
-                     self.log_a_msg("It seems, the Path to Task "+ str(TaskNr) + " is not configured.", "WARNING")
+                     c.log_a_msg(self.logger_queue, self.name, "It seems, the Path to Task "+ str(TaskNr) + " is not configured.", "WARNING")
                      TEXT = "Sorry, but something went wrong... probably misconfiguration or missing configuration of Task " + str(TaskNr)
                      msg = self.assemble_email(msg, TEXT, '')
                      self.send_out_email(str(next_send_msg.get('recipient')), msg.as_string(), cur, con)
@@ -283,14 +278,14 @@ class mailSender (threading.Thread):
                      path_to_msg = path_to_task + "/description.txt"
                      TEXT = self.read_text_file(path_to_msg)
                      logmsg="used sql comand: SELECT TaskAttachments FROM UserTasks WHERE TaskNr == " + TaskNr + " AND UserId == '"+ str(next_send_msg.get('UserId')) + "';"
-                     self.log_a_msg(logmsg, "DEBUG");
+                     c.log_a_msg(self.logger_queue, self.name, logmsg, "DEBUG");
 
                      sql_cmd="SELECT TaskAttachments FROM UserTasks WHERE TaskNr == " + TaskNr + " AND UserId == '"+ str(next_send_msg.get('UserId')) + "';"
                      cur.execute(sql_cmd)
                      res = cur.fetchone()
 
                      logmsg = "got the following attachments: " + str(res)
-                     self.log_a_msg(logmsg, "DEBUG")
+                     c.log_a_msg(self.logger_queue, self.name, logmsg, "DEBUG")
                      if res:
                         attachments = str(res[0]).split()
  
@@ -344,7 +339,7 @@ class mailSender (threading.Thread):
                cur.execute(sql_cmd)
                res = cur.fetchone()
                logmsg = "got the following attachments: " + str(res)
-               self.log_a_msg(logmsg, "DEBUG")
+               c.log_a_msg(self.logger_queue, self.name, logmsg, "DEBUG")
                if res:
                   attachments = str(res[0]).split()
                msg = self.assemble_email(msg, TEXT, attachments)
@@ -386,7 +381,7 @@ class mailSender (threading.Thread):
             msg = self.assemble_email(msg, TEXT, '')
             self.send_out_email(str(next_send_msg.get('recipient')), msg.as_string(), cur, con)
          else:
-            self.log_a_msg("Unkown Message Type in the sender_queue!","ERROR")
+            c.log_a_msg(self.logger_queue, self.name, "Unkown Message Type in the sender_queue!","ERROR")
             self.backup_message(messageid)
             msg = self.assemble_email(msg, TEXT, '')
             self.send_out_email(str(next_send_msg.get('recipient')), msg.as_string(), cur, con)

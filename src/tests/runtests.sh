@@ -9,4 +9,8 @@ rm autosub.log
 
 python3 test_autosub.py
 
+rm autosub.log
+
+python3 test_fetcher.py
+
 export PYTHONPATH=$TMPPY
