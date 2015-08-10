@@ -36,4 +36,3 @@ class autosubLogger (threading.Thread):
             logging.error("%s ", extra=d)
          else: #if we don't know, we assume the worst
             logging.error("%s ", extra=d)
-
