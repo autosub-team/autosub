@@ -20,7 +20,6 @@ def sig_handler(signum, frame):
    logger_queue.put(dict({"msg": "Shutting down autosub...", "type": "INFO", "loggername": "Main"}))
    exit_flag = 1
 
-
 ########################################
 
 ####
@@ -75,6 +74,7 @@ def init_db_statvalue(cur, con, countername, value):
       sql_cmd="INSERT INTO StatCounters (CounterId, Name, Value) VALUES(NULL, '" + countername + "', " + str(value) + ");"
       cur.execute(sql_cmd);
       con.commit();
+
 ####
 #   check_dir_mkdir
 #
@@ -114,7 +114,7 @@ def load_specialmessage_to_db(cur, con, msgname, filename):
 # Check if all databases, tables, etc. are available, or if they have to be created.
 # if non-existent --> create them
 ####
-def init_ressources(numThreads,numTasks):
+def init_ressources(numThreads, numTasks):
    cur,con = connect_to_db('semester.db') 
 
    ####################
@@ -196,7 +196,8 @@ def init_ressources(numThreads,numTasks):
    con.close()
 
 ########################################
-def main():
+if __name__ == '__main__':
+
    threadID = 1
    worker_t = []
    exit_flag = 0
@@ -219,7 +220,6 @@ def main():
    queueSize = config.getint('general', 'queue_size')
    poll_period = config.getint('general', 'poll_period')
    numTasks = config.getint('challenge','num_tasks')
-
 
    job_queue = queue.Queue(queueSize)
    sender_queue = queue.Queue(queueSize)
@@ -274,6 +274,3 @@ def main():
 
    time.sleep(1) # give the logger thread a little time write the last log message 
 
-
-if __name__ == '__main__':
-   main()

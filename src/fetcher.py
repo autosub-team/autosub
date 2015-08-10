@@ -273,6 +273,95 @@ class mailFetcher (threading.Thread):
       return numTasks
 
    ####
+   # loop_code()
+   #
+   # The code run in the while True loop of the mail fetcher thread.
+   ####
+   def loop_code(self):
+      cur,con = self.connect_to_db('semester.db')
+
+      m = self.connect_to_imapserver()
+
+      if m != 0:
+         items = self.fetch_new_emails(m)
+
+         # iterate over all new e-mails and take action according to the structure of the subject line
+         for emailid in items:
+
+            self.increment_db_statcounter(cur, con, 'nr_mails_fetched')
+
+            resp, data = m.fetch(emailid, "(RFC822)") # fetching the mail, "`(RFC822)`" means "get the whole stuff", but you can ask for headers only, etc
+
+            mail = email.message_from_bytes(data[0][1]) # parsing the mail content to get a mail object
+
+            mail_subject = str(mail['subject'])
+            from_header = str(mail['From'])
+            split_header = str(from_header).split("<")
+            user_name = split_header[0]
+            try:
+               user_email = str(split_header[1].split(">")[0])
+            except:
+               user_email = str(mail['From'])
+
+            messageid = mail.get('Message-ID')
+
+            whitelisted = self.check_if_whitelisted(cur, con, user_email)
+
+            if whitelisted:
+ 
+               sql_cmd="SELECT UserId FROM Users WHERE Email='" + str(user_email) +"';"
+               cur.execute(sql_cmd);
+               res = cur.fetchall();
+               if res:
+                  logmsg = "Got mail from an already known user!"
+                  self.log_a_msg(logmsg, "INFO")
+
+                  if re.search('[Rr][Ee][Ss][Uu][Ll][Tt]', mail_subject):
+                     searchObj = re.search( '[0-9]+', mail_subject, )
+                     if (int(searchObj.group()) <= self.get_num_Tasks()):
+                        logmsg = 'Processing a Result'
+                        self.log_a_msg(logmsg, "DEBUG")
+                        self.take_new_results(user_email, searchObj.group(), cur, con, mail, messageid)
+                     else:
+                        logmsg = 'Given Task number is higher than actual Number of Tasks!'
+                        self.log_a_msg(logmsg, "DEBUG")
+                        common.send_email(self.sender_queue, user_email, "", "InvalidTask", "", "", messageid)
+                  elif re.search('[Qq][Uu][Ee][Ss][Tt][Ii][Oo][Nn]', mail_subject):
+                     self.a_question_was_asked(cur, con, user_email, mail, messageid)
+                  elif re.search('[Ss][Tt][Aa][Tt][Uu][Ss]', mail_subject):
+                     self.a_status_is_requested(cur, con, user_email, messageid)
+                  else:
+                     logmsg = 'Got a kind of message I do not understand. Sending a usage mail...' 
+                     self.log_a_msg(logmsg, "DEBUG")
+                     common.send_email(self.sender_queue, user_email, "", "Usage", "", "", messageid)
+
+               else:
+                  self.add_new_user(user_name, user_email, cur, con)
+                  common.send_email(self.sender_queue, user_email, "", "Welcome", "", "", messageid)
+
+            else:
+                  common.send_email(self.sender_queue, user_email, "", "NotAllowed", "", "", messageid)
+
+         try:
+            m.close()
+         except imaplib.IMAP4.abort:
+            logmsg = "Closing connection to server was aborted (probably a server-side problem). Trying to connect again ..."
+            self.log_a_msg(logmsg, "ERROR")
+            #m.close()
+         except imaplib.IMAP4.error:
+            logmsg = "Got an error when trying to connect to the imap server. Trying to connect again ..."
+            self.log_a_msg(logmsg, "ERROR")
+         except:
+            logmsg = "Got an unknown exception when trying to connect to the imap server. Trying to connect again ..."
+            self.log_a_msg(logmsg, "ERROR")
+         finally:   
+            logmsg = "closed connection to imapserver"
+            self.log_a_msg(logmsg, "INFO")
+   
+      con.close() # close connection to sqlite db, so others can use it as well.
+      time.sleep(self.poll_period) # it's enough to check e-mails every minute
+
+   ####
    # thread code for the fetcher thread.
    ####
    def run(self):
@@ -284,88 +373,8 @@ class mailFetcher (threading.Thread):
       # This thread is running as a daemon thread, this is the while(1) loop that is running until
       # the thread is stopped by the main thread
       while True:
-         cur,con = self.connect_to_db('semester.db')
+         self.loop_code()
 
-         m = self.connect_to_imapserver()
-
-         if m != 0:
-            items = self.fetch_new_emails(m)
-
-            # iterate over all new e-mails and take action according to the structure of the subject line
-            for emailid in items:
-
-               self.increment_db_statcounter(cur, con, 'nr_mails_fetched')
-
-               resp, data = m.fetch(emailid, "(RFC822)") # fetching the mail, "`(RFC822)`" means "get the whole stuff", but you can ask for headers only, etc
-
-               mail = email.message_from_bytes(data[0][1]) # parsing the mail content to get a mail object
-
-               mail_subject = str(mail['subject'])
-               from_header = str(mail['From'])
-               split_header = str(from_header).split("<")
-               user_name = split_header[0]
-               try:
-                  user_email = str(split_header[1].split(">")[0])
-               except:
-                  user_email = str(mail['From'])
-
-               messageid = mail.get('Message-ID')
-
-               whitelisted = self.check_if_whitelisted(cur, con, user_email)
-
-               if whitelisted:
- 
-                  sql_cmd="SELECT UserId FROM Users WHERE Email='" + str(user_email) +"';"
-                  cur.execute(sql_cmd);
-                  res = cur.fetchall();
-                  if res:
-                     logmsg = "Got mail from an already known user!"
-                     self.log_a_msg(logmsg, "INFO")
-
-                     if re.search('[Rr][Ee][Ss][Uu][Ll][Tt]', mail_subject):
-                        searchObj = re.search( '[0-9]+', mail_subject, )
-                        if (int(searchObj.group()) <= self.get_num_Tasks()):
-                           logmsg = 'Processing a Result'
-                           self.log_a_msg(logmsg, "DEBUG")
-                           self.take_new_results(user_email, searchObj.group(), cur, con, mail, messageid)
-                        else:
-                           logmsg = 'Given Task number is higher than actual Number of Tasks!'
-                           self.log_a_msg(logmsg, "DEBUG")
-                           common.send_email(self.sender_queue, user_email, "", "InvalidTask", "", "", messageid)
-                     elif re.search('[Qq][Uu][Ee][Ss][Tt][Ii][Oo][Nn]', mail_subject):
-                        self.a_question_was_asked(cur, con, user_email, mail, messageid)
-                     elif re.search('[Ss][Tt][Aa][Tt][Uu][Ss]', mail_subject):
-                        self.a_status_is_requested(cur, con, user_email, messageid)
-                     else:
-                        logmsg = 'Got a kind of message I do not understand. Sending a usage mail...' 
-                        self.log_a_msg(logmsg, "DEBUG")
-                        common.send_email(self.sender_queue, user_email, "", "Usage", "", "", messageid)
-
-                  else:
-                     self.add_new_user(user_name, user_email, cur, con)
-                     common.send_email(self.sender_queue, user_email, "", "Welcome", "", "", messageid)
-
-               else:
-                     common.send_email(self.sender_queue, user_email, "", "NotAllowed", "", "", messageid)
-
-            try:
-               m.close()
-            except imaplib.IMAP4.abort:
-               logmsg = "Closing connection to server was aborted (probably a server-side problem). Trying to connect again ..."
-               self.log_a_msg(logmsg, "ERROR")
-               #m.close()
-            except imaplib.IMAP4.error:
-               logmsg = "Got an error when trying to connect to the imap server. Trying to connect again ..."
-               self.log_a_msg(logmsg, "ERROR")
-            except:
-               logmsg = "Got an unknown exception when trying to connect to the imap server. Trying to connect again ..."
-               self.log_a_msg(logmsg, "ERROR")
-            finally:   
-               logmsg = "closed connection to imapserver"
-               self.log_a_msg(logmsg, "INFO")
-   
-         con.close() # close connection to sqlite db, so others can use it as well.
-         time.sleep(self.poll_period) # it's enough to check e-mails every minute
 
       logmsg = "Exiting fetcher - this should NEVER happen!"
       self.log_a_msg(logmsg, "ERROR")

@@ -5,6 +5,8 @@ MYPATH=$(cd ../; pwd; cd tests)
 
 export PYTHONPATH=$PYTHONPATH:$MYPATH
 
+rm autosub.log
+
 python3 test_autosub.py
 
 export PYTHONPATH=$TMPPY
