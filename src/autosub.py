@@ -24,20 +24,6 @@ def sig_handler(signum, frame):
 ########################################
 
 ####
-#  connect_to_db()
-####
-def connect_to_db(dbname):
-   # connect to sqlite database ...
-   try:
-      con = lite.connect(dbname)
-   except:
-      logmsg = "Failed to connect to database: " + dbname
-      c.log_a_msg(logger_queue, "autosub.py", logmsg, "ERROR")
-
-   cur = con.cursor()
-   return cur, con
-
-####
 #   check_and_init_db_table
 ####
 def check_and_init_db_table(cur, con, tablename, fields):
@@ -110,7 +96,7 @@ def load_specialmessage_to_db(cur, con, msgname, filename):
 # if non-existent --> create them
 ####
 def init_ressources(numThreads, numTasks):
-   cur,con = connect_to_db('semester.db') 
+   cur,con = c.connect_to_db('semester.db', logger_queue, "autosub.py") 
 
    ####################
    ####### Users ######
@@ -155,7 +141,7 @@ def init_ressources(numThreads, numTasks):
    con.close() # close here, since we re-open the databse in the while(True) loop
 
 
-   cur,con = connect_to_db('course.db')
+   cur,con = c.connect_to_db('course.db', logger_queue, "autosub.py")
 
    ####################
    ## SpecialMessages #

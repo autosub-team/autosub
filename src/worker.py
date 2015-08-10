@@ -28,19 +28,6 @@ class worker (threading.Thread):
          self.logger_queue.put(dict({"msg": msg, "type": loglevel, "loggername": self.name}))
 
    ####
-   #  connect_to_db()
-   ####
-   def connect_to_db(self, dbname):
-      # connect to sqlite database ...
-      try:
-         con = lite.connect(dbname)
-      except:
-         logmsg = "Failed to connect to database: " + dbname
-         c.log_a_msg(self.logger_queue, self.name, logmsg, "ERROR")
-
-      cur = con.cursor()
-      return cur, con
-   ####
    #  get_taskParameters
    #
    #  look up the taskParmeters, that were generated from the generator for
@@ -72,7 +59,7 @@ class worker (threading.Thread):
 
              # check if there is a test executable configured in the database -- if not fall back on static
              # test script.
-             curc, conc = self.connect_to_db('course.db')
+             curc, conc = c.connect_to_db('course.db', self.logger_queue, self.name)
              try:
                 sql_cmd="SELECT TestExecutable FROM TaskConfiguration WHERE TaskNr == "+str(TaskNr)
                 curc.execute(sql_cmd);
@@ -98,7 +85,7 @@ class worker (threading.Thread):
              conc.close()  
              
              # get the taskParameters
-             curs, cons = self.connect_to_db('semester.db')
+             curs, cons = c.connect_to_db('semester.db', self.logger_queue, self.name)
              taskParameters= self.get_taskParameters(curs,cons,UserId,TaskNr)
              cons.close()
              
@@ -129,7 +116,7 @@ class worker (threading.Thread):
                 c.log_a_msg(self.logger_queue, self.name, logmsg, "INFO")
 
                 c.send_email(self.sender_queue, str(UserEmail), str(UserId), "Success", str(TaskNr), "", "")
-                curc, conc = self.connect_to_db('course.db')
+                curc, conc = c.connect_to_db('course.db', self.logger_queue, self.name)
                 try:
                    sql_cmd="SELECT GeneratorExecutable FROM TaskConfiguration WHERE TaskNr == " + str(int(TaskNr)+1) + ";"
                    curc.execute(sql_cmd);

@@ -33,28 +33,13 @@ class mailSender (threading.Thread):
    # get_admin_email()
    ####
    def get_admin_email(self):
-      curc, conc = self.connect_to_db('course.db')
+      curc, conc = c.connect_to_db('course.db', self.logger_queue, self.name)
       sqlcmd = "SELECT Content FROM GeneralConfig WHERE ConfigItem == 'admin_email'"
       curc.execute(sqlcmd)
       adminEmail = str(curc.fetchone()[0])
       conc.close()
 
       return adminEmail
-
-   ####
-   #  connect_to_db()
-   ####
-   def connect_to_db(self, dbname):
-      # connect to sqlite database ...
-      try:
-         con = lite.connect(dbname)
-      except:
-         logmsg = "Failed to connect to database: " + dbname
-         c.log_a_msg(self.logger_queue, self.name, logmsg, "ERROR")
-
-      cur = con.cursor()
-      return cur, con
-
 
    ####
    # increment_db_statcounter()
@@ -119,7 +104,7 @@ class mailSender (threading.Thread):
    #
    ####
    def read_specialmessage(self, msgname):
-      curc, conc = self.connect_to_db('course.db')
+      curc, conc = c.connect_to_db('course.db', self.logger_queue, self.name)
       sqlcmd = "SELECT EventText FROM SpecialMessages WHERE EventName=='" + msgname + "';"
       curc.execute(sqlcmd)
       res = curc.fetchone();
@@ -130,7 +115,7 @@ class mailSender (threading.Thread):
    # get_numTasks()
    ####
    def get_num_Tasks(self):
-      curc, conc = self.connect_to_db('course.db')
+      curc, conc = c.connect_to_db('course.db', self.logger_queue, self.name)
       sqlcmd = "SELECT Content FROM GeneralConfig WHERE ConfigItem == 'num_tasks'"
       curc.execute(sqlcmd)
       numTasks = int(curc.fetchone()[0])
@@ -225,7 +210,7 @@ class mailSender (threading.Thread):
       while True:
          next_send_msg = self.sender_queue.get(True) #blocking wait on sender_queue
 
-         cur, con = self.connect_to_db('semester.db')
+         cur, con = c.connect_to_db('semester.db', self.logger_queue, self.name)
 
          attachments = ''
 
@@ -262,7 +247,7 @@ class mailSender (threading.Thread):
                if ((int(TaskNr)-1) == (int(ctasknr)) or int(ctasknr) == 1):
                   msg['Subject'] = "Description Task" + str(TaskNr) 
 
-                  curcCourse, concCourse = self.connect_to_db('course.db')
+                  curcCourse, concCourse = c.connect_to_db('course.db', self.logger_queue, self.name)
                   sql_cmd="SELECT PathToTask FROM TaskConfiguration WHERE TaskNr == "+str(TaskNr)
                   curcCourse.execute(sql_cmd)
                   paths = curcCourse.fetchone()

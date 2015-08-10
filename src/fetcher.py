@@ -31,7 +31,7 @@ class mailFetcher (threading.Thread):
    # get_admin_email()
    ####
    def get_admin_email(self):
-      curc, conc = self.connect_to_db('course.db')
+      curc, conc = c.connect_to_db('course.db', self.logger_queue, self.name)
       sqlcmd = "SELECT Content FROM GeneralConfig WHERE ConfigItem == 'admin_email'"
       curc.execute(sqlcmd)
       adminEmail = str(curc.fetchone()[0])
@@ -46,20 +46,6 @@ class mailFetcher (threading.Thread):
       sql_cmd = "UPDATE StatCounters SET Value=(SELECT Value FROM StatCounters WHERE Name=='" + countername + "')+1 WHERE Name=='" + countername + "';"
       cur.execute(sql_cmd)
       con.commit();
-
-   ####
-   #  connect_to_db()
-   ####
-   def connect_to_db(self, dbname):
-      # connect to sqlite database ...
-      try:
-         con = lite.connect(dbname)
-      except:
-         logmsg = "Failed to connect to database: " + dbname
-         c.log_a_msg(self.logger_queue, self.name, logmsg, "ERROR")
-
-      cur = con.cursor()
-      return cur, con
   
    ####
    #  check_dir_mkdir
@@ -100,7 +86,7 @@ class mailFetcher (threading.Thread):
       self.check_dir_mkdir(dirname)
 
       # NOTE: messageid is empty, cause this will be sent out by the welcome message!
-      curc, conc = self.connect_to_db('course.db')
+      curc, conc = c.connect_to_db('course.db', self.logger_queue, self.name)
       sql_cmd="SELECT GeneratorExecutable FROM TaskConfiguration WHERE TaskNr == 1"
       curc.execute(sql_cmd);
       res = curc.fetchone();
@@ -260,7 +246,7 @@ class mailFetcher (threading.Thread):
    # get_numTasks()
    ####
    def get_num_Tasks(self):
-      curc, conc = self.connect_to_db('course.db')
+      curc, conc = c.connect_to_db('course.db', self.logger_queue, self.name)
       sqlcmd = "SELECT Content FROM GeneralConfig WHERE ConfigItem == 'num_tasks'"
       curc.execute(sqlcmd)
       numTasks = int(curc.fetchone()[0])
@@ -274,7 +260,7 @@ class mailFetcher (threading.Thread):
    # The code run in the while True loop of the mail fetcher thread.
    ####
    def loop_code(self):
-      cur,con = self.connect_to_db('semester.db')
+      cur,con = c.connect_to_db('semester.db', self.logger_queue, self.name)
 
       m = self.connect_to_imapserver()
 

@@ -23,34 +23,6 @@ class taskGenerator (threading.Thread):
       self.logger_queue = logger_queue
 
    ####
-   #  connect_to_db()
-   ####
-   def connect_to_db(self, dbname):
-      # connect to sqlite database ...
-      try:
-         con = lite.connect(dbname)
-      except:
-         logmsg = "Failed to connect to database: " + dbname
-         c.log_a_msg(self.logger_queue, self.name, logmsg, "ERROR")
-
-      cur = con.cursor()
-      return cur, con
-
-   ####
-   #  connect_to_db()
-   ####
-   def connect_to_db(self, dbname):
-      # connect to sqlite database ...
-      try:
-         con = lite.connect(dbname)
-      except:
-         logmsg = "Failed to connect to database: " + dbname
-         c.log_a_msg(self.logger_queue, self.name, logmsg, "ERROR")
-
-      cur = con.cursor()
-      return cur, con
-
-   ####
    #  check_dir_mkdir
    ####
    def check_dir_mkdir(self, directory): 
@@ -85,7 +57,7 @@ class taskGenerator (threading.Thread):
 
          # check if there is a generator executable configured in the database -- if not fall back on static
          # generator script.
-         curc, conc = self.connect_to_db('course.db')
+         curc, conc = c.connect_to_db('course.db', self.logger_queue, self.name)
          sql_cmd="SELECT GeneratorExecutable FROM TaskConfiguration WHERE TaskNr == "+str(TaskNr)
          curc.execute(sql_cmd)
          generatorname = curc.fetchone()
