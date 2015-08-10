@@ -119,15 +119,40 @@ class mailSender (threading.Thread):
          sql_cmd = "UPDATE Users SET LastDone=" + "datetime("+str(int(time.time()))+", 'unixepoch', 'localtime')" + " where UserId==" + str(userid) + ";"
          cur.execute(sql_cmd)
          con.commit();
+   
+   ####
+   # check_and_set_firstSuccessful
+   #
+   # set FirstSuccessful to last submission if not set yet
+   ####
+   def check_and_set_firstSuccessful(self,UserId,TaskNr):
+      curs, cons = self.connect_to_db('semester.db')
+
+      # check if allready previous successful submission, if not set it
+      sqlcmd="SELECT FirstSuccessful FROM UserTasks WHERE UserId = {0} AND TaskNr = {1};".format(UserId,TaskNr) 
+      curs.execute(sqlcmd)
+      res = curs.fetchone()
+      if res[0] == None:
+         # get last submission number
+         sqlcmd="SELECT NrSubmissions FROM UserTasks WHERE UserId = {0} AND TaskNr = {1};".format(UserId,TaskNr)  
+         curs.execute(sqlcmd)
+         res = curs.fetchone()
+         submissionNr=int(res[0])
+         # set first successful
+         sqlcmd="UPDATE UserTasks SET FirstSuccessful = {0} WHERE UserId = {1} AND TaskNr = {2};".format(submissionNr,UserId,TaskNr) 
+         curs.execute(sqlcmd)
+         cons.commit()
+      cons.close()
 
    ####
+   # read_specialmessage
    #
    ####
    def read_specialmessage(self, msgname):
       curc, conc = self.connect_to_db('course.db')
       sqlcmd = "SELECT EventText FROM SpecialMessages WHERE EventName=='" + msgname + "';"
       curc.execute(sqlcmd)
-      res = curc.fetchone();
+      res = curc.fetchone()
       conc.close()
       return str(res[0])
 
@@ -328,10 +353,13 @@ class mailSender (threading.Thread):
             self.backup_message(messageid)
 
          elif (str(next_send_msg.get('message_type')) == "Success"):
+            UserId = str(next_send_msg.get('UserId'))
             msg['Subject'] = "Task " + TaskNr + " submitted successfully"
             TEXT = "Congratulations!"
             msg = self.assemble_email(msg, TEXT, '')
             self.send_out_email(str(next_send_msg.get('recipient')), msg.as_string(), cur, con)
+            self.check_and_set_firstSuccessful(next_send_msg.get('UserId'),TaskNr) #set first done if not set yet
+
             # no backup of message -- this is done after the new task
             # description was sent to the user!
          elif (str(next_send_msg.get('message_type')) == "Status"):

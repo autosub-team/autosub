@@ -121,7 +121,28 @@ class mailFetcher (threading.Thread):
          # which shall be used.
          common.send_email(self.sender_queue, user_email, userid, "Task", "1", "", "")
 
+    ###
+    # increment_submissionNr
+    #
+    # Increments the SubmissionNr for a specific user and task
+    ##
 
+   def increment_submissionNr(self,UserId,TaskNr):
+      curs, cons = self.connect_to_db('semester.db')
+      
+      # get last submission number
+      sqlcmd="SELECT NrSubmissions FROM UserTasks WHERE UserId = {0} AND TaskNr = {1};".format(UserId, TaskNr)  
+      curs.execute(sqlcmd)
+      res = curs.fetchone()
+      submissionNr=int(res[0])
+      # set +1
+      submissionNr += 1
+      sqlcmd="UPDATE UserTasks SET NrSubmissions = {0} WHERE UserId = {1} AND TaskNr = {2};".format(submissionNr, UserId, TaskNr) 
+      curs.execute(sqlcmd)
+      cons.commit(); 
+      cons.close()
+      return submissionNr
+      
    ####
    # take_new_result()
    #
@@ -129,17 +150,22 @@ class mailFetcher (threading.Thread):
    # structure.
    ####
    def take_new_results(self, user_email, TaskNr, cur, con, mail, messageid):
-      # read back the new users UserId and create a directory for putting his
-      # submissions in:
-      sql_cmd="SELECT UserId FROM Users WHERE Email='" + user_email +"';"
+
+      # get the user's UserId
+      sql_cmd="SELECT UserId FROM Users WHERE Email='{0}';".format(user_email)
       cur.execute(sql_cmd);
-      user_id = cur.fetchone();
+      res= cur.fetchone()
+      UserId = res[0];
 
-      detach_dir = 'users/'+str(user_id[0])+"/Task"+str(TaskNr)
+      # increment the submissionNr for the user
+      submissionNr= self.increment_submissionNr(int(UserId),int(TaskNr))
+      
+      #create a directory for putting his submission in:
+      detach_dir = 'users/{0}/Task{1}'.format(UserId,TaskNr)
       ts = datetime.datetime.now()
-      current_dir = detach_dir + "/Task"+str(TaskNr)+"_" + str(ts.year) + str(ts.month) + str(ts.day) + "_" + str(ts.hour) + "_" + str(ts.minute) + "_" +  str(ts.second) + "_" +  str(ts.microsecond) 
+      submission_dir="/Submission{0}_{1}{2}{3}_{4}{5}{6}{7}".format(submissionNr, ts.year, ts.month, ts.day, ts.hour, ts.minute, ts.second, ts.microsecond) 
+      current_dir = detach_dir + submission_dir 
       self.check_dir_mkdir(current_dir)
-
 
       # we use walk to create a generator so we can iterate on the parts and forget about the recursive headach
       for part in mail.walk():
@@ -176,7 +202,7 @@ class mailFetcher (threading.Thread):
 
       # Next, let's handle the task that shall be checked, and send a job
       # request to the job_queue. The workers can then get it from there.
-      self.job_queue.put(dict({"UserId": user_id[0], "UserEmail": user_email,"message_type": "Task", "taskNr": TaskNr, "MessageId": messageid}))
+      self.job_queue.put(dict({"UserId": UserId, "UserEmail": user_email,"message_type": "Task", "taskNr": TaskNr, "MessageId": messageid}))
 
    ####
    # a_question_was_asked()
