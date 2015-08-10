@@ -35,6 +35,18 @@ class mailSender (threading.Thread):
          self.logger_queue.put(dict({"msg": msg, "type": loglevel, "loggername": self.name}))
 
    ####
+   # get_admin_email()
+   ####
+   def get_admin_email(self):
+      curc, conc = self.connect_to_db('course.db')
+      sqlcmd = "SELECT Content FROM GeneralConfig WHERE ConfigItem == 'admin_email'"
+      curc.execute(sqlcmd)
+      adminEmail = str(curc.fetchone()[0])
+      conc.close()
+
+      return adminEmail
+
+   ####
    #  connect_to_db()
    ####
    def connect_to_db(self, dbname):
@@ -305,7 +317,8 @@ class mailSender (threading.Thread):
             self.backup_message(messageid)
 
          elif (str(next_send_msg.get('message_type')) == "SecAlert"):
-            msg['To'] = "andi.platschek@gmail.com"
+            admin_mail = self.get_admin_email()
+            msg['To'] = admin_mail
             path_to_msg = "users/"+ next_send_msg.get('UserId') + "/Task" + TaskNr + "/error_msg"
             error_msg = self.read_text_file(path_to_msg)
             msg['Subject'] = "Autosub Security Alert User:" + str(next_send_msg.get('recipient'))

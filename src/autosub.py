@@ -188,7 +188,7 @@ def init_ressources(numThreads,numTasks):
       set_general_config_param(cur, con, 'num_tasks', str(numTasks))
       set_general_config_param(cur, con, 'registration_deadline', 'NULL')
       set_general_config_param(cur, con, 'archive_dir','archive/')
-   
+      set_general_config_param(cur, con, 'admin_email','')
 
    con.close()
 

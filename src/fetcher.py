@@ -25,7 +25,6 @@ class mailFetcher (threading.Thread):
       self.autosub_pwd = autosub_passwd
       self.imapserver = autosub_imapserver
       self.logger_queue = logger_queue
-      self.admin_mail = "andi.platschek@gmail.com"
       self.poll_period = poll_period
 
    ####
@@ -33,6 +32,18 @@ class mailFetcher (threading.Thread):
    ####
    def log_a_msg(self, msg, loglevel):
          self.logger_queue.put(dict({"msg": msg, "type": loglevel, "loggername": self.name}))
+
+   ####
+   # get_admin_email()
+   ####
+   def get_admin_email(self):
+      curc, conc = self.connect_to_db('course.db')
+      sqlcmd = "SELECT Content FROM GeneralConfig WHERE ConfigItem == 'admin_email'"
+      curc.execute(sqlcmd)
+      adminEmail = str(curc.fetchone()[0])
+      conc.close()
+
+      return adminEmail
 
    ####
    # increment_db_statcounter()
@@ -177,7 +188,8 @@ class mailFetcher (threading.Thread):
       self.log_a_msg(logmsg, "DEBUG")
 
       common.send_email(self.sender_queue, user_email, "", "Question", "", "", "")
-      common.send_email(self.sender_queue, self.admin_mail, "", "QFwd", "", mail, messageid)
+      admin_mail = self.get_admin_email()
+      common.send_email(self.sender_queue, admin_mail, "", "QFwd", "", mail, messageid)
 
       self.increment_db_statcounter(cur, con, 'nr_questions_received')
 
