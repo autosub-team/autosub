@@ -15,18 +15,13 @@ import optparse
 import signal
 import logging
 import configparser
+import common as c
 
 def sig_handler(signum, frame):
    logger_queue.put(dict({"msg": "Shutting down autosub...", "type": "INFO", "loggername": "Main"}))
    exit_flag = 1
 
 ########################################
-
-####
-# log_a_msg()
-####
-def log_a_msg(msg, loglevel):
-      logger_queue.put(dict({"msg": msg, "type": loglevel, "loggername": "autosub.py"}))
 
 ####
 #  connect_to_db()
@@ -37,7 +32,7 @@ def connect_to_db(dbname):
       con = lite.connect(dbname)
    except:
       logmsg = "Failed to connect to database: " + dbname
-      log_a_msg(logmsg, "ERROR")
+      c.log_a_msg(logger_queue, "autosub.py", logmsg, "ERROR")
 
    cur = con.cursor()
    return cur, con
@@ -51,14 +46,14 @@ def check_and_init_db_table(cur, con, tablename, fields):
    res = cur.fetchall()
    if res:
       logmsg = 'table ' + tablename + ' exists'
-      log_a_msg(logmsg, "DEBUG")
+      c.log_a_msg(logger_queue, "autosub.py", logmsg, "DEBUG")
       #TODO: in this case, we might want to check if one entry per task is already there, and add new
       #      empty entries in case a task does not have one. This is only a problem, if the number of
       #      tasks in the config file is changed AFTER the TaskStats table has been changed!
       return 0
    else:
       logmsg = 'table ' + tablename + ' does not exist'
-      log_a_msg(logmsg, "DEBUG")
+      c.log_a_msg(logger_queue, "autosub.py", logmsg, "DEBUG")
 
       sqlcmd = "CREATE TABLE " + tablename + "(" + fields + ");"
       cur.execute(sqlcmd)
@@ -84,11 +79,11 @@ def check_dir_mkdir(directory):
    if not os.path.exists(directory):
       os.mkdir(directory)
       logmsg = "Created directory: " + directory
-      log_a_msg(logmsg, "DEBUG")
+      c.log_a_msg(logger_queue, "autosub.py", logmsg, "DEBUG")
       return 1
    else:
       logmsg = "Directory already exists: " + directory
-      log_a_msg(logmsg, "WARNING")
+      c.log_a_msg(logger_queue, "autosub.py", logmsg, "WARNING")
       return 0
 
 ####
