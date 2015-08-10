@@ -55,23 +55,6 @@ def init_db_statvalue(cur, con, countername, value):
       sql_cmd="INSERT INTO StatCounters (CounterId, Name, Value) VALUES(NULL, '" + countername + "', " + str(value) + ");"
       cur.execute(sql_cmd);
       con.commit();
-
-####
-#   check_dir_mkdir
-#
-#   returns 0 if the directory already existed, 1 if it had to be created.
-####
-def check_dir_mkdir(directory): 
-   if not os.path.exists(directory):
-      os.mkdir(directory)
-      logmsg = "Created directory: " + directory
-      c.log_a_msg(logger_queue, "autosub.py", logmsg, "DEBUG")
-      return 1
-   else:
-      logmsg = "Directory already exists: " + directory
-      c.log_a_msg(logger_queue, "autosub.py", logmsg, "WARNING")
-      return 0
-
 ####
 # set_general_config_param()
 ####
@@ -137,7 +120,7 @@ def init_ressources(numThreads, numTasks):
    ####################
    # Directory users ##
    ####################
-   check_dir_mkdir("users")
+   c.check_dir_mkdir("users", logger_queue, "autosub.py")
    con.close() # close here, since we re-open the databse in the while(True) loop
 
 

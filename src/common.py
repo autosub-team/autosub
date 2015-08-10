@@ -15,6 +15,22 @@ def log_a_msg(lqueue, lname, msg, loglevel):
    lqueue.put(dict({"msg": msg, "type": loglevel, "loggername": lname}))
 
 ####
+#   check_dir_mkdir
+#
+#   returns 0 if the directory already existed, 1 if it had to be created.
+####
+def check_dir_mkdir(directory, lqueue, lname): 
+   if not os.path.exists(directory):
+      os.mkdir(directory)
+      logmsg = "Created directory: " + directory
+      log_a_msg(lqueue, lname, logmsg, "DEBUG")
+      return 1
+   else:
+      logmsg = "Directory already exists: " + directory
+      log_a_msg(lqueue, lname, logmsg, "WARNING")
+      return 0
+
+####
 # send_email()
 ####
 def send_email(queue, recipient, userid, messagetype, tasknr, body, messageid):

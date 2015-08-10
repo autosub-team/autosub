@@ -46,20 +46,6 @@ class mailFetcher (threading.Thread):
       sql_cmd = "UPDATE StatCounters SET Value=(SELECT Value FROM StatCounters WHERE Name=='" + countername + "')+1 WHERE Name=='" + countername + "';"
       cur.execute(sql_cmd)
       con.commit();
-  
-   ####
-   #  check_dir_mkdir
-   ####
-   def check_dir_mkdir(self, directory): 
-      if not os.path.exists(directory):
-         os.mkdir(directory)
-         logmsg = "Created directory: " + directory
-         c.log_a_msg(self.logger_queue, self.name, logmsg, "DEBUG")
-         return 1
-      else:
-         logmsg = "Directory already exists: " + directory
-         c.log_a_msg(self.logger_queue, self.name, logmsg, "WARNING")
-         return 0 
 
    ####
    # If a new user registers, add_new_user() is used to add the necessary entries
@@ -83,7 +69,7 @@ class mailFetcher (threading.Thread):
       res = cur.fetchone();
       userid = str(res[0])
       dirname = 'users/'+ userid
-      self.check_dir_mkdir(dirname)
+      c.check_dir_mkdir(dirname, self.logger_queue, self.name)
 
       # NOTE: messageid is empty, cause this will be sent out by the welcome message!
       curc, conc = c.connect_to_db('course.db', self.logger_queue, self.name)
@@ -120,7 +106,7 @@ class mailFetcher (threading.Thread):
       detach_dir = 'users/'+str(user_id[0])+"/Task"+str(TaskNr)
       ts = datetime.datetime.now()
       current_dir = detach_dir + "/Task"+str(TaskNr)+"_" + str(ts.year) + str(ts.month) + str(ts.day) + "_" + str(ts.hour) + "_" + str(ts.minute) + "_" +  str(ts.second) + "_" +  str(ts.microsecond) 
-      self.check_dir_mkdir(current_dir)
+      c.check_dir_mkdir(current_dir, self.logger_queue, self.name)
 
 
       # we use walk to create a generator so we can iterate on the parts and forget about the recursive headach

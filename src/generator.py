@@ -23,19 +23,6 @@ class taskGenerator (threading.Thread):
       self.logger_queue = logger_queue
 
    ####
-   #  check_dir_mkdir
-   ####
-   def check_dir_mkdir(self, directory): 
-      if not os.path.exists(directory):
-         os.mkdir(directory)
-         logmsg = "Created directory: " + directory
-         c.log_a_msg(self.logger_queue, self.name, logmsg, "DEBUG")
-      else:
-         logmsg = "Directory already exists: " + directory
-         c.log_a_msg(self.logger_queue, self.name, logmsg, "WARNING")
-
-
-   ####
    # thread code for the generator thread.
    ####
    def run(self):
@@ -50,10 +37,10 @@ class taskGenerator (threading.Thread):
 
          #generate the directory for the task
          task_dir = 'users/'+str(UserId)+"/Task"+str(TaskNr)
-         self.check_dir_mkdir(task_dir)
+         c.check_dir_mkdir(task_dir, self.logger_queue, self.name)
          #and the task description
          desc_dir = task_dir+"/desc"
-         self.check_dir_mkdir(desc_dir)
+         c.check_dir_mkdir(desc_dir, self.logger_queue, self.name)
 
          # check if there is a generator executable configured in the database -- if not fall back on static
          # generator script.
