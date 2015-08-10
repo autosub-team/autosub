@@ -1,0 +1,8 @@
+getdailystats.py:
+	make a cronjob using this tool, and it will generate a number of pngs
+	that depict the development of number of users, emails sent, emails
+	received, and questsion asked over time.
+
+add_to_usertasks.py:
+	use this tool in the generator scripts to add the list of attachments
+	to the UserTasks table.
