@@ -5,12 +5,16 @@ MYPATH=$(cd ../; pwd; cd tests)
 
 export PYTHONPATH=$PYTHONPATH:$MYPATH
 
-rm autosub.log
+#rm autosub.log
 
-python3 test_autosub.py
+#python3 test_autosub.py
 
-rm autosub.log
+#rm autosub.log
 
-python3 test_fetcher.py
+ln -s ../SpecialMessages
+
+python3 test_sender.py
+
+rm -rf SpecialMessages
 
 export PYTHONPATH=$TMPPY
