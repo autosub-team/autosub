@@ -15,32 +15,13 @@ import optparse
 import signal
 import logging
 import configparser
+import common as c
 
 def sig_handler(signum, frame):
    logger_queue.put(dict({"msg": "Shutting down autosub...", "type": "INFO", "loggername": "Main"}))
    exit_flag = 1
 
 ########################################
-
-####
-# log_a_msg()
-####
-def log_a_msg(msg, loglevel):
-      logger_queue.put(dict({"msg": msg, "type": loglevel, "loggername": "autosub.py"}))
-
-####
-#  connect_to_db()
-####
-def connect_to_db(dbname):
-   # connect to sqlite database ...
-   try:
-      con = lite.connect(dbname)
-   except:
-      logmsg = "Failed to connect to database: " + dbname
-      log_a_msg(logmsg, "ERROR")
-
-   cur = con.cursor()
-   return cur, con
 
 ####
 #   check_and_init_db_table
@@ -51,14 +32,14 @@ def check_and_init_db_table(cur, con, tablename, fields):
    res = cur.fetchall()
    if res:
       logmsg = 'table ' + tablename + ' exists'
-      log_a_msg(logmsg, "DEBUG")
+      c.log_a_msg(logger_queue, "autosub.py", logmsg, "DEBUG")
       #TODO: in this case, we might want to check if one entry per task is already there, and add new
       #      empty entries in case a task does not have one. This is only a problem, if the number of
       #      tasks in the config file is changed AFTER the TaskStats table has been changed!
       return 0
    else:
       logmsg = 'table ' + tablename + ' does not exist'
-      log_a_msg(logmsg, "DEBUG")
+      c.log_a_msg(logger_queue, "autosub.py", logmsg, "DEBUG")
 
       sqlcmd = "CREATE TABLE " + tablename + "(" + fields + ");"
       cur.execute(sqlcmd)
@@ -74,23 +55,6 @@ def init_db_statvalue(cur, con, countername, value):
       sql_cmd="INSERT INTO StatCounters (CounterId, Name, Value) VALUES(NULL, '" + countername + "', " + str(value) + ");"
       cur.execute(sql_cmd);
       con.commit();
-
-####
-#   check_dir_mkdir
-#
-#   returns 0 if the directory already existed, 1 if it had to be created.
-####
-def check_dir_mkdir(directory): 
-   if not os.path.exists(directory):
-      os.mkdir(directory)
-      logmsg = "Created directory: " + directory
-      log_a_msg(logmsg, "DEBUG")
-      return 1
-   else:
-      logmsg = "Directory already exists: " + directory
-      log_a_msg(logmsg, "WARNING")
-      return 0
-
 ####
 # set_general_config_param()
 ####
@@ -115,7 +79,7 @@ def load_specialmessage_to_db(cur, con, msgname, filename):
 # if non-existent --> create them
 ####
 def init_ressources(numThreads, numTasks):
-   cur,con = connect_to_db('semester.db') 
+   cur,con = c.connect_to_db('semester.db', logger_queue, "autosub.py") 
 
    ####################
    ####### Users ######
@@ -156,11 +120,11 @@ def init_ressources(numThreads, numTasks):
    ####################
    # Directory users ##
    ####################
-   check_dir_mkdir("users")
+   c.check_dir_mkdir("users", logger_queue, "autosub.py")
    con.close() # close here, since we re-open the databse in the while(True) loop
 
 
-   cur,con = connect_to_db('course.db')
+   cur,con = c.connect_to_db('course.db', logger_queue, "autosub.py")
 
    ####################
    ## SpecialMessages #

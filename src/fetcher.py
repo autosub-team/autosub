@@ -11,7 +11,7 @@ import email, imaplib, os, time
 import sqlite3 as lite
 import re #regex
 import datetime
-import common
+import common as c
 
 class mailFetcher (threading.Thread):
    def __init__(self, threadID, name, job_queue, sender_queue, gen_queue, autosub_user, autosub_passwd, autosub_imapserver, logger_queue, poll_period):
@@ -28,16 +28,10 @@ class mailFetcher (threading.Thread):
       self.poll_period = poll_period
 
    ####
-   # log_a_msg()
-   ####
-   def log_a_msg(self, msg, loglevel):
-         self.logger_queue.put(dict({"msg": msg, "type": loglevel, "loggername": self.name}))
-
-   ####
    # get_admin_email()
    ####
    def get_admin_email(self):
-      curc, conc = self.connect_to_db('course.db')
+      curc, conc = c.connect_to_db('course.db', self.logger_queue, self.name)
       sqlcmd = "SELECT Content FROM GeneralConfig WHERE ConfigItem == 'admin_email'"
       curc.execute(sqlcmd)
       adminEmail = str(curc.fetchone()[0])
@@ -54,38 +48,12 @@ class mailFetcher (threading.Thread):
       con.commit();
 
    ####
-   #  connect_to_db()
-   ####
-   def connect_to_db(self, dbname):
-      # connect to sqlite database ...
-      try:
-         con = lite.connect(dbname)
-      except:
-         logmsg = "Failed to connect to database: " + dbname
-         self.log_a_msg(logmsg, "ERROR")
-
-      cur = con.cursor()
-      return cur, con
-  
-   ####
-   #  check_dir_mkdir
-   ####
-   def check_dir_mkdir(self, directory): 
-      if not os.path.exists(directory):
-         os.mkdir(directory)
-         logmsg = "Created directory: " + directory
-         self.log_a_msg(logmsg, "DEBUG")
-      else:
-         logmsg = "Directory already exists: " + directory
-         self.log_a_msg(logmsg, "WARNING")
-
-   ####
    # If a new user registers, add_new_user() is used to add the necessary entries
    # to the database
    ####
    def add_new_user(self, user_name, user_email, cur, con):
       logmsg = 'New Account: User: %s' % user_name 
-      self.log_a_msg(logmsg, "DEBUG")
+      c.log_a_msg(self.logger_queue, self.name, logmsg, "DEBUG")
 
       sql_cmd="INSERT INTO Users (UserId, Name, Email, FirstMail, LastDone, CurrentTask) VALUES(NULL, '" + user_name + "', '" + user_email + "'," + "datetime("+str(int(time.time()))+", 'unixepoch', 'localtime')" + ", NULL, 1);"
       cur.execute(sql_cmd);
@@ -101,10 +69,10 @@ class mailFetcher (threading.Thread):
       res = cur.fetchone();
       userid = str(res[0])
       dirname = 'users/'+ userid
-      self.check_dir_mkdir(dirname)
+      c.check_dir_mkdir(dirname, self.logger_queue, self.name)
 
       # NOTE: messageid is empty, cause this will be sent out by the welcome message!
-      curc, conc = self.connect_to_db('course.db')
+      curc, conc = c.connect_to_db('course.db', self.logger_queue, self.name)
       sql_cmd="SELECT GeneratorExecutable FROM TaskConfiguration WHERE TaskNr == 1"
       curc.execute(sql_cmd);
       res = curc.fetchone();
@@ -112,14 +80,14 @@ class mailFetcher (threading.Thread):
     
       if res != None:
          logmsg="Calling Generator Script: " + str(res[0])
-         self.log_a_msg(logmsg, "DEBUG")
+         c.log_a_msg(self.logger_queue, self.name, logmsg, "DEBUG")
          logmsg="UserID " + userid + ",UserEmail " + user_email 
-         self.log_a_msg(logmsg, "DEBUG")
+         c.log_a_msg(self.logger_queue, self.name, logmsg, "DEBUG")
          self.gen_queue.put(dict({"UserId": userid, "UserEmail": user_email, "TaskNr": "1", "MessageId": ""}))
       else:
          # If there is no generator script, we assume, that there is a static description.txt
          # which shall be used.
-         common.send_email(self.sender_queue, user_email, userid, "Task", "1", "", "")
+         c.send_email(self.sender_queue, user_email, userid, "Task", "1", "", "")
 
     ###
     # increment_submissionNr
@@ -211,11 +179,11 @@ class mailFetcher (threading.Thread):
    ###
    def a_question_was_asked(self, cur, con, user_email, mail, messageid):
       logmsg = 'The user has a question, please take care of that!'
-      self.log_a_msg(logmsg, "DEBUG")
+      c.log_a_msg(self.logger_queue, self.name, logmsg, "DEBUG")
 
-      common.send_email(self.sender_queue, user_email, "", "Question", "", "", "")
+      c.send_email(self.sender_queue, user_email, "", "Question", "", "", "")
       admin_mail = self.get_admin_email()
-      common.send_email(self.sender_queue, admin_mail, "", "QFwd", "", mail, messageid)
+      c.send_email(self.sender_queue, admin_mail, "", "QFwd", "", mail, messageid)
 
       self.increment_db_statcounter(cur, con, 'nr_questions_received')
 
@@ -226,7 +194,7 @@ class mailFetcher (threading.Thread):
 
       UserId=res[0]
       CurrentTask=res[1]
-      common.send_email(self.sender_queue, user_email, UserId, "Status", CurrentTask, "", "")
+      c.send_email(self.sender_queue, user_email, UserId, "Status", CurrentTask, "", "")
       self.increment_db_statcounter(cur, con, 'nr_status_requests')
 
    ####
@@ -239,20 +207,20 @@ class mailFetcher (threading.Thread):
          m.login(self.autosub_user,self.autosub_pwd)
       except imaplib.IMAP4.abort:
          logmsg = "Login to server was aborted (probably a server-side problem). Trying to connect again ..."
-         self.log_a_msg(logmsg, "ERROR")
+         c.log_a_msg(self.logger_queue, self.name, logmsg, "ERROR")
          #m.close()
          return 0
       except imaplib.IMAP4.error:
          logmsg = "Got an error when trying to connect to the imap server. Trying to connect again ..."
-         self.log_a_msg(logmsg, "ERROR")
+         c.log_a_msg(self.logger_queue, self.name, logmsg, "ERROR")
          return 0
       except:
          logmsg = "Got an unknown exception when trying to connect to the imap server. Trying to connect again ..."
-         self.log_a_msg(logmsg, "ERROR")
+         c.log_a_msg(self.logger_queue, self.name, logmsg, "ERROR")
          return 0
 
       logmsg = "Successfully logged into imap server"
-      self.log_a_msg(logmsg, "DEBUG")
+      c.log_a_msg(self.logger_queue, self.name, logmsg, "DEBUG")
       return m
 
    ####
@@ -264,7 +232,7 @@ class mailFetcher (threading.Thread):
          # use m.list() to get all the mailboxes
       except:
          logmsg = "Failed to select inbox"
-         self.log_a_msg(logmsg, "INFO")
+         c.log_a_msg(self.logger_queue, self.name, logmsg, "INFO")
 
       resp, items = m.search(None, "UNSEEN") # you could filter using the IMAP rules here (check http://www.example-code.com/csharp/imap-search-critera.asp)
       return items[0].split() # getting the mails id
@@ -282,7 +250,7 @@ class mailFetcher (threading.Thread):
          return 1
       else:
          logmsg = "Got Mail from a User not on the WhiteList: " + user_email
-         self.log_a_msg(logmsg, "Warning");
+         c.log_a_msg(self.logger_queue, self.name, logmsg, "Warning");
          self.increment_db_statcounter(cur, con, 'nr_non_registered')
          return 0
 
@@ -290,7 +258,7 @@ class mailFetcher (threading.Thread):
    # get_numTasks()
    ####
    def get_num_Tasks(self):
-      curc, conc = self.connect_to_db('course.db')
+      curc, conc = c.connect_to_db('course.db', self.logger_queue, self.name)
       sqlcmd = "SELECT Content FROM GeneralConfig WHERE ConfigItem == 'num_tasks'"
       curc.execute(sqlcmd)
       numTasks = int(curc.fetchone()[0])
@@ -304,7 +272,7 @@ class mailFetcher (threading.Thread):
    # The code run in the while True loop of the mail fetcher thread.
    ####
    def loop_code(self):
-      cur,con = self.connect_to_db('semester.db')
+      cur,con = c.connect_to_db('semester.db', self.logger_queue, self.name)
 
       m = self.connect_to_imapserver()
 
@@ -340,49 +308,49 @@ class mailFetcher (threading.Thread):
                res = cur.fetchall();
                if res:
                   logmsg = "Got mail from an already known user!"
-                  self.log_a_msg(logmsg, "INFO")
+                  c.log_a_msg(self.logger_queue, self.name, logmsg, "INFO")
 
                   if re.search('[Rr][Ee][Ss][Uu][Ll][Tt]', mail_subject):
                      searchObj = re.search( '[0-9]+', mail_subject, )
                      if (int(searchObj.group()) <= self.get_num_Tasks()):
                         logmsg = 'Processing a Result'
-                        self.log_a_msg(logmsg, "DEBUG")
+                        c.log_a_msg(self.logger_queue, self.name, logmsg, "DEBUG")
                         self.take_new_results(user_email, searchObj.group(), cur, con, mail, messageid)
                      else:
                         logmsg = 'Given Task number is higher than actual Number of Tasks!'
-                        self.log_a_msg(logmsg, "DEBUG")
-                        common.send_email(self.sender_queue, user_email, "", "InvalidTask", "", "", messageid)
+                        c.log_a_msg(self.logger_queue, self.name, logmsg, "DEBUG")
+                        c.send_email(self.sender_queue, user_email, "", "InvalidTask", "", "", messageid)
                   elif re.search('[Qq][Uu][Ee][Ss][Tt][Ii][Oo][Nn]', mail_subject):
                      self.a_question_was_asked(cur, con, user_email, mail, messageid)
                   elif re.search('[Ss][Tt][Aa][Tt][Uu][Ss]', mail_subject):
                      self.a_status_is_requested(cur, con, user_email, messageid)
                   else:
                      logmsg = 'Got a kind of message I do not understand. Sending a usage mail...' 
-                     self.log_a_msg(logmsg, "DEBUG")
-                     common.send_email(self.sender_queue, user_email, "", "Usage", "", "", messageid)
+                     c.log_a_msg(self.logger_queue, self.name, logmsg, "DEBUG")
+                     c.send_email(self.sender_queue, user_email, "", "Usage", "", "", messageid)
 
                else:
                   self.add_new_user(user_name, user_email, cur, con)
-                  common.send_email(self.sender_queue, user_email, "", "Welcome", "", "", messageid)
+                  c.send_email(self.sender_queue, user_email, "", "Welcome", "", "", messageid)
 
             else:
-                  common.send_email(self.sender_queue, user_email, "", "NotAllowed", "", "", messageid)
+                  c.send_email(self.sender_queue, user_email, "", "NotAllowed", "", "", messageid)
 
          try:
             m.close()
          except imaplib.IMAP4.abort:
             logmsg = "Closing connection to server was aborted (probably a server-side problem). Trying to connect again ..."
-            self.log_a_msg(logmsg, "ERROR")
+            c.log_a_msg(self.logger_queue, self.name, logmsg, "ERROR")
             #m.close()
          except imaplib.IMAP4.error:
             logmsg = "Got an error when trying to connect to the imap server. Trying to connect again ..."
-            self.log_a_msg(logmsg, "ERROR")
+            c.log_a_msg(self.logger_queue, self.name, logmsg, "ERROR")
          except:
             logmsg = "Got an unknown exception when trying to connect to the imap server. Trying to connect again ..."
-            self.log_a_msg(logmsg, "ERROR")
+            c.log_a_msg(self.logger_queue, self.name, logmsg, "ERROR")
          finally:   
             logmsg = "closed connection to imapserver"
-            self.log_a_msg(logmsg, "INFO")
+            c.log_a_msg(self.logger_queue, self.name, logmsg, "INFO")
    
       con.close() # close connection to sqlite db, so others can use it as well.
       time.sleep(self.poll_period) # it's enough to check e-mails every minute
@@ -391,10 +359,10 @@ class mailFetcher (threading.Thread):
    # thread code for the fetcher thread.
    ####
    def run(self):
-      self.log_a_msg("Starting Mail Fetcher Thread!", "INFO")
+      c.log_a_msg(self.logger_queue, self.name, "Starting Mail Fetcher Thread!", "INFO")
 
       logmsg = "Imapserver: '" + self.imapserver + "'"
-      self.log_a_msg(logmsg, "DEBUG")
+      c.log_a_msg(self.logger_queue, self.name, logmsg, "DEBUG")
 
       # This thread is running as a daemon thread, this is the while(1) loop that is running until
       # the thread is stopped by the main thread
@@ -403,5 +371,5 @@ class mailFetcher (threading.Thread):
 
 
       logmsg = "Exiting fetcher - this should NEVER happen!"
-      self.log_a_msg(logmsg, "ERROR")
+      c.log_a_msg(self.logger_queue, self.name, logmsg, "ERROR")
 

@@ -15,6 +15,7 @@ from email.mime.text import MIMEText
 from email.utils import formatdate
 from email import encoders
 import sqlite3 as lite
+import common as c
 
 class mailSender (threading.Thread):
    def __init__(self, threadID, name, sender_queue, autosub_mail, autosub_user, autosub_passwd, autosub_smtpserver, logger_queue):
@@ -29,37 +30,16 @@ class mailSender (threading.Thread):
       self.logger_queue = logger_queue
 
    ####
-   # log_a_msg()
-   ####
-   def log_a_msg(self, msg, loglevel):
-         self.logger_queue.put(dict({"msg": msg, "type": loglevel, "loggername": self.name}))
-
-   ####
    # get_admin_email()
    ####
    def get_admin_email(self):
-      curc, conc = self.connect_to_db('course.db')
+      curc, conc = c.connect_to_db('course.db', self.logger_queue, self.name)
       sqlcmd = "SELECT Content FROM GeneralConfig WHERE ConfigItem == 'admin_email'"
       curc.execute(sqlcmd)
       adminEmail = str(curc.fetchone()[0])
       conc.close()
 
       return adminEmail
-
-   ####
-   #  connect_to_db()
-   ####
-   def connect_to_db(self, dbname):
-      # connect to sqlite database ...
-      try:
-         con = lite.connect(dbname)
-      except:
-         logmsg = "Failed to connect to database: " + dbname
-         self.log_a_msg(logmsg, "ERROR")
-
-      cur = con.cursor()
-      return cur, con
-
 
    ####
    # increment_db_statcounter()
@@ -113,7 +93,7 @@ class mailSender (threading.Thread):
       cur.execute(sql_cmd)
       res = cur.fetchone();
       logmsg = "RES: "+ str(res[0])
-      self.log_a_msg(logmsg, "DEBUG")
+      c.log_a_msg(self.logger_queue, self.name, logmsg, "DEBUG")
 
       if str(res[0]) == 'None':
          sql_cmd = "UPDATE Users SET LastDone=" + "datetime("+str(int(time.time()))+", 'unixepoch', 'localtime')" + " where UserId==" + str(userid) + ";"
@@ -126,7 +106,7 @@ class mailSender (threading.Thread):
    # set FirstSuccessful to last submission if not set yet
    ####
    def check_and_set_firstSuccessful(self,UserId,TaskNr):
-      curs, cons = self.connect_to_db('semester.db')
+      curs, cons = c.connect_to_db('semester.db')
 
       # check if allready previous successful submission, if not set it
       sqlcmd="SELECT FirstSuccessful FROM UserTasks WHERE UserId = {0} AND TaskNr = {1};".format(UserId,TaskNr) 
@@ -149,7 +129,7 @@ class mailSender (threading.Thread):
    #
    ####
    def read_specialmessage(self, msgname):
-      curc, conc = self.connect_to_db('course.db')
+      curc, conc = c.connect_to_db('course.db', self.logger_queue, self.name)
       sqlcmd = "SELECT EventText FROM SpecialMessages WHERE EventName=='" + msgname + "';"
       curc.execute(sqlcmd)
       res = curc.fetchone()
@@ -160,7 +140,7 @@ class mailSender (threading.Thread):
    # get_numTasks()
    ####
    def get_num_Tasks(self):
-      curc, conc = self.connect_to_db('course.db')
+      curc, conc = c.connect_to_db('course.db', self.logger_queue, self.name)
       sqlcmd = "SELECT Content FROM GeneralConfig WHERE ConfigItem == 'num_tasks'"
       curc.execute(sqlcmd)
       numTasks = int(curc.fetchone()[0])
@@ -201,7 +181,7 @@ class mailSender (threading.Thread):
    ####
    def backup_message(self, messageid):
       logmsg= "backup not implemented yet; messageid: " + messageid
-      self.log_a_msg(logmsg, "DEBUG")
+      c.log_a_msg(self.logger_queue, self.name, logmsg, "DEBUG")
 
    def send_out_email(self, recipient, message, cur, con):
       try:
@@ -211,10 +191,10 @@ class mailSender (threading.Thread):
          server.login(self.autosub_user, self.mail_pwd)
          server.sendmail(self.mail_user, recipient, message)
          server.close()
-         self.log_a_msg("Successfully sent an e-mail!", "DEBUG")
+         c.log_a_msg(self.logger_queue, self.name, "Successfully sent an e-mail!", "DEBUG")
          self.increment_db_statcounter(cur, con, 'nr_mails_sent')
       except:
-         self.log_a_msg("Failed to send out an e-mail!", "ERROR")
+         c.log_a_msg(self.logger_queue, self.name, "Failed to send out an e-mail!", "ERROR")
 
    def read_text_file(self, path_to_msg):
       try:
@@ -223,7 +203,7 @@ class mailSender (threading.Thread):
          fp.close()
       except:
          TEXT = "Even the static file was not available!"
-         self.log_a_msg("Failed to read from config file", "WARNING")
+         c.log_a_msg(self.logger_queue, self.name, "Failed to read from config file", "WARNING")
 
       return TEXT
 
@@ -243,180 +223,183 @@ class mailSender (threading.Thread):
             msg.attach(part)
 
       logmsg = "Prepared message: \n" + str(msg)
-      self.log_a_msg(logmsg, "DEBUG")
+      c.log_a_msg(self.logger_queue, self.name, logmsg, "DEBUG")
       return msg
+
+   def handle_next_mail(self):
+      next_send_msg = self.sender_queue.get(True) #blocking wait on sender_queue
+
+      cur, con = c.connect_to_db('semester.db', self.logger_queue, self.name)
+      curc, conc = c.connect_to_db('course.db', self.logger_queue, self.name)
+     
+      attachments = ''
+
+      # prepare fields for the e-mail
+      msg = MIMEMultipart()
+      msg['From'] = self.mail_user
+      msg['To'] = str(next_send_msg.get('recipient'))
+      logmsg= "RECIPIENT: " + str(next_send_msg.get('recipient'))
+      c.log_a_msg(self.logger_queue, self.name, logmsg, "DEBUG")
+         
+      msg['Date'] = formatdate(localtime = True)
+
+      TaskNr = str(next_send_msg.get('Task'))
+      messageid = str(next_send_msg.get('MessageId'))
+
+      if (str(next_send_msg.get('message_type')) == "Task"):
+         numTasks = self.get_num_Tasks()
+         ctasknr=self.user_get_currentTask(cur, con, str(next_send_msg.get('UserId')))
+         if (numTasks+1 == int(TaskNr)): # last task solved!
+            msg['Subject'] = "Congratulations!" 
+            TEXT = self.read_specialmessage('CONGRATS')
+
+            if ((int(TaskNr)-1) == (int(ctasknr))):
+               #statistics shall only be udated on the first successful submission
+               self.user_set_currentTask(cur, con, TaskNr, str(next_send_msg.get('UserId')))
+               self.increment_db_taskcounter(cur, con, 'NrSuccessful', str(int(TaskNr)-1))
+               self.increment_db_taskcounter(cur, con, 'NrSubmissions', str(int(TaskNr)-1))
+               self.check_and_set_lastDone(cur, con, next_send_msg.get('UserId'))
+
+            msg = self.assemble_email(msg, TEXT, '')
+            self.send_out_email(str(next_send_msg.get('recipient')), msg.as_string(), cur, con)
+         else: # at least one more task to do: send out the description
+            # only send the task description, after the first successful submission
+            if ((int(TaskNr)-1) == (int(ctasknr)) or int(ctasknr) == 1):
+               msg['Subject'] = "Description Task" + str(TaskNr) 
+
+               sql_cmd="SELECT PathToTask FROM TaskConfiguration WHERE TaskNr == "+str(TaskNr)
+               curc.execute(sql_cmd)
+               paths = curc.fetchone()
+               if not paths:
+                  c.log_a_msg(self.logger_queue, self.name, "It seems, the Path to Task "+ str(TaskNr) + " is not configured.", "WARNING")
+                  TEXT = "Sorry, but something went wrong... probably misconfiguration or missing configuration of Task " + str(TaskNr)
+                  msg = self.assemble_email(msg, TEXT, '')
+                  self.send_out_email(str(next_send_msg.get('recipient')), msg.as_string(), cur, con)
+               else:
+                  path_to_task = str(paths[0])
+                  path_to_msg = path_to_task + "/description.txt"
+                  TEXT = self.read_text_file(path_to_msg)
+                  logmsg="used sql comand: SELECT TaskAttachments FROM UserTasks WHERE TaskNr == " + TaskNr + " AND UserId == '"+ str(next_send_msg.get('UserId')) + "';"
+                  c.log_a_msg(self.logger_queue, self.name, logmsg, "DEBUG");
+
+                  sql_cmd="SELECT TaskAttachments FROM UserTasks WHERE TaskNr == " + TaskNr + " AND UserId == '"+ str(next_send_msg.get('UserId')) + "';"
+                  cur.execute(sql_cmd)
+                  res = cur.fetchone()
+
+                  logmsg = "got the following attachments: " + str(res)
+                  c.log_a_msg(self.logger_queue, self.name, logmsg, "DEBUG")
+                  if res:
+                     attachments = str(res[0]).split()
+
+                  #statistics shall only be udated on the firs succesful submission
+                  self.user_set_currentTask(cur, con, TaskNr, str(next_send_msg.get('UserId')))
+                  self.increment_db_taskcounter(cur, con, 'NrSuccessful', str(int(TaskNr)-1))
+                  self.increment_db_taskcounter(cur, con, 'NrSubmissions', str(int(TaskNr)-1))
+
+                  msg = self.assemble_email(msg, TEXT, attachments)
+                  self.send_out_email(str(next_send_msg.get('recipient')), msg.as_string(), cur, con)
+
+
+         self.backup_message(messageid)
+
+      elif (str(next_send_msg.get('message_type')) == "Failed"):
+         self.increment_db_taskcounter(cur, con, 'NrSubmissions', TaskNr)
+         UserId = str(next_send_msg.get('UserId'))
+         path_to_msg = "users/"+ UserId + "/Task" + TaskNr + "/error_msg"
+         error_msg = self.read_text_file(path_to_msg)
+         msg['Subject'] = "Task" + TaskNr + ": submission rejected"
+         TEXT = "Error report:\n\n""" + error_msg
+         msg = self.assemble_email(msg, TEXT, '')
+         self.send_out_email(str(next_send_msg.get('recipient')), msg.as_string(), cur, con)
+         self.backup_message(messageid)
+
+      elif (str(next_send_msg.get('message_type')) == "SecAlert"):
+         admin_mail = self.get_admin_email()
+         msg['To'] = admin_mail
+         path_to_msg = "users/"+ next_send_msg.get('UserId') + "/Task" + TaskNr + "/error_msg"
+         error_msg = self.read_text_file(path_to_msg)
+         msg['Subject'] = "Autosub Security Alert User:" + str(next_send_msg.get('recipient'))
+         TEXT = "Error report:\n\n""" + error_msg
+         msg = self.assemble_email(msg, TEXT, '')
+         self.send_out_email(str(next_send_msg.get('recipient')), msg.as_string(), cur, con)
+         self.backup_message(messageid)
+
+      elif (str(next_send_msg.get('message_type')) == "Success"):
+         msg['Subject'] = "Task " + TaskNr + " submitted successfully"
+         TEXT = "Congratulations!"
+         msg = self.assemble_email(msg, TEXT, '')
+         self.send_out_email(str(next_send_msg.get('recipient')), msg.as_string(), cur, con)
+         #set first done if not set yet
+         self.check_and_set_firstSuccessful(next_send_msg.get('UserId'),TaskNr)
+         
+         # no backup of message -- this is done after the new task
+         # description was sent to the user!
+      elif (str(next_send_msg.get('message_type')) == "Status"):
+         msg['Subject'] = "Your Current Status"
+         TEXT = self.generate_status_update(cur, con, str(next_send_msg.get('recipient')))
+         numTasks = self.get_num_Tasks()
+         if (int(numTasks) >=  int(TaskNr)):
+            #also attach current task
+            sql_cmd="SELECT TaskAttachments FROM UserTasks WHERE TaskNr == " + str(TaskNr) + " AND UserId == '"+ str(next_send_msg.get('UserId')) + "';"
+            cur.execute(sql_cmd)
+            res = cur.fetchone()
+            logmsg = "got the following attachments: " + str(res)
+            c.log_a_msg(self.logger_queue, self.name, logmsg, "DEBUG")
+            if res:
+               attachments = str(res[0]).split()
+            msg = self.assemble_email(msg, TEXT, attachments)
+            self.send_out_email(str(next_send_msg.get('recipient')), msg.as_string(), cur, con)
+      elif (str(next_send_msg.get('message_type')) == "InvalidTask"):
+         msg['Subject'] = "Invalid Task Number"
+         TEXT = self.read_specialmessage('INVALID')
+         self.backup_message(messageid)
+         msg = self.assemble_email(msg, TEXT, '')
+         self.send_out_email(str(next_send_msg.get('recipient')), msg.as_string(), cur, con)
+      elif (str(next_send_msg.get('message_type')) == "Usage"):
+         msg['Subject'] = "Autosub Usage"
+         TEXT = self.read_specialmessage('USAGE')
+         self.backup_message(messageid)
+         msg = self.assemble_email(msg, TEXT, '')
+         self.send_out_email(str(next_send_msg.get('recipient')), msg.as_string(), cur, con)
+      elif (str(next_send_msg.get('message_type')) == "Question"):
+         msg['Subject'] = "Question received"
+         TEXT = self.read_specialmessage('QUESTION')
+         self.backup_message(messageid)
+         msg = self.assemble_email(msg, TEXT, '')
+         self.send_out_email(str(next_send_msg.get('recipient')), msg.as_string(), cur, con)
+      elif (str(next_send_msg.get('message_type')) == "QFwd"):
+         orig_mail = next_send_msg.get('Body')
+         msg['Subject'] = "Question from " + orig_mail['from']
+         TEXT = "Original subject: " + orig_mail['subject'] + "\n\n" + orig_mail.get_payload()
+         self.backup_message(messageid)
+         msg = self.assemble_email(msg, TEXT, '')
+         self.send_out_email(str(next_send_msg.get('recipient')), msg.as_string(), cur, con)
+      elif (str(next_send_msg.get('message_type')) == "Welcome"):
+         msg['Subject'] = "Welcome!"
+         TEXT = self.read_specialmessage('WELCOME')
+         self.backup_message(messageid)
+         msg = self.assemble_email(msg, TEXT, '')
+         self.send_out_email(str(next_send_msg.get('recipient')), msg.as_string(), cur, con)
+      elif (str(next_send_msg.get('message_type')) == "NotAllowed"):
+         msg['Subject'] = "Registration Not Successful."
+         TEXT = self.read_specialmessage('NOTALLOWED')
+         msg = self.assemble_email(msg, TEXT, '')
+         self.send_out_email(str(next_send_msg.get('recipient')), msg.as_string(), cur, con)
+      else:
+         c.log_a_msg(self.logger_queue, self.name, "Unkown Message Type in the sender_queue!","ERROR")
+         self.backup_message(messageid)
+         msg = self.assemble_email(msg, TEXT, '')
+         self.send_out_email(str(next_send_msg.get('recipient')), msg.as_string(), cur, con)
+
+      con.close()
+      conc.close() 
+
 
    ####
    # thread code of the sender thread.
    ####
    def run(self):
-      self.log_a_msg("Starting Mail Sender Thread!", "INFO")
+      c.log_a_msg(self.logger_queue, self.name, "Starting Mail Sender Thread!", "INFO")
 
       while True:
-         next_send_msg = self.sender_queue.get(True) #blocking wait on sender_queue
-
-         cur, con = self.connect_to_db('semester.db')
-
-         attachments = ''
-
-         # prepare fields for the e-mail
-         msg = MIMEMultipart()
-         msg['From'] = self.mail_user
-         msg['To'] = str(next_send_msg.get('recipient'))
-         logmsg= "RECIPIENT: " + str(next_send_msg.get('recipient'))
-         self.log_a_msg(logmsg, "DEBUG")
-         
-         msg['Date'] = formatdate(localtime = True)
-
-         TaskNr = str(next_send_msg.get('Task'))
-         messageid = str(next_send_msg.get('MessageId'))
-
-         if (str(next_send_msg.get('message_type')) == "Task"):
-            numTasks = self.get_num_Tasks()
-            ctasknr=self.user_get_currentTask(cur, con, str(next_send_msg.get('UserId')))
-            if (numTasks+1 == int(TaskNr)): # last task solved!
-               msg['Subject'] = "Congratulations!" 
-               TEXT = self.read_specialmessage('CONGRATS')
-
-               if ((int(TaskNr)-1) == (int(ctasknr))):
-                  #statistics shall only be udated on the first successful submission
-                  self.user_set_currentTask(cur, con, TaskNr, str(next_send_msg.get('UserId')))
-                  self.increment_db_taskcounter(cur, con, 'NrSuccessful', str(int(TaskNr)-1))
-                  self.increment_db_taskcounter(cur, con, 'NrSubmissions', str(int(TaskNr)-1))
-                  self.check_and_set_lastDone(cur, con, next_send_msg.get('UserId'))
-
-               msg = self.assemble_email(msg, TEXT, '')
-               self.send_out_email(str(next_send_msg.get('recipient')), msg.as_string(), cur, con)
-            else: # at least one more task to do: send out the description
-               # only send the task description, after the first successful submission
-               if ((int(TaskNr)-1) == (int(ctasknr)) or int(ctasknr) == 1):
-                  msg['Subject'] = "Description Task" + str(TaskNr) 
-
-                  curcCourse, concCourse = self.connect_to_db('course.db')
-                  sql_cmd="SELECT PathToTask FROM TaskConfiguration WHERE TaskNr == "+str(TaskNr)
-                  curcCourse.execute(sql_cmd)
-                  paths = curcCourse.fetchone()
-                  if not paths:
-                     self.log_a_msg("It seems, the Path to Task "+ str(TaskNr) + " is not configured.", "WARNING")
-                     TEXT = "Sorry, but something went wrong... probably misconfiguration or missing configuration of Task " + str(TaskNr)
-                     msg = self.assemble_email(msg, TEXT, '')
-                     self.send_out_email(str(next_send_msg.get('recipient')), msg.as_string(), cur, con)
-                  else:
-                     path_to_task = str(paths[0])
-                     concCourse.close() 
-
-                     path_to_msg = path_to_task + "/description.txt"
-                     TEXT = self.read_text_file(path_to_msg)
-                     logmsg="used sql comand: SELECT TaskAttachments FROM UserTasks WHERE TaskNr == " + TaskNr + " AND UserId == '"+ str(next_send_msg.get('UserId')) + "';"
-                     self.log_a_msg(logmsg, "DEBUG");
-
-                     sql_cmd="SELECT TaskAttachments FROM UserTasks WHERE TaskNr == " + TaskNr + " AND UserId == '"+ str(next_send_msg.get('UserId')) + "';"
-                     cur.execute(sql_cmd)
-                     res = cur.fetchone()
-
-                     logmsg = "got the following attachments: " + str(res)
-                     self.log_a_msg(logmsg, "DEBUG")
-                     if res:
-                        attachments = str(res[0]).split()
- 
-                     #statistics shall only be udated on the firs succesful submission
-                     self.user_set_currentTask(cur, con, TaskNr, str(next_send_msg.get('UserId')))
-                     self.increment_db_taskcounter(cur, con, 'NrSuccessful', str(int(TaskNr)-1))
-                     self.increment_db_taskcounter(cur, con, 'NrSubmissions', str(int(TaskNr)-1))
-
-                     msg = self.assemble_email(msg, TEXT, attachments)
-                     self.send_out_email(str(next_send_msg.get('recipient')), msg.as_string(), cur, con)
-
-
-            self.backup_message(messageid)
-
-         elif (str(next_send_msg.get('message_type')) == "Failed"):
-            self.increment_db_taskcounter(cur, con, 'NrSubmissions', TaskNr)
-            UserId = str(next_send_msg.get('UserId'))
-            path_to_msg = "users/"+ UserId + "/Task" + TaskNr + "/error_msg"
-            error_msg = self.read_text_file(path_to_msg)
-            msg['Subject'] = "Task" + TaskNr + ": submission rejected"
-            TEXT = "Error report:\n\n""" + error_msg
-            msg = self.assemble_email(msg, TEXT, '')
-            self.send_out_email(str(next_send_msg.get('recipient')), msg.as_string(), cur, con)
-            self.backup_message(messageid)
-
-         elif (str(next_send_msg.get('message_type')) == "SecAlert"):
-            admin_mail = self.get_admin_email()
-            msg['To'] = admin_mail
-            path_to_msg = "users/"+ next_send_msg.get('UserId') + "/Task" + TaskNr + "/error_msg"
-            error_msg = self.read_text_file(path_to_msg)
-            msg['Subject'] = "Autosub Security Alert User:" + str(next_send_msg.get('recipient'))
-            TEXT = "Error report:\n\n""" + error_msg
-            msg = self.assemble_email(msg, TEXT, '')
-            self.send_out_email(str(next_send_msg.get('recipient')), msg.as_string(), cur, con)
-            self.backup_message(messageid)
-
-         elif (str(next_send_msg.get('message_type')) == "Success"):
-            UserId = str(next_send_msg.get('UserId'))
-            msg['Subject'] = "Task " + TaskNr + " submitted successfully"
-            TEXT = "Congratulations!"
-            msg = self.assemble_email(msg, TEXT, '')
-            self.send_out_email(str(next_send_msg.get('recipient')), msg.as_string(), cur, con)
-            self.check_and_set_firstSuccessful(next_send_msg.get('UserId'),TaskNr) #set first done if not set yet
-
-            # no backup of message -- this is done after the new task
-            # description was sent to the user!
-         elif (str(next_send_msg.get('message_type')) == "Status"):
-            msg['Subject'] = "Your Current Status"
-            TEXT = self.generate_status_update(cur, con, str(next_send_msg.get('recipient')))
-            numTasks = self.get_num_Tasks()
-            if (int(numTasks) >=  int(TaskNr)):
-               #also attach current task
-               sql_cmd="SELECT TaskAttachments FROM UserTasks WHERE TaskNr == " + str(TaskNr) + " AND UserId == '"+ str(next_send_msg.get('UserId')) + "';"
-               cur.execute(sql_cmd)
-               res = cur.fetchone()
-               logmsg = "got the following attachments: " + str(res)
-               self.log_a_msg(logmsg, "DEBUG")
-               if res:
-                  attachments = str(res[0]).split()
-               msg = self.assemble_email(msg, TEXT, attachments)
-               self.send_out_email(str(next_send_msg.get('recipient')), msg.as_string(), cur, con)
-         elif (str(next_send_msg.get('message_type')) == "InvalidTask"):
-            msg['Subject'] = "Invalid Task Number"
-            TEXT = self.read_specialmessage('INVALID')
-            self.backup_message(messageid)
-            msg = self.assemble_email(msg, TEXT, '')
-            self.send_out_email(str(next_send_msg.get('recipient')), msg.as_string(), cur, con)
-         elif (str(next_send_msg.get('message_type')) == "Usage"):
-            msg['Subject'] = "Autosub Usage"
-            TEXT = self.read_specialmessage('USAGE')
-            self.backup_message(messageid)
-            msg = self.assemble_email(msg, TEXT, '')
-            self.send_out_email(str(next_send_msg.get('recipient')), msg.as_string(), cur, con)
-         elif (str(next_send_msg.get('message_type')) == "Question"):
-            msg['Subject'] = "Question received"
-            TEXT = self.read_specialmessage('QUESTION')
-            self.backup_message(messageid)
-            msg = self.assemble_email(msg, TEXT, '')
-            self.send_out_email(str(next_send_msg.get('recipient')), msg.as_string(), cur, con)
-         elif (str(next_send_msg.get('message_type')) == "QFwd"):
-            orig_mail = next_send_msg.get('Body')
-            msg['Subject'] = "Question from " + orig_mail['from']
-            TEXT = "Original subject: " + orig_mail['subject'] + "\n\n" + orig_mail.get_payload()
-            self.backup_message(messageid)
-            msg = self.assemble_email(msg, TEXT, '')
-            self.send_out_email(str(next_send_msg.get('recipient')), msg.as_string(), cur, con)
-         elif (str(next_send_msg.get('message_type')) == "Welcome"):
-            msg['Subject'] = "Welcome!"
-            TEXT = self.read_specialmessage('WELCOME')
-            self.backup_message(messageid)
-            msg = self.assemble_email(msg, TEXT, '')
-            self.send_out_email(str(next_send_msg.get('recipient')), msg.as_string(), cur, con)
-         elif (str(next_send_msg.get('message_type')) == "NotAllowed"):
-            msg['Subject'] = "Registration Not Successful."
-            TEXT = self.read_specialmessage('NOTALLOWED')
-            msg = self.assemble_email(msg, TEXT, '')
-            self.send_out_email(str(next_send_msg.get('recipient')), msg.as_string(), cur, con)
-         else:
-            self.log_a_msg("Unkown Message Type in the sender_queue!","ERROR")
-            self.backup_message(messageid)
-            msg = self.assemble_email(msg, TEXT, '')
-            self.send_out_email(str(next_send_msg.get('recipient')), msg.as_string(), cur, con)
-
-         con.close()
+         self.handle_next_mail()

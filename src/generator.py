@@ -9,7 +9,8 @@
 import threading
 import sqlite3 as lite
 import datetime
-import logger, common
+import logger
+import common as c
 import os
 
 class taskGenerator (threading.Thread):
@@ -22,58 +23,10 @@ class taskGenerator (threading.Thread):
       self.logger_queue = logger_queue
 
    ####
-   #  connect_to_db()
-   ####
-   def connect_to_db(self, dbname):
-      # connect to sqlite database ...
-      try:
-         con = lite.connect(dbname)
-      except:
-         logmsg = "Failed to connect to database: " + dbname
-         self.log_a_msg(logmsg, "ERROR")
-
-      cur = con.cursor()
-      return cur, con
-
-
-   ####
-   # log_a_msg()
-   ####
-   def log_a_msg(self, msg, loglevel):
-      self.logger_queue.put(dict({"msg": msg, "type": loglevel, "loggername": self.name}))
-
-   ####
-   #  connect_to_db()
-   ####
-   def connect_to_db(self, dbname):
-      # connect to sqlite database ...
-      try:
-         con = lite.connect(dbname)
-      except:
-         logmsg = "Failed to connect to database: " + dbname
-         self.log_a_msg(logmsg, "ERROR")
-
-      cur = con.cursor()
-      return cur, con
-
-   ####
-   #  check_dir_mkdir
-   ####
-   def check_dir_mkdir(self, directory): 
-      if not os.path.exists(directory):
-         os.mkdir(directory)
-         logmsg = "Created directory: " + directory
-         self.log_a_msg(logmsg, "DEBUG")
-      else:
-         logmsg = "Directory already exists: " + directory
-         self.log_a_msg(logmsg, "WARNING")
-
-
-   ####
    # thread code for the generator thread.
    ####
    def run(self):
-      self.log_a_msg("Task Generator thread started", "INFO")
+      c.log_a_msg(self.logger_queue, self.name, "Task Generator thread started", "INFO")
 
       while True:
          next_gen_msg = self.gen_queue.get(True) #blocking wait on gen_queue
@@ -84,14 +37,14 @@ class taskGenerator (threading.Thread):
 
          #generate the directory for the task
          task_dir = 'users/'+str(UserId)+"/Task"+str(TaskNr)
-         self.check_dir_mkdir(task_dir)
+         c.check_dir_mkdir(task_dir, self.logger_queue, self.name)
          #and the task description
          desc_dir = task_dir+"/desc"
-         self.check_dir_mkdir(desc_dir)
+         c.check_dir_mkdir(desc_dir, self.logger_queue, self.name)
 
          # check if there is a generator executable configured in the database -- if not fall back on static
          # generator script.
-         curc, conc = self.connect_to_db('course.db')
+         curc, conc = c.connect_to_db('course.db', self.logger_queue, self.name)
          sql_cmd="SELECT GeneratorExecutable FROM TaskConfiguration WHERE TaskNr == "+str(TaskNr)
          curc.execute(sql_cmd)
          generatorname = curc.fetchone()
@@ -108,9 +61,9 @@ class taskGenerator (threading.Thread):
          generator_res = os.system(command)
          if generator_res:
             logmsg = "Failed to call generator script, return value: " + str(generator_res)
-            self.log_a_msg(logmsg, "DEBUG")
+            c.log_a_msg(self.logger_queue, self.name, logmsg, "DEBUG")
 
          logmsg = "Generated individual task for user/tasknr:" + str(UserId) + "/" + str(TaskNr)
-         self.log_a_msg(logmsg, "DEBUG")
+         c.log_a_msg(self.logger_queue, self.name, logmsg, "DEBUG")
 
          common.send_email(self.sender_queue, str(UserEmail), str(UserId), "Task", str(TaskNr), "Your personal example", str(MessageId))
