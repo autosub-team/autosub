@@ -262,7 +262,7 @@ class mailSender (threading.Thread):
                self.user_set_currentTask(cur, con, TaskNr, UserId)
                self.increment_db_taskcounter(cur, con, 'NrSuccessful', str(int(TaskNr)-1))
                self.increment_db_taskcounter(cur, con, 'NrSubmissions', str(int(TaskNr)-1))
-               self.check_and_set_lastDone(cur, con, UserId))
+               self.check_and_set_lastDone(cur, con, UserId)
 
             msg = self.assemble_email(msg, TEXT, '')
             self.send_out_email(recipient, msg.as_string(), cur, con)

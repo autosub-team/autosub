@@ -20,3 +20,14 @@ sqlite> select * from Users;
 sqlite> 
 
 A more serious front-end is planned, but not available as of now.
+
+
+==============
+
+If you want to run the testsuite, just go to
+
+autosub/src
+
+and run:
+
+nosetests3 -v
