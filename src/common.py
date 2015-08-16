@@ -1,5 +1,5 @@
 ########################################################################
-# commoon.py -- common functions
+# common.py -- common functions
 #
 # Copyright (C) 2015 Andreas Platschek <andi.platschek@gmail.com>
 #                    Martin  Mosbeck   <martin.mosbeck@gmx.at>
