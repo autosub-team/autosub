@@ -18,7 +18,7 @@ import common
 
 class Test_mailFetcher(unittest.TestCase):
    def setUp(self):
-      self.name = "testfecher"
+      self.name = "testfetcher"
       self.logger_queue = queue.Queue(10)
       mailFetcher.logger_queue = self.logger_queue
       #Before we do anything else: start the logger thread, so we can log whats going on
@@ -58,6 +58,9 @@ class Test_mailFetcher(unittest.TestCase):
       resp = eval(str(config.get(str(mailid), 'resp')))
       data = eval(str(config.get(str(mailid), 'data')))
       return resp, data
+
+   def mock_close(self):
+      return 0
 
    def get_userid_by_email(self, email):
       #connect to the semester database, and assure, that the e-mail(user) in the test
@@ -114,6 +117,19 @@ class Test_mailFetcher(unittest.TestCase):
       value = str(res[0])
       return value
 
+   def add_task_config(self, testscript, genscript, score, taskadmin):
+      con = lite.connect('course.db')
+      cur = con.cursor()
+      #kickout old instances of the test
+      sqlcmd = "DELETE FROM TaskConfiguration WHERE TestExecutable=='tests/helperscripts/test_success.sh';"
+      cur.execute(sqlcmd)
+      con.commit()
+
+      sqlcmd = "INSERT INTO TaskConfiguration (TaskNr, TaskStart, TaskDeadline, PathToTask, GeneratorExecutable, TestExecutable, Score, TaskOperator) VALUES(NULL, '2014-01-01 00:00:01', '2042-01-01 00:00:01', '', 'tests/helperscripts/" + genscript + "', 'tests/helperscripts/"+ testscript + "', '" + str(score) + "', '" + taskadmin + "')"
+      cur.execute(sqlcmd)
+      con.commit()
+      con.close()
+
    def test_loop_code(self):
       job_queue = queue.Queue(10)
       sender_queue = queue.Queue(10)
@@ -129,7 +145,9 @@ class Test_mailFetcher(unittest.TestCase):
       with mock.patch.multiple('fetcher.mailFetcher',
                                connect_to_imapserver=self.mock_connect_to_imapserver,
                                fetch_new_emails=self.mock_fetch_new_emails):
-         with mock.patch("imaplib.IMAP4.fetch", self.mock_fetch):
+         with mock.patch.multiple("imaplib.IMAP4",
+                               fetch=self.mock_fetch,
+                               close=self.mock_close):
             self.testcases = [b'10']
             mf.loop_code()
 
@@ -144,10 +162,13 @@ class Test_mailFetcher(unittest.TestCase):
       with mock.patch.multiple('fetcher.mailFetcher',
                                connect_to_imapserver=self.mock_connect_to_imapserver,
                                fetch_new_emails=self.mock_fetch_new_emails):
-         with mock.patch("imaplib.IMAP4.fetch", self.mock_fetch):
+         with mock.patch.multiple("imaplib.IMAP4",
+                               fetch=self.mock_fetch,
+                               close=self.mock_close):
             self.testcases = [b'10']  
             mf.loop_code()
 
+            userid = self.get_userid_by_email("platschek@ict.tuwien.ac.at")
             sendout = sender_queue.get()
             self.assertEqual(sendout.get('recipient'), "platschek@ict.tuwien.ac.at")
             self.assertEqual(sendout.get('message_type'), "Task")
@@ -163,7 +184,9 @@ class Test_mailFetcher(unittest.TestCase):
       with mock.patch.multiple('fetcher.mailFetcher',
                                connect_to_imapserver=self.mock_connect_to_imapserver,
                                fetch_new_emails=self.mock_fetch_new_emails):
-         with mock.patch("imaplib.IMAP4.fetch", self.mock_fetch):
+         with mock.patch.multiple("imaplib.IMAP4",
+                               fetch=self.mock_fetch,
+                               close=self.mock_close):
             self.testcases = [b'11']  
             mf.loop_code()
 
@@ -177,7 +200,9 @@ class Test_mailFetcher(unittest.TestCase):
       with mock.patch.multiple('fetcher.mailFetcher',
                                connect_to_imapserver=self.mock_connect_to_imapserver,
                                fetch_new_emails=self.mock_fetch_new_emails):
-         with mock.patch("imaplib.IMAP4.fetch", self.mock_fetch):
+         with mock.patch.multiple("imaplib.IMAP4",
+                               fetch=self.mock_fetch,
+                               close=self.mock_close):
             self.testcases = [b'13']  
             mf.loop_code()
 
@@ -192,7 +217,9 @@ class Test_mailFetcher(unittest.TestCase):
       with mock.patch.multiple('fetcher.mailFetcher',
                                connect_to_imapserver=self.mock_connect_to_imapserver,
                                fetch_new_emails=self.mock_fetch_new_emails):
-         with mock.patch("imaplib.IMAP4.fetch", self.mock_fetch):
+         with mock.patch.multiple("imaplib.IMAP4",
+                               fetch=self.mock_fetch,
+                               close=self.mock_close):
             self.testcases = [b'12']  
             mf.loop_code()
 
@@ -215,7 +242,9 @@ class Test_mailFetcher(unittest.TestCase):
       with mock.patch.multiple('fetcher.mailFetcher',
                                connect_to_imapserver=self.mock_connect_to_imapserver,
                                fetch_new_emails=self.mock_fetch_new_emails):
-         with mock.patch("imaplib.IMAP4.fetch", self.mock_fetch):
+         with mock.patch.multiple("imaplib.IMAP4",
+                               fetch=self.mock_fetch,
+                               close=self.mock_close):
             self.testcases = [b'10']  
             mf.loop_code()
 
@@ -226,6 +255,34 @@ class Test_mailFetcher(unittest.TestCase):
             
       # the nr. of fetched e-mails should have gone up by 6 now.
       self.assertEqual(str(int(old_nrfetched)+6), self.get_statcounter('nr_mails_fetched'))
+
+
+      #TESTCASE7: try to register user on the whitelist --in TESTCASE2, no generator script
+      #           was configured, this time there will be one configured.
+      self.delete_user_by_email('platschek@ict.tuwien.ac.at')
+      self.add_task_config('test_success.sh', 'generator_success.sh', 42, 'taskadmin@testdomain.com')
+
+      with mock.patch.multiple('fetcher.mailFetcher',
+                               connect_to_imapserver=self.mock_connect_to_imapserver,
+                               fetch_new_emails=self.mock_fetch_new_emails):
+         with mock.patch.multiple("imaplib.IMAP4",
+                               fetch=self.mock_fetch,
+                               close=self.mock_close):
+            self.testcases = [b'10']  
+            mf.loop_code()
+
+            userid = self.get_userid_by_email("platschek@ict.tuwien.ac.at")
+            sendout = sender_queue.get()
+            self.assertEqual(sendout.get('recipient'), "platschek@ict.tuwien.ac.at")
+            self.assertEqual(sendout.get('message_type'), "Task")
+            self.assertEqual(sendout.get('Task'), "1")
+
+            sendout = sender_queue.get()
+            self.assertEqual(sendout.get('recipient'), "platschek@ict.tuwien.ac.at")
+            self.assertEqual(sendout.get('message_type'), "Welcome")
+            self.assertEqual(sendout.get('Task'), "")
+
+
 
 if __name__ == '__main__':
    unittest.main()

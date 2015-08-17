@@ -20,7 +20,6 @@ class Test_common(unittest.TestCase):
       time.sleep(.25) # give the logger some time...
 
       with open('autosub.log', "r") as fd:
-         line =""
          for line in fd.readlines():
             #nothing - only interested in the very last line!
             pass
