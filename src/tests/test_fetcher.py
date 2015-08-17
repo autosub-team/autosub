@@ -105,6 +105,15 @@ class Test_mailFetcher(unittest.TestCase):
       conc.commit()
       conc.close()
 
+   def self.get_statcounter(countername):
+      con = lite.connect('semester.db')
+      cur = con.cursor()
+      sqlcmd = "SELECT Value FROM StatCounters WHERE Name=='" + countername + "';"
+      cur.execute(sqlcmd)
+      res = cur.fetchone()
+      value = str(res[0])
+      return value
+
    def test_loop_code(self):
       job_queue = queue.Queue(10)
       sender_queue = queue.Queue(10)
@@ -115,6 +124,7 @@ class Test_mailFetcher(unittest.TestCase):
 
       #TESTCASE1: try to register user not on the whitelist:
       self.delete_email_from_whitelist('platschek@ict.tuwien.ac.at')
+      old_nonreg=self.get_statcounter('nr_non_registered')
       with mock.patch.multiple('fetcher.mailFetcher',
                                connect_to_imapserver=self.mock_connect_to_imapserver,
                                fetch_new_emails=self.mock_fetch_new_emails):
@@ -126,6 +136,7 @@ class Test_mailFetcher(unittest.TestCase):
             self.assertEqual(sendout.get('recipient'), "platschek@ict.tuwien.ac.at")
             self.assertEqual(sendout.get('message_type'), "NotAllowed")
             self.assertEqual(sendout.get('Task'), "")
+            self.assertEqual(str(int(old_nonreg)+1), self.get_statcounter('nr_non_registered'))
 
       #TESTCASE2: try to register user on the whitelist:
       self.insert_email_to_whitelist('platschek@ict.tuwien.ac.at')

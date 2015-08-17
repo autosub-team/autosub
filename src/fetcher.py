@@ -230,7 +230,7 @@ class mailFetcher (threading.Thread):
       return items[0].split() # getting the mails id
 
    ####
-   #  check_if_mwhitelisted(user_email)
+   #  check_if_whitelisted(user_email)
    #
    #  check if the given e-mail address is in the whitelist
    ####
