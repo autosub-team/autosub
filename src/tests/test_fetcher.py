@@ -14,6 +14,7 @@ import logger
 import time
 import configparser as CP
 import imaplib
+import common
 
 class Test_mailFetcher(unittest.TestCase):
    def setUp(self):
@@ -79,6 +80,30 @@ class Test_mailFetcher(unittest.TestCase):
       sqlcmd = "DELETE FROM Users WHERE Email=='" + email + "';"
       cur.execute(sqlcmd)
       con.commit()
+      con.close()
+
+   def delete_email_from_whitelist(self, email):
+      con = lite.connect('semester.db')
+      cur = con.cursor()
+      sqlcmd = "DELETE FROM WhiteList WHERE Email=='" + email + "';"
+      cur.execute(sqlcmd)
+      con.commit()
+      con.close()
+
+   def insert_email_to_whitelist(self, email):
+      con = lite.connect('semester.db')
+      cur = con.cursor()
+      sqlcmd = "INSERT INTO WhiteList (Email) VALUES('" + email + "');"
+      cur.execute(sqlcmd)
+      con.commit()
+      con.close()
+
+   def set_adminmail_set(self, email):
+      curc, conc = common.connect_to_db('course.db', self.logger_queue, "testfetcher")
+      sqlcmd = "UPDATE GeneralConfig SET Content='" + str(email) + "' WHERE ConfigItem == 'admin_email'"
+      curc.execute(sqlcmd)
+      conc.commit()
+      conc.close()
 
    def test_loop_code(self):
       job_queue = queue.Queue(10)
@@ -88,31 +113,83 @@ class Test_mailFetcher(unittest.TestCase):
      
       self.delete_user_by_email("platschek@ict.tuwien.ac.at")
 
+      #TESTCASE1: try to register user not on the whitelist:
+      self.delete_email_from_whitelist('platschek@ict.tuwien.ac.at')
       with mock.patch.multiple('fetcher.mailFetcher',
                                connect_to_imapserver=self.mock_connect_to_imapserver,
                                fetch_new_emails=self.mock_fetch_new_emails):
          with mock.patch("imaplib.IMAP4.fetch", self.mock_fetch):
-            self.testcases = [b'10', b'11', b'12', b'13']
+            self.testcases = [b'10']
+            mf.loop_code()
+
+            sendout = sender_queue.get()
+            self.assertEqual(sendout.get('recipient'), "platschek@ict.tuwien.ac.at")
+            self.assertEqual(sendout.get('message_type'), "NotAllowed")
+            self.assertEqual(sendout.get('Task'), "")
+
+      #TESTCASE2: try to register user on the whitelist:
+      self.insert_email_to_whitelist('platschek@ict.tuwien.ac.at')
+      with mock.patch.multiple('fetcher.mailFetcher',
+                               connect_to_imapserver=self.mock_connect_to_imapserver,
+                               fetch_new_emails=self.mock_fetch_new_emails):
+         with mock.patch("imaplib.IMAP4.fetch", self.mock_fetch):
+            self.testcases = [b'10']  
             mf.loop_code()
 
             sendout = sender_queue.get()
             self.assertEqual(sendout.get('recipient'), "platschek@ict.tuwien.ac.at")
             self.assertEqual(sendout.get('message_type'), "Task")
+            self.assertEqual(sendout.get('Task'), "1")
 
             sendout = sender_queue.get()
             self.assertEqual(sendout.get('recipient'), "platschek@ict.tuwien.ac.at")
             self.assertEqual(sendout.get('message_type'), "Welcome")
+            self.assertEqual(sendout.get('Task'), "")
+
+      #TESTCASE3: try to get a status report for a registered user:
+      with mock.patch.multiple('fetcher.mailFetcher',
+                               connect_to_imapserver=self.mock_connect_to_imapserver,
+                               fetch_new_emails=self.mock_fetch_new_emails):
+         with mock.patch("imaplib.IMAP4.fetch", self.mock_fetch):
+            self.testcases = [b'11']  
+            mf.loop_code()
 
             sendout = sender_queue.get()
             self.assertEqual(sendout.get('recipient'), "platschek@ict.tuwien.ac.at")
-            userid = self.get_userid_by_email("platschek@ict.tuwien.ac.at")
-            self.assertEqual(sendout.get('UserId'), userid)
+            self.assertEqual(sendout.get('message_type'), "Status")
+            self.assertEqual(sendout.get('Task'), "1")
+
+      #TESTCASE4: task submission for Invalid task:
+      with mock.patch.multiple('fetcher.mailFetcher',
+                               connect_to_imapserver=self.mock_connect_to_imapserver,
+                               fetch_new_emails=self.mock_fetch_new_emails):
+         with mock.patch("imaplib.IMAP4.fetch", self.mock_fetch):
+            self.testcases = [b'13']  
+            mf.loop_code()
 
             sendout = sender_queue.get()
             self.assertEqual(sendout.get('recipient'), "platschek@ict.tuwien.ac.at")
+            self.assertEqual(sendout.get('message_type'), "InvalidTask")
+            self.assertEqual(sendout.get('Task'), "")
 
-            #sendout = sender_queue.get()
-            #self.assertEqual(sendout.get('recipient'), "platschek@ict.tuwien.ac.at")
+      #TESTCASE5: A user sends a question:
+      self.set_adminmail_set('administrator@testdomain.com')
+      with mock.patch.multiple('fetcher.mailFetcher',
+                               connect_to_imapserver=self.mock_connect_to_imapserver,
+                               fetch_new_emails=self.mock_fetch_new_emails):
+         with mock.patch("imaplib.IMAP4.fetch", self.mock_fetch):
+            self.testcases = [b'12']  
+            mf.loop_code()
+
+            sendout = sender_queue.get()
+            self.assertEqual(sendout.get('recipient'), "platschek@ict.tuwien.ac.at")
+            self.assertEqual(sendout.get('message_type'), "Question")
+            self.assertEqual(sendout.get('Task'), "")
+          
+            sendout = sender_queue.get()
+            self.assertEqual(sendout.get('recipient'), "administrator@testdomain.com")
+            self.assertEqual(sendout.get('message_type'), "QFwd")
+            self.assertEqual(sendout.get('Task'), "")
 
 if __name__ == '__main__':
    unittest.main()

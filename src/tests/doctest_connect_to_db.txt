@@ -5,10 +5,6 @@ connection is established, or not (e.g. due to insufficient permissions).
 >>> import common
 >>> import queue
 >>> lqueue = queue.Queue(10)
->>> cur, con = connect_to_db('/etc/test.db', lqueue, 'tester')
-Traceback (most recent call last):
-  File "<stdin>", line 1, in <module>
-NameError: name 'connect_to_db' is not defined
 >>> cur, con = common.connect_to_db('/etc/test.db', lqueue, 'tester')
 >>> cur
 -1
