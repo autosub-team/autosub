@@ -25,11 +25,21 @@ class Test_mailFetcher(unittest.TestCase):
                       # will clean it up before terminating!
       logger_t.start()
 
+   # two cases: either the user is whitelisted, or not, so both are tested,
+   # after that the testuser is removed from the table (for the next run)
    def test_check_if_whitelisted(self):
       con = lite.connect('semester.db')
       cur = con.cursor()
-      mailFetcher.check_if_whitelisted(self, cur, con, "testuser@test.com")
-      #mailFetcher.check_if_whitelisted('' , cur, con, "testuser@test.com")
+      result = mailFetcher.check_if_whitelisted(self, cur, con, "testuser@test.com")
+      self.assertEqual(result, 0)
+      # add the user, then check again!
+      sqlcmd = "INSERT INTO WhiteList (Email) VALUES('testuser@test.com')"
+      cur.execute(sqlcmd)
+      result = mailFetcher.check_if_whitelisted(self , cur, con, "testuser@test.com")
+      self.assertEqual(result, 1)
+
+      sqlcmd = "DELETE from WhiteList WHERE Email=='testuser@test.com'"
+      cur.execute(sqlcmd)
 
 
 if __name__ == '__main__':
