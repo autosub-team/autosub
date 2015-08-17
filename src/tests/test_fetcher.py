@@ -15,6 +15,7 @@ import time
 import configparser as CP
 import imaplib
 import common
+import os
 
 class Test_mailFetcher(unittest.TestCase):
    def setUp(self):
@@ -117,15 +118,18 @@ class Test_mailFetcher(unittest.TestCase):
       value = str(res[0])
       return value
 
-   def add_task_config(self, testscript, genscript, score, taskadmin):
+   def remove_task_config(self, tasknr):
       con = lite.connect('course.db')
       cur = con.cursor()
-      #kickout old instances of the test
-      sqlcmd = "DELETE FROM TaskConfiguration WHERE TestExecutable=='tests/helperscripts/test_success.sh';"
+      sqlcmd = "DELETE FROM TaskConfiguration WHERE TaskNr=="+ str(tasknr) +";"
       cur.execute(sqlcmd)
       con.commit()
 
-      sqlcmd = "INSERT INTO TaskConfiguration (TaskNr, TaskStart, TaskDeadline, PathToTask, GeneratorExecutable, TestExecutable, Score, TaskOperator) VALUES(NULL, '2014-01-01 00:00:01', '2042-01-01 00:00:01', '', 'tests/helperscripts/" + genscript + "', 'tests/helperscripts/"+ testscript + "', '" + str(score) + "', '" + taskadmin + "')"
+   def add_task_config(self, tasknr, testscript, genscript, score, taskadmin):
+      con = lite.connect('course.db')
+      cur = con.cursor()
+
+      sqlcmd = "INSERT INTO TaskConfiguration (TaskNr, TaskStart, TaskDeadline, PathToTask, GeneratorExecutable, TestExecutable, Score, TaskOperator) VALUES(" + str(tasknr) + ", '2014-01-01 00:00:01', '2042-01-01 00:00:01', '', 'tests/helperscripts/" + genscript + "', 'tests/helperscripts/"+ testscript + "', '" + str(score) + "', '" + taskadmin + "')"
       cur.execute(sqlcmd)
       con.commit()
       con.close()
@@ -138,6 +142,8 @@ class Test_mailFetcher(unittest.TestCase):
      
       self.delete_user_by_email("platschek@ict.tuwien.ac.at")
       old_nrfetched=self.get_statcounter('nr_mails_fetched')
+
+      self.remove_task_config(1) # not sure if it exists, buf for now we want it out
 
       #TESTCASE1: try to register user not on the whitelist:
       self.delete_email_from_whitelist('platschek@ict.tuwien.ac.at')
@@ -260,7 +266,7 @@ class Test_mailFetcher(unittest.TestCase):
       #TESTCASE7: try to register user on the whitelist --in TESTCASE2, no generator script
       #           was configured, this time there will be one configured.
       self.delete_user_by_email('platschek@ict.tuwien.ac.at')
-      self.add_task_config('test_success.sh', 'generator_success.sh', 42, 'taskadmin@testdomain.com')
+      self.add_task_config(1, 'test_success.sh', 'generator_success.sh', 42, 'taskadmin@testdomain.com')
 
       with mock.patch.multiple('fetcher.mailFetcher',
                                connect_to_imapserver=self.mock_connect_to_imapserver,
@@ -274,13 +280,43 @@ class Test_mailFetcher(unittest.TestCase):
             userid = self.get_userid_by_email("platschek@ict.tuwien.ac.at")
             sendout = sender_queue.get()
             self.assertEqual(sendout.get('recipient'), "platschek@ict.tuwien.ac.at")
-            self.assertEqual(sendout.get('message_type'), "Task")
-            self.assertEqual(sendout.get('Task'), "1")
-
-            sendout = sender_queue.get()
-            self.assertEqual(sendout.get('recipient'), "platschek@ict.tuwien.ac.at")
             self.assertEqual(sendout.get('message_type'), "Welcome")
             self.assertEqual(sendout.get('Task'), "")
+
+            genout = gen_queue.get()
+            #self.assertEqual(sendout.get('recipient'), "platschek@ict.tuwien.ac.at")
+            self.assertEqual(genout.get('UserId'), userid)
+            self.assertEqual(genout.get('TaskNr'), "1")
+
+      #TESTCASE8: hand in results
+      # after registration, the generator script added an entry into UserTasks table
+      # doing that by hand now:
+      con = lite.connect('semester.db')
+      cur = con.cursor()
+      sqlcmd = "INSERT INTO UserTasks (UniqueId, TaskNr, UserId, TaskParameters, TaskDescription, TaskAttachments, NrSubmissions, FirstSuccessful) VALUES(NULL, 1, "+ str(userid) + ", '4711', 'My Task Description', '', 0, 0)"
+      cur.execute(sqlcmd)
+      con.commit()
+
+      # the generator script also creates the TaskN directory in the users/N/ directory:
+      fname = "users/"+str(userid)+"/Task1"
+      os.mkdir(fname)
+
+      with mock.patch.multiple('fetcher.mailFetcher',
+                               connect_to_imapserver=self.mock_connect_to_imapserver,
+                               fetch_new_emails=self.mock_fetch_new_emails):
+         with mock.patch.multiple("imaplib.IMAP4",
+                               fetch=self.mock_fetch,
+                               close=self.mock_close):
+            self.testcases = [b'33']
+            mf.loop_code()
+
+            userid = self.get_userid_by_email("platschek@ict.tuwien.ac.at")
+            jobout = job_queue.get()
+            self.assertEqual(jobout.get('UserId'), int(userid))
+            self.assertEqual(jobout.get('taskNr'), "1")
+            self.assertEqual(jobout.get('UserEmail'), "platschek@ict.tuwien.ac.at")
+
+
 
 
 
