@@ -105,7 +105,7 @@ class Test_mailFetcher(unittest.TestCase):
       conc.commit()
       conc.close()
 
-   def self.get_statcounter(countername):
+   def get_statcounter(self, countername):
       con = lite.connect('semester.db')
       cur = con.cursor()
       sqlcmd = "SELECT Value FROM StatCounters WHERE Name=='" + countername + "';"
@@ -121,6 +121,7 @@ class Test_mailFetcher(unittest.TestCase):
       mf = mailFetcher(3, "testfetcher", job_queue, sender_queue, gen_queue, "autosub_testuser", "autosub_test_passwd", "imap.testdomain.com", self.logger_queue, 1)
      
       self.delete_user_by_email("platschek@ict.tuwien.ac.at")
+      old_nrfetched=self.get_statcounter('nr_mails_fetched')
 
       #TESTCASE1: try to register user not on the whitelist:
       self.delete_email_from_whitelist('platschek@ict.tuwien.ac.at')
@@ -201,6 +202,9 @@ class Test_mailFetcher(unittest.TestCase):
             self.assertEqual(sendout.get('recipient'), "administrator@testdomain.com")
             self.assertEqual(sendout.get('message_type'), "QFwd")
             self.assertEqual(sendout.get('Task'), "")
+
+      # the nr. of fetched e-mails should have gone up by 5 now.
+      self.assertEqual(str(int(old_nrfetched)+5), self.get_statcounter('nr_mails_fetched'))
 
 if __name__ == '__main__':
    unittest.main()
