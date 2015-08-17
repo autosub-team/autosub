@@ -190,7 +190,7 @@ class mailSender (threading.Thread):
          server.sendmail(self.mail_user, recipient, message)
          server.close()
          c.log_a_msg(self.logger_queue, self.name, "Successfully sent an e-mail!", "DEBUG")
-         self.increment_db_statcounter(cur, con, 'nr_mails_sent')
+         c.increment_db_statcounter(cur, con, 'nr_mails_sent')
       except:
          c.log_a_msg(self.logger_queue, self.name, "Failed to send out an e-mail!", "ERROR")
 
