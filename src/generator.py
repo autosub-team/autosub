@@ -66,4 +66,4 @@ class taskGenerator (threading.Thread):
          logmsg = "Generated individual task for user/tasknr:" + str(UserId) + "/" + str(TaskNr)
          c.log_a_msg(self.logger_queue, self.name, logmsg, "DEBUG")
 
-         common.send_email(self.sender_queue, str(UserEmail), str(UserId), "Task", str(TaskNr), "Your personal example", str(MessageId))
+         c.send_email(self.sender_queue, str(UserEmail), str(UserId), "Task", str(TaskNr), "Your personal example", str(MessageId))
