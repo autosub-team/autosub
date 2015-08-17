@@ -30,4 +30,11 @@ autosub/src
 
 and run:
 
-nosetests3 -v
+nosetests3 --with-doctest --doctest-extension=txt -v
+
+this will run all doctest as well as unittest test cases.
+
+If you also want the code coverage of the test-suite then run it as follows:
+
+$ nosetests3 --with-doctest --doctest-extension=txt -v --with-coverage
+

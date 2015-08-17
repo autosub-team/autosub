@@ -35,7 +35,7 @@ def check_dir_mkdir(directory, lqueue, lname):
 # send_email()
 ####
 def send_email(queue, recipient, userid, messagetype, tasknr, body, messageid):
-   queue.put(dict({"recipient": recipient, "UserId": userid ,"message_type": messagetype, "Task": tasknr, "Body": body, "MessageId": messageid}))
+   queue.put(dict({"recipient": recipient, "UserId": str(userid), "message_type": messagetype, "Task": str(tasknr), "Body": body, "MessageId": messageid}))
 
 ####
 #  connect_to_db()
@@ -51,4 +51,12 @@ def connect_to_db(dbname, lqueue, lname):
 
    cur = con.cursor()
    return cur, con
+
+####
+# increment_db_statcounter()
+####
+def increment_db_statcounter(cur, con, countername):
+   sql_cmd = "UPDATE StatCounters SET Value=(SELECT Value FROM StatCounters WHERE Name=='" + countername + "')+1 WHERE Name=='" + countername + "';"
+   cur.execute(sql_cmd)
+   con.commit();
 

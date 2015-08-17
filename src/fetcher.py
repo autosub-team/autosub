@@ -40,14 +40,6 @@ class mailFetcher (threading.Thread):
       return adminEmail
 
    ####
-   # increment_db_statcounter()
-   ####
-   def increment_db_statcounter(self, cur, con, countername):
-      sql_cmd = "UPDATE StatCounters SET Value=(SELECT Value FROM StatCounters WHERE Name=='" + countername + "')+1 WHERE Name=='" + countername + "';"
-      cur.execute(sql_cmd)
-      con.commit();
-
-   ####
    # If a new user registers, add_new_user() is used to add the necessary entries
    # to the database
    ####
@@ -185,7 +177,7 @@ class mailFetcher (threading.Thread):
       admin_mail = self.get_admin_email()
       c.send_email(self.sender_queue, admin_mail, "", "QFwd", "", mail, messageid)
 
-      self.increment_db_statcounter(cur, con, 'nr_questions_received')
+      c.increment_db_statcounter(cur, con, 'nr_questions_received')
 
    def a_status_is_requested(self, cur, con, user_email, messageid):
       sqlcmd = "SELECT UserId,CurrentTask FROM Users WHERE Email=='"+user_email+"';"
@@ -195,7 +187,7 @@ class mailFetcher (threading.Thread):
       UserId=res[0]
       CurrentTask=res[1]
       c.send_email(self.sender_queue, user_email, UserId, "Status", CurrentTask, "", "")
-      self.increment_db_statcounter(cur, con, 'nr_status_requests')
+      c.increment_db_statcounter(cur, con, 'nr_status_requests')
 
    ####
    # connect_to_imapserver()
@@ -238,7 +230,7 @@ class mailFetcher (threading.Thread):
       return items[0].split() # getting the mails id
 
    ####
-   #  check_if_whitelisted(user_email)
+   #  check_if_mwhitelisted(user_email)
    #
    #  check if the given e-mail address is in the whitelist
    ####
@@ -251,7 +243,7 @@ class mailFetcher (threading.Thread):
       else:
          logmsg = "Got Mail from a User not on the WhiteList: " + user_email
          c.log_a_msg(self.logger_queue, self.name, logmsg, "Warning");
-         self.increment_db_statcounter(cur, con, 'nr_non_registered')
+         c.increment_db_statcounter(cur, con, 'nr_non_registered')
          return 0
 
    ####
@@ -282,7 +274,7 @@ class mailFetcher (threading.Thread):
          # iterate over all new e-mails and take action according to the structure of the subject line
          for emailid in items:
 
-            self.increment_db_statcounter(cur, con, 'nr_mails_fetched')
+            c.increment_db_statcounter(cur, con, 'nr_mails_fetched')
 
             resp, data = m.fetch(emailid, "(RFC822)") # fetching the mail, "`(RFC822)`" means "get the whole stuff", but you can ask for headers only, etc
 
