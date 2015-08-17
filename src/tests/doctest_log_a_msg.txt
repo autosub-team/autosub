@@ -1,0 +1,14 @@
+>>> import logger
+>>> import common as c
+>>> import queue
+>>> logger_q = queue.Queue(10)
+>>> c.log_a_msg(lqueue, "testlogger", "my very importatn test logmessage", "ERROR")
+Traceback (most recent call last):
+  File "<stdin>", line 1, in <module>
+NameError: name 'lqueue' is not defined
+>>> c.log_a_msg(logger_q, "testlogger", "my very importatn test logmessage", "ERROR")
+>>> logger_q.get()
+{'msg': 'my very importatn test logmessage', 'type': 'ERROR', 'loggername': 'testlogger'}
+>>> c.log_a_msg(logger_q, "testlogger", "A normal warning message", "Warning")
+>>> logger_q.get()
+{'msg': 'A normal warning message', 'type': 'Warning', 'loggername': 'testlogger'}

@@ -24,7 +24,7 @@ class Test_common(unittest.TestCase):
          line =""
          for line in fd.readlines():
             #nothing - only interested in the very last line!
-             pass
+            pass
 
          self.assertNotEqual(line.find(logmsg), str(-1))
          self.assertNotEqual(line.find(loglvl), str(-1))
