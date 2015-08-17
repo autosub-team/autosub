@@ -159,6 +159,7 @@ class Test_mailFetcher(unittest.TestCase):
             self.assertEqual(sendout.get('Task'), "")
 
       #TESTCASE3: try to get a status report for a registered user:
+      old_sreq = self.get_statcounter('nr_status_requests')
       with mock.patch.multiple('fetcher.mailFetcher',
                                connect_to_imapserver=self.mock_connect_to_imapserver,
                                fetch_new_emails=self.mock_fetch_new_emails):
@@ -170,6 +171,7 @@ class Test_mailFetcher(unittest.TestCase):
             self.assertEqual(sendout.get('recipient'), "platschek@ict.tuwien.ac.at")
             self.assertEqual(sendout.get('message_type'), "Status")
             self.assertEqual(sendout.get('Task'), "1")
+            self.assertEqual(str(int(old_sreq)+1), self.get_statcounter('nr_status_requests'))
 
       #TESTCASE4: task submission for Invalid task:
       with mock.patch.multiple('fetcher.mailFetcher',
@@ -186,6 +188,7 @@ class Test_mailFetcher(unittest.TestCase):
 
       #TESTCASE5: A user sends a question:
       self.set_adminmail_set('administrator@testdomain.com')
+      old_nrq = self.get_statcounter('nr_questions_received')
       with mock.patch.multiple('fetcher.mailFetcher',
                                connect_to_imapserver=self.mock_connect_to_imapserver,
                                fetch_new_emails=self.mock_fetch_new_emails):
@@ -197,6 +200,8 @@ class Test_mailFetcher(unittest.TestCase):
             self.assertEqual(sendout.get('recipient'), "platschek@ict.tuwien.ac.at")
             self.assertEqual(sendout.get('message_type'), "Question")
             self.assertEqual(sendout.get('Task'), "")
+            
+            self.assertEqual(str(int(old_nrq)+1), self.get_statcounter('nr_questions_received'))
           
             sendout = sender_queue.get()
             self.assertEqual(sendout.get('recipient'), "administrator@testdomain.com")
@@ -205,6 +210,22 @@ class Test_mailFetcher(unittest.TestCase):
 
       # the nr. of fetched e-mails should have gone up by 5 now.
       self.assertEqual(str(int(old_nrfetched)+5), self.get_statcounter('nr_mails_fetched'))
+
+      #TESTCASE6: Trigger a Usage message:
+      with mock.patch.multiple('fetcher.mailFetcher',
+                               connect_to_imapserver=self.mock_connect_to_imapserver,
+                               fetch_new_emails=self.mock_fetch_new_emails):
+         with mock.patch("imaplib.IMAP4.fetch", self.mock_fetch):
+            self.testcases = [b'10']  
+            mf.loop_code()
+
+            sendout = sender_queue.get()
+            self.assertEqual(sendout.get('recipient'), "platschek@ict.tuwien.ac.at")
+            self.assertEqual(sendout.get('message_type'), "Usage")
+            self.assertEqual(sendout.get('Task'), "")
+            
+      # the nr. of fetched e-mails should have gone up by 6 now.
+      self.assertEqual(str(int(old_nrfetched)+6), self.get_statcounter('nr_mails_fetched'))
 
 if __name__ == '__main__':
    unittest.main()
