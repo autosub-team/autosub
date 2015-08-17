@@ -88,7 +88,7 @@ class mailFetcher (threading.Thread):
     ##
 
    def increment_submissionNr(self,UserId,TaskNr):
-      curs, cons = self.connect_to_db('semester.db')
+      curs, cons = c.connect_to_db('semester.db',self.logger_queue, self.name)
       
       # get last submission number
       sqlcmd="SELECT NrSubmissions FROM UserTasks WHERE UserId = {0} AND TaskNr = {1};".format(UserId, TaskNr)  
@@ -125,7 +125,7 @@ class mailFetcher (threading.Thread):
       ts = datetime.datetime.now()
       submission_dir="/Submission{0}_{1}{2}{3}_{4}{5}{6}{7}".format(submissionNr, ts.year, ts.month, ts.day, ts.hour, ts.minute, ts.second, ts.microsecond) 
       current_dir = detach_dir + submission_dir 
-      self.check_dir_mkdir(current_dir)
+      c.check_dir_mkdir(current_dir, self.logger_queue, self.name)
 
       # we use walk to create a generator so we can iterate on the parts and forget about the recursive headach
       for part in mail.walk():
