@@ -88,7 +88,7 @@ class mailFetcher (threading.Thread):
     ##
 
    def increment_submissionNr(self,UserId,TaskNr):
-      curs, cons = self.connect_to_db('semester.db')
+      curs, cons = c.connect_to_db('semester.db',self.logger_queue, self.name)
       
       # get last submission number
       sqlcmd="SELECT NrSubmissions FROM UserTasks WHERE UserId = {0} AND TaskNr = {1};".format(UserId, TaskNr)  
