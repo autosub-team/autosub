@@ -164,13 +164,8 @@ class Test_mailFetcher(unittest.TestCase):
             self.assertEqual(str(int(old_nonreg)+1), self.get_statcounter('nr_non_registered'))
 
       #TESTCASE2: try to register user on the whitelist:
-      self.insert_email_to_whitelist('platschek@ict.tuwien.ac.at')
-      with mock.patch.multiple('fetcher.mailFetcher',
-                               connect_to_imapserver=self.mock_connect_to_imapserver,
-                               fetch_new_emails=self.mock_fetch_new_emails):
-         with mock.patch.multiple("imaplib.IMAP4",
-                               fetch=self.mock_fetch,
-                               close=self.mock_close):
+            self.insert_email_to_whitelist('platschek@ict.tuwien.ac.at')
+
             self.testcases = [b'10']  
             mf.loop_code()
 
@@ -186,13 +181,8 @@ class Test_mailFetcher(unittest.TestCase):
             self.assertEqual(sendout.get('Task'), "")
 
       #TESTCASE3: try to get a status report for a registered user:
-      old_sreq = self.get_statcounter('nr_status_requests')
-      with mock.patch.multiple('fetcher.mailFetcher',
-                               connect_to_imapserver=self.mock_connect_to_imapserver,
-                               fetch_new_emails=self.mock_fetch_new_emails):
-         with mock.patch.multiple("imaplib.IMAP4",
-                               fetch=self.mock_fetch,
-                               close=self.mock_close):
+            old_sreq = self.get_statcounter('nr_status_requests')
+
             self.testcases = [b'11']  
             mf.loop_code()
 
@@ -203,12 +193,6 @@ class Test_mailFetcher(unittest.TestCase):
             self.assertEqual(str(int(old_sreq)+1), self.get_statcounter('nr_status_requests'))
 
       #TESTCASE4: task submission for Invalid task:
-      with mock.patch.multiple('fetcher.mailFetcher',
-                               connect_to_imapserver=self.mock_connect_to_imapserver,
-                               fetch_new_emails=self.mock_fetch_new_emails):
-         with mock.patch.multiple("imaplib.IMAP4",
-                               fetch=self.mock_fetch,
-                               close=self.mock_close):
             self.testcases = [b'13']  
             mf.loop_code()
 
@@ -218,14 +202,8 @@ class Test_mailFetcher(unittest.TestCase):
             self.assertEqual(sendout.get('Task'), "")
 
       #TESTCASE5: A user sends a question:
-      self.set_adminmail_set('administrator@testdomain.com')
-      old_nrq = self.get_statcounter('nr_questions_received')
-      with mock.patch.multiple('fetcher.mailFetcher',
-                               connect_to_imapserver=self.mock_connect_to_imapserver,
-                               fetch_new_emails=self.mock_fetch_new_emails):
-         with mock.patch.multiple("imaplib.IMAP4",
-                               fetch=self.mock_fetch,
-                               close=self.mock_close):
+            self.set_adminmail_set('administrator@testdomain.com')
+            old_nrq = self.get_statcounter('nr_questions_received')
             self.testcases = [b'12']  
             mf.loop_code()
 
@@ -242,15 +220,9 @@ class Test_mailFetcher(unittest.TestCase):
             self.assertEqual(sendout.get('Task'), "")
 
       # the nr. of fetched e-mails should have gone up by 5 now.
-      self.assertEqual(str(int(old_nrfetched)+5), self.get_statcounter('nr_mails_fetched'))
+            self.assertEqual(str(int(old_nrfetched)+5), self.get_statcounter('nr_mails_fetched'))
 
       #TESTCASE6: Trigger a Usage message:
-      with mock.patch.multiple('fetcher.mailFetcher',
-                               connect_to_imapserver=self.mock_connect_to_imapserver,
-                               fetch_new_emails=self.mock_fetch_new_emails):
-         with mock.patch.multiple("imaplib.IMAP4",
-                               fetch=self.mock_fetch,
-                               close=self.mock_close):
             self.testcases = [b'10']  
             mf.loop_code()
 
@@ -260,20 +232,14 @@ class Test_mailFetcher(unittest.TestCase):
             self.assertEqual(sendout.get('Task'), "")
             
       # the nr. of fetched e-mails should have gone up by 6 now.
-      self.assertEqual(str(int(old_nrfetched)+6), self.get_statcounter('nr_mails_fetched'))
+            self.assertEqual(str(int(old_nrfetched)+6), self.get_statcounter('nr_mails_fetched'))
 
 
       #TESTCASE7: try to register user on the whitelist --in TESTCASE2, no generator script
       #           was configured, this time there will be one configured.
-      self.delete_user_by_email('platschek@ict.tuwien.ac.at')
-      self.add_task_config(1, 'test_success.sh', 'generator_success.sh', 42, 'taskadmin@testdomain.com')
+            self.delete_user_by_email('platschek@ict.tuwien.ac.at')
+            self.add_task_config(1, 'test_success.sh', 'generator_success.sh', 42, 'taskadmin@testdomain.com')
 
-      with mock.patch.multiple('fetcher.mailFetcher',
-                               connect_to_imapserver=self.mock_connect_to_imapserver,
-                               fetch_new_emails=self.mock_fetch_new_emails):
-         with mock.patch.multiple("imaplib.IMAP4",
-                               fetch=self.mock_fetch,
-                               close=self.mock_close):
             self.testcases = [b'10']  
             mf.loop_code()
 
@@ -289,24 +255,18 @@ class Test_mailFetcher(unittest.TestCase):
             self.assertEqual(genout.get('TaskNr'), "1")
 
       #TESTCASE8: hand in results
-      # after registration, the generator script added an entry into UserTasks table
-      # doing that by hand now:
-      con = lite.connect('semester.db')
-      cur = con.cursor()
-      sqlcmd = "INSERT INTO UserTasks (UniqueId, TaskNr, UserId, TaskParameters, TaskDescription, TaskAttachments, NrSubmissions, FirstSuccessful) VALUES(NULL, 1, "+ str(userid) + ", '4711', 'My Task Description', '', 0, 0)"
-      cur.execute(sqlcmd)
-      con.commit()
+         # after registration, the generator script added an entry into UserTasks table
+         # doing that by hand now:
+            con = lite.connect('semester.db')
+            cur = con.cursor()
+            sqlcmd = "INSERT INTO UserTasks (UniqueId, TaskNr, UserId, TaskParameters, TaskDescription, TaskAttachments, NrSubmissions, FirstSuccessful) VALUES(NULL, 1, "+ str(userid) + ", '4711', 'My Task Description', '', 0, 0)"
+            cur.execute(sqlcmd)
+            con.commit()
 
-      # the generator script also creates the TaskN directory in the users/N/ directory:
-      fname = "users/"+str(userid)+"/Task1"
-      os.mkdir(fname)
+         # the generator script also creates the TaskN directory in the users/N/ directory:
+            fname = "users/"+str(userid)+"/Task1"
+            os.mkdir(fname)
 
-      with mock.patch.multiple('fetcher.mailFetcher',
-                               connect_to_imapserver=self.mock_connect_to_imapserver,
-                               fetch_new_emails=self.mock_fetch_new_emails):
-         with mock.patch.multiple("imaplib.IMAP4",
-                               fetch=self.mock_fetch,
-                               close=self.mock_close):
             self.testcases = [b'33']
             mf.loop_code()
 
@@ -316,9 +276,8 @@ class Test_mailFetcher(unittest.TestCase):
             self.assertEqual(jobout.get('taskNr'), "1")
             self.assertEqual(jobout.get('UserEmail'), "platschek@ict.tuwien.ac.at")
 
-
-
-
+      # the nr. of fetched e-mails should have gone up by 8 now.
+            self.assertEqual(str(int(old_nrfetched)+8), self.get_statcounter('nr_mails_fetched'))
 
 if __name__ == '__main__':
    unittest.main()
