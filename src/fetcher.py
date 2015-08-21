@@ -110,59 +110,64 @@ class mailFetcher (threading.Thread):
    # structure.
    ####
    def take_new_results(self, user_email, TaskNr, cur, con, mail, messageid):
+      deadline = c.get_task_deadline(TaskNr, self.logger_queue, self.name)
 
-      # get the user's UserId
-      sql_cmd="SELECT UserId FROM Users WHERE Email='{0}';".format(user_email)
-      cur.execute(sql_cmd);
-      res= cur.fetchone()
-      UserId = res[0];
+      if deadline < datetime.datetime.now():
+         #deadline has passed!
+         c.send_email(self.sender_queue, user_email, "", "DeadTask", str(TaskNr), "", messageid)
+      else:
+         # get the user's UserId
+         sql_cmd="SELECT UserId FROM Users WHERE Email='{0}';".format(user_email)
+         cur.execute(sql_cmd);
+         res= cur.fetchone()
+         UserId = res[0];
 
-      # increment the submissionNr for the user
-      submissionNr= self.increment_submissionNr(int(UserId),int(TaskNr))
+         # increment the submissionNr for the user
+         submissionNr= self.increment_submissionNr(int(UserId),int(TaskNr))
       
-      #create a directory for putting his submission in:
-      detach_dir = 'users/{0}/Task{1}'.format(UserId,TaskNr)
-      ts = datetime.datetime.now()
-      submission_dir="/Submission{0}_{1}{2}{3}_{4}{5}{6}{7}".format(submissionNr, ts.year, ts.month, ts.day, ts.hour, ts.minute, ts.second, ts.microsecond) 
-      current_dir = detach_dir + submission_dir 
-      c.check_dir_mkdir(current_dir, self.logger_queue, self.name)
+         #create a directory for putting his submission in:
+         detach_dir = 'users/{0}/Task{1}'.format(UserId,TaskNr)
+         ts = datetime.datetime.now()
+         submission_dir="/Submission{0}_{1}{2}{3}_{4}{5}{6}{7}".format(submissionNr, ts.year, ts.month, ts.day, ts.hour, ts.minute, ts.second, ts.microsecond) 
+         current_dir = detach_dir + submission_dir 
+         c.check_dir_mkdir(current_dir, self.logger_queue, self.name)
 
-      # we use walk to create a generator so we can iterate on the parts and forget about the recursive headach
-      for part in mail.walk():
-      # multipart are just containers, so we skip them
-         if part.get_content_maintype() == 'multipart':
-            continue
+         # we use walk to create a generator so we can iterate on the parts and forget about the recursive headach
+         for part in mail.walk():
+         # multipart are just containers, so we skip them
+            if part.get_content_maintype() == 'multipart':
+               continue
 
-         # is this part an attachment ?
-         if part.get('Content-Disposition') is None:
-            continue
+            # is this part an attachment ?
+            if part.get('Content-Disposition') is None:
+               continue
 
-         filename = part.get_filename()
-         counter = 1
+            filename = part.get_filename()
+            counter = 1
 
-         # if there is no filename, we create one with a counter to avoid duplicates
-         if not filename:
-            filename = 'part-%03d%s' % (counter, 'bin')
-            counter += 1
+            # if there is no filename, we create one with a counter to avoid duplicates
+            if not filename:
+               filename = 'part-%03d%s' % (counter, 'bin')
+               counter += 1
 
-         att_path = os.path.join(current_dir, filename)
+            att_path = os.path.join(current_dir, filename)
 
-         #Check if its already there
-         if not os.path.isfile(att_path) :
-            # finally write the stuff
-            fp = open(att_path, 'wb')
-            fp.write(part.get_payload(decode=True))
-            fp.close()
+            #Check if its already there
+            if not os.path.isfile(att_path) :
+               # finally write the stuff
+               fp = open(att_path, 'wb')
+               fp.write(part.get_payload(decode=True))
+               fp.close()
 
-      cmd = "rm " + detach_dir + "/*" + " 2> /dev/null"
-      os.system(cmd)
+         cmd = "rm " + detach_dir + "/*" + " 2> /dev/null"
+         os.system(cmd)
 
-      cmd = "cp -R " +  current_dir + "/* " + detach_dir + " > /dev/null"
-      os.system(cmd)
+         cmd = "cp -R " +  current_dir + "/* " + detach_dir + " > /dev/null"
+         os.system(cmd)
 
-      # Next, let's handle the task that shall be checked, and send a job
-      # request to the job_queue. The workers can then get it from there.
-      self.job_queue.put(dict({"UserId": UserId, "UserEmail": user_email,"message_type": "Task", "taskNr": TaskNr, "MessageId": messageid}))
+         # Next, let's handle the task that shall be checked, and send a job
+         # request to the job_queue. The workers can then get it from there.
+         self.job_queue.put(dict({"UserId": UserId, "UserEmail": user_email,"message_type": "Task", "taskNr": TaskNr, "MessageId": messageid}))
 
    ####
    # a_question_was_asked()
