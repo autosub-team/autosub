@@ -384,6 +384,12 @@ class mailSender (threading.Thread):
          self.backup_message(messageid)
          msg = self.assemble_email(msg, TEXT, '')
          self.send_out_email(recipient, msg.as_string(), cur, con)
+      elif (message_type == "RegOver"):
+         msg['Subject'] = "Registration Deadline has passed"
+         TEXT = self.read_specialmessage('REGOVER')
+         self.backup_message(messageid)
+         msg = self.assemble_email(msg, TEXT, '')
+         self.send_out_email(recipient, msg.as_string(), cur, con)
       elif (message_type == "NotAllowed"):
          msg['Subject'] = "Registration Not Successful."
          TEXT = self.read_specialmessage('NOTALLOWED')

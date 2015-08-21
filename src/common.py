@@ -60,3 +60,4 @@ def increment_db_statcounter(cur, con, countername):
    cur.execute(sql_cmd)
    con.commit();
 
+

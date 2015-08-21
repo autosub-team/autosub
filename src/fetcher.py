@@ -258,6 +258,17 @@ class mailFetcher (threading.Thread):
 
       return numTasks
 
+
+   def get_registration_deadline(self):
+      curc, conc = c.connect_to_db('course.db', self.logger_queue, self.name)
+      sqlcmd = "SELECT Content FROM GeneralConfig WHERE ConfigItem == 'registration_deadline'"
+      curc.execute(sqlcmd)
+      deadline_string = str(curc.fetchone()[0])
+      conc.close()
+
+      format_string='%Y-%m-%d %H:%M:%S'
+      return datetime.datetime.strptime(deadline_string, format_string)
+
    ####
    # loop_code()
    #
@@ -322,8 +333,13 @@ class mailFetcher (threading.Thread):
                      c.send_email(self.sender_queue, user_email, "", "Usage", "", "", messageid)
 
                else:
-                  self.add_new_user(user_name, user_email, cur, con)
-                  c.send_email(self.sender_queue, user_email, "", "Welcome", "", "", messageid)
+                  reg_deadline = self.get_registration_deadline()
+
+                  if reg_deadline > datetime.datetime.now():
+                     self.add_new_user(user_name, user_email, cur, con)
+                     c.send_email(self.sender_queue, user_email, "", "Welcome", "", "", messageid)
+                  else:
+                     c.send_email(self.sender_queue, user_email, "", "RegOver", "", "", messageid)
 
             else:
                   c.send_email(self.sender_queue, user_email, "", "NotAllowed", "", "", messageid)
