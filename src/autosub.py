@@ -138,6 +138,8 @@ def init_ressources(numThreads, numTasks):
       load_specialmessage_to_db(cur, con, 'CONGRATS', 'SpecialMessages/congratulations.txt')
       load_specialmessage_to_db(cur, con, 'REGOVER', 'SpecialMessages/registrationover.txt')
       load_specialmessage_to_db(cur, con, 'NOTALLOWED', 'SpecialMessages/notallowed.txt')
+      load_specialmessage_to_db(cur, con, 'CURLAST', 'SpecialMessages/curlast.txt')
+      load_specialmessage_to_db(cur, con, 'DEADTASK', 'SpecialMessages/deadtask.txt')
    #####################
    # TaskConfiguration #
    #####################

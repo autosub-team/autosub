@@ -267,7 +267,11 @@ class mailFetcher (threading.Thread):
       conc.close()
 
       format_string='%Y-%m-%d %H:%M:%S'
-      return datetime.datetime.strptime(deadline_string, format_string)
+      if deadline_string != 'NULL':
+         return datetime.datetime.strptime(deadline_string, format_string)
+      else:
+          # there is no deadline set, just assume it is in 1h from now.
+         return datetime.datetime.now() + datetime.timedelta(0, 3600)
 
    ####
    # loop_code()

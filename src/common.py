@@ -8,6 +8,7 @@
 
 import sqlite3 as lite
 import os
+import datetime
 
 ####
 # log_a_msg()
@@ -60,4 +61,25 @@ def increment_db_statcounter(cur, con, countername):
    cur.execute(sql_cmd)
    con.commit();
 
+
+def get_task_starttime(tasknr, lqueue, lname):
+   curc, conc = connect_to_db('course.db', lqueue, lname)
+   sqlcmd = "SELECT TaskStart FROM TaskConfiguration WHERE TaskNr == '"+ str(tasknr) +"'"
+   curc.execute(sqlcmd)
+   tstart_string = str(curc.fetchone()[0])
+   conc.close()
+
+   format_string='%Y-%m-%d %H:%M:%S'
+   return datetime.datetime.strptime(tstart_string, format_string)
+
+
+def get_task_deadline(tasknr, lqueue, lname):
+   curc, conc = connect_to_db('course.db', lqueue, lname)
+   sqlcmd = "SELECT TaskDeadline FROM TaskConfiguration WHERE TaskNr == '"+ str(tasknr) +"'"
+   curc.execute(sqlcmd)
+   deadline_string = str(curc.fetchone()[0])
+   conc.close()
+
+   format_string='%Y-%m-%d %H:%M:%S'
+   return datetime.datetime.strptime(deadline_string, format_string)
 

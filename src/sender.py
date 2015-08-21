@@ -359,6 +359,18 @@ class mailSender (threading.Thread):
          self.backup_message(messageid)
          msg = self.assemble_email(msg, TEXT, '')
          self.send_out_email(recipient, msg.as_string(), cur, con)
+      elif (message_type == "CurLast"):
+         msg['Subject'] = "Task{0} is not available yet".format(str(TaskNr))
+         TEXT = self.read_specialmessage('CURLAST')
+         self.backup_message(messageid)
+         msg = self.assemble_email(msg, TEXT, '')
+         self.send_out_email(recipient, msg.as_string(), cur, con)
+      elif (message_type == "DeadTask"):
+         msg['Subject'] = "Deadline for Task{0} has passed.".format(str(TaskNr))
+         TEXT = self.read_specialmessage('DEADTASK')
+         self.backup_message(messageid)
+         msg = self.assemble_email(msg, TEXT, '')
+         self.send_out_email(recipient, msg.as_string(), cur, con)
       elif (message_type == "Usage"):
          msg['Subject'] = "Autosub Usage"
          TEXT = self.read_specialmessage('USAGE')
