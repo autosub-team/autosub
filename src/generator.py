@@ -24,6 +24,10 @@ class taskGenerator (threading.Thread):
 
    def generator_loop(self):
       next_gen_msg = self.gen_queue.get(True) #blocking wait on gen_queue
+
+      logmsg = "gen_queue content:" + str(next_gen_msg)
+      c.log_a_msg(self.logger_queue, self.name, logmsg, "DEBUG")
+
       TaskNr=next_gen_msg.get('TaskNr')
       UserId=next_gen_msg.get('UserId')
       UserEmail=next_gen_msg.get('UserEmail')

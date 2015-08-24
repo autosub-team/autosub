@@ -251,6 +251,8 @@ class mailSender (threading.Thread):
       
 
       if (message_type == "Task"):
+         logmsg= "Task in send_queue: " + str(next_send_msg)
+         c.log_a_msg(self.logger_queue, self.name, logmsg, "DEBUG")
          numTasks = self.get_num_Tasks()
          ctasknr=self.user_get_currentTask(cur, con, UserId)
          if (numTasks+1 == int(TaskNr)): # last task solved!
@@ -268,7 +270,7 @@ class mailSender (threading.Thread):
             self.send_out_email(recipient, msg.as_string(), cur, con)
          else: # at least one more task to do: send out the description
             # only send the task description, after the first successful submission
-            if ((int(TaskNr)-1) == (int(ctasknr)) or int(ctasknr) == 1):
+            if ((int(TaskNr)-1) <= (int(ctasknr)) or int(ctasknr) == 1):
                msg['Subject'] = "Description Task" + str(TaskNr) 
 
                sql_cmd="SELECT PathToTask FROM TaskConfiguration WHERE TaskNr == "+str(TaskNr)
