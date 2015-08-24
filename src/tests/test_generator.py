@@ -40,7 +40,8 @@ class Test_generator(unittest.TestCase):
       self.assertEqual(sendout.get('message_type'), "Task")
       self.assertEqual(sendout.get('Task'), "11")
 
-      os.removedirs("users/42")
+      os.removedirs("users/42/Task1/desc")
+      os.removedirs("users/42/Task11/desc")
 
 if __name__ == '__main__':
    unittest.main()
