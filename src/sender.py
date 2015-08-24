@@ -388,7 +388,16 @@ class mailSender (threading.Thread):
       elif (message_type == "QFwd"):
          orig_mail = next_send_msg.get('Body')
          msg['Subject'] = "Question from " + orig_mail['from']
-         TEXT = "Original subject: " + orig_mail['subject'] + "\n\n" + orig_mail.get_payload()
+
+         if orig_mail.get_content_maintype() == 'multipart':
+            part = orig_mail.get_payload(0)
+            mbody = part.get_payload()
+            TEXT = "Original subject: " + orig_mail['subject'] + "\n\nNote: This e-mail contained attachments which have been removed!\n"
+            TEXT = TEXT + "\n\nOriginal body:\n" + str(mbody) 
+         else:
+            mbody = orig_mail.get_payload()
+            TEXT = "Original subject: " + orig_mail['subject'] + "\n\nOriginal body:\n" + str(mbody) 
+
          self.backup_message(messageid)
          msg = self.assemble_email(msg, TEXT, '')
          self.send_out_email(recipient, msg.as_string(), cur, con)
