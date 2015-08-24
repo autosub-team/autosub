@@ -87,7 +87,7 @@ class worker (threading.Thread):
              # run the test script
              logmsg = "Running test script: " + scriptpath 
              c.log_a_msg(self.logger_queue, self.name, logmsg, "INFO")
-             command = ""+scriptpath+" " + str(UserId) + " " + str(TaskNr) + " " + str(taskParameters) +" >> autosub.stdout 2>>autosub.stderr"
+             command = ""+scriptpath+" " + str(UserId) + " " + str(TaskNr) + " " +"\"" + str(taskParameters)+ "\"" +" >> autosub.stdout 2>>autosub.stderr"
              test_res = os.system(command)
 
              if test_res:
