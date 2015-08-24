@@ -10,7 +10,7 @@
 import threading, queue
 import email, getpass, imaplib, os, time
 import sqlite3 as lite
-import fetcher, worker, sender, logger, generator
+import fetcher, worker, sender, logger, generator, activator
 import optparse
 import signal
 import logging
@@ -143,7 +143,7 @@ def init_ressources(numThreads, numTasks):
    #####################
    # TaskConfiguration #
    #####################
-   ret = check_and_init_db_table(cur, con, "TaskConfiguration", "TaskNr INT PRIMARY KEY, TaskStart DATETIME, TaskDeadline DATETIME, PathToTask TEXT, GeneratorExecutable TEXT, TestExecutable TEXT, Score INT, TaskOperator TEXT")
+   ret = check_and_init_db_table(cur, con, "TaskConfiguration", "TaskNr INT PRIMARY KEY, TaskStart DATETIME, TaskDeadline DATETIME, PathToTask TEXT, GeneratorExecutable TEXT, TestExecutable TEXT, Score INT, TaskOperator TEXT, TaskActive BOOLEAN")
    ####################
    ### GeneralConfig ##
    ####################
@@ -220,6 +220,14 @@ if __name__ == '__main__':
                              # will clean it up before terminating!
    generator_t.start()
    threadID += 1
+
+   activator_t = activator.taskActivator(threadID, "activator", gen_queue, sender_queue, logger_queue)
+   activator_t.daemon = True # make the fetcher thread a daemon, this way the main
+                             # will clean it up before terminating!
+   activator_t.start()
+   threadID += 1
+
+
 
    msg_config = "Used config-file: " + opts.configfile
    logger_queue.put(dict({"msg": msg_config, "type": "INFO", "loggername": "Main"}))

@@ -9,6 +9,8 @@
 import sqlite3 as lite
 import os
 import datetime
+   
+format_string='%Y-%m-%d %H:%M:%S'
 
 ####
 # log_a_msg()
@@ -69,7 +71,7 @@ def get_task_starttime(tasknr, lqueue, lname):
    tstart_string = str(curc.fetchone()[0])
    conc.close()
 
-   format_string='%Y-%m-%d %H:%M:%S'
+   #format_string='%Y-%m-%d %H:%M:%S'
    return datetime.datetime.strptime(tstart_string, format_string)
 
 
@@ -80,6 +82,6 @@ def get_task_deadline(tasknr, lqueue, lname):
    deadline_string = str(curc.fetchone()[0])
    conc.close()
 
-   format_string='%Y-%m-%d %H:%M:%S'
+   #format_string='%Y-%m-%d %H:%M:%S'
    return datetime.datetime.strptime(deadline_string, format_string)
 

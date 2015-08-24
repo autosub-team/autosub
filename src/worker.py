@@ -23,12 +23,6 @@ class worker (threading.Thread):
       self.gen_queue = gen_queue
 
    ####
-   # log_a_msg()
-   ####
-   def log_a_msg(self, msg, loglevel):
-         self.logger_queue.put(dict({"msg": msg, "type": loglevel, "loggername": self.name}))
-
-   ####
    #  get_taskParameters
    #
    #  look up the taskParmeters, that were generated from the generator for
