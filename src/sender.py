@@ -18,7 +18,7 @@ import sqlite3 as lite
 import common as c
 
 class mailSender (threading.Thread):
-   def __init__(self, threadID, name, sender_queue, autosub_mail, autosub_user, autosub_passwd, autosub_smtpserver, logger_queue):
+   def __init__(self, threadID, name, sender_queue, autosub_mail, autosub_user, autosub_passwd, autosub_smtpserver, logger_queue, coursedb, semesterdb):
       threading.Thread.__init__(self)
       self.threadID = threadID
       self.name = name
@@ -28,8 +28,8 @@ class mailSender (threading.Thread):
       self.mail_pwd = autosub_passwd
       self.smtpserver = autosub_smtpserver
       self.logger_queue = logger_queue
-      self.coursedb = 'course.db'
-      self.semesterdb = 'semester.db'
+      self.coursedb = coursedb
+      self.semesterdb = semesterdb
 
    ####
    # get_admin_emails()

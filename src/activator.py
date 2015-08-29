@@ -14,15 +14,15 @@ import time
 import datetime
 
 class taskActivator (threading.Thread):
-   def __init__(self, threadID, name, gen_queue, sender_queue, logger_queue):
+   def __init__(self, threadID, name, gen_queue, sender_queue, logger_queue, coursedb, semesterdb):
       threading.Thread.__init__(self)
       self.threadID = threadID
       self.name = name
       self.sender_queue = sender_queue
       self.logger_queue = logger_queue
       self.gen_queue = gen_queue
-      self.coursedb = 'course.db'
-      self.semesterdb = 'semester.db'
+      self.coursedb = coursedb
+      self.semesterdb = semesterdb
 
    ####
    # thread code for the worker thread.

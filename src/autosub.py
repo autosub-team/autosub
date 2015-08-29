@@ -218,25 +218,25 @@ if __name__ == '__main__':
 
    init_ressources(numThreads,numTasks)
 
-   sender_t = sender.mailSender(threadID, "sender", sender_queue, autosub_mail, autosub_user, autosub_passwd, smtpserver, logger_queue)
+   sender_t = sender.mailSender(threadID, "sender", sender_queue, autosub_mail, autosub_user, autosub_passwd, smtpserver, logger_queue, coursedb, semesterdb)
    sender_t.daemon = True # make the sender thread a daemon, this way the main
                           # will clean it up before terminating!
    sender_t.start()
    threadID += 1
 
-   fetcher_t = fetcher.mailFetcher(threadID, "fetcher", job_queue, sender_queue, gen_queue, autosub_user, autosub_passwd, imapserver, logger_queue, poll_period)
+   fetcher_t = fetcher.mailFetcher(threadID, "fetcher", job_queue, sender_queue, gen_queue, autosub_user, autosub_passwd, imapserver, logger_queue, poll_period, coursedb, semesterdb)
    fetcher_t.daemon = True # make the fetcher thread a daemon, this way the main
                         # will clean it up before terminating!
    fetcher_t.start()
    threadID += 1
 
-   generator_t = generator.taskGenerator(threadID, "generator", gen_queue, sender_queue, logger_queue)
+   generator_t = generator.taskGenerator(threadID, "generator", gen_queue, sender_queue, logger_queue, coursedb)
    generator_t.daemon = True # make the fetcher thread a daemon, this way the main
                              # will clean it up before terminating!
    generator_t.start()
    threadID += 1
 
-   activator_t = activator.taskActivator(threadID, "activator", gen_queue, sender_queue, logger_queue)
+   activator_t = activator.taskActivator(threadID, "activator", gen_queue, sender_queue, logger_queue, coursedb, semesterdb)
    activator_t.daemon = True # make the fetcher thread a daemon, this way the main
                              # will clean it up before terminating!
    activator_t.start()
@@ -250,7 +250,7 @@ if __name__ == '__main__':
 
    while (threadID <= numThreads + 3):
       tName = "Worker" + str(threadID-3)
-      t = worker.worker(threadID, tName, job_queue, gen_queue, sender_queue, logger_queue)
+      t = worker.worker(threadID, tName, job_queue, gen_queue, sender_queue, logger_queue, coursedb, semesterdb)
       t.daemon = True
       t.start()
       worker_t.append(t)

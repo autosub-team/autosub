@@ -14,14 +14,14 @@ import common as c
 import os
 
 class taskGenerator (threading.Thread):
-   def __init__(self, threadID, name, gen_queue, sender_queue, logger_queue):
+   def __init__(self, threadID, name, gen_queue, sender_queue, logger_queue, coursedb):
       threading.Thread.__init__(self)
       self.threadID = threadID
       self.name = name
       self.gen_queue = gen_queue
       self.sender_queue = sender_queue
       self.logger_queue = logger_queue
-      self.coursedb = 'course.db'
+      self.coursedb = coursedb
 
    def generator_loop(self):
       next_gen_msg = self.gen_queue.get(True) #blocking wait on gen_queue

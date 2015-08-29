@@ -14,7 +14,7 @@ import datetime
 import common as c
 
 class mailFetcher (threading.Thread):
-   def __init__(self, threadID, name, job_queue, sender_queue, gen_queue, autosub_user, autosub_passwd, autosub_imapserver, logger_queue, poll_period):
+   def __init__(self, threadID, name, job_queue, sender_queue, gen_queue, autosub_user, autosub_passwd, autosub_imapserver, logger_queue, poll_period, coursedb, semesterdb):
       threading.Thread.__init__(self)
       self.threadID = threadID
       self.name = name
@@ -26,8 +26,8 @@ class mailFetcher (threading.Thread):
       self.imapserver = autosub_imapserver
       self.logger_queue = logger_queue
       self.poll_period = poll_period
-      self.coursedb = 'course.db'
-      self.semesterdb = 'semester.db'
+      self.coursedb = coursedb
+      self.semesterdb = semesterdb
 
    ####
    # get_admin_emails()

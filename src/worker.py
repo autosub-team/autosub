@@ -13,7 +13,7 @@ import sqlite3 as lite
 import datetime
 
 class worker (threading.Thread):
-   def __init__(self, threadID, name, job_queue, gen_queue, sender_queue, logger_queue):
+   def __init__(self, threadID, name, job_queue, gen_queue, sender_queue, logger_queue, coursedb, semesterdb):
       threading.Thread.__init__(self)
       self.threadID = threadID
       self.name = name
@@ -21,8 +21,8 @@ class worker (threading.Thread):
       self.sender_queue = sender_queue
       self.logger_queue = logger_queue
       self.gen_queue = gen_queue
-      self.coursedb = 'course.db'
-      self.semesterdb = 'semester.db'
+      self.coursedb = coursedb
+      self.semesterdb = semesterdb
 
    ####
    #  get_taskParameters
