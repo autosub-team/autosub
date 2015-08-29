@@ -184,7 +184,22 @@ if __name__ == '__main__':
    smtpserver = config.get('smtpserver', 'servername')
    numThreads = config.getint('general', 'num_workers')
    queueSize = config.getint('general', 'queue_size')
-   poll_period = config.getint('general', 'poll_period')
+
+   try:
+      poll_period = config.getint('general', 'poll_period')
+   except:
+      poll_period = 60
+
+   try:
+      semesterdb = config.get('general', 'semesterdb')
+   except:
+      semesterdb = 'semester.db'
+
+   try:
+      coursedb = config.get('general', 'coursedb')
+   except:
+      coursedb = 'course.db'
+
    numTasks = config.getint('challenge','num_tasks')
 
    job_queue = queue.Queue(queueSize)
