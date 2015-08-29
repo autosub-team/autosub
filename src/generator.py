@@ -21,6 +21,7 @@ class taskGenerator (threading.Thread):
       self.gen_queue = gen_queue
       self.sender_queue = sender_queue
       self.logger_queue = logger_queue
+      self.coursedb = 'course.db'
 
    def generator_loop(self):
       next_gen_msg = self.gen_queue.get(True) #blocking wait on gen_queue
@@ -42,7 +43,7 @@ class taskGenerator (threading.Thread):
 
       # check if there is a generator executable configured in the database -- if not fall back on static
       # generator script.
-      curc, conc = c.connect_to_db('course.db', self.logger_queue, self.name)
+      curc, conc = c.connect_to_db(self.coursedb, self.logger_queue, self.name)
       sql_cmd="SELECT GeneratorExecutable FROM TaskConfiguration WHERE TaskNr == "+str(TaskNr)
       curc.execute(sql_cmd)
       generatorname = curc.fetchone()

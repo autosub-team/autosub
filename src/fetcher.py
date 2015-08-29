@@ -26,12 +26,14 @@ class mailFetcher (threading.Thread):
       self.imapserver = autosub_imapserver
       self.logger_queue = logger_queue
       self.poll_period = poll_period
+      self.coursedb = 'course.db'
+      self.semesterdb = 'semester.db'
 
    ####
    # get_admin_emails()
    ####
    def get_admin_emails(self):
-      curc, conc = c.connect_to_db('course.db', self.logger_queue, self.name)
+      curc, conc = c.connect_to_db(self.coursedb, self.logger_queue, self.name)
       sqlcmd = "SELECT Content FROM GeneralConfig WHERE ConfigItem == 'admin_email'"
       curc.execute(sqlcmd)
       result = str(curc.fetchone()[0])
@@ -65,7 +67,7 @@ class mailFetcher (threading.Thread):
       c.check_dir_mkdir(dirname, self.logger_queue, self.name)
 
       # NOTE: messageid is empty, cause this will be sent out by the welcome message!
-      curc, conc = c.connect_to_db('course.db', self.logger_queue, self.name)
+      curc, conc = c.connect_to_db(self.coursedb, self.logger_queue, self.name)
       sql_cmd="SELECT GeneratorExecutable FROM TaskConfiguration WHERE TaskNr == 1"
       curc.execute(sql_cmd);
       res = curc.fetchone();
@@ -89,7 +91,7 @@ class mailFetcher (threading.Thread):
     ##
 
    def increment_submissionNr(self,UserId,TaskNr):
-      curs, cons = c.connect_to_db('semester.db',self.logger_queue, self.name)
+      curs, cons = c.connect_to_db(self.semesterdb,self.logger_queue, self.name)
       
       # get last submission number
       sqlcmd="SELECT NrSubmissions FROM UserTasks WHERE UserId = {0} AND TaskNr = {1};".format(UserId, TaskNr)  
@@ -257,7 +259,7 @@ class mailFetcher (threading.Thread):
    # get_numTasks()
    ####
    def get_num_Tasks(self):
-      curc, conc = c.connect_to_db('course.db', self.logger_queue, self.name)
+      curc, conc = c.connect_to_db(self.coursedb, self.logger_queue, self.name)
       sqlcmd = "SELECT Content FROM GeneralConfig WHERE ConfigItem == 'num_tasks'"
       curc.execute(sqlcmd)
       numTasks = int(curc.fetchone()[0])
@@ -267,7 +269,7 @@ class mailFetcher (threading.Thread):
 
 
    def get_registration_deadline(self):
-      curc, conc = c.connect_to_db('course.db', self.logger_queue, self.name)
+      curc, conc = c.connect_to_db(self.coursedb, self.logger_queue, self.name)
       sqlcmd = "SELECT Content FROM GeneralConfig WHERE ConfigItem == 'registration_deadline'"
       curc.execute(sqlcmd)
       deadline_string = str(curc.fetchone()[0])
@@ -286,7 +288,7 @@ class mailFetcher (threading.Thread):
    # The code run in the while True loop of the mail fetcher thread.
    ####
    def loop_code(self):
-      cur,con = c.connect_to_db('semester.db', self.logger_queue, self.name)
+      cur,con = c.connect_to_db(self.semesterdb, self.logger_queue, self.name)
 
       m = self.connect_to_imapserver()
 

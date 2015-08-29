@@ -28,12 +28,14 @@ class mailSender (threading.Thread):
       self.mail_pwd = autosub_passwd
       self.smtpserver = autosub_smtpserver
       self.logger_queue = logger_queue
+      self.coursedb = 'course.db'
+      self.semesterdb = 'semester.db'
 
    ####
    # get_admin_emails()
    ####
    def get_admin_emails(self):
-      curc, conc = c.connect_to_db('course.db', self.logger_queue, self.name)
+      curc, conc = c.connect_to_db(self.coursedb, self.logger_queue, self.name)
       sqlcmd = "SELECT Content FROM GeneralConfig WHERE ConfigItem == 'admin_email'"
       curc.execute(sqlcmd)
       result = str(curc.fetchone()[0])
@@ -128,7 +130,7 @@ class mailSender (threading.Thread):
    #
    ####
    def read_specialmessage(self, msgname):
-      curc, conc = c.connect_to_db('course.db', self.logger_queue, self.name)
+      curc, conc = c.connect_to_db(self.coursedb, self.logger_queue, self.name)
       sqlcmd = "SELECT EventText FROM SpecialMessages WHERE EventName=='" + msgname + "';"
       curc.execute(sqlcmd)
       res = curc.fetchone()
@@ -139,7 +141,7 @@ class mailSender (threading.Thread):
    # get_numTasks()
    ####
    def get_num_Tasks(self):
-      curc, conc = c.connect_to_db('course.db', self.logger_queue, self.name)
+      curc, conc = c.connect_to_db(self.coursedb, self.logger_queue, self.name)
       sqlcmd = "SELECT Content FROM GeneralConfig WHERE ConfigItem == 'num_tasks'"
       curc.execute(sqlcmd)
       numTasks = int(curc.fetchone()[0])
@@ -158,7 +160,7 @@ class mailSender (threading.Thread):
       cur.execute(sqlcmd)
       curtask = cur.fetchone()
 
-      conc = lite.connect('course.db')
+      conc = lite.connect(self.coursedb)
       curc = conc.cursor()
       sqlcmd = "SELECT sum(Score) FROM TaskConfiguration WHERE TaskNr <" + str(curtask[0])
       curc.execute(sqlcmd)
@@ -239,8 +241,8 @@ class mailSender (threading.Thread):
       recipient= str(next_send_msg.get('recipient'))
       message_type= str(next_send_msg.get('message_type'))
 
-      cur, con = c.connect_to_db('semester.db', self.logger_queue, self.name)
-      curc, conc = c.connect_to_db('course.db', self.logger_queue, self.name)
+      cur, con = c.connect_to_db(self.semesterdb, self.logger_queue, self.name)
+      curc, conc = c.connect_to_db(self.coursedb, self.logger_queue, self.name)
      
       attachments = []
 

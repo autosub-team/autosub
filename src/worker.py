@@ -21,6 +21,8 @@ class worker (threading.Thread):
       self.sender_queue = sender_queue
       self.logger_queue = logger_queue
       self.gen_queue = gen_queue
+      self.coursedb = 'course.db'
+      self.semesterdb = 'semester.db'
 
    ####
    #  get_taskParameters
@@ -54,7 +56,7 @@ class worker (threading.Thread):
 
              # check if there is a test executable configured in the database -- if not fall back on static
              # test script.
-             curc, conc = c.connect_to_db('course.db', self.logger_queue, self.name)
+             curc, conc = c.connect_to_db(self.coursedb, self.logger_queue, self.name)
              try:
                 sql_cmd="SELECT TestExecutable FROM TaskConfiguration WHERE TaskNr == "+str(TaskNr)
                 curc.execute(sql_cmd);
@@ -80,7 +82,7 @@ class worker (threading.Thread):
              conc.close()  
              
              # get the taskParameters
-             curs, cons = c.connect_to_db('semester.db', self.logger_queue, self.name)
+             curs, cons = c.connect_to_db(self.semesterdb, self.logger_queue, self.name)
              taskParameters= self.get_taskParameters(curs,cons,UserId,TaskNr)
              cons.close()
              
@@ -111,7 +113,7 @@ class worker (threading.Thread):
                 c.log_a_msg(self.logger_queue, self.name, logmsg, "INFO")
 
                 c.send_email(self.sender_queue, str(UserEmail), str(UserId), "Success", str(TaskNr), "", "")
-                curc, conc = c.connect_to_db('course.db', self.logger_queue, self.name)
+                curc, conc = c.connect_to_db(self.coursedb, self.logger_queue, self.name)
                 try:
                    sql_cmd="SELECT GeneratorExecutable FROM TaskConfiguration WHERE TaskNr == " + str(int(TaskNr)+1) + ";"
                    curc.execute(sql_cmd);

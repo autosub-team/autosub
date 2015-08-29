@@ -21,6 +21,8 @@ class taskActivator (threading.Thread):
       self.sender_queue = sender_queue
       self.logger_queue = logger_queue
       self.gen_queue = gen_queue
+      self.coursedb = 'course.db'
+      self.semesterdb = 'semester.db'
 
    ####
    # thread code for the worker thread.
@@ -31,7 +33,7 @@ class taskActivator (threading.Thread):
 
       while True:
 
-          curc, conc = c.connect_to_db('course.db', self.logger_queue, self.name)
+          curc, conc = c.connect_to_db(self.coursedb, self.logger_queue, self.name)
 
           # first we need to know, for which tasks, the message has already been sent out
           sqlcmd="SELECT * from TaskConfiguration WHERE TaskActive==0;"
@@ -50,7 +52,7 @@ class taskActivator (threading.Thread):
                 conc.commit()
  
                 # next, check if any users are waiting for that task
-                curs, cons = c.connect_to_db('semester.db', self.logger_queue, self.name)
+                curs, cons = c.connect_to_db(self.semesterdb, self.logger_queue, self.name)
                 sqlcmd = "SELECT * FROM Users WHERE CurrentTask=={0}".format(str(TaskNr))
                 curs.execute(sqlcmd)
                 nextuser = curs.fetchone()
