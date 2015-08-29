@@ -209,9 +209,11 @@ class mailSender (threading.Thread):
       msg.attach( MIMEText(TEXT, 'plain', 'utf-8') )
 
       # If the message is a task description, we might want to
-      # add some attachments. those are assumed to be located in
-      # directory called attachments, the list of the files
-      # in that directory was retrieved earlier.
+      # add some attachments.  These ar given as a list by the
+      # attachments parameter
+      logmsg = "List of attachements: {0}".format(attachments)
+      c.log_a_msg(self.logger_queue, self.name, logmsg, "DEBUG")
+
       if str(attachments) != 'None':
          for f in attachments:
             part = MIMEBase('application', "octet-stream")
@@ -220,8 +222,10 @@ class mailSender (threading.Thread):
             part.add_header('Content-Disposition', 'attachment; filename="{0}"'.format(os.path.basename(f)))
             msg.attach(part)
 
-      logmsg = "Prepared message: \n" + str(msg)
-      c.log_a_msg(self.logger_queue, self.name, logmsg, "DEBUG")
+      # The following message my be helpful during debugging - but if you use attachments, your log-file
+      # will grow very fast -- therefore it was commented out.
+#      logmsg = "Prepared message: \n" + str(msg)   
+#      c.log_a_msg(self.logger_queue, self.name, logmsg, "DEBUG")
       return msg
 
    def handle_next_mail(self):
@@ -237,7 +241,7 @@ class mailSender (threading.Thread):
       cur, con = c.connect_to_db('semester.db', self.logger_queue, self.name)
       curc, conc = c.connect_to_db('course.db', self.logger_queue, self.name)
      
-      attachments = ''
+      attachments = []
 
       # prepare fields for the e-mail
       msg = MIMEMultipart()
@@ -247,8 +251,6 @@ class mailSender (threading.Thread):
       c.log_a_msg(self.logger_queue, self.name, logmsg, "DEBUG")
          
       msg['Date'] = formatdate(localtime = True)
-
-      
 
       if (message_type == "Task"):
          logmsg= "Task in send_queue: " + str(next_send_msg)
@@ -310,12 +312,26 @@ class mailSender (threading.Thread):
 
       elif (message_type == "Failed"):
          self.increment_db_taskcounter(cur, con, 'NrSubmissions', TaskNr)
-         UserId = UserId
-         path_to_msg = "users/"+ UserId + "/Task" + TaskNr + "/error_msg"
-         error_msg = self.read_text_file(path_to_msg)
+         path_to_msg = "users/{0}/Task{1}".format(UserId, TaskNr)
+         error_msg = self.read_text_file("{0}/error_msg".format(path_to_msg))
          msg['Subject'] = "Task" + TaskNr + ": submission rejected"
          TEXT = "Error report:\n\n""" + error_msg
-         msg = self.assemble_email(msg, TEXT, '')
+
+         reply_attachments = []
+
+         try:
+            logmsg = "searchin attachments in: {0}/error_attachments".format(path_to_msg)
+            c.log_a_msg(self.logger_queue, self.name, logmsg, "DEBUG")
+            ats = os.listdir("{0}/error_attachments".format(path_to_msg))
+            logmsg = "got the following attachments: {0}".format(ats)
+            c.log_a_msg(self.logger_queue, self.name, logmsg, "DEBUG")
+            for a in ats:
+                reply_attachments.append("{0}/error_attachments/{1}".format(path_to_msg, a))
+         except:
+            logmsg = "no attachments for failed task."
+            c.log_a_msg(self.logger_queue, self.name, logmsg, "DEBUG")
+
+         msg = self.assemble_email(msg, TEXT, reply_attachments)
          self.send_out_email(recipient, msg.as_string(), cur, con)
          self.backup_message(messageid)
 
