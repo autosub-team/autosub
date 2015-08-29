@@ -32,7 +32,7 @@ class Test_mailFetcher(unittest.TestCase):
    # two cases: either the user is whitelisted, or not, so both are tested,
    # after that the testuser is removed from the table (for the next run)
    def test_check_if_whitelisted(self):
-      con = lite.connect('semester.db')
+      con = lite.connect('testsemester.db')
       cur = con.cursor()
       result = mailFetcher.check_if_whitelisted(self, cur, con, "testuser@test.com")
       self.assertEqual(result, 0)
@@ -66,7 +66,7 @@ class Test_mailFetcher(unittest.TestCase):
    def get_userid_by_email(self, email):
       #connect to the semester database, and assure, that the e-mail(user) in the test
       #cases is not yet whitelisted (from some other test).
-      con = lite.connect('semester.db')
+      con = lite.connect('testsemester.db')
       cur = con.cursor()
       sqlcmd = "SELECT UserId FROM Users WHERE Email=='" + email + "';"
       cur.execute(sqlcmd)
@@ -79,7 +79,7 @@ class Test_mailFetcher(unittest.TestCase):
       return userid
 
    def delete_user_by_email(self, email):
-      con = lite.connect('semester.db')
+      con = lite.connect('testsemester.db')
       cur = con.cursor()
       sqlcmd = "DELETE FROM Users WHERE Email=='" + email + "';"
       cur.execute(sqlcmd)
@@ -87,7 +87,7 @@ class Test_mailFetcher(unittest.TestCase):
       con.close()
 
    def delete_email_from_whitelist(self, email):
-      con = lite.connect('semester.db')
+      con = lite.connect('testsemester.db')
       cur = con.cursor()
       sqlcmd = "DELETE FROM WhiteList WHERE Email=='" + email + "';"
       cur.execute(sqlcmd)
@@ -95,7 +95,7 @@ class Test_mailFetcher(unittest.TestCase):
       con.close()
 
    def insert_email_to_whitelist(self, email):
-      con = lite.connect('semester.db')
+      con = lite.connect('testsemester.db')
       cur = con.cursor()
       sqlcmd = "INSERT INTO WhiteList (Email) VALUES('" + email + "');"
       cur.execute(sqlcmd)
@@ -103,14 +103,14 @@ class Test_mailFetcher(unittest.TestCase):
       con.close()
 
    def set_adminmail_set(self, email):
-      curc, conc = common.connect_to_db('course.db', self.logger_queue, "testfetcher")
+      curc, conc = common.connect_to_db('testcourse.db', self.logger_queue, "testfetcher")
       sqlcmd = "UPDATE GeneralConfig SET Content='" + str(email) + "' WHERE ConfigItem == 'admin_email'"
       curc.execute(sqlcmd)
       conc.commit()
       conc.close()
 
    def get_statcounter(self, countername):
-      con = lite.connect('semester.db')
+      con = lite.connect('testsemester.db')
       cur = con.cursor()
       sqlcmd = "SELECT Value FROM StatCounters WHERE Name=='" + countername + "';"
       cur.execute(sqlcmd)
@@ -119,14 +119,14 @@ class Test_mailFetcher(unittest.TestCase):
       return value
 
    def remove_task_config(self, tasknr):
-      con = lite.connect('course.db')
+      con = lite.connect('testcourse.db')
       cur = con.cursor()
       sqlcmd = "DELETE FROM TaskConfiguration WHERE TaskNr=="+ str(tasknr) +";"
       cur.execute(sqlcmd)
       con.commit()
 
    def add_task_config(self, tasknr, testscript, genscript, score, taskadmin):
-      con = lite.connect('course.db')
+      con = lite.connect('testcourse.db')
       cur = con.cursor()
 
       sqlcmd = "INSERT INTO TaskConfiguration (TaskNr, TaskStart, TaskDeadline, PathToTask, GeneratorExecutable, TestExecutable, Score, TaskOperator) VALUES(" + str(tasknr) + ", '2014-01-01 00:00:01', '2042-01-01 00:00:01', '', 'tests/helperscripts/" + genscript + "', 'tests/helperscripts/"+ testscript + "', '" + str(score) + "', '" + taskadmin + "')"
@@ -138,7 +138,7 @@ class Test_mailFetcher(unittest.TestCase):
       job_queue = queue.Queue(10)
       sender_queue = queue.Queue(10)
       gen_queue = queue.Queue(10)
-      mf = mailFetcher(3, "testfetcher", job_queue, sender_queue, gen_queue, "autosub_testuser", "autosub_test_passwd", "imap.testdomain.com", self.logger_queue, 1)
+      mf = mailFetcher(3, "testfetcher", job_queue, sender_queue, gen_queue, "autosub_testuser", "autosub_test_passwd", "imap.testdomain.com", self.logger_queue, 1, 'testcourse.db', 'testsemester.db')
      
       self.delete_user_by_email("platschek@ict.tuwien.ac.at")
       old_nrfetched=self.get_statcounter('nr_mails_fetched')
@@ -257,7 +257,7 @@ class Test_mailFetcher(unittest.TestCase):
       #TESTCASE8: hand in results
          # after registration, the generator script added an entry into UserTasks table
          # doing that by hand now:
-            con = lite.connect('semester.db')
+            con = lite.connect('testsemester.db')
             cur = con.cursor()
             sqlcmd = "INSERT INTO UserTasks (UniqueId, TaskNr, UserId, TaskParameters, TaskDescription, TaskAttachments, NrSubmissions, FirstSuccessful) VALUES(NULL, 1, "+ str(userid) + ", '4711', 'My Task Description', '', 0, 0)"
             cur.execute(sqlcmd)

@@ -78,8 +78,8 @@ def load_specialmessage_to_db(cur, con, msgname, filename):
 # Check if all databases, tables, etc. are available, or if they have to be created.
 # if non-existent --> create them
 ####
-def init_ressources(numThreads, numTasks):
-   cur,con = c.connect_to_db('semester.db', logger_queue, "autosub.py") 
+def init_ressources(numThreads, numTasks, coursedb, semesterdb):
+   cur,con = c.connect_to_db(semesterdb, logger_queue, "autosub.py") 
 
    ####################
    ####### Users ######
@@ -124,7 +124,7 @@ def init_ressources(numThreads, numTasks):
    con.close() # close here, since we re-open the databse in the while(True) loop
 
 
-   cur,con = c.connect_to_db('course.db', logger_queue, "autosub.py")
+   cur,con = c.connect_to_db(coursedb, logger_queue, "autosub.py")
 
    ####################
    ## SpecialMessages #
@@ -216,7 +216,7 @@ if __name__ == '__main__':
 
    signal.signal(signal.SIGUSR1, sig_handler)
 
-   init_ressources(numThreads,numTasks)
+   init_ressources(numThreads,numTasks, coursedb, semesterdb)
 
    sender_t = sender.mailSender(threadID, "sender", sender_queue, autosub_mail, autosub_user, autosub_passwd, smtpserver, logger_queue, coursedb, semesterdb)
    sender_t.daemon = True # make the sender thread a daemon, this way the main

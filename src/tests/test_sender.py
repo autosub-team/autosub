@@ -50,9 +50,9 @@ class Test_sender(unittest.TestCase):
       print("Testing WELCOME message ...")
       sender_queue = queue.Queue(10)
 
-      ms = mailSender(2, "sender", sender_queue, "autosub@testdomain.com", "autosub_testuser", "autosub_test_passwd", "smtp.testdomain.com", autosub.logger_queue)
+      ms = mailSender(2, "sender", sender_queue, "autosub@testdomain.com", "autosub_testuser", "autosub_test_passwd", "smtp.testdomain.com", autosub.logger_queue, 'testcourse.db', 'testsemester.db')
 
-      autosub.init_ressources(3,1)
+      autosub.init_ressources(3, 1, 'testcourse.db', 'testsemester.db')
 
       #give the sender thread some work
       ms.sender_queue.put(dict({"recipient": "student@studentmail.com", "UserId": "42" ,"message_type": "Welcome", "Task": "1", "Body": "WElcome Message Body", "MessageId": "4711"}))
@@ -75,9 +75,9 @@ class Test_sender(unittest.TestCase):
       print("Testing QUESTION message ...")
       sender_queue = queue.Queue(10)
 
-      ms = mailSender(2, "sender", sender_queue, "autosub@testdomain.com", "autosub_testuser", "autosub_test_passwd", "smtp.testdomain.com", autosub.logger_queue)
+      ms = mailSender(2, "sender", sender_queue, "autosub@testdomain.com", "autosub_testuser", "autosub_test_passwd", "smtp.testdomain.com", autosub.logger_queue, 'testcourse.db', 'testsemester.db')
 
-      autosub.init_ressources(3,1)
+      autosub.init_ressources(3, 1, 'testcourse.db', 'testsemester.db' )
 
       #give the sender thread some work
       ms.sender_queue.put(dict({"recipient": "student@studentmail.com", "UserId": "42" ,"message_type": "Question", "Task": "1", "Body": "", "MessageId": "4711"}))
