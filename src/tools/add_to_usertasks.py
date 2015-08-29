@@ -44,10 +44,17 @@ cur.execute(sql_cmd);
 res = cur.fetchall()
 
 if not res:
-   sql_cmd="INSERT INTO UserTasks (TaskNr, UserId, TaskParameters, TaskDescription, TaskAttachments, NrSubmissions, FirstSuccessful) VALUES("
-   sql_cmd= sql_cmd + str(opts.tasknr) + ", " + str(opts.userid) + ", '" + opts.generation_parameters 
-   sql_cmd= sql_cmd +"', '', '" + opts.attachments + "', 0, NULL);"
-   cur.execute(sql_cmd);
+   sql_cmd="INSERT INTO UserTasks (TaskNr, UserId, TaskParameters, TaskDescription, TaskAttachments, NrSubmissions, FirstSuccessful) \
+                            VALUES(:TaskNr , :UserId, :TaskParameters , :TaskDescriptions, :TaskAttachments, :NrSubmissions, :FirstSuccessful)"
+   data={'TaskNr': opts.tasknr ,
+         'UserId': opts.userid,
+         'TaskParameters': opts.generation_parameters, 
+         'TaskDescriptions': None,
+         'TaskAttachments':opts.attachments,
+         'NrSubmissions':0,
+         'FirstSuccessful': None}
+   
+   cur.execute(sql_cmd,data);
    con.commit();
 else:
    print ("entry already exists!")
