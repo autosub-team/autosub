@@ -28,17 +28,18 @@ class mailFetcher (threading.Thread):
       self.poll_period = poll_period
 
    ####
-   # get_admin_email()
+   # get_admin_emails()
    ####
-   def get_admin_email(self):
+   def get_admin_emails(self):
       curc, conc = c.connect_to_db('course.db', self.logger_queue, self.name)
       sqlcmd = "SELECT Content FROM GeneralConfig WHERE ConfigItem == 'admin_email'"
       curc.execute(sqlcmd)
-      adminEmail = str(curc.fetchone()[0])
+      result = str(curc.fetchone()[0])
+      adminEmails = [email.strip() for email in result.split(',')] #split and put it in list
       conc.close()
 
-      return adminEmail
-
+      return adminEmails
+ 
    ####
    # If a new user registers, add_new_user() is used to add the necessary entries
    # to the database
@@ -179,8 +180,9 @@ class mailFetcher (threading.Thread):
       c.log_a_msg(self.logger_queue, self.name, logmsg, "DEBUG")
 
       c.send_email(self.sender_queue, user_email, "", "Question", "", "", "")
-      admin_mail = self.get_admin_email()
-      c.send_email(self.sender_queue, admin_mail, "", "QFwd", "", mail, messageid)
+      admin_mails = self.get_admin_emails()
+      for admin_mail in admin_mails:
+         c.send_email(self.sender_queue, admin_mail, "", "QFwd", "", mail, messageid)
 
       c.increment_db_statcounter(cur, con, 'nr_questions_received')
 

@@ -30,16 +30,17 @@ class mailSender (threading.Thread):
       self.logger_queue = logger_queue
 
    ####
-   # get_admin_email()
+   # get_admin_emails()
    ####
-   def get_admin_email(self):
+   def get_admin_emails(self):
       curc, conc = c.connect_to_db('course.db', self.logger_queue, self.name)
       sqlcmd = "SELECT Content FROM GeneralConfig WHERE ConfigItem == 'admin_email'"
       curc.execute(sqlcmd)
-      adminEmail = str(curc.fetchone()[0])
+      result = str(curc.fetchone()[0])
+      adminEmails = [email.strip() for email in result.split(',')] #split and put it in list
       conc.close()
 
-      return adminEmail
+      return adminEmails
 
    ####
    # increment_db_statcounter()
@@ -320,15 +321,16 @@ class mailSender (threading.Thread):
          self.backup_message(messageid)
 
       elif (message_type == "SecAlert"):
-         admin_mail = self.get_admin_email()
-         msg['To'] = admin_mail
-         path_to_msg = "users/"+ UserId + "/Task" + TaskNr + "/error_msg"
-         error_msg = self.read_text_file(path_to_msg)
-         msg['Subject'] = "Autosub Security Alert User:" + recipient
-         TEXT = "Error report:\n\n""" + error_msg
-         msg = self.assemble_email(msg, TEXT, '')
-         self.send_out_email(recipient, msg.as_string(), cur, con)
-         self.backup_message(messageid)
+         admin_mails = self.get_admin_email()
+         for admin_mail in admin_mails:
+            msg['To'] = admin_mail
+            path_to_msg = "users/"+ UserId + "/Task" + TaskNr + "/error_msg"
+            error_msg = self.read_text_file(path_to_msg)
+            msg['Subject'] = "Autosub Security Alert User:" + recipient
+            TEXT = "Error report:\n\n""" + error_msg
+            msg = self.assemble_email(msg, TEXT, '')
+            self.send_out_email(recipient, msg.as_string(), cur, con)
+            self.backup_message(messageid)
 
       elif (message_type == "Success"):
          msg['Subject'] = "Task " + TaskNr + " submitted successfully"
