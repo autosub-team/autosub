@@ -361,7 +361,7 @@ class mailFetcher (threading.Thread):
          # before the server connection is closed:
          # check if messages have been handled and need to be archived now
          try:
-            next_send_msg = self.arch_queue.get()
+            next_send_msg = self.arch_queue.get(False)
          except:
             next_send_msg = 'NONE'
 
@@ -376,7 +376,7 @@ class mailFetcher (threading.Thread):
                   c.log_a_msg(self.logger_queue, self.name, logmsg, "DEBUG")
 
             try:
-               next_send_msg = self.sender_queue.get()
+               next_send_msg = self.arch_queue.get(False)
             except:
                next_send_msg = 'NONE'
 
