@@ -167,12 +167,20 @@ class mailSender (threading.Thread):
       curscore = curc.fetchone()
       curc.close()
 
+      cur_deadline = c.get_task_deadline(str(curtask[0]), self.logger_queue, self.name)
+      cur_start = c.get_task_starttime(str(curtask[0]), self.logger_queue, self.name)
+
       if str(curscore[0]) == 'None': # no task solved yet.
          tmpscore = 0
       else:
          tmpscore = curscore[0]
 
-      return "Username: " + str(uname[0]) + "\nEmail: " + user_email + "\nCurrent Task: " + str(curtask[0]) + "\n Your current Score: " + str(tmpscore) # + "\nRestration Date: " + str(rdate[0]) + "\nRegistration Time: " + str(rtime[0])
+      msg =  "Username: {0}\nEmail: {1}\nCurrent Task: {2}\n Your current Score: {3}\n".format(str(uname[0]), user_email, str(curtask[0]), str(tmpscore))
+
+      msg = "{0}\nStarttime current Task: {1}\n".format(msg, cur_start)
+      msg = "{0}Deadline current Task: {1}".format(msg, cur_deadline)
+
+      return msg
 
    ####
    # backup_message()
@@ -386,6 +394,7 @@ class mailSender (threading.Thread):
       elif (message_type == "CurLast"):
          msg['Subject'] = "Task{0} is not available yet".format(str(TaskNr))
          TEXT = self.read_specialmessage('CURLAST')
+         TEXT = "{0}\n\nThe Task is currently scheduled for: {1}".format(TEXT, c.get_task_starttime(str(TaskNr), self.logger_queue, self.name))
          self.backup_message(messageid)
          msg = self.assemble_email(msg, TEXT, '')
          self.send_out_email(recipient, msg.as_string(), cur, con)
