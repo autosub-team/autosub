@@ -276,7 +276,9 @@ class mailSender (threading.Thread):
          else: # at least one more task to do: send out the description
             # only send the task description, after the first successful submission
             if ((int(TaskNr)-1) <= (int(ctasknr)) or int(ctasknr) == 1):
-               msg['Subject'] = "Description Task" + str(TaskNr) 
+               msg['Subject'] = "Description Task" + str(TaskNr)
+
+               dl_text = "\nDeadline for this Task: {0}\n".format(c.get_task_deadline(TaskNr, self.logger_queue, self.name))
 
                sql_cmd="SELECT PathToTask FROM TaskConfiguration WHERE TaskNr == "+str(TaskNr)
                curc.execute(sql_cmd)
@@ -289,7 +291,7 @@ class mailSender (threading.Thread):
                else:
                   path_to_task = str(paths[0])
                   path_to_msg = path_to_task + "/description.txt"
-                  TEXT = self.read_text_file(path_to_msg)
+                  TEXT = self.read_text_file(path_to_msg) + dl_text
                   logmsg="used sql comand: SELECT TaskAttachments FROM UserTasks WHERE TaskNr == " + TaskNr + " AND UserId == '"+ UserId + "';"
                   c.log_a_msg(self.logger_queue, self.name, logmsg, "DEBUG");
 
