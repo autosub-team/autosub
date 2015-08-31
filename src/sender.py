@@ -18,7 +18,7 @@ import sqlite3 as lite
 import common as c
 
 class mailSender (threading.Thread):
-   def __init__(self, threadID, name, sender_queue, autosub_mail, autosub_user, autosub_passwd, autosub_smtpserver, logger_queue, coursedb, semesterdb):
+   def __init__(self, threadID, name, sender_queue, autosub_mail, autosub_user, autosub_passwd, autosub_smtpserver, logger_queue, arch_queue, coursedb, semesterdb):
       threading.Thread.__init__(self)
       self.threadID = threadID
       self.name = name
@@ -28,6 +28,7 @@ class mailSender (threading.Thread):
       self.mail_pwd = autosub_passwd
       self.smtpserver = autosub_smtpserver
       self.logger_queue = logger_queue
+      self.arch_queue = arch_queue
       self.coursedb = coursedb
       self.semesterdb = semesterdb
 
@@ -189,8 +190,10 @@ class mailSender (threading.Thread):
    # into an archive folder on the mailserver.
    ####
    def backup_message(self, messageid):
-      logmsg= "backup not implemented yet; messageid: " + messageid
+      logmsg= "request backup of message with messageid: " + messageid
       c.log_a_msg(self.logger_queue, self.name, logmsg, "DEBUG")
+
+      self.arch_queue.put(dict({"mid": messageid}))
 
    def send_out_email(self, recipient, message, cur, con):
       try:

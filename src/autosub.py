@@ -206,6 +206,7 @@ if __name__ == '__main__':
    sender_queue = queue.Queue(queueSize)
    logger_queue = queue.Queue(queueSize)
    gen_queue = queue.Queue(queueSize)
+   arch_queue = queue.Queue(queueSize)
 
    #Before we do anything else: start the logger thread, so we can log whats going on
    logger_t = logger.autosubLogger(threadID, "logger", logger_queue)#, logging.DEBUG)
@@ -218,13 +219,13 @@ if __name__ == '__main__':
 
    init_ressources(numThreads,numTasks, coursedb, semesterdb)
 
-   sender_t = sender.mailSender(threadID, "sender", sender_queue, autosub_mail, autosub_user, autosub_passwd, smtpserver, logger_queue, coursedb, semesterdb)
+   sender_t = sender.mailSender(threadID, "sender", sender_queue, autosub_mail, autosub_user, autosub_passwd, smtpserver, logger_queue, arch_queue, coursedb, semesterdb)
    sender_t.daemon = True # make the sender thread a daemon, this way the main
                           # will clean it up before terminating!
    sender_t.start()
    threadID += 1
 
-   fetcher_t = fetcher.mailFetcher(threadID, "fetcher", job_queue, sender_queue, gen_queue, autosub_user, autosub_passwd, imapserver, logger_queue, poll_period, coursedb, semesterdb)
+   fetcher_t = fetcher.mailFetcher(threadID, "fetcher", job_queue, sender_queue, gen_queue, autosub_user, autosub_passwd, imapserver, logger_queue, arch_queue, poll_period, coursedb, semesterdb)
    fetcher_t.daemon = True # make the fetcher thread a daemon, this way the main
                         # will clean it up before terminating!
    fetcher_t.start()

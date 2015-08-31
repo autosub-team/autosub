@@ -14,7 +14,7 @@ import datetime
 import common as c
 
 class mailFetcher (threading.Thread):
-   def __init__(self, threadID, name, job_queue, sender_queue, gen_queue, autosub_user, autosub_passwd, autosub_imapserver, logger_queue, poll_period, coursedb, semesterdb):
+   def __init__(self, threadID, name, job_queue, sender_queue, gen_queue, autosub_user, autosub_passwd, autosub_imapserver, logger_queue, arch_queue, poll_period, coursedb, semesterdb):
       threading.Thread.__init__(self)
       self.threadID = threadID
       self.name = name
@@ -25,6 +25,7 @@ class mailFetcher (threading.Thread):
       self.autosub_pwd = autosub_passwd
       self.imapserver = autosub_imapserver
       self.logger_queue = logger_queue
+      self.arch_queue = arch_queue
       self.poll_period = poll_period
       self.coursedb = coursedb
       self.semesterdb = semesterdb
@@ -357,6 +358,29 @@ class mailFetcher (threading.Thread):
             else:
                   c.send_email(self.sender_queue, user_email, "", "NotAllowed", "", "", messageid)
 
+         # before the server connection is closed:
+         # check if messages have been handled and need to be archived now
+         try:
+            next_send_msg = self.arch_queue.get()
+         except:
+            next_send_msg = 'NONE'
+
+         while next_send_msg != 'NONE':
+            m.select(mailbox = 'INBOX', readonly=False)
+            resp, items = m.search(None, 'All')
+            for emailid in items[0].split():
+               typ, msg_data = m.fetch(str(int(emailid)), "(BODY[HEADER])")
+               mail = email.message_from_bytes(msg_data[0][1])
+               if mail['Message-ID'] == next_send_msg.get('mid'):
+                  logmsg = "Moving Message with ID: {0}".format(mail['Message-ID'])
+                  c.log_a_msg(self.logger_queue, self.name, logmsg, "DEBUG")
+
+            try:
+               next_send_msg = self.sender_queue.get()
+            except:
+               next_send_msg = 'NONE'
+
+
          try:
             m.close()
          except imaplib.IMAP4.abort:
@@ -374,7 +398,11 @@ class mailFetcher (threading.Thread):
             c.log_a_msg(self.logger_queue, self.name, logmsg, "INFO")
    
       con.close() # close connection to sqlite db, so others can use it as well.
+
+
       time.sleep(self.poll_period) # it's enough to check e-mails every minute
+
+
 
    ####
    # thread code for the fetcher thread.
@@ -389,7 +417,6 @@ class mailFetcher (threading.Thread):
       # the thread is stopped by the main thread
       while True:
          self.loop_code()
-
 
       logmsg = "Exiting fetcher - this should NEVER happen!"
       c.log_a_msg(self.logger_queue, self.name, logmsg, "ERROR")
