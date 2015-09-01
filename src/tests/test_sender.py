@@ -49,8 +49,9 @@ class Test_sender(unittest.TestCase):
    def test_send_out_email_welcome(self):
       print("Testing WELCOME message ...")
       sender_queue = queue.Queue(10)
+      arch_queue = queue.Queue(10)
 
-      ms = mailSender(2, "sender", sender_queue, "autosub@testdomain.com", "autosub_testuser", "autosub_test_passwd", "smtp.testdomain.com", autosub.logger_queue, 'testcourse.db', 'testsemester.db')
+      ms = mailSender(2, "sender", sender_queue, "autosub@testdomain.com", "autosub_testuser", "autosub_test_passwd", "smtp.testdomain.com", autosub.logger_queue, arch_queue, 'testcourse.db', 'testsemester.db')
 
       autosub.init_ressources(3, 1, 'testcourse.db', 'testsemester.db')
 
@@ -74,8 +75,9 @@ class Test_sender(unittest.TestCase):
    def test_send_out_email_question(self):
       print("Testing QUESTION message ...")
       sender_queue = queue.Queue(10)
+      arch_queue = queue.Queue(10)
 
-      ms = mailSender(2, "sender", sender_queue, "autosub@testdomain.com", "autosub_testuser", "autosub_test_passwd", "smtp.testdomain.com", autosub.logger_queue, 'testcourse.db', 'testsemester.db')
+      ms = mailSender(2, "sender", sender_queue, "autosub@testdomain.com", "autosub_testuser", "autosub_test_passwd", "smtp.testdomain.com", autosub.logger_queue, arch_queue, 'testcourse.db', 'testsemester.db')
 
       autosub.init_ressources(3, 1, 'testcourse.db', 'testsemester.db' )
 

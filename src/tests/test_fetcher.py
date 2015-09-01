@@ -138,7 +138,8 @@ class Test_mailFetcher(unittest.TestCase):
       job_queue = queue.Queue(10)
       sender_queue = queue.Queue(10)
       gen_queue = queue.Queue(10)
-      mf = mailFetcher(3, "testfetcher", job_queue, sender_queue, gen_queue, "autosub_testuser", "autosub_test_passwd", "imap.testdomain.com", self.logger_queue, 1, 'testcourse.db', 'testsemester.db')
+      arch_queue = queue.Queue(10)
+      mf = mailFetcher(3, "testfetcher", job_queue, sender_queue, gen_queue, "autosub_testuser", "autosub_test_passwd", "imap.testdomain.com", self.logger_queue, arch_queue, 1, 'testcourse.db', 'testsemester.db')
      
       self.delete_user_by_email("platschek@ict.tuwien.ac.at")
       old_nrfetched=self.get_statcounter('nr_mails_fetched')
