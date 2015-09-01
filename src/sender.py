@@ -230,11 +230,16 @@ class mailSender (threading.Thread):
 
       if str(attachments) != 'None':
          for f in attachments:
-            part = MIMEBase('application', "octet-stream")
-            part.set_payload(open(f,"rb").read() )
-            encoders.encode_base64(part)
-            part.add_header('Content-Disposition', 'attachment; filename="{0}"'.format(os.path.basename(f)))
-            msg.attach(part)
+            try:
+               part = MIMEBase('application', "octet-stream")
+               part.set_payload(open(f,"rb").read() )
+               encoders.encode_base64(part)
+               part.add_header('Content-Disposition', 'attachment; filename="{0}"'.format(os.path.basename(f)))
+               msg.attach(part)
+            except:
+               logmsg = "Faild to add an attachement: {0}".format(f)
+               c.log_a_msg(self.logger_queue, self.name, logmsg, "DEBUG")
+               
 
       # The following message my be helpful during debugging - but if you use attachments, your log-file
       # will grow very fast -- therefore it was commented out.
