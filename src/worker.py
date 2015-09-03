@@ -112,29 +112,37 @@ class worker (threading.Thread):
                 logmsg = "Test succeeded! User: " + str(UserId) + " Task: " + str(TaskNr)
                 c.log_a_msg(self.logger_queue, self.name, logmsg, "INFO")
 
+                # Notify, the user that the submission was successful
                 c.send_email(self.sender_queue, str(UserEmail), str(UserId), "Success", str(TaskNr), "", "")
                 curc, conc = c.connect_to_db(self.coursedb, self.logger_queue, self.name)
-                try:
-                   sql_cmd="SELECT GeneratorExecutable FROM TaskConfiguration WHERE TaskNr == " + str(int(TaskNr)+1) + ";"
-                   curc.execute(sql_cmd);
-                   res = curc.fetchone();
-                except:
-                   logmsg = "Failed to fetch Generator Script for Tasknr: "+ str(TaskNr) 
-                   logmsg = logmsg + "from the Database! Table TaskConfiguration corrupted?"
-                   c.log_a_msg(self.logger_queue, self.name, logmsg, "ERROR")
-                finally:
-                    conc.close() 
+                curs, cons = c.connect_to_db(self.semesterdb, self.logger_queue, self.name)
 
-                task_start = c.get_task_starttime(int(TaskNr)+1, self.logger_queue, self.name)
-                if task_start < datetime.datetime.now():    
-                   if res != None:
-                      logmsg="Calling Generator Script: " + str(res[0])
-                      c.log_a_msg(self.logger_queue, self.name, logmsg, "DEBUG")
-                      logmsg="UserID " + str(UserId) + ",UserEmail " + str(UserEmail)
-                      c.log_a_msg(self.logger_queue, self.name, logmsg, "DEBUG")
-                      self.gen_queue.put(dict({"UserId": str(UserId), "UserEmail": str(UserEmail), "TaskNr": str(int(TaskNr)+1), "MessageId": ""}))
+                # Next, a new Task is generated -- but only if a new task exists,
+                # AND if a generator script exists  (otherwise static task description is assumed,
+                # AND if users current task < the task that shall be generated (no Task has yet been generated for this user yet).
+
+                if (int(c.user_get_currentTask(curs, cons, UserId)) < int(TaskNr)+1): 
+                   try:
+                      sql_cmd="SELECT GeneratorExecutable FROM TaskConfiguration WHERE TaskNr == " + str(int(TaskNr)+1) + ";"
+                      curc.execute(sql_cmd);
+                      res = curc.fetchone();
+                   except:
+                      logmsg = "Failed to fetch Generator Script for Tasknr: "+ str(TaskNr) 
+                      logmsg = logmsg + "from the Database! Table TaskConfiguration corrupted?"
+                      c.log_a_msg(self.logger_queue, self.name, logmsg, "ERROR")
+                   finally:
+                       conc.close() 
+
+                   task_start = c.get_task_starttime(int(TaskNr)+1, self.logger_queue, self.name)
+                   if task_start < datetime.datetime.now():    
+                      if res != None: # generator script for this task configured?
+                         logmsg="Calling Generator Script: " + str(res[0])
+                         c.log_a_msg(self.logger_queue, self.name, logmsg, "DEBUG")
+                         logmsg="UserID " + str(UserId) + ",UserEmail " + str(UserEmail)
+                         c.log_a_msg(self.logger_queue, self.name, logmsg, "DEBUG")
+                         self.gen_queue.put(dict({"UserId": str(UserId), "UserEmail": str(UserEmail), "TaskNr": str(int(TaskNr)+1), "MessageId": ""}))
+                      else:
+                         c.send_email(self.sender_queue, str(UserEmail), str(UserId), "Task", str(int(TaskNr)+1), "", str(MessageId))
+
                    else:
-                      c.send_email(self.sender_queue, str(UserEmail), str(UserId), "Task", str(int(TaskNr)+1), "", str(MessageId))
-
-                else:
-                      c.send_email(self.sender_queue, str(UserEmail), str(UserId), "CurLast", str(int(TaskNr)+1), "", str(MessageId))
+                         c.send_email(self.sender_queue, str(UserEmail), str(UserId), "CurLast", str(int(TaskNr)+1), "", str(MessageId))
