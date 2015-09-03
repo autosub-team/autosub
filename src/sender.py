@@ -378,6 +378,7 @@ class mailSender (threading.Thread):
          msg = self.assemble_email(msg, TEXT, '')
          self.send_out_email(recipient, msg.as_string(), cur, con)
       elif (message_type == "CurLast"):
+         c.user_set_currentTask(cur, con, TaskNr, UserId) # we still need to increment the users task counter!
          msg['Subject'] = "Task{0} is not available yet".format(str(TaskNr))
          TEXT = self.read_specialmessage('CURLAST')
          TEXT = "{0}\n\nThe Task is currently scheduled for: {1}".format(TEXT, c.get_task_starttime(str(TaskNr), self.logger_queue, self.name))
