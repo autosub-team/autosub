@@ -85,3 +85,25 @@ def get_task_deadline(tasknr, lqueue, lname):
    #format_string='%Y-%m-%d %H:%M:%S'
    return datetime.datetime.strptime(deadline_string, format_string)
 
+####
+# user_set_currentTask()
+#
+# Set the currentTask of the user with userid to tasknr.
+####
+def user_set_currentTask(cur, con, tasknr, userid):
+   sql_cmd = "UPDATE Users SET CurrentTask='" + str(tasknr) + "' where UserId=='" + str(userid) + "';"
+   cur.execute(sql_cmd)
+   con.commit();
+
+####
+# user_get_currentTask()
+#
+# Get the surrentTask of the user with userid.
+####
+def user_get_currentTask(cur, con, userid):
+   sql_cmd = "Select CurrentTask from Users where UserId=='" + str(userid) + "';"
+   cur.execute(sql_cmd)
+   res = cur.fetchone();
+   return str(res[0]);
+
+

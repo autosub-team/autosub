@@ -61,28 +61,6 @@ class mailSender (threading.Thread):
       cur.execute(sql_cmd)
       con.commit();
 
-   ####
-   # user_set_currentTask()
-   #
-   # Set the currentTask of the user with userid to tasknr.
-   ####
-   def user_set_currentTask(self, cur, con, tasknr, userid):
-      sql_cmd = "UPDATE Users SET CurrentTask='" + str(tasknr) + "' where UserId=='" + str(userid) + "';"
-      cur.execute(sql_cmd)
-      con.commit();
-
-   ####
-   # user_get_currentTask()
-   #
-   # Get the surrentTask of the user with userid.
-   ####
-   def user_get_currentTask(self, cur, con, userid):
-      sql_cmd = "Select CurrentTask from Users where UserId=='" + str(userid) + "';"
-      cur.execute(sql_cmd)
-      res = cur.fetchone();
-      return str(res[0]);
-
-
 
    ####
    # check_and_set_lastDone()
@@ -275,14 +253,14 @@ class mailSender (threading.Thread):
          logmsg= "Task in send_queue: " + str(next_send_msg)
          c.log_a_msg(self.logger_queue, self.name, logmsg, "DEBUG")
          numTasks = self.get_num_Tasks()
-         ctasknr=self.user_get_currentTask(cur, con, UserId)
+         ctasknr = c.user_get_currentTask(cur, con, UserId)
          if (numTasks+1 == int(TaskNr)): # last task solved!
             msg['Subject'] = "Congratulations!" 
             TEXT = self.read_specialmessage('CONGRATS')
 
             if ((int(TaskNr)-1) == (int(ctasknr))):
                #statistics shall only be udated on the first successful submission
-               self.user_set_currentTask(cur, con, TaskNr, UserId)
+               c.user_set_currentTask(cur, con, TaskNr, UserId)
                self.increment_db_taskcounter(cur, con, 'NrSuccessful', str(int(TaskNr)-1))
                self.increment_db_taskcounter(cur, con, 'NrSubmissions', str(int(TaskNr)-1))
                self.check_and_set_lastDone(cur, con, UserId)
@@ -321,7 +299,7 @@ class mailSender (threading.Thread):
                      attachments = str(res[0]).split()
 
                   #statistics shall only be udated on the firs succesful submission
-                  self.user_set_currentTask(cur, con, TaskNr, UserId)
+                  c.user_set_currentTask(cur, con, TaskNr, UserId)
                   self.increment_db_taskcounter(cur, con, 'NrSuccessful', str(int(TaskNr)-1))
                   self.increment_db_taskcounter(cur, con, 'NrSubmissions', str(int(TaskNr)-1))
 
