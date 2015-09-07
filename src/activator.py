@@ -78,8 +78,6 @@ class taskActivator (threading.Thread):
           res = curc.fetchone()
 
        conc.close() 
-#      time.sleep(3600) # it's more than enough to check every hour!
-       time.sleep(60) # for testing purposes only!
 
 
    ####
@@ -91,5 +89,7 @@ class taskActivator (threading.Thread):
 
       while True:
          self.activator_loop()
+#        time.sleep(3600) # it's more than enough to check every hour!
+         time.sleep(60) # for testing purposes only!
 
 

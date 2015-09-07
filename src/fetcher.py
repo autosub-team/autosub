@@ -330,7 +330,7 @@ class mailFetcher (threading.Thread):
                   if re.search('[Rr][Ee][Ss][Uu][Ll][Tt]', mail_subject):
                      searchObj = re.search( '[0-9]+', mail_subject, )
                      if (int(searchObj.group()) <= self.get_num_Tasks()):
-                        logmsg = 'Processing a Result'
+                        logmsg = 'Processing a Result, UserId:{0} TaskNr:{1}'.format(user_email, searchObj.group())
                         c.log_a_msg(self.logger_queue, self.name, logmsg, "DEBUG")
                         self.take_new_results(user_email, searchObj.group(), cur, con, mail, messageid)
                      else:
