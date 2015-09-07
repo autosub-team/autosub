@@ -335,7 +335,7 @@ class mailSender (threading.Thread):
          self.backup_message(messageid)
 
       elif (message_type == "SecAlert"):
-         admin_mails = self.get_admin_email()
+         admin_mails = self.get_admin_emails()
          for admin_mail in admin_mails:
             msg['To'] = admin_mail
             path_to_msg = "users/"+ UserId + "/Task" + TaskNr + "/error_msg"
@@ -343,7 +343,17 @@ class mailSender (threading.Thread):
             msg['Subject'] = "Autosub Security Alert User:" + recipient
             TEXT = "Error report:\n\n""" + error_msg
             msg = self.assemble_email(msg, TEXT, '')
-            self.send_out_email(recipient, msg.as_string(), cur, con)
+            self.send_out_email(admin_mail, msg.as_string(), cur, con)
+            self.backup_message(messageid)
+
+      elif (message_type == "TaskAlert"):
+         admin_mails = self.get_admin_emails()
+         for admin_mail in admin_mails:
+            msg['To'] = admin_mail
+            msg['Subject'] = "Autosub Task Error Alert Task:" + TaskNr+ " User " + UserId
+            TEXT = "Something went wrong with task/testbench analyzation for Task " + TaskNr +" and User " +UserId+ " . Either the entity or testbench analyzation threw an error."
+            msg = self.assemble_email(msg, TEXT, '')
+            self.send_out_email(admin_mail, msg.as_string(), cur, con)
             self.backup_message(messageid)
 
       elif (message_type == "Success"):

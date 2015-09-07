@@ -92,7 +92,7 @@ class worker (threading.Thread):
              command = ""+scriptpath+" " + str(UserId) + " " + str(TaskNr) + " " +"\"" + str(taskParameters)+ "\"" +" >> autosub.stdout 2>>autosub.stderr"
              test_res = os.system(command)
 
-             if test_res:
+             if test_res: # not 0 returned
 
                 logmsg = "Test failed! User: " + str(UserId) + " Task: " + str(TaskNr)
                 logmsg = logmsg + "return value:" + str(test_res)
@@ -101,13 +101,19 @@ class worker (threading.Thread):
                 c.send_email(self.sender_queue, str(UserEmail), str(UserId), "Failed", str(TaskNr), "", str(MessageId))
 
                 if test_res == 512: # Need to read up on this but os.system() returns 
-                                    # 256 when the script returns 1 and 512 when the script returns 2!
+                                    # 256 when the script returns 1 and 512 when the script returns 2, 768 when 3!
                    logmsg = "SecAlert: This test failed due to probable attack by user!"
                    c.log_a_msg(self.logger_queue, self.name, logmsg, "INFO")
 
                    c.send_email(self.sender_queue, str(UserEmail), str(UserId), "SecAlert", str(TaskNr), "", str(MessageId))
 
-             else:
+                elif test_res == 768:
+                   logmsg = "TaskAlert: This test for TaskNr " +TaskNr+" and User " + UserId+ " failed due an error with task/testbench analyzation!"
+                   c.log_a_msg(self.logger_queue, self.name, logmsg, "INFO")
+
+                   c.send_email(self.sender_queue, str(UserEmail), str(UserId), "TaskAlert", str(TaskNr), "", str(MessageId))
+
+             else: # 0 returned
 
                 logmsg = "Test succeeded! User: " + str(UserId) + " Task: " + str(TaskNr)
                 c.log_a_msg(self.logger_queue, self.name, logmsg, "INFO")
