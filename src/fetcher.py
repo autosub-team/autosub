@@ -289,11 +289,11 @@ class mailFetcher (threading.Thread):
    # The code run in the while True loop of the mail fetcher thread.
    ####
    def loop_code(self):
-      cur,con = c.connect_to_db(self.semesterdb, self.logger_queue, self.name)
 
       m = self.connect_to_imapserver()
 
       if m != 0:
+         cur,con = c.connect_to_db(self.semesterdb, self.logger_queue, self.name)
          items = self.fetch_new_emails(m)
 
          # iterate over all new e-mails and take action according to the structure of the subject line
@@ -380,6 +380,7 @@ class mailFetcher (threading.Thread):
             except:
                next_send_msg = 'NONE'
 
+         con.close() # close connection to sqlite db, so others can use it as well.
 
          try:
             m.close()
@@ -397,7 +398,6 @@ class mailFetcher (threading.Thread):
             logmsg = "closed connection to imapserver"
             c.log_a_msg(self.logger_queue, self.name, logmsg, "INFO")
    
-      con.close() # close connection to sqlite db, so others can use it as well.
 
 
       time.sleep(self.poll_period) # it's enough to check e-mails every minute

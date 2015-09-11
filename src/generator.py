@@ -56,6 +56,8 @@ class taskGenerator (threading.Thread):
       else:
          scriptpath = "tasks/task" + str(TaskNr) + "/./generator.sh"
 
+      curc.close()
+
       command = scriptpath + " " + str(UserId) + " " + str(TaskNr) + "  >> autosub.stdout 2>>autosub.stderr"
       generator_res = os.system(command)
       if generator_res:

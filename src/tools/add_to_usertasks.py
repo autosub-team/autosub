@@ -7,7 +7,7 @@ import optparse
 def connect_to_db(dbname):
    # connect to sqlite database ...
    try:
-      con = lite.connect(dbname)
+      con = lite.connect(dbname, 50)
    except:
       print ("Failed to connect to database: %s", dbname)
 

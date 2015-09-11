@@ -121,13 +121,16 @@ class worker (threading.Thread):
                 # Notify, the user that the submission was successful
                 c.send_email(self.sender_queue, str(UserEmail), str(UserId), "Success", str(TaskNr), "", "")
                 curc, conc = c.connect_to_db(self.coursedb, self.logger_queue, self.name)
+
                 curs, cons = c.connect_to_db(self.semesterdb, self.logger_queue, self.name)
+                currenttask = int(c.user_get_currentTask(curs, cons, UserId))
+                cons.close()
 
                 # Next, a new Task is generated -- but only if a new task exists,
                 # AND if a generator script exists  (otherwise static task description is assumed,
                 # AND if users current task < the task that shall be generated (no Task has yet been generated for this user yet).
 
-                if (int(c.user_get_currentTask(curs, cons, UserId)) < int(TaskNr)+1): 
+                if (currenttask < int(TaskNr)+1): 
                    try:
                       sql_cmd="SELECT GeneratorExecutable FROM TaskConfiguration WHERE TaskNr == " + str(int(TaskNr)+1) + ";"
                       curc.execute(sql_cmd);
@@ -152,3 +155,6 @@ class worker (threading.Thread):
 
                    else:
                          c.send_email(self.sender_queue, str(UserEmail), str(UserId), "CurLast", str(int(TaskNr)+1), "", str(MessageId))
+
+                conc.close()
+                cons.close()
