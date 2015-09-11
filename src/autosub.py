@@ -249,8 +249,8 @@ if __name__ == '__main__':
    logger_queue.put(dict({"msg": msg_config, "type": "INFO", "loggername": "Main"}))
    #Next we start a couple of worker threads:
 
-   while (threadID <= numThreads + 3):
-      tName = "Worker" + str(threadID-3)
+   while (threadID <= numThreads + 5):
+      tName = "Worker" + str(threadID - 5)
       t = worker.worker(threadID, tName, job_queue, gen_queue, sender_queue, logger_queue, coursedb, semesterdb)
       t.daemon = True
       t.start()

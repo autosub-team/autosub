@@ -46,7 +46,7 @@ def send_email(queue, recipient, userid, messagetype, tasknr, body, messageid):
 def connect_to_db(dbname, lqueue, lname):
    # connect to sqlite database ...
    try:
-      con = lite.connect(dbname)
+      con = lite.connect(dbname, 60)
    except:
       logmsg = "Failed to connect to database: " + dbname
       log_a_msg(lqueue, lname, logmsg, "ERROR")

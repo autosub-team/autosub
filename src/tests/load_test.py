@@ -13,6 +13,7 @@ import sender
 from sender import mailSender
 import generator
 from generator import taskGenerator
+import worker
 import sqlite3 as lite
 import logger
 import time, datetime
@@ -26,7 +27,7 @@ class Test_LoadTest(unittest.TestCase):
       self.semesterdb = "semester.db"
       self.coursedb = "course.db"
 
-      self.numusers = 10
+      self.numusers = 100
       self.testcase = "b'10'"
       self.lasttestcase = ""
       #self.testcase = ""
@@ -157,6 +158,9 @@ class Test_LoadTest(unittest.TestCase):
       threadID = 2  # LOGGER IS NUMBER 1 !!!
       queueSize = 200
       poll_period = 5
+      numThreads = 8
+      worker_t = []
+
       job_queue = queue.Queue(queueSize)
       sender_queue = queue.Queue(queueSize)
       gen_queue = queue.Queue(queueSize)
@@ -192,6 +196,13 @@ class Test_LoadTest(unittest.TestCase):
                           # will clean it up before terminating!
       #      sender_t.start()
       #      threadID += 1
+            while (threadID <= numThreads + 1):
+               tName = "Worker" + str(threadID-1)
+               t = worker.worker(threadID, tName, job_queue, gen_queue, sender_queue, self.logger_queue, self.coursedb, self.semesterdb)
+               t.daemon = True
+               t.start()
+               worker_t.append(t)
+               threadID += 1
 
             fetcher_t = fetcher.mailFetcher(threadID, "fetcher", job_queue, sender_queue, gen_queue, 'autosub_user', 'autosub_passwd', 'imapserver', self.logger_queue, arch_queue, poll_period, self.coursedb, self.semesterdb)
             fetcher_t.daemon = True # make the fetcher thread a daemon, this way the main
@@ -208,8 +219,13 @@ class Test_LoadTest(unittest.TestCase):
             # There first test case is set above in the setup routine: self.testcase = "b'10'"
             time.sleep(int(self.numusers)*2)
 
-            self.testcase = "b'84'"
-            time.sleep(self.numusers*3 + poll_period)
+            tc = "b'84'"
+            config = CP.ConfigParser()
+            config.readfp(open('tests/loadtest_testcases.cfg'))
+            testparam = eval(str(config.get(tc, 'generatorstring')))
+
+            self.testcase = tc 
+            time.sleep(self.numusers*30 + poll_period)
 
 
 
