@@ -44,6 +44,8 @@ class worker (threading.Thread):
       c.log_a_msg(self.logger_queue, self.name, logmsg, "INFO")
 
       while True:
+         logmsg = self.name + ": waiting for a new job."
+         c.log_a_msg(self.logger_queue, self.name, logmsg, "INFO")
          nextjob = self.job_queue.get(True)
          if nextjob:
              TaskNr=nextjob.get('taskNr')

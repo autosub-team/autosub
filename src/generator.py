@@ -58,7 +58,7 @@ class taskGenerator (threading.Thread):
 
       curc.close()
 
-      command = scriptpath + " " + str(UserId) + " " + str(TaskNr) + "  >> autosub.stdout 2>>autosub.stderr"
+      command = scriptpath + " " + str(UserId) + " " + str(TaskNr) + " normal  >> autosub.stdout 2>>autosub.stderr"
       generator_res = os.system(command)
       if generator_res:
          logmsg = "Failed to call generator script, return value: " + str(generator_res)

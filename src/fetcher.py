@@ -360,25 +360,25 @@ class mailFetcher (threading.Thread):
 
          # before the server connection is closed:
          # check if messages have been handled and need to be archived now
-         try:
-            next_send_msg = self.arch_queue.get(False)
-         except:
-            next_send_msg = 'NONE'
+       #  try:
+       #     next_send_msg = self.arch_queue.get(False)
+       #  except:
+       #     next_send_msg = 'NONE'
 
-         while next_send_msg != 'NONE':
-            m.select(mailbox = 'INBOX', readonly=False)
-            resp, items = m.search(None, 'All')
-            for emailid in items[0].split():
-               typ, msg_data = m.fetch(str(int(emailid)), "(BODY[HEADER])")
-               mail = email.message_from_bytes(msg_data[0][1])
-               if mail['Message-ID'] == next_send_msg.get('mid'):
-                  logmsg = "Moving Message with ID: {0}".format(mail['Message-ID'])
-                  c.log_a_msg(self.logger_queue, self.name, logmsg, "DEBUG")
+       #  while next_send_msg != 'NONE':
+       #     m.select(mailbox = 'INBOX', readonly=False)
+       #     resp, items = m.search(None, 'All')
+       #     for emailid in items[0].split():
+       #        typ, msg_data = m.fetch(str(int(emailid)), "(BODY[HEADER])")
+       #        mail = email.message_from_bytes(msg_data[0][1])
+       #        if mail['Message-ID'] == next_send_msg.get('mid'):
+       #           logmsg = "Moving Message with ID: {0}".format(mail['Message-ID'])
+       #           c.log_a_msg(self.logger_queue, self.name, logmsg, "DEBUG")
 
-            try:
-               next_send_msg = self.arch_queue.get(False)
-            except:
-               next_send_msg = 'NONE'
+       #     try:
+       #        next_send_msg = self.arch_queue.get(False)
+       #     except:
+       #        next_send_msg = 'NONE'
 
          con.close() # close connection to sqlite db, so others can use it as well.
 

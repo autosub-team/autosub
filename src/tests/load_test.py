@@ -27,13 +27,13 @@ class Test_LoadTest(unittest.TestCase):
       self.semesterdb = "semester.db"
       self.coursedb = "course.db"
 
-      self.numusers = 100
+      self.numusers = 200
       self.testcase = "b'10'"
       self.lasttestcase = ""
       #self.testcase = ""
       self.testcases = []
    
-      self.logger_queue = queue.Queue(200)
+      self.logger_queue = queue.Queue(2000)
       #Before we do anything else: start the logger thread, so we can log whats going on
       threadID=1
       logger_t = logger.autosubLogger(threadID, "logger", self.logger_queue)
@@ -73,6 +73,16 @@ class Test_LoadTest(unittest.TestCase):
 
    def mock_close(self):
       return 0
+
+   ####
+   # mock_send_out_email()
+   #
+   # mock-up function for send_out_mail() in sender.py that does not send out the e-mail,
+   # but instead throws it into a message queu from where it can be retrieved and the
+   # content be tested.
+   ####
+   def mock_send_out_email(self, recipient, message, cur, con):
+      self.email_queue.put(dict({"recipient": recipient, "message": message})) 
 
    def get_userid_by_email(self, email):
       #connect to the semester database, and assure, that the e-mail(user) in the test
@@ -156,7 +166,7 @@ class Test_LoadTest(unittest.TestCase):
 
    def test_load_code(self):
       threadID = 2  # LOGGER IS NUMBER 1 !!!
-      queueSize = 200
+      queueSize = 500
       poll_period = 5
       numThreads = 8
       worker_t = []
@@ -165,6 +175,8 @@ class Test_LoadTest(unittest.TestCase):
       sender_queue = queue.Queue(queueSize)
       gen_queue = queue.Queue(queueSize)
       arch_queue = queue.Queue(queueSize)
+
+      self.email_queue=queue.Queue(20000) # used by the mock-up sender function instead of smtp
 
       self.clean_whitelist()
       self.clean_users()
@@ -177,7 +189,7 @@ class Test_LoadTest(unittest.TestCase):
       this_time_tomorrow = str(datetime.datetime.now() + datetime.timedelta(1)).split('.')[0]
 
       self.add_task(curc, conc, 1, this_time_yesterday, this_time_tomorrow, '/home/andi/working_git/autosub_internal/tasks/implementation/gates', 'generator.sh', 'tester.sh', '5', 'testoperator@q.q', '1')
-      self.add_task(curc, conc, 2, this_time_yesterday, this_time_tomorrow, '/home/andi/working_git/autosub_internal/tasks/implementation/gates', 'generator.sh', 'tester.sh', '5', 'testoperator@q.q', '1')
+      self.add_task(curc, conc, 2, this_time_yesterday, this_time_tomorrow, '/home/andi/working_git/autosub_internal/tasks/implementation/fsm', 'generator.sh', 'tester.sh', '5', 'testoperator@q.q', '1')
 
       conc.close()
 
@@ -190,43 +202,50 @@ class Test_LoadTest(unittest.TestCase):
          with mock.patch.multiple("imaplib.IMAP4",
                                fetch=self.mock_fetch,
                                close=self.mock_close):
+            with mock.patch("sender.mailSender.send_out_email", self.mock_send_out_email):
 
-      #      sender_t = sender.mailSender(threadID, "sender", sender_queue, 'autosubmail@q.q', 'autosub_user', 'autosub_passwd', 'smtpserver', self.logger_queue, arch_queue, self.coursedb, self.semesterdb)
-      #      sender_t.daemon = True # make the sender thread a daemon, this way the main
+               while (threadID <= numThreads + 1):
+                  tName = "Worker" + str(threadID-1)
+                  t = worker.worker(threadID, tName, job_queue, gen_queue, sender_queue, self.logger_queue, self.coursedb, self.semesterdb)
+                  t.daemon = True
+                  t.start()
+                  worker_t.append(t)
+                  threadID += 1
+
+               sender_t = sender.mailSender(threadID, "sender", sender_queue, 'autosubmail@q.q', 'autosub_user', 'autosub_passwd', 'smtpserver', self.logger_queue, arch_queue, self.coursedb, self.semesterdb)
+               sender_t.daemon = True # make the sender thread a daemon, this way the main
                           # will clean it up before terminating!
-      #      sender_t.start()
-      #      threadID += 1
-            while (threadID <= numThreads + 1):
-               tName = "Worker" + str(threadID-1)
-               t = worker.worker(threadID, tName, job_queue, gen_queue, sender_queue, self.logger_queue, self.coursedb, self.semesterdb)
-               t.daemon = True
-               t.start()
-               worker_t.append(t)
+               sender_t.start()
                threadID += 1
 
-            fetcher_t = fetcher.mailFetcher(threadID, "fetcher", job_queue, sender_queue, gen_queue, 'autosub_user', 'autosub_passwd', 'imapserver', self.logger_queue, arch_queue, poll_period, self.coursedb, self.semesterdb)
-            fetcher_t.daemon = True # make the fetcher thread a daemon, this way the main
+               fetcher_t = fetcher.mailFetcher(threadID, "fetcher", job_queue, sender_queue, gen_queue, 'autosub_user', 'autosub_passwd', 'imapserver', self.logger_queue, arch_queue, poll_period, self.coursedb, self.semesterdb)
+               fetcher_t.daemon = True # make the fetcher thread a daemon, this way the main
                         # will clean it up before terminating!
-            fetcher_t.start()
-            threadID += 1
+               fetcher_t.start()
+               threadID += 1
 
-            generator_t = generator.taskGenerator(threadID, "generator", gen_queue, sender_queue, self.logger_queue, self.coursedb)
-            generator_t.daemon = True # make the fetcher thread a daemon, this way the main
-                             # will clean it up before terminating!
-            generator_t.start()
-            threadID += 1
+               generator_t = generator.taskGenerator(threadID, "generator", gen_queue, sender_queue, self.logger_queue, self.coursedb)
+               generator_t.daemon = True # make the fetcher thread a daemon, this way the main
+                                # will clean it up before terminating!
+               generator_t.start()
+               threadID += 1
 
-            # There first test case is set above in the setup routine: self.testcase = "b'10'"
-            time.sleep(int(self.numusers)*2)
+               # There first test case is set above in the setup routine: self.testcase = "b'10'"
+               time.sleep(int(self.numusers)*2)
 
-            tc = "b'84'"
-            config = CP.ConfigParser()
-            config.readfp(open('tests/loadtest_testcases.cfg'))
-            testparam = eval(str(config.get(tc, 'generatorstring')))
+               tc = "b'84'"
+               config = CP.ConfigParser()
+               config.readfp(open('tests/loadtest_testcases.cfg'))
+               testparam = eval(str(config.get(tc, 'generatorstring')))
 
-            self.testcase = tc 
-            time.sleep(self.numusers*30 + poll_period)
+               curs, cons = c.connect_to_db(self.semesterdb, self.logger_queue, "testcode")
+               sqlcmd = "UPDATE UserTasks SET TaskParameters = '162159553761823' WHERE TaskNr==1;".format(testparam)
+               curs.execute(sqlcmd)
+               cons.commit()
+               cons.close() 
 
+               self.testcase = tc 
+               time.sleep(self.numusers*2 + poll_period)
 
 
 
