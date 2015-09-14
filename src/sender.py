@@ -375,6 +375,9 @@ class mailSender (threading.Thread):
          else:
             msg = self.assemble_email(msg, TEXT, attachments)
             self.send_out_email(recipient, msg.as_string(), message_type, cur, con)
+
+         self.backup_message(messageid)
+
       elif (message_type == "InvalidTask"):
          msg['Subject'] = "Invalid Task Number"
          TEXT = self.read_specialmessage('INVALID')
