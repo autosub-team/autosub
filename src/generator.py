@@ -14,7 +14,7 @@ import common as c
 import os
 
 class taskGenerator (threading.Thread):
-   def __init__(self, threadID, name, gen_queue, sender_queue, logger_queue, coursedb):
+   def __init__(self, threadID, name, gen_queue, sender_queue, logger_queue, coursedb,submissionEmail):
       threading.Thread.__init__(self)
       self.threadID = threadID
       self.name = name
@@ -22,6 +22,7 @@ class taskGenerator (threading.Thread):
       self.sender_queue = sender_queue
       self.logger_queue = logger_queue
       self.coursedb = coursedb
+      self.submissionEmail = submissionEmail 
 
    def generator_loop(self):
       next_gen_msg = self.gen_queue.get(True) #blocking wait on gen_queue
@@ -58,7 +59,7 @@ class taskGenerator (threading.Thread):
 
       curc.close()
 
-      command = scriptpath + " " + str(UserId) + " " + str(TaskNr) + " normal  >> autosub.stdout 2>>autosub.stderr"
+      command = scriptpath + " " + str(UserId) + " " + str(TaskNr) + " " +self.submissionEmail+ " normal  >> autosub.stdout 2>>autosub.stderr"
       generator_res = os.system(command)
       if generator_res:
          logmsg = "Failed to call generator script, return value: " + str(generator_res)

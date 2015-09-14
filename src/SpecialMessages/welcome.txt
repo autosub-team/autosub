@@ -1,6 +1,6 @@
 Welcome to this course on VHDL.
 
-You just sent your first e-mail to <vhdlabgabe+e384@tuwien.ac.at>. This way
+You just sent your first e-mail to <SUBMISSIONEMAIL>. This way
 you subscribed to this part of the course. Very shortly you will receive
 an e-mail with your first task. But to start you need to know a little
 more than just the task. Most importantely: all e-mails sent to this
@@ -39,4 +39,5 @@ Hope this clears things on how to communicate with me! Now I am looking
 forward to hearing from you in a structured and (for me!) understandable
 way!
 
-so long, and thanks for all the fish!
+
+So long, and thanks for all the fish!
