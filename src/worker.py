@@ -143,7 +143,7 @@ class worker (threading.Thread):
                       c.log_a_msg(self.logger_queue, self.name, logmsg, "ERROR")
                    finally:
                        conc.close() 
-
+         
                    task_start = c.get_task_starttime(int(TaskNr)+1, self.logger_queue, self.name)
                    if task_start < datetime.datetime.now():    
                       if res != None: # generator script for this task configured?
@@ -156,7 +156,6 @@ class worker (threading.Thread):
                          c.send_email(self.sender_queue, str(UserEmail), str(UserId), "Task", str(int(TaskNr)+1), "", str(MessageId))
 
                    else:
-                         c.send_email(self.sender_queue, str(UserEmail), str(UserId), "CurLast", str(int(TaskNr)+1), "", str(MessageId))
+                      c.send_email(self.sender_queue, str(UserEmail), str(UserId), "CurLast", str(int(TaskNr)+1), "", str(MessageId))
 
-                conc.close()
                 cons.close()

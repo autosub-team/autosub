@@ -117,18 +117,6 @@ class mailSender (threading.Thread):
       return str(res[0])
 
    ####
-   # get_numTasks()
-   ####
-   def get_num_Tasks(self):
-      curc, conc = c.connect_to_db(self.coursedb, self.logger_queue, self.name)
-      sqlcmd = "SELECT Content FROM GeneralConfig WHERE ConfigItem == 'num_tasks'"
-      curc.execute(sqlcmd)
-      numTasks = int(curc.fetchone()[0])
-      conc.close()
-
-      return numTasks
-
-   ####
    # generate_status_update()
    ####
    def generate_status_update(self, cur, con, user_email):
@@ -252,7 +240,7 @@ class mailSender (threading.Thread):
       if (message_type == "Task"):
          logmsg= "Task in send_queue: " + str(next_send_msg)
          c.log_a_msg(self.logger_queue, self.name, logmsg, "DEBUG")
-         numTasks = self.get_num_Tasks()
+         numTasks = c.get_num_Tasks(self.coursedb, self.logger_queue, self.name)
          ctasknr = c.user_get_currentTask(cur, con, UserId)
          if (numTasks+1 == int(TaskNr)): # last task solved!
             msg['Subject'] = "Congratulations!" 
@@ -369,7 +357,7 @@ class mailSender (threading.Thread):
       elif (message_type == "Status"):
          msg['Subject'] = "Your Current Status"
          TEXT = self.generate_status_update(cur, con, recipient)
-         numTasks = self.get_num_Tasks()
+         numTasks = c.get_num_Tasks(self.coursedb, self.logger_queue, self.name)
          if (int(numTasks) >=  int(TaskNr)):
             #also attach current task
             sql_cmd="SELECT TaskAttachments FROM UserTasks WHERE TaskNr == " + str(TaskNr) + " AND UserId == '"+ UserId + "';"

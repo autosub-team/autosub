@@ -66,13 +66,17 @@ def increment_db_statcounter(cur, con, countername):
 
 def get_task_starttime(tasknr, lqueue, lname):
    curc, conc = connect_to_db('course.db', lqueue, lname)
-   sqlcmd = "SELECT TaskStart FROM TaskConfiguration WHERE TaskNr == '"+ str(tasknr) +"'"
-   curc.execute(sqlcmd)
-   tstart_string = str(curc.fetchone()[0])
-   conc.close()
 
-   #format_string='%Y-%m-%d %H:%M:%S'
-   return datetime.datetime.strptime(tstart_string, format_string)
+   try:
+      sqlcmd = "SELECT TaskStart FROM TaskConfiguration WHERE TaskNr == '"+ str(tasknr) +"'"
+      curc.execute(sqlcmd)
+      tstart_string = str(curc.fetchone()[0])
+      ret = datetime.datetime.strptime(tstart_string, format_string)
+   except:
+      ret = datetime.datetime(1970,1,1,0,0,0)
+
+   conc.close()
+   return ret
 
 
 def get_task_deadline(tasknr, lqueue, lname):
@@ -106,4 +110,16 @@ def user_get_currentTask(cur, con, userid):
    res = cur.fetchone();
    return str(res[0]);
 
+
+####
+# get_numTasks()
+####
+def get_num_Tasks(coursedb, lqueue, name):
+   curc, conc = connect_to_db(coursedb, lqueue, name)
+   sqlcmd = "SELECT Content FROM GeneralConfig WHERE ConfigItem == 'num_tasks'"
+   curc.execute(sqlcmd)
+   numTasks = int(curc.fetchone()[0])
+   conc.close()
+
+   return numTasks
 
