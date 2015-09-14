@@ -134,9 +134,6 @@ class mailSender (threading.Thread):
       curscore = curc.fetchone()
       curc.close()
 
-      cur_deadline = c.get_task_deadline(str(curtask[0]), self.logger_queue, self.name)
-      cur_start = c.get_task_starttime(str(curtask[0]), self.logger_queue, self.name)
-
       if str(curscore[0]) == 'None': # no task solved yet.
          tmpscore = 0
       else:
@@ -144,8 +141,14 @@ class mailSender (threading.Thread):
 
       msg =  "Username: {0}\nEmail: {1}\nCurrent Task: {2}\n Your current Score: {3}\n".format(str(uname[0]), user_email, str(curtask[0]), str(tmpscore))
 
-      msg = "{0}\nStarttime current Task: {1}\n".format(msg, cur_start)
-      msg = "{0}Deadline current Task: {1}".format(msg, cur_deadline)
+      try:
+         cur_deadline = c.get_task_deadline(str(curtask[0]), self.logger_queue, self.name)
+         cur_start = c.get_task_starttime(str(curtask[0]), self.logger_queue, self.name)
+
+         msg = "{0}\nStarttime current Task: {1}\n".format(msg, cur_start)
+         msg = "{0}Deadline current Task: {1}".format(msg, cur_deadline)
+      except:
+         msg = "{0}\nNo more deadlines for you -- all Tasks are finished!".format(msg)
 
       return msg
 
@@ -367,6 +370,9 @@ class mailSender (threading.Thread):
             c.log_a_msg(self.logger_queue, self.name, logmsg, "DEBUG")
             if res:
                attachments = str(res[0]).split()
+            msg = self.assemble_email(msg, TEXT, attachments)
+            self.send_out_email(recipient, msg.as_string(), message_type, cur, con)
+         else:
             msg = self.assemble_email(msg, TEXT, attachments)
             self.send_out_email(recipient, msg.as_string(), message_type, cur, con)
       elif (message_type == "InvalidTask"):
