@@ -16,6 +16,7 @@ import signal
 import logging
 import configparser
 import common as c
+import re
 
 def sig_handler(signum, frame):
    logger_queue.put(dict({"msg": "Shutting down autosub...", "type": "INFO", "loggername": "Main"}))
@@ -66,10 +67,11 @@ def set_general_config_param(cur, con, configitem, content):
 ####
 # load_specialmessage_to_db()
 ####
-def load_specialmessage_to_db(cur, con, msgname, filename):
+def load_specialmessage_to_db(cur, con, msgname, filename, submissionEmail):
      with open (filename, "r") as smfp:
         data=smfp.read()
-     smfp.close()
+     data= data.replace("<SUBMISSIONEMAIL>", "<"+submissionEmail+">")
+
      sql_cmd="INSERT INTO SpecialMessages (EventName, EventText) VALUES('" + msgname + "', '" + data + "');"
      cur.execute(sql_cmd)
      con.commit()
@@ -78,7 +80,7 @@ def load_specialmessage_to_db(cur, con, msgname, filename):
 # Check if all databases, tables, etc. are available, or if they have to be created.
 # if non-existent --> create them
 ####
-def init_ressources(numThreads, numTasks, coursedb, semesterdb):
+def init_ressources(numThreads, numTasks, coursedb, semesterdb, submissionEmail):
    cur,con = c.connect_to_db(semesterdb, logger_queue, "autosub.py") 
 
    ####################
@@ -131,15 +133,15 @@ def init_ressources(numThreads, numTasks, coursedb, semesterdb):
    ####################
    ret = check_and_init_db_table(cur, con, "SpecialMessages", "EventName TEXT PRIMARY KEY, EventText TEXT")
    if ret: # that table did not exists, therefore we use the .txt files to initialize it!
-      load_specialmessage_to_db(cur, con, 'WELCOME', 'SpecialMessages/welcome.txt')
-      load_specialmessage_to_db(cur, con, 'USAGE', 'SpecialMessages/usage.txt')
-      load_specialmessage_to_db(cur, con, 'QUESTION', 'SpecialMessages/question.txt')
-      load_specialmessage_to_db(cur, con, 'INVALID', 'SpecialMessages/invalidtask.txt')
-      load_specialmessage_to_db(cur, con, 'CONGRATS', 'SpecialMessages/congratulations.txt')
-      load_specialmessage_to_db(cur, con, 'REGOVER', 'SpecialMessages/registrationover.txt')
-      load_specialmessage_to_db(cur, con, 'NOTALLOWED', 'SpecialMessages/notallowed.txt')
-      load_specialmessage_to_db(cur, con, 'CURLAST', 'SpecialMessages/curlast.txt')
-      load_specialmessage_to_db(cur, con, 'DEADTASK', 'SpecialMessages/deadtask.txt')
+      load_specialmessage_to_db(cur, con, 'WELCOME', 'SpecialMessages/welcome.txt', submissionEmail)
+      load_specialmessage_to_db(cur, con, 'USAGE', 'SpecialMessages/usage.txt', submissionEmail)
+      load_specialmessage_to_db(cur, con, 'QUESTION', 'SpecialMessages/question.txt', submissionEmail)
+      load_specialmessage_to_db(cur, con, 'INVALID', 'SpecialMessages/invalidtask.txt', submissionEmail)
+      load_specialmessage_to_db(cur, con, 'CONGRATS', 'SpecialMessages/congratulations.txt', submissionEmail)
+      load_specialmessage_to_db(cur, con, 'REGOVER', 'SpecialMessages/registrationover.txt', submissionEmail)
+      load_specialmessage_to_db(cur, con, 'NOTALLOWED', 'SpecialMessages/notallowed.txt', submissionEmail)
+      load_specialmessage_to_db(cur, con, 'CURLAST', 'SpecialMessages/curlast.txt', submissionEmail)
+      load_specialmessage_to_db(cur, con, 'DEADTASK', 'SpecialMessages/deadtask.txt', submissionEmail)
    #####################
    # TaskConfiguration #
    #####################
@@ -217,7 +219,7 @@ if __name__ == '__main__':
 
    signal.signal(signal.SIGUSR1, sig_handler)
 
-   init_ressources(numThreads,numTasks, coursedb, semesterdb)
+   init_ressources(numThreads,numTasks, coursedb, semesterdb, autosub_mail)
 
    sender_t = sender.mailSender(threadID, "sender", sender_queue, autosub_mail, autosub_user, autosub_passwd, smtpserver, logger_queue, arch_queue, coursedb, semesterdb)
    sender_t.daemon = True # make the sender thread a daemon, this way the main
@@ -231,7 +233,7 @@ if __name__ == '__main__':
    fetcher_t.start()
    threadID += 1
 
-   generator_t = generator.taskGenerator(threadID, "generator", gen_queue, sender_queue, logger_queue, coursedb)
+   generator_t = generator.taskGenerator(threadID, "generator", gen_queue, sender_queue, logger_queue, coursedb, autosub_mail )
    generator_t.daemon = True # make the fetcher thread a daemon, this way the main
                              # will clean it up before terminating!
    generator_t.start()

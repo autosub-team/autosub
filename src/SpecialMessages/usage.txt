@@ -1,6 +1,6 @@
 Hi,
 
-You just sent an e-mail to <vhdlabgabe+e384@tuwien.ac.at>. All e-mail sent
+You just sent an e-mail to <SUBMISSIONEMAIL>. All e-mail sent
 to this addres is automatically handled by me, a stupid little computer
 program.
 
@@ -38,7 +38,8 @@ Hope this clears things on how to communicate with me! Now I am looking
 forward to hearing from you in a structured and (for me!) understandable
 way!
 
-so long, and thanks for all the fish!
+
+So long, and thanks for all the fish!
 
 
 for testing purposes:
