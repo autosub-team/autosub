@@ -388,32 +388,29 @@ class mailFetcher (threading.Thread):
                m.select(mailbox = 'Inbox', readonly=False)
                resp, items = m.search(None, 'All')
                email_ids  = items[0].split()
-               latest_email_id = email_ids[-1] # Assuming that you are moving the latest email.
 
-               resp, data = m.fetch(latest_email_id, "(UID)")
-               pattern_uid = re.compile('\d+ \(UID (?P<uid>\d+)\)')
-               match = pattern_uid.match(str(data[0]).split("'")[1])
-               msg_uid = match.group('uid')
+               for emailid in email_ids:
+                  typ, msg_data = m.fetch(str(int(emailid)), "(BODY[HEADER])")
+                  mail = email.message_from_bytes(msg_data[0][1])
+                  if mail['Message-ID'] == next_send_msg.get('mid'):
+                     logmsg = "Moving Message with ID: {0}".format(mail['Message-ID'])
+                     c.log_a_msg(self.logger_queue, self.name, logmsg, "DEBUG")
 
-               result = m.uid('COPY', msg_uid, 'archive_vels')
+                     resp, data = m.fetch(emailid, "(UID)")
+                     pattern_uid = re.compile('\d+ \(UID (?P<uid>\d+)\)')
+                     match = pattern_uid.match(str(data[0]).split("'")[1])
+                     msg_uid = match.group('uid')
 
-               if result[0] == 'OK':
-                  mov, data = m.uid('STORE', msg_uid , '+FLAGS', '(\Deleted)')
-                  m.expunge()
+                     result = m.uid('COPY', msg_uid, 'archive_vels')
+
+                     if result[0] == 'OK':
+                        mov, data = m.uid('STORE', msg_uid , '+FLAGS', '(\Deleted)')
+                        m.expunge()
+                     break
 
             m.logout()
 
-       #     resp, items = m.search(None, 'All')
-       #     for emailid in items[0].split():
-       #        typ, msg_data = m.fetch(str(int(emailid)), "(BODY[HEADER])")
-       #        mail = email.message_from_bytes(msg_data[0][1])
-       #        if mail['Message-ID'] == next_send_msg.get('mid'):
-       #           logmsg = "Moving Message with ID: {0}".format(mail['Message-ID'])
-       #           c.log_a_msg(self.logger_queue, self.name, logmsg, "DEBUG")
-
          con.close() # close connection to sqlite db, so others can use it as well.
-
-
 
       time.sleep(self.poll_period) # it's enough to check e-mails every minute
 
