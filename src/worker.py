@@ -53,7 +53,7 @@ class worker (threading.Thread):
              UserEmail=nextjob.get('UserEmail')
              MessageId=nextjob.get('MessageId')
 
-             logmsg = self.name + ": got a new job: " + str(TaskNr) + "from the user with id: " + str(UserId)
+             logmsg = self.name + ": got a new job: " + str(TaskNr) + " from the user with id: " + str(UserId)
              c.log_a_msg(self.logger_queue, self.name, logmsg, "INFO")
 
              # check if there is a test executable configured in the database -- if not fall back on static
@@ -65,7 +65,7 @@ class worker (threading.Thread):
                 testname = curc.fetchone();
              except:
                 logmsg = "Failed to fetch TestExecutable for Tasknr: "+ str(TaskNr) 
-                logmsg = logmsg + "from the Database! Table TaskConfiguration corrupted?"
+                logmsg = logmsg + " from the Database! Table TaskConfiguration corrupted?"
                 c.log_a_msg(self.logger_queue, self.name, logmsg, "ERROR")
     
              if testname != None:
@@ -76,7 +76,7 @@ class worker (threading.Thread):
                    scriptpath = str(path[0]) + "/" + str(testname[0])
                 except: #if a testname was given, then a Path should be there as well!
                    logmsg = "Failed to fetch Path to Tasknr: "+ str(TaskNr) 
-                   logmsg = logmsg + "from the Database! Table TaskConfiguration corrupted?"
+                   logmsg = logmsg + " from the Database! Table TaskConfiguration corrupted?"
                    c.log_a_msg(self.logger_queue, self.name, logmsg, "ERROR")
 
              else: # in case no testname was given, we fall back to the static directory structure
@@ -97,7 +97,7 @@ class worker (threading.Thread):
              if test_res: # not 0 returned
 
                 logmsg = "Test failed! User: " + str(UserId) + " Task: " + str(TaskNr)
-                logmsg = logmsg + "return value:" + str(test_res)
+                logmsg = logmsg + " return value:" + str(test_res)
                 c.log_a_msg(self.logger_queue, self.name, logmsg, "INFO")
 
                 c.send_email(self.sender_queue, str(UserEmail), str(UserId), "Failed", str(TaskNr), "", str(MessageId))
@@ -110,7 +110,7 @@ class worker (threading.Thread):
                    c.send_email(self.sender_queue, str(UserEmail), str(UserId), "SecAlert", str(TaskNr), "", str(MessageId))
 
                 elif test_res == 768:
-                   logmsg = "TaskAlert: This test for TaskNr " +TaskNr+" and User " + UserId+ " failed due an error with task/testbench analyzation!"
+                   logmsg = "TaskAlert: This test for TaskNr " +str(TaskNr)+" and User " + str(UserId)+ " failed due an error with task/testbench analyzation!"
                    c.log_a_msg(self.logger_queue, self.name, logmsg, "INFO")
 
                    c.send_email(self.sender_queue, str(UserEmail), str(UserId), "TaskAlert", str(TaskNr), "", str(MessageId))

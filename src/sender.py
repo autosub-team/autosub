@@ -173,7 +173,7 @@ class mailSender (threading.Thread):
 
       self.arch_queue.put(dict({"mid": messageid}))
 
-   def send_out_email(self, recipient, message, cur, con):
+   def send_out_email(self, recipient, message, msg_type, cur, con):
       try:
          server = smtplib.SMTP(self.smtpserver, 587) # port 465 doesn't seem to work!
          server.ehlo()
@@ -181,10 +181,10 @@ class mailSender (threading.Thread):
          server.login(self.autosub_user, self.mail_pwd)
          server.sendmail(self.mail_user, recipient, message)
          server.close()
-         c.log_a_msg(self.logger_queue, self.name, "Successfully sent an e-mail!", "DEBUG")
+         c.log_a_msg(self.logger_queue, self.name, "Successfully sent an e-mail of type '{0}'!".format(msg_type), "DEBUG")
          c.increment_db_statcounter(cur, con, 'nr_mails_sent')
       except:
-         c.log_a_msg(self.logger_queue, self.name, "Failed to send out an e-mail!", "ERROR")
+         c.log_a_msg(self.logger_queue, self.name, "Failed to send out an e-mail of type '{0}'!".format(msg_type), "ERROR")
 
    def read_text_file(self, path_to_msg):
       try:
@@ -266,7 +266,7 @@ class mailSender (threading.Thread):
                self.check_and_set_lastDone(cur, con, UserId)
 
             msg = self.assemble_email(msg, TEXT, '')
-            self.send_out_email(recipient, msg.as_string(), cur, con)
+            self.send_out_email(recipient, msg.as_string(),message_type, cur, con)
          else: # at least one more task to do: send out the description
             # only send the task description, after the first successful submission
             if ((int(TaskNr)-1) <= (int(ctasknr)) or int(ctasknr) == 1):
@@ -281,7 +281,7 @@ class mailSender (threading.Thread):
                   c.log_a_msg(self.logger_queue, self.name, "It seems, the Path to Task "+ str(TaskNr) + " is not configured.", "WARNING")
                   TEXT = "Sorry, but something went wrong... probably misconfiguration or missing configuration of Task " + str(TaskNr)
                   msg = self.assemble_email(msg, TEXT, '')
-                  self.send_out_email(recipient, msg.as_string(), cur, con)
+                  self.send_out_email(recipient, msg.as_string(),message_type, cur, con)
                else:
                   path_to_task = str(paths[0])
                   path_to_msg = path_to_task + "/description.txt"
@@ -304,7 +304,7 @@ class mailSender (threading.Thread):
                   self.increment_db_taskcounter(cur, con, 'NrSubmissions', str(int(TaskNr)-1))
 
                   msg = self.assemble_email(msg, TEXT, attachments)
-                  self.send_out_email(recipient, msg.as_string(), cur, con)
+                  self.send_out_email(recipient, msg.as_string(),message_type, cur, con)
 
 
          self.backup_message(messageid)
@@ -331,7 +331,7 @@ class mailSender (threading.Thread):
             c.log_a_msg(self.logger_queue, self.name, logmsg, "DEBUG")
 
          msg = self.assemble_email(msg, TEXT, reply_attachments)
-         self.send_out_email(recipient, msg.as_string(), cur, con)
+         self.send_out_email(recipient, msg.as_string(),message_type, cur, con)
          self.backup_message(messageid)
 
       elif (message_type == "SecAlert"):
@@ -343,24 +343,24 @@ class mailSender (threading.Thread):
             msg['Subject'] = "Autosub Security Alert User:" + recipient
             TEXT = "Error report:\n\n""" + error_msg
             msg = self.assemble_email(msg, TEXT, '')
-            self.send_out_email(admin_mail, msg.as_string(), cur, con)
+            self.send_out_email(admin_mail, msg.as_string(),message_type, cur, con)
             self.backup_message(messageid)
 
       elif (message_type == "TaskAlert"):
          admin_mails = self.get_admin_emails()
          for admin_mail in admin_mails:
             msg['To'] = admin_mail
-            msg['Subject'] = "Autosub Task Error Alert Task:" + TaskNr+ " User " + UserId
+            msg['Subject'] = "Autosub Task Error Alert Task " + TaskNr+ " User " + UserId
             TEXT = "Something went wrong with task/testbench analyzation for Task " + TaskNr +" and User " +UserId+ " . Either the entity or testbench analyzation threw an error."
             msg = self.assemble_email(msg, TEXT, '')
-            self.send_out_email(admin_mail, msg.as_string(), cur, con)
+            self.send_out_email(admin_mail, msg.as_string(),message_type, cur, con)
             self.backup_message(messageid)
 
       elif (message_type == "Success"):
          msg['Subject'] = "Task " + TaskNr + " submitted successfully"
          TEXT = "Congratulations!"
          msg = self.assemble_email(msg, TEXT, '')
-         self.send_out_email(recipient, msg.as_string(), cur, con)
+         self.send_out_email(recipient, msg.as_string(),message_type, cur, con)
          #set first done if not set yet
          self.check_and_set_firstSuccessful(cur,con,UserId,TaskNr)
          
@@ -380,13 +380,13 @@ class mailSender (threading.Thread):
             if res:
                attachments = str(res[0]).split()
             msg = self.assemble_email(msg, TEXT, attachments)
-            self.send_out_email(recipient, msg.as_string(), cur, con)
+            self.send_out_email(recipient, msg.as_string(), message_type, cur, con)
       elif (message_type == "InvalidTask"):
          msg['Subject'] = "Invalid Task Number"
          TEXT = self.read_specialmessage('INVALID')
          self.backup_message(messageid)
          msg = self.assemble_email(msg, TEXT, '')
-         self.send_out_email(recipient, msg.as_string(), cur, con)
+         self.send_out_email(recipient, msg.as_string(), message_type, cur, con)
       elif (message_type == "CurLast"):
          c.user_set_currentTask(cur, con, TaskNr, UserId) # we still need to increment the users task counter!
          msg['Subject'] = "Task{0} is not available yet".format(str(TaskNr))
@@ -394,25 +394,25 @@ class mailSender (threading.Thread):
          TEXT = "{0}\n\nThe Task is currently scheduled for: {1}".format(TEXT, c.get_task_starttime(str(TaskNr), self.logger_queue, self.name))
          self.backup_message(messageid)
          msg = self.assemble_email(msg, TEXT, '')
-         self.send_out_email(recipient, msg.as_string(), cur, con)
+         self.send_out_email(recipient, msg.as_string(), message_type, cur, con)
       elif (message_type == "DeadTask"):
          msg['Subject'] = "Deadline for Task{0} has passed.".format(str(TaskNr))
          TEXT = self.read_specialmessage('DEADTASK')
          self.backup_message(messageid)
          msg = self.assemble_email(msg, TEXT, '')
-         self.send_out_email(recipient, msg.as_string(), cur, con)
+         self.send_out_email(recipient, msg.as_string(), message_type, cur, con)
       elif (message_type == "Usage"):
          msg['Subject'] = "Autosub Usage"
          TEXT = self.read_specialmessage('USAGE')
          self.backup_message(messageid)
          msg = self.assemble_email(msg, TEXT, '')
-         self.send_out_email(recipient, msg.as_string(), cur, con)
+         self.send_out_email(recipient, msg.as_string(), message_type, cur, con)
       elif (message_type == "Question"):
          msg['Subject'] = "Question received"
          TEXT = self.read_specialmessage('QUESTION')
          self.backup_message(messageid)
          msg = self.assemble_email(msg, TEXT, '')
-         self.send_out_email(recipient, msg.as_string(), cur, con)
+         self.send_out_email(recipient, msg.as_string(), message_type, cur, con)
       elif (message_type == "QFwd"):
          orig_mail = next_send_msg.get('Body')
          msg['Subject'] = "Question from " + orig_mail['from']
@@ -428,29 +428,29 @@ class mailSender (threading.Thread):
 
          self.backup_message(messageid)
          msg = self.assemble_email(msg, TEXT, '')
-         self.send_out_email(recipient, msg.as_string(), cur, con)
+         self.send_out_email(recipient, msg.as_string(), message_type, cur, con)
       elif (message_type == "Welcome"):
          msg['Subject'] = "Welcome!"
          TEXT = self.read_specialmessage('WELCOME')
          self.backup_message(messageid)
          msg = self.assemble_email(msg, TEXT, '')
-         self.send_out_email(recipient, msg.as_string(), cur, con)
+         self.send_out_email(recipient, msg.as_string(), message_type, cur, con)
       elif (message_type == "RegOver"):
          msg['Subject'] = "Registration Deadline has passed"
          TEXT = self.read_specialmessage('REGOVER')
          self.backup_message(messageid)
          msg = self.assemble_email(msg, TEXT, '')
-         self.send_out_email(recipient, msg.as_string(), cur, con)
+         self.send_out_email(recipient, msg.as_string(), message_type, cur, con)
       elif (message_type == "NotAllowed"):
          msg['Subject'] = "Registration Not Successful."
          TEXT = self.read_specialmessage('NOTALLOWED')
          msg = self.assemble_email(msg, TEXT, '')
-         self.send_out_email(recipient, msg.as_string(), cur, con)
+         self.send_out_email(recipient, msg.as_string(), message_type, cur, con)
       else:
          c.log_a_msg(self.logger_queue, self.name, "Unkown Message Type in the sender_queue!","ERROR")
          self.backup_message(messageid)
          msg = self.assemble_email(msg, TEXT, '')
-         self.send_out_email(recipient, msg.as_string(), cur, con)
+         self.send_out_email(recipient, msg.as_string(), message_type, cur, con)
 
       con.close()
       conc.close() 
