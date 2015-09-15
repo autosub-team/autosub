@@ -42,6 +42,12 @@ zero=0
 userfile="pwm_beh.vhdl"
 simulationTimeout="5"
 
+TaskNr=$2
+logPrefix()
+{
+   logPre=$(date +"%Y-%m-%d %H:%M:%S,%3N ")"[tester.sh Task$TaskNr]   "
+}
+
 ##########################
 #### TEST PREPARATION ####
 ##########################
@@ -60,7 +66,7 @@ touch error_msg
 #check if the user supplied a file
 if [ ! -f $userfile ]
 then
-    echo "Error with Task $2. User did not attach the right file"
+    logPrefix && echo "${logPre}Error with Task $2. User $1 did not attach the right file"
     cd $autosubPath
     echo "You did not attach your solution. Please attach the file $userfile" >$userTaskPath/error_msg
     exit 1 
@@ -75,7 +81,7 @@ ghdl -a pwm.vhdl
 RET=$? 
 if [ "$RET" -ne "$zero" ]
 then
-   echo "Error with Task $2 entity";
+   logPrefix && echo "${logPre}Error with Task $2 entity for user with ID $1";
    echo "Something went wrong with the task $2 test generation. This is not your fault. We are working on a solution" > $userTaskPath/error_msg
    exit 3 
 fi
@@ -85,7 +91,7 @@ ghdl -a pwm_tb_$1_Task$2.vhdl
 RET=$? 
 if [ "$RET" -ne "$zero" ]
 then
-   echo "Error with Task $2 testbench";
+   logPrefix && echo "${logPre}Error with Task $2 testbench for user with ID $1";
    echo "Something went wrong with the task $2 test generation. This is not your fault. We are working on a solution" > $userTaskPath/error_msg
    exit 3 
 fi
@@ -100,9 +106,9 @@ RET=$?
 
 if [ "$RET" -eq "$zero" ]
 then
-   echo "Task$2 analyze success for user with ID $1!"
+   logPrefix && echo "${logPre}Task$2 analyze success for user with ID $1!"
 else
-   echo "Task$2 analyze FAILED for user with ID $1!"
+   logPrefix && echo "${logPre}Task$2 analyze FAILED for user with ID $1!"
    cd $autosubPath
    echo "Analyzation of your submitted behavior file failed:" >$userTaskPath/error_msg
    cat /tmp/tmp_Task$2_User$1 >> $userTaskPath/error_msg
@@ -115,7 +121,7 @@ fi
 #check for the keywords after and wait
 if `egrep -oq "(wait|after)" pwm_beh.vhdl`
 then
-   echo "Task$2 using forbiddden keywords for user with ID $1!"
+   logPrefix && echo "${logPre}Task$2 using forbiddden keywords for user with ID $1!"
    cd $autosubPath
    echo "You are not complying to the specified rules in your task discription.">$userTaskPath/error_msg
    echo "You are not using the input clock to generate your signal! You are either using the keyword 'after' or 'wait'." >>$userTaskPath/error_msg
@@ -131,9 +137,9 @@ RET=$?
 
 if [ "$RET" -eq "$zero" ]
 then
-   echo "Task$2 elaboration success for user with ID $1!"
+   logPrefix && echo "${logPre}Task$2 elaboration success for user with ID $1!"
 else
-   echo "Task$2 elaboration FAILED for user with ID $1!"
+   logPrefix && echo "${logPre}Task$2 elaboration FAILED for user with ID $1!"
    cd $autosubPath
    echo "Elaboration with your submitted behavior file failed:" >$userTaskPath/error_msg
    cat /tmp/tmp_Task$2_User$1 >> $userTaskPath/error_msg
@@ -173,18 +179,18 @@ mv wavefile.zip $userTaskPath/error_attachments
 
 if [ "$RETegrep" -eq "$zero" ]
 then
-    echo "Functionally correct!"
+    logPrefix && echo "${logPre}Functionally correct for Task$2 for user with ID $1!"
     exit 0
 elif [ "$RETghdl" -eq 124 ] #; timeout returns 124 if it had to kill process
 then  
     cd $autosubPath
-    echo "Wrong behavior for Task$2 for user with ID $1!"
+    logPrefix && echo "${logPre}Wrong behavior for Task$2 for user with ID $1!"
     echo "Your submitted behavior file does not behave like specified in the task description:" >$userTaskPath/error_msg
     echo "No continuous signal detected. Please look at the attached wave file to see what signal your entity produces." >> $userTaskPath/error_msg
     exit 1  
 else
     cd $autosubPath
-    echo "Wrong behavior for Task$2 for user with ID $1!"
+    logPrefix && echo "${logPre}Wrong behavior for Task$2 for user with ID $1!"
     echo "Your submitted behavior file does not behave like specified in the task description:" >$userTaskPath/error_msg
     cat /tmp/tmp_Task$2_User$1 >> $userTaskPath/error_msg
     echo "Please look at the attached wave file to see what signal your entity produces." >> $userTaskPath/error_msg

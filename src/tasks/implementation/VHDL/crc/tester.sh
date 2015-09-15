@@ -42,6 +42,12 @@ zero=0
 userfile1="fsr_beh.vhdl"
 userfile2="crc_beh.vhdl"
 
+TaskNr=$2
+logPrefix()
+{
+   logPre=$(date +"%Y-%m-%d %H:%M:%S,%3N ")"[tester.sh Task$TaskNr]   "
+}
+
 ##########################
 #### TEST PREPARATION ####
 ##########################
@@ -61,7 +67,7 @@ touch error_msg
 #check if the user supplied a file
 if [ ! -f $userfile1 ] || [ ! -f $userfile2 ]
 then
-    echo "Error with Task $2. User did not attach the right file"
+    logPrefix && echo "${logPre}Error with Task $2. User $1 did not attach the right file"
     cd $autosubPath
     echo "You did not attach your solution. Please attach the file $userfile1 and $userfile2" >$userTaskPath/error_msg
     exit 1 
@@ -77,7 +83,7 @@ ghdl -a fsr.vhdl
 RET=$? 
 if [ "$RET" -ne "$zero" ]
 then
-   echo "Error with Task $2 entity";
+   logPrefix && echo "${logPre}Error with Task $2 entity fsr for user with ID $1";
    echo "Something went wrong with the task $2 test generation. This is not your fault. We are working on a solution" > $userTaskPath/error_msg
    exit 3 
 fi
@@ -86,7 +92,7 @@ ghdl -a crc.vhdl
 RET=$? 
 if [ "$RET" -ne "$zero" ]
 then
-   echo "Error with Task $2 entity";
+   logPrefix && echo "${logPre}Error with Task $2 entity crc for user with ID $1";
    echo "Something went wrong with the task $2 test generation. This is not your fault. We are working on a solution" > $userTaskPath/error_msg
    exit 3 
 fi
@@ -96,7 +102,7 @@ ghdl -a --ieee=synopsys crc_tb_$1_Task$2.vhdl
 RET=$? 
 if [ "$RET" -ne "$zero" ]
 then
-   echo "Error with Task $2 testbench";
+   logPrefix && echo "${logPre}Error with Task $2 testbench for user with ID $1";
    echo "Something went wrong with the task $2 test generation. This is not your fault. We are working on a solution" > $userTaskPath/error_msg
    exit 3 
 fi
@@ -107,9 +113,9 @@ RET=$?
 
 if [ "$RET" -eq "$zero" ]
 then
-   echo "Task$2 analyze success for user with ID $1!"
+   logPrefix && echo "${logPre}Task$2 analyze success fsr for user with ID $1!"
 else
-   echo "Task$2 analyze FAILED for user with ID $1!"
+   logPrefix && echo "${logPre}Task$2 analyze FAILED for user with ID $1!"
    cd $autosubPath
    echo "Analyzation of your submitted behavior file failed:" >$userTaskPath/error_msg
    cat /tmp/tmp_Task$2_User$1 >> $userTaskPath/error_msg
@@ -121,9 +127,9 @@ RET=$?
 
 if [ "$RET" -eq "$zero" ]
 then
-   echo "Task$2 analyze success for user with ID $1!"
+   logPrefix && echo "${logPre}Task$2 analyze success crc for user with ID $1!"
 else
-   echo "Task$2 analyze FAILED for user with ID $1!"
+  logPrefix && echo "${logPre}Task$2 analyze FAILED for user with ID $1!"
    cd $autosubPath
    echo "Analyzation of your submitted behavior file failed:" >$userTaskPath/error_msg
    cat /tmp/tmp_Task$2_User$1 >> $userTaskPath/error_msg
@@ -138,9 +144,9 @@ RET=$?
 
 if [ "$RET" -eq "$zero" ]
 then
-   echo "Task$2 elaboration success for user with ID $1!"
+   logPrefix && echo "${logPre}Task$2 elaboration success for user with ID $1!"
 else
-   echo "Task$2 elaboration FAILED for user with ID $1!"
+   logPrefix && echo "${logPre}Task$2 elaboration FAILED for user with ID $1!"
    cd $autosubPath
    echo "Elaboration with your submitted behavior file failed:" >$userTaskPath/error_msg
    cat /tmp/tmp_Task$2_User$1 >> $userTaskPath/error_msg
@@ -158,11 +164,11 @@ RET=$?
 
 if [ "$RET" -eq "$zero" ]
 then
-    echo "Functionally correct!"
+    logPrefix && echo "${logPre}Functionally correct for Task$2 for user with ID $1!"
     exit 0
 else
     cd $autosubPath
-    echo "Wrong behavior for Task$2 for user with ID $1!"
+    logPrefix && echo "${logPre}Wrong behavior for Task$2 for user with ID $1!"
     echo "Your submitted behavior file does not behave like specified in the task description:" >$userTaskPath/error_msg
     # substitute the \n in the message for real \n and attach to error msg
     echo /tmp/tmp_Task$2_User$1_msg | xargs sed 's/\\n/\n/g'  >>$userTaskPath/error_msg
