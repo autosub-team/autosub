@@ -21,7 +21,7 @@ class Test_generator(unittest.TestCase):
       senderq = queue.Queue(10)
       lqueue = queue.Queue(10)
 
-      testgen = generator.taskGenerator(1, self.name, genq, senderq, lqueue, 'testcourse.db')
+      testgen = generator.taskGenerator(1, self.name, genq, senderq, lqueue, 'testcourse.db',"submission@test.xy")
 
       os.mkdir("users/42")
       genq.put(dict({"UserId": "42", "UserEmail": "testuser@testdomain.com", "TaskNr": "1", "MessageId": "47110815"}))

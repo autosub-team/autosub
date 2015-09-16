@@ -224,7 +224,7 @@ class Test_LoadTest(unittest.TestCase):
                fetcher_t.start()
                threadID += 1
 
-               generator_t = generator.taskGenerator(threadID, "generator", gen_queue, sender_queue, self.logger_queue, self.coursedb)
+               generator_t = generator.taskGenerator(threadID, "generator", gen_queue, sender_queue, self.logger_queue, self.coursedb,"submission@test.xy")
                generator_t.daemon = True # make the fetcher thread a daemon, this way the main
                                 # will clean it up before terminating!
                generator_t.start()
