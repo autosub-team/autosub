@@ -33,7 +33,7 @@ paramsEntityFSR={}
 paramsTbExam={}
 
 #generate generator and message length
-msgLen= randrange(12,24)
+msgLen= randrange(12,25)
 
 genDegree= randrange(5,12)
 generator=[]

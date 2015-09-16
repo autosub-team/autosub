@@ -24,6 +24,13 @@ class taskGenerator (threading.Thread):
       self.coursedb = coursedb
       self.submissionEmail = submissionEmail 
 
+   def get_challenge_mode(curc,conc):
+      sql_cmd="SELECT Content FROM GeneralConfig WHERE ConfigItem= 'challenge_mode'"  
+      curc.execute(sql_cmd)
+      challenge_mode = curc.fetchone()
+      return challenge_mode 
+
+
    def generator_loop(self):
       next_gen_msg = self.gen_queue.get(True) #blocking wait on gen_queue
 
@@ -57,9 +64,9 @@ class taskGenerator (threading.Thread):
       else:
          scriptpath = "tasks/task" + str(TaskNr) + "/./generator.sh"
 
-      curc.close()
+      challenge_mode = self.get_challenge_mode()      
 
-      command = scriptpath + " " + str(UserId) + " " + str(TaskNr) + " " +self.submissionEmail+ " normal  >> autosub.stdout 2>>autosub.stderr"
+      command = scriptpath + " " + str(UserId) + " " + str(TaskNr) + " " +self.submissionEmail+ " "+ challenge_mode+" >> autosub.stdout 2>>autosub.stderr"
       generator_res = os.system(command)
       if generator_res:
          logmsg = "Failed to call generator script, return value: " + str(generator_res)
@@ -69,6 +76,8 @@ class taskGenerator (threading.Thread):
       c.log_a_msg(self.logger_queue, self.name, logmsg, "DEBUG")
 
       c.send_email(self.sender_queue, str(UserEmail), str(UserId), "Task", str(TaskNr), "Your personal example", str(MessageId))
+
+      curc.close()
 
    ####
    # thread code for the generator thread.
