@@ -114,11 +114,21 @@ class mailFetcher (threading.Thread):
    # structure.
    ####
    def take_new_results(self, user_email, TaskNr, cur, con, mail, messageid):
+      # get the user's UserId
+      sql_cmd="SELECT UserId FROM Users WHERE Email='{0}';".format(user_email)
+      cur.execute(sql_cmd);
+      res= cur.fetchone()
+      UserId = res[0];
+
       deadline = c.get_task_deadline(TaskNr, self.logger_queue, self.name)
+      curtask = c.user_get_currentTask(cur, con, UserId)
 
       if deadline < datetime.datetime.now():
          #deadline has passed!
          c.send_email(self.sender_queue, user_email, "", "DeadTask", str(TaskNr), "", messageid)
+      elif curtask < TaskNr:
+         #user is trying to submit a solution to a task although an earlier task was not solved.
+         c.send_email(self.sender_queue, user_email, "", "InvalidTask", str(TaskNr), "", messageid)
       else:
          # get the user's UserId
          sql_cmd="SELECT UserId FROM Users WHERE Email='{0}';".format(user_email)

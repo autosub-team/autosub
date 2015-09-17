@@ -65,7 +65,7 @@ class taskGenerator (threading.Thread):
 
       challenge_mode = self.get_challenge_mode(curc, conc)      
 
-      command = scriptpath + " " + str(UserId) + " " + str(TaskNr) + " " +self.submissionEmail+ " "+ challenge_mode+" >> autosub.stdout 2>>autosub.stderr"
+      command = scriptpath + " " + str(UserId) + " " + str(TaskNr) + " " + self.submissionEmail+ " "+ str(challenge_mode)+" >> autosub.stdout 2>>autosub.stderr"
       generator_res = os.system(command)
       if generator_res:
          logmsg = "Failed to call generator script, return value: " + str(generator_res)
