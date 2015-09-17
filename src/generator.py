@@ -25,10 +25,10 @@ class taskGenerator (threading.Thread):
       self.submissionEmail = submissionEmail 
 
    def get_challenge_mode(self, curc, conc):
-      sql_cmd="SELECT Content FROM GeneralConfig WHERE ConfigItem= 'challenge_mode'"  
+      sql_cmd="SELECT Content FROM GeneralConfig WHERE ConfigItem='challenge_mode'"  
       curc.execute(sql_cmd)
       challenge_mode = curc.fetchone()
-      return challenge_mode 
+      return str(challenge_mode[0]) 
 
    def generator_loop(self):
       next_gen_msg = self.gen_queue.get(True) #blocking wait on gen_queue
@@ -65,7 +65,9 @@ class taskGenerator (threading.Thread):
 
       challenge_mode = self.get_challenge_mode(curc, conc)      
 
-      command = scriptpath + " " + str(UserId) + " " + str(TaskNr) + " " + self.submissionEmail+ " "+ str(challenge_mode)+" >> autosub.stdout 2>>autosub.stderr"
+      command = scriptpath + " " + str(UserId) + " " + str(TaskNr) + " " + self.submissionEmail + " " + str(challenge_mode) + " >> autosub.stdout 2>>autosub.stderr"
+      logmsg = "generator command: {0}".format(command)
+      c.log_a_msg(self.logger_queue, self.name, logmsg, "DEBUG")
       generator_res = os.system(command)
       if generator_res:
          logmsg = "Failed to call generator script, return value: " + str(generator_res)
