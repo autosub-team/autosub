@@ -106,24 +106,19 @@ begin
                 wait for 1 fs;
 
                 if(STATE_UUT /= START or OUTPUT_UUT /= "00") then
-                    write(OUTPUT,string'("Error for synchronous reset:"));
-                    write(OUTPUT,string'("\n"));
-                    write(OUTPUT,string'("\n"));
-     
-                    write(OUTPUT,string'("\n"));
-                    write(OUTPUT,string'("Expected initial configuration:"));
-                    write(OUTPUT,string'("\n"));
-                    write(OUTPUT,string'("   STATE=  START "));
-                    write(OUTPUT,string'("\n"));
-                    write(OUTPUT,string'("   OUTPUT= 00"));
                     write(OUTPUT,string'("\n"));
 
-                    write(OUTPUT,string'("Received: "));
+                    write(OUTPUT,string'("Error for synchronous reset") & string'("\n"));
                     write(OUTPUT,string'("\n"));
-                    write(OUTPUT,string'("   STATE=  ")&Image(STATE_UUT));
+
+                    write(OUTPUT,string'("Expected initial configuration:") & string'("\n"));
+                    write(OUTPUT,string'("   STATE=  START ") & string'("\n"));
+                    write(OUTPUT,string'("   OUTPUT= 00") & string'("\n"));
                     write(OUTPUT,string'("\n"));
-                    write(OUTPUT,string'("   OUTPUT= ")&Image(OUTPUT_UUT));
-                    write(OUTPUT,string'("\n"));
+
+                    write(OUTPUT,string'("Received: ") & string'("\n"));
+                    write(OUTPUT,string'("   STATE=  ")&Image(STATE_UUT) & string'("\n"));
+                    write(OUTPUT,string'("   OUTPUT= ")&Image(OUTPUT_UUT) & string'("\n"));
                     write(OUTPUT,string'("\n"));
                     write(OUTPUT,string'("\n"));
                     report "Simulation error" severity failure;
@@ -138,27 +133,19 @@ begin
                 wait for 1 fs;
       
                 if(STATE_UUT /= patterns(i).STATE or OUTPUT_UUT /= patterns(i).OUTPUT) then
-                    write(OUTPUT,string'("Error:"));
-                    write(OUTPUT,string'("\n"));
-                    write(OUTPUT,string'("   From STATE = ")&Image(last_state));
-                    write(OUTPUT,string'("\n"));
-                    write(OUTPUT,string'("   With INPUT = ")&Image(patterns(i).INPUT));
                     write(OUTPUT,string'("\n"));
 
-                    write(OUTPUT,string'("Expected :"));
-                    write(OUTPUT,string'("\n"));
-                    write(OUTPUT,string'("   STATE= ")&Image(patterns(i).STATE));
-                    write(OUTPUT,string'("\n"));
-                    write(OUTPUT,string'("   OUTPUT=")&Image(patterns(i).OUTPUT));
-                    write(OUTPUT,string'("\n"));
+                    write(OUTPUT,string'("Error:") & string'("\n"));
+                    write(OUTPUT,string'("   From STATE = ")&Image(last_state)& string'("\n"));
+                    write(OUTPUT,string'("   With INPUT = ")&Image(patterns(i).INPUT)& string'("\n"));
 
-                    write(OUTPUT,string'("Received: "));
-                    write(OUTPUT,string'("\n"));
-                    write(OUTPUT,string'("   STATE=  ")&Image(STATE_UUT));
-                    write(OUTPUT,string'("\n"));
-                    write(OUTPUT,string'("   OUTPUT= ")&Image(OUTPUT_UUT));
-                    write(OUTPUT,string'("\n"));
-                    write(OUTPUT,string'("\n"));
+                    write(OUTPUT,string'("Expected :")& string'("\n"));
+                    write(OUTPUT,string'("   STATE= ")&Image(patterns(i).STATE)& string'("\n"));
+                    write(OUTPUT,string'("   OUTPUT=")&Image(patterns(i).OUTPUT)& string'("\n"));
+
+                    write(OUTPUT,string'("Received: ") & string'("\n"));
+                    write(OUTPUT,string'("   STATE=  ")&Image(STATE_UUT)& string'("\n"));
+                    write(OUTPUT,string'("   OUTPUT= ")&Image(OUTPUT_UUT)& string'("\n"));
                     write(OUTPUT,string'("\n"));
                     report "Simulation error" severity failure;
                 end if;--endif check
