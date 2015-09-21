@@ -133,7 +133,10 @@ fi
 #Simulation reports "Success" or an error message
 ghdl -r arithmetic_tb 2> /tmp/tmp_Task$2_User$1 > /tmp/tmp_Task$2_User$1_msg
 
-if `egrep -oq "Success" /tmp/tmp_Task$2_User$1`
+egrep -oq "Success" /tmp/tmp_Task$2_User$1
+RET=$?
+
+if [ "$RET" -eq "$zero" ]
 then
     logPrefix && echo "${logPre}Functionally correct for Task$2 for user with ID $1!"
     exit 0
