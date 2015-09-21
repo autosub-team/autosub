@@ -443,11 +443,12 @@ class mailSender (threading.Thread):
          TEXT = self.read_specialmessage('NOTALLOWED')
          msg = self.assemble_email(msg, TEXT, '')
          self.send_out_email(recipient, msg.as_string(), message_type, cur, con)
+         self.backup_message(messageid)
       else:
          c.log_a_msg(self.logger_queue, self.name, "Unkown Message Type in the sender_queue!","ERROR")
-         self.backup_message(messageid)
          msg = self.assemble_email(msg, TEXT, '')
          self.send_out_email(recipient, msg.as_string(), message_type, cur, con)
+         self.backup_message(messageid)
 
       con.close()
       conc.close() 
