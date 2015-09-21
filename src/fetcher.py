@@ -93,19 +93,19 @@ class mailFetcher (threading.Thread):
 
    def increment_submissionNr(self,UserId,TaskNr):
       curs, cons = c.connect_to_db(self.semesterdb,self.logger_queue, self.name)
-      
-      # get last submission number
-      sqlcmd="SELECT NrSubmissions FROM UserTasks WHERE UserId = {0} AND TaskNr = {1};".format(UserId, TaskNr)  
-      curs.execute(sqlcmd)
-      res = curs.fetchone()
-      submissionNr=int(res[0])
-      # set +1
-      submissionNr += 1
-      sqlcmd="UPDATE UserTasks SET NrSubmissions = {0} WHERE UserId = {1} AND TaskNr = {2};".format(submissionNr, UserId, TaskNr) 
-      curs.execute(sqlcmd)
-      cons.commit(); 
-      cons.close()
-      return submissionNr
+     
+      try: 
+         sqlcmd="UPDATE UserTasks SET NrSubmissions = NrSubmissions+1 WHERE UserId = {0} AND TaskNr = {1};".format(UserId, TaskNr) 
+         curs.execute(sqlcmd)
+         cons.commit(); 
+         cons.close()
+
+         sqlcmd="SELECT NrSubmissions from UserTasks WHERE UserId = {0} AND TaskNr = {1};".format(UserId, TaskNr)
+         cur.execute(sqlcmd)
+         res = cur.fetchone()
+         return int(res[0])
+      except:
+         return 0
       
    ####
    # take_new_result()
@@ -426,7 +426,8 @@ class mailFetcher (threading.Thread):
                         m.expunge()
                      break
 
-            m.logout()
+            if m != 0: # m==0 is only possible in test-code (e.g. load_test.py)
+               m.logout()
 
          con.close() # close connection to sqlite db, so others can use it as well.
 

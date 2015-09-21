@@ -27,7 +27,7 @@ class Test_LoadTest(unittest.TestCase):
       self.semesterdb = "semester.db"
       self.coursedb = "course.db"
 
-      self.numusers = 200
+      self.numusers = 150
       self.testcase = "b'10'"
       self.lasttestcase = ""
       #self.testcase = ""
@@ -59,6 +59,9 @@ class Test_LoadTest(unittest.TestCase):
       self.testcase = ""
       return self.testcases
 
+   def mock_fetch_all_emails(self, m):
+      return []
+
    def mock_fetch(self, mailid, encoding):
 #      print("\ngenerating: testcase %s" % str(int(mailid)))
       config = CP.ConfigParser()
@@ -81,7 +84,7 @@ class Test_LoadTest(unittest.TestCase):
    # but instead throws it into a message queu from where it can be retrieved and the
    # content be tested.
    ####
-   def mock_send_out_email(self, recipient, message, cur, con):
+   def mock_send_out_email(self, recipient, message, msg_type, cur, con):
       self.email_queue.put(dict({"recipient": recipient, "message": message})) 
 
    def get_userid_by_email(self, email):
@@ -163,7 +166,6 @@ class Test_LoadTest(unittest.TestCase):
       cur.execute(sqlcmd)
       con.commit()
 
-
    def test_load_code(self):
       threadID = 2  # LOGGER IS NUMBER 1 !!!
       queueSize = 500
@@ -188,8 +190,8 @@ class Test_LoadTest(unittest.TestCase):
       this_time_yesterday = str(datetime.datetime.now() - datetime.timedelta(1)).split('.')[0]
       this_time_tomorrow = str(datetime.datetime.now() + datetime.timedelta(1)).split('.')[0]
 
-      self.add_task(curc, conc, 1, this_time_yesterday, this_time_tomorrow, '/home/andi/working_git/autosub_internal/tasks/implementation/gates', 'generator.sh', 'tester.sh', '5', 'testoperator@q.q', '1')
-      self.add_task(curc, conc, 2, this_time_yesterday, this_time_tomorrow, '/home/andi/working_git/autosub_internal/tasks/implementation/fsm', 'generator.sh', 'tester.sh', '5', 'testoperator@q.q', '1')
+      self.add_task(curc, conc, 1, this_time_yesterday, this_time_tomorrow, 'tasks/implementation/VHDL/gates', 'generator.sh', 'tester.sh', '5', 'testoperator@q.q', '1')
+      self.add_task(curc, conc, 2, this_time_yesterday, this_time_tomorrow, 'tasks/implementation/VHDL/fsm', 'generator.sh', 'tester.sh', '5', 'testoperator@q.q', '1')
 
       conc.close()
 
@@ -198,7 +200,8 @@ class Test_LoadTest(unittest.TestCase):
      
       with mock.patch.multiple('fetcher.mailFetcher',
                                connect_to_imapserver=self.mock_connect_to_imapserver,
-                               fetch_new_emails=self.mock_fetch_new_emails):
+                               fetch_new_emails=self.mock_fetch_new_emails,
+                               fetch_all_emails=self.mock_fetch_all_emails):
          with mock.patch.multiple("imaplib.IMAP4",
                                fetch=self.mock_fetch,
                                close=self.mock_close):
@@ -230,8 +233,18 @@ class Test_LoadTest(unittest.TestCase):
                generator_t.start()
                threadID += 1
 
+               t1 = datetime.datetime.now()
+
                # There first test case is set above in the setup routine: self.testcase = "b'10'"
-               time.sleep(int(self.numusers)*2)
+               NrEntries = 0;
+               while NrEntries < self.numusers:
+                  curs, cons = c.connect_to_db(self.semesterdb, self.logger_queue, "testcode")
+                  sqlcmd="SELECT count(*) FROM UserTasks;"
+                  curs.execute(sqlcmd)
+                  NrEntries = int(curs.fetchone()[0])
+                  cons.close() 
+
+               t2 = datetime.datetime.now()
 
                tc = "b'84'"
                config = CP.ConfigParser()
@@ -245,9 +258,19 @@ class Test_LoadTest(unittest.TestCase):
                cons.close() 
 
                self.testcase = tc 
-               time.sleep(self.numusers*2 + poll_period)
 
+               while NrEntries < (2 * self.numusers):
+                  curs, cons = c.connect_to_db(self.semesterdb, self.logger_queue, "testcode")
+                  sqlcmd="SELECT count(*) FROM UserTasks;"
+                  curs.execute(sqlcmd)
+                  NrEntries = int(curs.fetchone()[0])
+                  cons.close() 
 
+               t3 = datetime.datetime.now()
+               delta1 = t2 - t1
+               delta2 = t3 - t2
+               print ("Duration of Registration Test: {0} s {1} us".format(delta1.seconds, delta1.microseconds))
+               print ("Duration of Result Test: {0} s {1} us".format(delta2.seconds, delta2.microseconds))
 
 if __name__ == '__main__':
    unittest.main()
