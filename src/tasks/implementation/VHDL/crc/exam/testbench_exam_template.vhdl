@@ -73,7 +73,7 @@ begin
         wait until rising_edge(CLK_UUT);
         NEW_MSG_UUT <= '0';
         
-        wait;
+        wait for 10 ns;
 
     end process stimulate;  
 end behavior;

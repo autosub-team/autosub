@@ -73,7 +73,7 @@ begin
         wait for clk_period/2;
         CLK_UUT<='1';
 
-        wait;
+        wait for 10 ns;
 
     end process stimulate;
 
