@@ -249,6 +249,16 @@ class mailFetcher (threading.Thread):
       resp, items = m.search(None, "UNSEEN") # you could filter using the IMAP rules here (check http://www.example-code.com/csharp/imap-search-critera.asp)
       return items[0].split() # getting the mails id
 
+   def fetch_all_emails(self, m):
+      try:
+         m.select(mailbox = 'Inbox', readonly=False)
+      except:
+         logmsg = "Failed to select inbox"
+         c.log_a_msg(self.logger_queue, self.name, logmsg, "INFO")
+
+      resp, items = m.search(None, 'All')
+      return items[0].split()
+
    ####
    #  check_if_whitelisted(user_email)
    #
@@ -395,9 +405,7 @@ class mailFetcher (threading.Thread):
             m = self.connect_to_imapserver()
 
             for next_msg in next_send_msg:
-               m.select(mailbox = 'Inbox', readonly=False)
-               resp, items = m.search(None, 'All')
-               email_ids  = items[0].split()
+               email_ids  = self.fetch_all_emails(m)
 
                for emailid in email_ids:
                   typ, msg_data = m.fetch(str(int(emailid)), "(BODY[HEADER])")
