@@ -31,8 +31,8 @@ class dailystatsTask(threading.Thread):
    #
    # check if table exists and create if it does not exist
    ####
-   def check_and_create_table(self, cur, con, tablename, field):
-      cur.execute("SELECT " + field + " FROM sqlite_master WHERE type == 'table' AND name = '" + tablename + "';")
+   def check_and_create_table(self, cur, con, tablename):
+      cur.execute("SELECT name FROM sqlite_master WHERE type == 'table' AND name = '" + tablename + "';")
       res = cur.fetchall()
       if res:
         logmsg = 'table ' + tablename + ' exists'
@@ -80,10 +80,10 @@ class dailystatsTask(threading.Thread):
          #connect to sqlite database ...
          cur2, con2 = c.connect_to_db('semesterstats.db', self.logger_queue, self.name)
 
-         self.check_and_create_table(cur2, con2, 'NrUserStats', 'name')
-         self.check_and_create_table(cur2, con2, 'NrSendStats', 'name')
-         self.check_and_create_table(cur2, con2, 'NrReceiveStats', 'name')
-         self.check_and_create_table(cur2, con2, 'NrQuestionStats', 'name')
+         self.check_and_create_table(cur2, con2, 'NrUserStats')
+         self.check_and_create_table(cur2, con2, 'NrSendStats')
+         self.check_and_create_table(cur2, con2, 'NrReceiveStats')
+         self.check_and_create_table(cur2, con2, 'NrQuestionStats')
 
          self.insert_stat_db(cur2, con2, 'NrUserStats', count)
          self.insert_stat_db(cur2, con2, 'NrSendStats', nr_mails_sent)
