@@ -10,7 +10,7 @@
 import threading, queue
 import email, getpass, imaplib, os, time
 import sqlite3 as lite
-import fetcher, worker, sender, logger, generator, activator
+import fetcher, worker, sender, logger, generator, activator, dailystats
 import optparse
 import signal
 import logging
@@ -251,8 +251,6 @@ if __name__ == '__main__':
    activator_t.start()
    threadID += 1
 
-
-
    msg_config = "Used config-file: " + opts.configfile
    logger_queue.put(dict({"msg": msg_config, "type": "INFO", "loggername": "Main"}))
    #Next we start a couple of worker threads:
@@ -266,6 +264,12 @@ if __name__ == '__main__':
       threadID += 1
 
       logger_queue.put(dict({"msg": "All threads started successfully", "type": "INFO", "loggername": "Main"}))
+
+
+   dailystats_t = dailystats.dailystatsTask(threadID, "dailystats", logger_queue, semesterdb)
+   dailystats_t.daemon = True # make the fetcher thread a daemon, this way the main
+                             # will clean it up before terminating!
+   dailystats_t.start()
 
    while (not exit_flag):
       time.sleep(100)
