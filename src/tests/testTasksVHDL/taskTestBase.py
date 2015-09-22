@@ -6,6 +6,7 @@ import random
 import mock
 import string
 import subprocess
+import sqlite3 as lite
 
 class taskTestBase (unittest.TestCase):
 
@@ -38,17 +39,35 @@ class taskTestBase (unittest.TestCase):
         self.checkWithGHDL(files)
 
         os.chdir(savedPath)
-         
 
-    def setUp(self):
-        if not os.path.exists("users"):
-            os.mkdir("users")
+    def clean_usertasks(self):
+        con = lite.connect(self.semesterdb)
+        cur = con.cursor()
+        sqlcmd = "DROP TABLE UserTasks;"
+        cur.execute(sqlcmd)
+        con.commit()
+        sqlcmd = "CREATE TABLE UserTasks (UniqueId INTEGER PRIMARY KEY AUTOINCREMENT, TaskNr INT, UserId INT, TaskParameters TEXT, TaskDescription TEXT, TaskAttachments TEXT, NrSubmissions INTEGER, FirstSuccessful INTEGER);"
+        cur.execute(sqlcmd)
+        con.commit()
+        con.close()
 
+    def clean_usersdir(self):
+        if os.path.exists("users"):
+            shutil.rmtree("users")
+        os.mkdir("users")
+
+    def new_userdir(self):
         self.taskNr=random.randrange(1,7)
         self.userId=random.randrange(1,200)
-
         os.mkdir("users/{0}".format(self.userId))
         os.mkdir("users/{0}/Task{1}".format(self.userId,self.taskNr))
 
+
+    def setUp(self):
+        self.semesterdb="semester.db"
+        self.clean_usertasks()
+        self.clean_usersdir()
+        self.new_userdir()
+
     def tearDown(self):
-        shutil.rmtree("users/{0}".format(self.userId))
+        pass
