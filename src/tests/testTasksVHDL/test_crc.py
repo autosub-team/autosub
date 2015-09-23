@@ -21,6 +21,8 @@ class test_crc(taskTestBase.taskTestBase):
         files= ["fsr.vhdl","crc.vhdl","fsr_beh.vhdl","crc_beh.vhdl"]
         self.checkDescVHDLFiles("crc",files)
 
+    def test_crc_testerExecution(self):
+        self.checkTester("crc","21|8|101000011")
 
 if __name__ == '__main__':
     unittest.main()

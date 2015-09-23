@@ -20,6 +20,8 @@ class test_fsm(taskTestBase.taskTestBase):
         files= ["fsm_pkg.vhdl","fsm.vhdl","fsm_beh.vhdl"]
         self.checkDescVHDLFiles("fsm",files)
 
+    def test_fsm_testerExecution(self):
+        self.checkTester("fsm","[['', '', '', '', '00/01'],['', '', '01/01', '', ''],['', '11/10', '01/01', '10/10', '00/01'],['', '', '01/01', '', '11/11'],['', '', '11/01', '10/01', '']]")
 
 if __name__ == '__main__':
     unittest.main()

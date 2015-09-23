@@ -19,6 +19,8 @@ class test_pwm(taskTestBase.taskTestBase):
         files= ["pwm.vhdl","pwm_beh.vhdl"]
         self.checkDescVHDLFiles("pwm",files)
 
+    def test_pwm_testerExecution(self):
+        self.checkTester("pwm","655361400")
 
 if __name__ == '__main__':
     unittest.main()
