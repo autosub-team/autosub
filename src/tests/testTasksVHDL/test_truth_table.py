@@ -19,6 +19,8 @@ class test_truth_table(taskTestBase.taskTestBase):
         files= ["truth_table.vhdl","truth_table_beh.vhdl"]
         self.checkDescVHDLFiles("truth_table",files)
 
+    def test_truth_table_testerExecution(self):
+        self.checkTester("truth_table","32759")
 
 if __name__ == '__main__':
     unittest.main()

@@ -18,8 +18,9 @@ class test_arithmetic(taskTestBase.taskTestBase):
     def test_arithmetic_descVHDLFilesAnalyze(self):
         files= ["arithmetic.vhdl","arithmetic_beh.vhdl"]
         self.checkDescVHDLFiles("arithmetic",files)
+
+    def test_arithmetic_testerExecution(self):
+        self.checkTester("arithmetic","146607")       
         
-
-
 if __name__ == '__main__':
     unittest.main()

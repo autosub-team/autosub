@@ -22,6 +22,9 @@ class test_gates(taskTestBase.taskTestBase):
         files= ["IEEE_1164_Gates_pkg.vhdl","IEEE_1164_Gates.vhdl","IEEE_1164_Gates_beh.vhdl","gates.vhdl","gates_beh.vhdl"]
         self.checkDescVHDLFiles("gates",files)
 
+    def test_gates_testerExecution(self):
+        self.checkTester("gates","188760388428369")
+
 
 if __name__ == '__main__':
     unittest.main()

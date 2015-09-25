@@ -47,7 +47,8 @@ begin
         B_UUT<='1';
         C_UUT<='1';
         D_UUT<='0';
-        wait ;
+    -- Wait for Results
+        wait for 10 ns;
        
     end process stimulate;
 end behavior;
