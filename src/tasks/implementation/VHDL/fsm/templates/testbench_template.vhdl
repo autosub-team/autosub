@@ -6,7 +6,7 @@ use IEEE.std_logic_textio.all;
 
 entity fsm_tb is
 end fsm_tb;
-   
+
 
 architecture behavior of fsm_tb is
     component fsm
@@ -21,9 +21,9 @@ architecture behavior of fsm_tb is
     end component;
 
     constant clk_period : time := 20 ns; -- for 50MHz -> 20 ns
- 
-    
- 
+
+
+
     signal CLK_UUT: std_logic;
     signal INPUT_UUT: std_logic_vector(1 downto 0);
     signal RST_UUT: std_logic;
@@ -36,9 +36,9 @@ architecture behavior of fsm_tb is
         OUTPUT: std_logic_vector(1 downto 0);
         STATE: fsm_state; 
     end record;
-           
+
     type pattern_array is array (natural range <>) of pattern_type;
-       
+
     constant patterns : pattern_array:=(
             %%TESTPATTERN
             );  
@@ -56,7 +56,7 @@ architecture behavior of fsm_tb is
     function Image(In_Image : fsm_state) return String is
     
     begin 
-    
+
         case In_Image is 
             when START =>
                return "START";
@@ -72,7 +72,7 @@ architecture behavior of fsm_tb is
                return "UNDEFIDED";
         end case;
     end Image;
-           
+
 begin
 
     UUT: fsm
@@ -93,7 +93,7 @@ begin
         CLK_UUT <= '1';
         wait for clk_period/2; 
     end process;
-    
+
     test:process
         variable last_state : fsm_state;
     begin
@@ -128,10 +128,10 @@ begin
                 
             else
                 INPUT_UUT <= patterns(i).INPUT;
-            
+
                 wait until rising_edge(CLK_UUT);
                 wait for 1 fs;
-      
+
                 if(STATE_UUT /= patterns(i).STATE or OUTPUT_UUT /= patterns(i).OUTPUT) then
                     write(OUTPUT,string'("\n"));
 
@@ -149,7 +149,7 @@ begin
                     write(OUTPUT,string'("\n"));
                     report "Simulation error" severity failure;
                 end if;--endif check
-                
+
                 last_state := patterns(i).STATE;
             end if;--endif RESET                   
         end loop;
