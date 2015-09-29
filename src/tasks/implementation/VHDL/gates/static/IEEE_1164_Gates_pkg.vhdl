@@ -201,5 +201,5 @@ package IEEE_1164_Gates_pkg is
         );
     end component XNOR4;
 
-    
+
 end IEEE_1164_Gates_pkg;

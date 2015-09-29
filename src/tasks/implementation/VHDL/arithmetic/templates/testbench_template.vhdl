@@ -88,7 +88,7 @@ architecture behavior of arithmetic_tb is
         I1_SIGN := I1_EXT(N-1);
         I2_SIGN := I2_EXT(N-1);
         O_SIGN := O_EXT(N-1);
- 
+
 
         SIGNS := (O_SIGN, I1_SIGN, I2_SIGN);
         case SIGNS is
@@ -142,7 +142,7 @@ architecture behavior of arithmetic_tb is
         I1_SIGN := I1_EXT(N-1);
         I2_SIGN := I2_EXT(N-1);
         O_SIGN := O_EXT(N-1);
- 
+
 
         SIGNS := (O_SIGN, I1_SIGN, I2_SIGN);
         case SIGNS is
@@ -161,7 +161,7 @@ architecture behavior of arithmetic_tb is
         end if;
 
         VF := CARIES(1) xor CARIES(0);--last two caries not same -> overflow
-       
+
 
         sol.O := std_logic_vector(O_EXT);
         sol.C := CF;
@@ -190,13 +190,12 @@ architecture behavior of arithmetic_tb is
             I2_EXT := not(I2_EXT)+ one;
         end if;
 
-        
+
         O_EXT := I1_EXT+I2_EXT; 
 
         I1_SIGN := I1_EXT(N-1);
         I2_SIGN := I2_EXT(N-1);
         O_SIGN := O_EXT(N-1);
- 
 
         SIGNS := (O_SIGN, I1_SIGN, I2_SIGN);
         case SIGNS is
@@ -215,7 +214,6 @@ architecture behavior of arithmetic_tb is
         end if;
 
         VF := CARIES(1) xor CARIES(0);--last two caries not same -> overflow
-       
 
         sol.O := std_logic_vector(O_EXT);
         sol.C := CF;
@@ -223,11 +221,11 @@ architecture behavior of arithmetic_tb is
         sol.VALID := not CF;
 
         return sol;
-    
+
     end do_operation_unsigned;
 
-    
-    
+
+
 begin
     UUT:arithmetic 
         port map
@@ -241,7 +239,7 @@ begin
         ); 
     process
         type pattern_array is array (natural range <>) of pattern_type;
-       
+
         constant patterns : pattern_array:=(%%TESTPATTERN);
         variable sol_cal:solution;
     begin
@@ -288,7 +286,7 @@ begin
                 write(OUTPUT,string'("\n"));
                 write(OUTPUT,string'("\n"));
                 write(OUTPUT,string'("\n"));
-                
+
                 report "Simulation error" severity failure;
             end if;
         end loop;

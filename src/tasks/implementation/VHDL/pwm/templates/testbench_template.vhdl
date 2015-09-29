@@ -13,7 +13,7 @@ architecture behavior of pwm_tb is
     end component;
 
     constant clk_period : time := 20 ns; -- for 50MHz -> 20 ns
- 
+
     constant desired_period_clks: natural := %%PERIODCLKS;
     constant desired_duty_cycle_clks : natural:= %%DUTYCLKS;
 
@@ -21,7 +21,7 @@ architecture behavior of pwm_tb is
     constant desired_duty_cycle : natural:= desired_duty_cycle_clks*100 / desired_period_clks ;
     
     constant simulation_cycles : natural := %%SIMCYCLES;
- 
+
     signal CLK_UUT,O_UUT: std_logic;
 
     signal clk_cnt: natural :=0; 
@@ -124,7 +124,6 @@ begin
     end process;     
 
    -- process to find output pulse begins and pulse ends
-
     findParams: process
         variable cur_sim_cycle: integer := 0;
     begin 
@@ -137,7 +136,7 @@ begin
             evaluate_PWM;
             wait; 
         end if;
-        
+
     end process;
 
 
