@@ -50,9 +50,18 @@ task_parameters=$(python3 scripts/generateTask.py "$1" "$2" "$3")
 
 #generate the description pdf and move it to user's description folder
 cd $taskPath/tmp
-latex desc_$1_Task$2.tex >/dev/null 2>/dev/null
+
+latex --halt-on-error desc_$1_Task$2.tex >/dev/null 2>/dev/null
+RET=$?
+zero=0
+if [ "$RET" -ne "$zero" ];
+then
+    echo "ERROR with pdf generation for Task$2 !!! Are all needed LaTeX packages installed??">&2
+fi
+
 dvips desc_$1_Task$2.dvi >/dev/null 2>/dev/null
 ps2pdf desc_$1_Task$2.ps >/dev/null 2>/dev/null
+
 rm desc_$1_Task$2.dvi
 rm desc_$1_Task$2.aux
 rm desc_$1_Task$2.ps
