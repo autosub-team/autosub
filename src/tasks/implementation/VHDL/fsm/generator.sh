@@ -59,6 +59,7 @@ then
     echo "ERROR with pdf generation for Task$2 !!! Are all needed LaTeX packages installed??">&2
 fi
 
+pdflatex -halt-on-error desc_$1_Task$2.tex >/dev/null #second time for reference to picture resolution
 rm desc_$1_Task$2.aux
 rm desc_$1_Task$2.log
 rm desc_$1_Task$2.tex
