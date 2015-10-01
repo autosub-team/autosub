@@ -81,7 +81,7 @@ class Test_LoadTest(unittest.TestCase):
    # but instead throws it into a message queu from where it can be retrieved and the
    # content be tested.
    ####
-   def mock_send_out_email(self, recipient, message, cur, con):
+   def mock_send_out_email(self, recipient, message, msg_type, cur, con):
       self.email_queue.put(dict({"recipient": recipient, "message": message})) 
 
    def get_userid_by_email(self, email):
@@ -188,8 +188,8 @@ class Test_LoadTest(unittest.TestCase):
       this_time_yesterday = str(datetime.datetime.now() - datetime.timedelta(1)).split('.')[0]
       this_time_tomorrow = str(datetime.datetime.now() + datetime.timedelta(1)).split('.')[0]
 
-      self.add_task(curc, conc, 1, this_time_yesterday, this_time_tomorrow, '/home/andi/working_git/autosub_internal/tasks/implementation/gates', 'generator.sh', 'tester.sh', '5', 'testoperator@q.q', '1')
-      self.add_task(curc, conc, 2, this_time_yesterday, this_time_tomorrow, '/home/andi/working_git/autosub_internal/tasks/implementation/fsm', 'generator.sh', 'tester.sh', '5', 'testoperator@q.q', '1')
+      self.add_task(curc, conc, 1, this_time_yesterday, this_time_tomorrow, 'tasks/implementation/VHDL/gates', 'generator.sh', 'tester.sh', '5', 'testoperator@q.q', '1')
+      self.add_task(curc, conc, 2, this_time_yesterday, this_time_tomorrow, 'tasks/implementation/VHDL/fsm', 'generator.sh', 'tester.sh', '5', 'testoperator@q.q', '1')
 
       conc.close()
 
