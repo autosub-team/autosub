@@ -80,7 +80,7 @@ def load_specialmessage_to_db(cur, con, msgname, filename, submissionEmail):
 # Check if all databases, tables, etc. are available, or if they have to be created.
 # if non-existent --> create them
 ####
-def init_ressources(numThreads, numTasks, coursedb, semesterdb, submissionEmail, challenge_mode):
+def init_ressources(numTasks, coursedb, semesterdb, submissionEmail, challenge_mode):
    cur,con = c.connect_to_db(semesterdb, logger_queue, "autosub.py") 
 
    ####################
@@ -155,7 +155,6 @@ def init_ressources(numThreads, numTasks, coursedb, semesterdb, submissionEmail,
    # Num workers,tasks #
    #####################
    if ret: # if that table did not exist, load the defaults given in the configuration file
-      set_general_config_param(cur, con, 'num_workers', str(numThreads))
       set_general_config_param(cur, con, 'num_tasks', str(numTasks))
       set_general_config_param(cur, con, 'registration_deadline', 'NULL')
       set_general_config_param(cur, con, 'archive_dir','archive/')
@@ -225,7 +224,7 @@ if __name__ == '__main__':
 
    signal.signal(signal.SIGUSR1, sig_handler)
 
-   init_ressources(numThreads,numTasks, coursedb, semesterdb, autosub_mail, challenge_mode)
+   init_ressources(numTasks, coursedb, semesterdb, autosub_mail, challenge_mode)
 
    sender_t = sender.mailSender(threadID, "sender", sender_queue, autosub_mail, autosub_user, autosub_passwd, smtpserver, logger_queue, arch_queue, coursedb, semesterdb)
    sender_t.daemon = True # make the sender thread a daemon, this way the main
