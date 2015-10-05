@@ -67,10 +67,11 @@ def set_general_config_param(cur, con, configitem, content):
 ####
 # load_specialmessage_to_db()
 ####
-def load_specialmessage_to_db(cur, con, msgname, filename, submissionEmail):
+def load_specialmessage_to_db(cur, con, msgname, filename, submissionEmail, course_name):
      with open (filename, "r") as smfp:
         data=smfp.read()
      data= data.replace("<SUBMISSIONEMAIL>", "<"+submissionEmail+">")
+     data= data.replace("<COURSENAME>", "<"+course_name+">")
 
      sql_cmd="INSERT INTO SpecialMessages (EventName, EventText) VALUES('" + msgname + "', '" + data + "');"
      cur.execute(sql_cmd)
@@ -133,15 +134,15 @@ def init_ressources(numTasks, coursedb, semesterdb, submissionEmail, challenge_m
    ####################
    ret = check_and_init_db_table(cur, con, "SpecialMessages", "EventName TEXT PRIMARY KEY, EventText TEXT")
    if ret: # that table did not exists, therefore we use the .txt files to initialize it!
-      load_specialmessage_to_db(cur, con, 'WELCOME', 'SpecialMessages/welcome.txt', submissionEmail)
-      load_specialmessage_to_db(cur, con, 'USAGE', 'SpecialMessages/usage.txt', submissionEmail)
-      load_specialmessage_to_db(cur, con, 'QUESTION', 'SpecialMessages/question.txt', submissionEmail)
-      load_specialmessage_to_db(cur, con, 'INVALID', 'SpecialMessages/invalidtask.txt', submissionEmail)
-      load_specialmessage_to_db(cur, con, 'CONGRATS', 'SpecialMessages/congratulations.txt', submissionEmail)
-      load_specialmessage_to_db(cur, con, 'REGOVER', 'SpecialMessages/registrationover.txt', submissionEmail)
-      load_specialmessage_to_db(cur, con, 'NOTALLOWED', 'SpecialMessages/notallowed.txt', submissionEmail)
-      load_specialmessage_to_db(cur, con, 'CURLAST', 'SpecialMessages/curlast.txt', submissionEmail)
-      load_specialmessage_to_db(cur, con, 'DEADTASK', 'SpecialMessages/deadtask.txt', submissionEmail)
+      load_specialmessage_to_db(cur, con, 'WELCOME', 'SpecialMessages/welcome.txt', submissionEmail, course_name)
+      load_specialmessage_to_db(cur, con, 'USAGE', 'SpecialMessages/usage.txt', submissionEmail, course_name)
+      load_specialmessage_to_db(cur, con, 'QUESTION', 'SpecialMessages/question.txt', submissionEmail, course_name)
+      load_specialmessage_to_db(cur, con, 'INVALID', 'SpecialMessages/invalidtask.txt', submissionEmail, course_name)
+      load_specialmessage_to_db(cur, con, 'CONGRATS', 'SpecialMessages/congratulations.txt', submissionEmail, course_name)
+      load_specialmessage_to_db(cur, con, 'REGOVER', 'SpecialMessages/registrationover.txt', submissionEmail, course_name)
+      load_specialmessage_to_db(cur, con, 'NOTALLOWED', 'SpecialMessages/notallowed.txt', submissionEmail, course_name)
+      load_specialmessage_to_db(cur, con, 'CURLAST', 'SpecialMessages/curlast.txt', submissionEmail, course_name)
+      load_specialmessage_to_db(cur, con, 'DEADTASK', 'SpecialMessages/deadtask.txt', submissionEmail, course_name)
    #####################
    # TaskConfiguration #
    #####################

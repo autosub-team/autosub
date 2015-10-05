@@ -1,4 +1,4 @@
-Welcome to this course on VHDL.
+Welcome to the course <COURSENAME>.
 
 You just sent your first e-mail to <SUBMISSIONEMAIL>. This way
 you subscribed to this part of the course. Very shortly you will receive
