@@ -42,7 +42,7 @@ class Test_sender(unittest.TestCase):
    # but instead throws it into a message queu from where it can be retrieved and the
    # content be tested.
    ####
-   def mock_send_out_email(self, recipient, message, cur, con):
+   def mock_send_out_email(self, recipient, message, msg_type, cur, con):
       self.email_queue.put(dict({"recipient": recipient, "message": message})) 
 #      print("MOCK: send out an email")
 
@@ -53,7 +53,7 @@ class Test_sender(unittest.TestCase):
 
       ms = mailSender(2, "sender", sender_queue, "autosub@testdomain.com", "autosub_testuser", "autosub_test_passwd", "smtp.testdomain.com", autosub.logger_queue, arch_queue, 'testcourse.db', 'testsemester.db')
 
-      autosub.init_ressources(3, 1, 'testcourse.db', 'testsemester.db',"submission@test.xy","normal")
+      autosub.init_ressources(3, 'testcourse.db', 'testsemester.db', "submission@test.xy", "normal", "testcourse")
 
       #give the sender thread some work
       ms.sender_queue.put(dict({"recipient": "student@studentmail.com", "UserId": "42" ,"message_type": "Welcome", "Task": "1", "Body": "WElcome Message Body", "MessageId": "4711"}))
@@ -79,7 +79,7 @@ class Test_sender(unittest.TestCase):
 
       ms = mailSender(2, "sender", sender_queue, "autosub@testdomain.com", "autosub_testuser", "autosub_test_passwd", "smtp.testdomain.com", autosub.logger_queue, arch_queue, 'testcourse.db', 'testsemester.db')
 
-      autosub.init_ressources(3, 1, 'testcourse.db', 'testsemester.db',"submission@test.xy","normal" )
+      autosub.init_ressources(3, 'testcourse.db', 'testsemester.db',"submission@test.xy","normal", "testcourse2" )
 
       #give the sender thread some work
       ms.sender_queue.put(dict({"recipient": "student@studentmail.com", "UserId": "42" ,"message_type": "Question", "Task": "1", "Body": "", "MessageId": "4711"}))
