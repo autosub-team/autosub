@@ -1,7 +1,7 @@
 #!/bin/bash
 
-nosetests3 --nologcapture -s -v tests/test_sender.py #this creates all needed dbs!
-nosetests3 --nologcapture -s -v tests/
+nosetests3 --with-doctest --doctest-extension=txt --nologcapture -s -v tests/test_sender.py #this creates all needed dbs!
+nosetests3 --with-doctest --doctest-extension=txt --nologcapture -s -v tests/
 
 #cleanup
 rm -rf users
