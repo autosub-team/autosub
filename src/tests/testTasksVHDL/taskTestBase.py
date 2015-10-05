@@ -89,7 +89,6 @@ class taskTestBase (unittest.TestCase):
         os.mkdir("users/{0}".format(self.userId))
         os.mkdir("users/{0}/Task{1}".format(self.userId,self.taskNr))
 
-
     def setUp(self):
         self.semesterdb="semester.db"
         self.clean_usertasks()

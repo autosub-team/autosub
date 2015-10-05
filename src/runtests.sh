@@ -4,12 +4,12 @@ nosetests3 --nologcapture -s -v tests/test_sender.py #this creates all needed db
 nosetests3 --nologcapture -s -v tests/
 
 #cleanup
-rm -r users
-rm -r __pycache__
-rm autosub.log
-rm autosub.stdout
-rm autosub.stderr
-rm semester.db
-rm course.db
-rm testsemester.db
-rm testcourse.db
+rm -rf users
+rm -rf __pycache__
+rm -f autosub.log
+rm -f autosub.stdout
+rm -f autosub.stderr
+rm -f semester.db
+rm -f course.db
+rm -f testsemester.db
+rm -f testcourse.db
