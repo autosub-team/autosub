@@ -64,9 +64,15 @@ class taskTestBase (unittest.TestCase):
     def clean_usertasks(self):
         con = lite.connect(self.semesterdb)
         cur = con.cursor()
-        sqlcmd = "DROP TABLE UserTasks;"
-        cur.execute(sqlcmd)
-        con.commit()
+        
+        #drop if exists
+        try:
+            sqlcmd = "DROP TABLE UserTasks;"
+            cur.execute(sqlcmd)
+            con.commit()
+        except:
+            pass
+
         sqlcmd = "CREATE TABLE UserTasks (UniqueId INTEGER PRIMARY KEY AUTOINCREMENT, TaskNr INT, UserId INT, TaskParameters TEXT, TaskDescription TEXT, TaskAttachments TEXT, NrSubmissions INTEGER, FirstSuccessful INTEGER);"
         cur.execute(sqlcmd)
         con.commit()
@@ -82,7 +88,6 @@ class taskTestBase (unittest.TestCase):
         self.userId=random.randrange(1,200)
         os.mkdir("users/{0}".format(self.userId))
         os.mkdir("users/{0}/Task{1}".format(self.userId,self.taskNr))
-
 
     def setUp(self):
         self.semesterdb="semester.db"
