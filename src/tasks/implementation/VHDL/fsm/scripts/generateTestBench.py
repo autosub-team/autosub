@@ -93,7 +93,7 @@ for i in range(0,numNodes):
 #########################################
 
 Z=[] #processed nodes
-N=nodes.copy() #not processed nodes
+N=nodes[:] #not processed node
 
 
 while(len(N)!=0):
@@ -115,7 +115,7 @@ while(len(N)!=0):
 #print("")
 
 
-toTestNodes =nodes.copy()[1:] #nodes to test, every except start
+toTestNodes =nodes[1:] #nodes to test, every except start
 testedNodes=[]
 testVectors=[]
 while(len(toTestNodes)!=0):
