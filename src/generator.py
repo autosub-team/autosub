@@ -14,7 +14,7 @@ import common as c
 import os
 
 class taskGenerator (threading.Thread):
-   def __init__(self, threadID, name, gen_queue, sender_queue, logger_queue, coursedb,submissionEmail):
+   def __init__(self, threadID, name, gen_queue, sender_queue, logger_queue, coursedb, submissionEmail):
       threading.Thread.__init__(self)
       self.threadID = threadID
       self.name = name
