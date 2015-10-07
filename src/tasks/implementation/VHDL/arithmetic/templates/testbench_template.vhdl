@@ -44,7 +44,7 @@ architecture behavior of arithmetic_tb is
     end record;
 
     type solution is record
-        --The inputs 
+        --Tsolution container
         O: O_TYPE;
         C: std_logic;
         V: std_logic;
@@ -131,6 +131,7 @@ architecture behavior of arithmetic_tb is
         variable O_SIGN : std_logic ;
         variable CF :std_logic;
         variable VF :std_logic;
+        variable one :EXT_TYPE := (0=>'1',others=>'0');
     begin
         if(operation="SUB") then
             I2_EXT := not(I2_EXT);
@@ -154,8 +155,13 @@ architecture behavior of arithmetic_tb is
             when others => CARIES := "00";
         end case;
 
+        if (CARIES(1) =='1') then
+           O_EXT := O_EXT + one; --end around carry
+        end if;
+
+
         if (operation="ADD") then
-           CF := CARIES(1); --COUT
+            CF := CARIES(1); --COUT
         elsif (operation="SUB") then
             CF:= not CARIES(1); -- last borrow = not last carry
         end if;
