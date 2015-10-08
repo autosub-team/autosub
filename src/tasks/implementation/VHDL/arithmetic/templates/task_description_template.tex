@@ -2,6 +2,7 @@
 \usepackage{a4wide}
 \usepackage{tikz}
 \usetikzlibrary{calc}
+\usepackage{hyperref}
 
 \begin{document}
 \pagestyle{empty}
@@ -48,16 +49,74 @@ The entity shall implement the following arithmetic functionality:
 \item Overflow (V) and Carry flag (C) set accordingly 
 \item Valid flag (VALID): indicates if the computed solution is valid or not 
 \end{itemize}
+
 This behavior has to be programmed in the attached file "arithmetic\_beh.vhdl". 
 
+
+\textbf{Note:} The ALU has to be implemented using the width of %%O_WIDTH bit. Sign extension 
+of operands might be needed.
+
+
 \rule{16cm}{0.4pt}\par
- \subsection*{Review: Carry and Overflow Flag}
-The carry flag indicates when an arithmetic carry or borrow has been generated out of the most significant ALU bit position. \\
+\subsection*{Review: Carry and Overflow Flag}
 
-The overflow flag indicates when an arithmetic overflow has occurred in an operation, indicating that a signed result would not fit in the number of bits used for the operation (the ALU width).\\
+\textbf{Carry Flag}\\
+The rules for turning on the carry flag in binary math are two:
+\begin{enumerate}
+\item The carry flag is set if the addition of two numbers causes a carry
+   out of the most significant (leftmost) bits added.
 
+   1111 + 0001 = 0000 (carry flag is turned on)
 
-\textit{Source: }Wikipedia
+\item The carry (borrow) flag is also set if the subtraction of two numbers
+   requires a borrow into the most significant (leftmost) bits subtracted.
+
+   0000 - 0001 = 1111 (carry flag is turned on)
+
+Otherwise, the carry flag is turned off (zero).
+\begin{itemize}
+\item 0111 + 0001 = 1000 (carry flag is turned off [zero])
+\item 1000 - 0001 = 0111 (carry flag is turned off [zero])
+\end{itemize} 
+
+In ones' complement the carry flag is set before a possible end around operation.
+
+In unsigned arithmetic, watch the carry flag to detect errors.
+In signed arithmetic, the carry flag tells you nothing interesting.
+
+\end{enumerate}
+
+\textbf{Overflow Flag}\\
+The rules for turning on the overflow flag in binary math are two:
+\begin{enumerate}
+\item If the sum of two numbers with the sign bits off yields a result number
+   with the sign bit on, the "overflow" flag is turned on.
+
+   0100 + 0100 = 1000 (overflow flag is turned on)
+
+\item If the sum of two numbers with the sign bits on yields a result number
+   with the sign bit off, the "overflow" flag is turned on.
+
+   1000 + 1000 = 0000 (overflow flag is turned on)
+\end{enumerate}
+
+Otherwise, the overflow flag is turned off.
+\begin{itemize}
+\item 0100 + 0001 = 0101 (overflow flag is turned off)
+\item 0110 + 1001 = 1111 (overflow flag is turned off)
+\item 1000 + 0001 = 1001 (overflow flag is turned off)
+\item 1100 + 1100 = 1000 (overflow flag is turned off)
+\end{itemize}
+
+In ones' complement the overflow flag is set after a possible end around operation.
+
+If you are doing complement (signed) arithmetic, overflow flag on
+means the answer is wrong - you added two positive numbers and got a
+negative, or you added two negative numbers and got a positive.If you are doing unsigned arithmetic, the overflow flag means nothing
+and should be ignored.
+
+\vspace{0.5cm}
+\textit{Source: }\url{http://teaching.idallen.com/dat2343/10f/notes/040_overflow.txt}
 \\
 \rule{16cm}{0.4pt}
 

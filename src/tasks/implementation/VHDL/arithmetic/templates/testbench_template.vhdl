@@ -155,7 +155,7 @@ architecture behavior of arithmetic_tb is
             when others => CARIES := "00";
         end case;
 
-        if (CARIES(1) =='1') then
+        if (CARIES(1) ='1') then
            O_EXT := O_EXT + one; --end around carry
         end if;
 
@@ -166,8 +166,15 @@ architecture behavior of arithmetic_tb is
             CF:= not CARIES(1); -- last borrow = not last carry
         end if;
 
-        VF := CARIES(1) xor CARIES(0);--last two caries not same -> overflow
+        --to decide overflow we have to consider the possibly new output sign
+        O_SIGN := O_EXT(N-1);
 
+        SIGNS := (O_SIGN, I1_SIGN, I2_SIGN);
+        case SIGNS is
+            when "011" =>  VF := '1';
+            when "100" =>  VF := '1';
+            when others => VF := '0';
+        end case;
 
         sol.O := std_logic_vector(O_EXT);
         sol.C := CF;

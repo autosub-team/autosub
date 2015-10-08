@@ -63,9 +63,9 @@ begin
         -- Set the inputs   
         I1_UUT <= "%%I1_EXAMPLE";
         I2_UUT <= "%%I2_EXAMPLE";
+        
         --Wait for the results.
-
-        wait ;
+        wait for 10 ns;
            
     end process stimulate;
 end behavior;
