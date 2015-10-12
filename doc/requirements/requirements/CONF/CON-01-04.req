@@ -1,0 +1,11 @@
+Name: Configurability ofQueue Size
+Type: requirement
+Invented on: 2015-10-12
+Invented by: Andreas Platschek
+Owner: development
+Description: The Size of the Queues between the threads shall be configurable via the configuration file.
+Status: finished:Andreas Platschek:2015-07-07:1h
+Class: implementable
+Priority: development:10
+Effort estimation: 21
+Topic: Configuration

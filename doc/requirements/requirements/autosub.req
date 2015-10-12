@@ -1,0 +1,12 @@
+Name: Autosub
+Type: master requirement
+Invented on: 2015-10-12
+Invented by: Andreas Platschek
+Owner: development
+Description: An E-Learning system that automatically checks submissions.
+Rationale: The goal is to develop an e-learning system that automatically generates tasks and checks submitted solutions.
+Status: not done
+Solved by: CONF/CON-01 CONF/CON-02 LOG/LOG-01
+Priority: development:10
+Effort estimation: 5
+Topic: ReqsDocument
