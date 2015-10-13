@@ -13,7 +13,7 @@ Your task is to program the behavior of an entity called "fsm". This entity is d
 \begin{itemize}
 \item Input: CLK with type std\_logic
 \item Input: RST with type std\_logic
-\item Input: INPUT type std\_logic\_vector of length 2     
+\item Input: INPUT with type std\_logic\_vector of length 2     
 \item Output: OUTPUT with type std\_logic\_vector of length 2
 \item Output: STATE with type fsm\_state
  
@@ -52,14 +52,14 @@ The "fsm" entity shall have the behavior of a deterministic finite state machine
 \item Transitions with rising edge of the clock (port CLK, this is a square-wave clock signal).
 \item Synchronous design: all new outputs (port STATE and port OUTPUT) have to be set with rising edges of the clock.
 \item The current state has to be output at the output port STATE.
-\item At synchronous reset (port RST=1,rising edge of clock port CLK) the state machine is set to an initial state: STATE= START, OUTPUT= 00
+\item At synchronous reset (port RST=1, rising edge of clock port CLK) the state machine is set to an initial state: STATE= START, OUTPUT= 00
 \end{itemize}
 \vspace{0.2cm}
 
 This behavior has to be programmed in the attached file "fsm\_beh.vhdl".
 \\
 
-The type fsm\_state is declared in the attached "fsm\_package.vhdl" file. The needed package to use this type is allready imported in the attached "fsm\_beh.vhdl" and "fsm.vhdl". 
+The type fsm\_state is declared in the attached "fsm\_package.vhdl" file. The needed package to use this type is already imported in the attached "fsm\_beh.vhdl" and "fsm.vhdl". 
 \\
 
 
@@ -77,6 +77,5 @@ Good Luck and May the Force be with you.
 	\caption{State diagram, the edges are labelled Input / Next Output}
 	\label{state_image}
 \end{figure}
-
 
 \end{document}

@@ -19,15 +19,15 @@ class Test_generator(unittest.TestCase):
    def test_generator_loop(self):
       genq = queue.Queue(10)
       senderq = queue.Queue(10)
-      lqueue = queue.Queue(10)
+      lqueue = queue.Queue(100)
 
-      testgen = generator.taskGenerator(1, self.name, genq, senderq, lqueue, 'testcourse.db',"submission@test.xy")
+      testgen = generator.taskGenerator(1, self.name, genq, senderq, lqueue, 'testcourse.db', "submission@test.xy")
 
       os.mkdir("users/42")
       genq.put(dict({"UserId": "42", "UserEmail": "testuser@testdomain.com", "TaskNr": "1", "MessageId": "47110815"}))
 
       testgen.generator_loop()
-      sendout = senderq.get()
+      sendout = senderq.get(False, 1)
       self.assertEqual(sendout.get('recipient'), "testuser@testdomain.com")
       self.assertEqual(sendout.get('message_type'), "Task")
       self.assertEqual(sendout.get('Task'), "1")
@@ -35,7 +35,8 @@ class Test_generator(unittest.TestCase):
       genq.put(dict({"UserId": "42", "UserEmail": "testuser@testdomain.com", "TaskNr": "11", "MessageId": "47110815"}))
 
       testgen.generator_loop()
-      sendout = senderq.get()
+      sendout = senderq.get(False, 1)
+
       self.assertEqual(sendout.get('recipient'), "testuser@testdomain.com")
       self.assertEqual(sendout.get('message_type'), "Task")
       self.assertEqual(sendout.get('Task'), "11")

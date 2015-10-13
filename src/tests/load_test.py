@@ -105,9 +105,14 @@ class Test_LoadTest(unittest.TestCase):
    def clean_whitelist(self):
       con = lite.connect(self.semesterdb)
       cur = con.cursor()
-      sqlcmd = "DROP TABLE WhiteList;"
-      cur.execute(sqlcmd)
-      con.commit()
+      #drop if exists
+      try:
+         sqlcmd = "DROP TABLE WhiteList;"
+         cur.execute(sqlcmd)
+         con.commit()
+      except:
+         pass
+
       sqlcmd = "CREATE TABLE Whitelist (UniqueId INTEGER PRIMARY KEY AUTOINCREMENT, Email TEXT);"
       cur.execute(sqlcmd)
       con.commit()
@@ -116,9 +121,15 @@ class Test_LoadTest(unittest.TestCase):
    def clean_users(self):
       con = lite.connect(self.semesterdb)
       cur = con.cursor()
-      sqlcmd = "DROP TABLE Users;"
-      cur.execute(sqlcmd)
-      con.commit()
+      
+      #drop if exists
+      try:
+         sqlcmd = "DROP TABLE Users;"
+         cur.execute(sqlcmd)
+         con.commit()
+      except:
+         pass
+
       sqlcmd = "CREATE TABLE Users (UserId INTEGER PRIMARY KEY AUTOINCREMENT, Name TEXT, Email TEXT, FirstMail DATETIME, LastDone DATETIME, CurrentTask INT);"
       cur.execute(sqlcmd)
       con.commit()
@@ -127,9 +138,14 @@ class Test_LoadTest(unittest.TestCase):
    def clean_usertasks(self):
       con = lite.connect(self.semesterdb)
       cur = con.cursor()
-      sqlcmd = "DROP TABLE UserTasks;"
-      cur.execute(sqlcmd)
-      con.commit()
+      #drop if exists
+      try:
+         sqlcmd = "DROP TABLE UserTasks;"
+         cur.execute(sqlcmd)
+         con.commit()
+      except:
+         pass
+
       sqlcmd = "CREATE TABLE UserTasks (UniqueId INTEGER PRIMARY KEY AUTOINCREMENT, TaskNr INT, UserId INT, TaskParameters TEXT, TaskDescription TEXT, TaskAttachments TEXT, NrSubmissions INTEGER, FirstSuccessful INTEGER);"
       cur.execute(sqlcmd)
       con.commit()
@@ -139,8 +155,8 @@ class Test_LoadTest(unittest.TestCase):
       conc = lite.connect(self.coursedb)
       curc = conc.cursor()
       #Drop the task configuration table (start clean)
-      sqlcmd = "DROP table TaskConfiguration"
       try:
+         sqlcmd = "DROP table TaskConfiguration"
          curc.execute(sqlcmd)
          conc.commit()
       except:

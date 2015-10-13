@@ -67,10 +67,11 @@ def set_general_config_param(cur, con, configitem, content):
 ####
 # load_specialmessage_to_db()
 ####
-def load_specialmessage_to_db(cur, con, msgname, filename, submissionEmail):
+def load_specialmessage_to_db(cur, con, msgname, filename, submissionEmail, course_name):
      with open (filename, "r") as smfp:
         data=smfp.read()
      data= data.replace("<SUBMISSIONEMAIL>", "<"+submissionEmail+">")
+     data= data.replace("<COURSENAME>", "<"+course_name+">")
 
      sql_cmd="INSERT INTO SpecialMessages (EventName, EventText) VALUES('" + msgname + "', '" + data + "');"
      cur.execute(sql_cmd)
@@ -80,7 +81,7 @@ def load_specialmessage_to_db(cur, con, msgname, filename, submissionEmail):
 # Check if all databases, tables, etc. are available, or if they have to be created.
 # if non-existent --> create them
 ####
-def init_ressources(numThreads, numTasks, coursedb, semesterdb, submissionEmail, challenge_mode):
+def init_ressources(numTasks, coursedb, semesterdb, submissionEmail, challenge_mode, course_name):
    cur,con = c.connect_to_db(semesterdb, logger_queue, "autosub.py") 
 
    ####################
@@ -133,15 +134,15 @@ def init_ressources(numThreads, numTasks, coursedb, semesterdb, submissionEmail,
    ####################
    ret = check_and_init_db_table(cur, con, "SpecialMessages", "EventName TEXT PRIMARY KEY, EventText TEXT")
    if ret: # that table did not exists, therefore we use the .txt files to initialize it!
-      load_specialmessage_to_db(cur, con, 'WELCOME', 'SpecialMessages/welcome.txt', submissionEmail)
-      load_specialmessage_to_db(cur, con, 'USAGE', 'SpecialMessages/usage.txt', submissionEmail)
-      load_specialmessage_to_db(cur, con, 'QUESTION', 'SpecialMessages/question.txt', submissionEmail)
-      load_specialmessage_to_db(cur, con, 'INVALID', 'SpecialMessages/invalidtask.txt', submissionEmail)
-      load_specialmessage_to_db(cur, con, 'CONGRATS', 'SpecialMessages/congratulations.txt', submissionEmail)
-      load_specialmessage_to_db(cur, con, 'REGOVER', 'SpecialMessages/registrationover.txt', submissionEmail)
-      load_specialmessage_to_db(cur, con, 'NOTALLOWED', 'SpecialMessages/notallowed.txt', submissionEmail)
-      load_specialmessage_to_db(cur, con, 'CURLAST', 'SpecialMessages/curlast.txt', submissionEmail)
-      load_specialmessage_to_db(cur, con, 'DEADTASK', 'SpecialMessages/deadtask.txt', submissionEmail)
+      load_specialmessage_to_db(cur, con, 'WELCOME', 'SpecialMessages/welcome.txt', submissionEmail, course_name)
+      load_specialmessage_to_db(cur, con, 'USAGE', 'SpecialMessages/usage.txt', submissionEmail, course_name)
+      load_specialmessage_to_db(cur, con, 'QUESTION', 'SpecialMessages/question.txt', submissionEmail, course_name)
+      load_specialmessage_to_db(cur, con, 'INVALID', 'SpecialMessages/invalidtask.txt', submissionEmail, course_name)
+      load_specialmessage_to_db(cur, con, 'CONGRATS', 'SpecialMessages/congratulations.txt', submissionEmail, course_name)
+      load_specialmessage_to_db(cur, con, 'REGOVER', 'SpecialMessages/registrationover.txt', submissionEmail, course_name)
+      load_specialmessage_to_db(cur, con, 'NOTALLOWED', 'SpecialMessages/notallowed.txt', submissionEmail, course_name)
+      load_specialmessage_to_db(cur, con, 'CURLAST', 'SpecialMessages/curlast.txt', submissionEmail, course_name)
+      load_specialmessage_to_db(cur, con, 'DEADTASK', 'SpecialMessages/deadtask.txt', submissionEmail, course_name)
    #####################
    # TaskConfiguration #
    #####################
@@ -155,12 +156,12 @@ def init_ressources(numThreads, numTasks, coursedb, semesterdb, submissionEmail,
    # Num workers,tasks #
    #####################
    if ret: # if that table did not exist, load the defaults given in the configuration file
-      set_general_config_param(cur, con, 'num_workers', str(numThreads))
       set_general_config_param(cur, con, 'num_tasks', str(numTasks))
       set_general_config_param(cur, con, 'registration_deadline', 'NULL')
       set_general_config_param(cur, con, 'archive_dir','archive/')
       set_general_config_param(cur, con, 'admin_email','')
       set_general_config_param(cur, con, 'challenge_mode',challenge_mode)
+      set_general_config_param(cur, con, 'course_name',course_name)
 
    con.close()
 
@@ -208,6 +209,11 @@ if __name__ == '__main__':
    except:
       coursedb = 'course.db'
 
+   try:
+      course_name = config.get('general', 'course_name')
+   except:
+      course_name = 'No name set'
+
    numTasks = config.getint('challenge','num_tasks')
 
    job_queue = queue.Queue(queueSize)
@@ -225,7 +231,7 @@ if __name__ == '__main__':
 
    signal.signal(signal.SIGUSR1, sig_handler)
 
-   init_ressources(numThreads,numTasks, coursedb, semesterdb, autosub_mail, challenge_mode)
+   init_ressources(numTasks, coursedb, semesterdb, autosub_mail, challenge_mode, course_name)
 
    sender_t = sender.mailSender(threadID, "sender", sender_queue, autosub_mail, autosub_user, autosub_passwd, smtpserver, logger_queue, arch_queue, coursedb, semesterdb)
    sender_t.daemon = True # make the sender thread a daemon, this way the main
