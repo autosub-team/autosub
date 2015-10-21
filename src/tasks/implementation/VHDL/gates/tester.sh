@@ -160,7 +160,7 @@ fi
 numgates=$(egrep -o "([Aa][Nn][Dd][2-4]|[Oo][Rr][2-4])" gates_beh.vhdl | wc -l)
 aimednum=5
 
-if [ "$numgates" -ne "$aimednum" ]
+if [ "$numgates" -lt "$aimednum" ]
 then
    logPrefix && echo "${logPre}Task$2 not using the provided gate entities for user with ID $1!"
    cd $autosubPath
