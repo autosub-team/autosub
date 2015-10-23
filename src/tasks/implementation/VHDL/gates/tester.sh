@@ -165,15 +165,15 @@ fi
 numgates=$(egrep -o "([Aa][Nn][Dd][2-4]|[Oo][Rr][2-4])" gates_beh.vhdl | wc -l)
 aimednum=5
 
-#if [ "$numgates" -ne "$aimednum" ]
-#then
-#   logPrefix && echo "${logPre}Task$2 not using the provided gate entities for user with ID $1!"
-#   cd $autosubPath
-#   echo "You are not complying to the specified rules in your task discription.">$userTaskPath/error_msg
-#   echo "You are not using the provided IEEE 1164 gate entities." >>$userTaskPath/error_msg
-#   echo "Use the provided entities to build a gate network with the specified behavior." >> $userTaskPath/error_msg
-#   exit 1 
-#fi
+if [ "$numgates" -lt "$aimednum" ]
+then
+   logPrefix && echo "${logPre}Task$2 not using the provided gate entities for user with ID $1!"
+   cd $autosubPath
+   echo "You are not complying to the specified rules in your task discription.">$userTaskPath/error_msg
+   echo "You are not using the provided IEEE 1164 gate entities." >>$userTaskPath/error_msg
+   echo "Use the provided entities to build a gate network with the specified behavior." >> $userTaskPath/error_msg
+   exit 1 
+fi
 
 ##########################
 ######## ELABORATE #######
