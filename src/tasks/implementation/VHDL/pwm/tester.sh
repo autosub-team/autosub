@@ -40,7 +40,7 @@ userTaskPath="$autosubPath/users/$1/Task$2"
 ##########################
 zero=0
 userfile="pwm_beh.vhdl"
-simulationTimeout="5"
+simulationTimeout="50s"
 
 TaskNr=$2
 logPrefix()
