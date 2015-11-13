@@ -12,7 +12,7 @@ Autosub implements an E-Mail based automatic submission system for E-Learning.
 ################################################################################
 # Autosub received funding as an VHDL E-Learning Platform from the
 #
-#             Insitute of Computer Technology, University of Technology Vienna, Austria
+#             Institute of Computer Technology, University of Technology Vienna, Austria
 # https://www.ict.tuwien.ac.at/en
 #
 # Many Thanks!
