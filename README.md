@@ -9,6 +9,15 @@ Autosub implements an E-Mail based automatic submission system for E-Learning.
 # Many Thanks!
 ################################################################################
 
+################################################################################
+# Autosub received funding as an VHDL E-Learning Platform from the
+#
+#             Insitute of Computer Technology, University of Technology Vienna, Austria
+# https://www.ict.tuwien.ac.at/en
+#
+# Many Thanks!
+################################################################################
+
 IMPORTANT: 
 The C example tasks given in this repository are not meant for usage, as they
 impose a severe security threat if used unchanged -- it means you allow everyone
