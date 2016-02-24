@@ -1,0 +1,11 @@
+Name: Number of Worker Configuration
+Type: requirement
+Invented on: 2015-10-12
+Invented by: Andreas Platschek
+Owner: development
+Description: The Number of Worker threads shall be configurable via the configuration file.
+Status: finished
+Class: implementable
+Priority: development:10
+Effort estimation: 21
+Topic: Configuration

@@ -45,7 +45,7 @@ class Test_LoadTest(unittest.TestCase):
       # just use any arbitraray IMAP server -- we are not going to login
       # anyway!
       if (self.testcase == ""):
-         print("\ncurrently no testcase available.")
+         print(". ")
          return 0
       print("\ntestcase available: %s" % self.testcase)
       return imaplib.IMAP4_SSL('imap.gmail.com')

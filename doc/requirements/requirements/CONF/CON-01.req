@@ -1,0 +1,12 @@
+Name: Configuration File
+Type: requirement
+Invented on: 2015-10-12
+Invented by: Andreas Platschek
+Owner: development
+Description: A Configuration file shall be used to configure static items. Examples are the name of the IMAP server, username at the server, etc.
+Rationale: The configuration items that are in the configuration file can only be changed by stopping and starting the autosub daemon. Therefore it does not make sense to dynamically configure them and store the configuration in a database.
+Status: not done
+Priority: development:10
+Effort estimation: 21
+Topic: Configuration
+Solved by: CONF/CON-01-01 CONF/CON-01-02 CONF/CON-01-03 CONF/CON-01-04 CONF/CON-01-05

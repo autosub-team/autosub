@@ -98,7 +98,7 @@ fi
 ##########################
 #NOTE: do not attach solution in final version :)
 cd $autosubPath/tools
-python3 add_to_usertasks.py -u $1 -t $2 -p $task_parameters -a "$taskAttachments"
+python3 add_to_usertasks.py -u $1 -t $2 -p "$task_parameters" -a "$taskAttachments"
 
 
 cd $autosubPath

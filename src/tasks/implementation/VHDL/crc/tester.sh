@@ -107,8 +107,13 @@ then
    exit 3 
 fi
 
+if [ ! -d "/tmp/$USER" ]
+then
+   mkdir /tmp/$USER
+fi
+
 #these are the files from the user
-ghdl -a fsr_beh.vhdl 2> /tmp/tmp_Task$2_User$1
+ghdl -a fsr_beh.vhdl 2> /tmp/$USER/tmp_Task$2_User$1
 RET=$?
 
 if [ "$RET" -eq "$zero" ]
@@ -118,11 +123,11 @@ else
    logPrefix && echo "${logPre}Task$2 analyze FAILED for user with ID $1!"
    cd $autosubPath
    echo "Analyzation of your submitted behavior file failed:" >$userTaskPath/error_msg
-   cat /tmp/tmp_Task$2_User$1 >> $userTaskPath/error_msg
+   cat /tmp/$USER/tmp_Task$2_User$1 >> $userTaskPath/error_msg
    exit 1 
 fi
 
-ghdl -a crc_beh.vhdl 2> /tmp/tmp_Task$2_User$1
+ghdl -a crc_beh.vhdl 2> /tmp/$USER/tmp_Task$2_User$1
 RET=$?
 
 if [ "$RET" -eq "$zero" ]
@@ -132,14 +137,14 @@ else
   logPrefix && echo "${logPre}Task$2 analyze FAILED for user with ID $1!"
    cd $autosubPath
    echo "Analyzation of your submitted behavior file failed:" >$userTaskPath/error_msg
-   cat /tmp/tmp_Task$2_User$1 >> $userTaskPath/error_msg
+   cat /tmp/$USER/tmp_Task$2_User$1 >> $userTaskPath/error_msg
    exit 1 
 fi
 
 ##########################
 ######## ELABORATE #######
 ##########################
-ghdl -e --ieee=synopsys crc_tb 2>/tmp/tmp_Task$2_User$1
+ghdl -e --ieee=synopsys crc_tb 2>/tmp/$USER/tmp_Task$2_User$1
 RET=$?
 
 if [ "$RET" -eq "$zero" ]
@@ -149,7 +154,7 @@ else
    logPrefix && echo "${logPre}Task$2 elaboration FAILED for user with ID $1!"
    cd $autosubPath
    echo "Elaboration with your submitted behavior file failed:" >$userTaskPath/error_msg
-   cat /tmp/tmp_Task$2_User$1 >> $userTaskPath/error_msg
+   cat /tmp/$USER/tmp_Task$2_User$1 >> $userTaskPath/error_msg
    exit 1 
 fi
 
@@ -157,9 +162,9 @@ fi
 ####### SIMULATION #######
 ##########################
 #Simulation reports "Success" or an error message
-ghdl -r crc_tb 2> /tmp/tmp_Task$2_User$1 > /tmp/tmp_Task$2_User$1_msg
+ghdl -r crc_tb 2> /tmp/$USER/tmp_Task$2_User$1 > /tmp/$USER/tmp_Task$2_User$1_msg
 
-egrep -oq "Success" /tmp/tmp_Task$2_User$1
+egrep -oq "Success" /tmp/$USER/tmp_Task$2_User$1
 RET=$?
 
 if [ "$RET" -eq "$zero" ]
@@ -171,8 +176,8 @@ else
     logPrefix && echo "${logPre}Wrong behavior for Task$2 for user with ID $1!"
     echo "Your submitted behavior file does not behave like specified in the task description:" >$userTaskPath/error_msg
     # substitute the \n in the message for real \n and attach to error msg
-    echo /tmp/tmp_Task$2_User$1_msg | xargs sed 's/\\n/\n/g'  >>$userTaskPath/error_msg
+    echo /tmp/$USER/tmp_Task$2_User$1_msg | xargs sed 's/\\n/\n/g'  >>$userTaskPath/error_msg
     # also attach the stderr
-    cat /tmp/tmp_Task$2_User$1 >>$userTaskPath/error_msg
+    cat /tmp/$USER/tmp_Task$2_User$1 >>$userTaskPath/error_msg
     exit 1 
 fi

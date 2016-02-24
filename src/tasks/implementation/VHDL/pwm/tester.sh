@@ -40,7 +40,7 @@ userTaskPath="$autosubPath/users/$1/Task$2"
 ##########################
 zero=0
 userfile="pwm_beh.vhdl"
-simulationTimeout="5"
+simulationTimeout="50s"
 
 TaskNr=$2
 logPrefix()
@@ -101,7 +101,12 @@ fi
 #first strip the file of all comments for constraint check
 sed -i '/^--/ d' pwm_beh.vhdl 
 
-ghdl -a pwm_beh.vhdl 2> /tmp/tmp_Task$2_User$1
+if [ ! -d "/tmp/$USER" ]
+then
+   mkdir /tmp/$USER
+fi
+
+ghdl -a pwm_beh.vhdl 2> /tmp/$USER/tmp_Task$2_User$1
 RET=$?
 
 if [ "$RET" -eq "$zero" ]
@@ -111,7 +116,7 @@ else
    logPrefix && echo "${logPre}Task$2 analyze FAILED for user with ID $1!"
    cd $autosubPath
    echo "Analyzation of your submitted behavior file failed:" >$userTaskPath/error_msg
-   cat /tmp/tmp_Task$2_User$1 >> $userTaskPath/error_msg
+   cat /tmp/$USER/tmp_Task$2_User$1 >> $userTaskPath/error_msg
    exit 1 
 fi
 
@@ -132,7 +137,7 @@ fi
 ##########################
 ######## ELABORATE #######
 ##########################
-ghdl -e pwm_tb 2>/tmp/tmp_Task$2_User$1
+ghdl -e pwm_tb 2>/tmp/$USER/tmp_Task$2_User$1
 RET=$?
 
 if [ "$RET" -eq "$zero" ]
@@ -142,7 +147,7 @@ else
    logPrefix && echo "${logPre}Task$2 elaboration FAILED for user with ID $1!"
    cd $autosubPath
    echo "Elaboration with your submitted behavior file failed:" >$userTaskPath/error_msg
-   cat /tmp/tmp_Task$2_User$1 >> $userTaskPath/error_msg
+   cat /tmp/$USER/tmp_Task$2_User$1 >> $userTaskPath/error_msg
    exit 1 
 fi
 
@@ -150,9 +155,9 @@ fi
 ####### SIMULATION #######
 ##########################
 #Simulation reports "Success" or an error message
-timeout $simulationTimeout ghdl -r pwm_tb --vcd=signals.vcd 2> /tmp/tmp_Task$2_User$1
+timeout $simulationTimeout ghdl -r pwm_tb --vcd=signals.vcd 2> /tmp/$USER/tmp_Task$2_User$1
 RETghdl=$?
-egrep -oq "Success" /tmp/tmp_Task$2_User$1
+egrep -oq "Success" /tmp/$USER/tmp_Task$2_User$1
 RETegrep=$?
 
 #make sure the error_attachments folder is empty
@@ -192,7 +197,7 @@ else
     cd $autosubPath
     logPrefix && echo "${logPre}Wrong behavior for Task$2 for user with ID $1!"
     echo "Your submitted behavior file does not behave like specified in the task description:" >$userTaskPath/error_msg
-    cat /tmp/tmp_Task$2_User$1 >> $userTaskPath/error_msg
+    cat /tmp/$USER/tmp_Task$2_User$1 >> $userTaskPath/error_msg
     echo "Please look at the attached wave file to see what signal your entity produces." >> $userTaskPath/error_msg
     exit 1 
 fi

@@ -1,0 +1,11 @@
+Name: Poll Period of the Mailbox
+Type: requirement
+Invented on: 2015-10-12
+Invented by: Andreas Platschek
+Owner: development
+Description: The period between polls on the mailbox shall be configurable via the configuration file.
+Status: finished
+Class: implementable
+Priority: development:10
+Effort estimation: 21
+Topic: Configuration

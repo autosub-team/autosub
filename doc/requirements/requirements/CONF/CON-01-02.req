@@ -1,0 +1,11 @@
+Name: Configuration of the SMTP Server
+Type: requirement
+Invented on: 2015-10-12
+Invented by: Andreas Platschek
+Owner: development
+Description: The IMAP Server shall be configureable vie the configration file. The parameters of the server that shall be configurable are: server name, server port, username, password and the e-mail address.
+Status: finished
+Class: implementable
+Priority: development:10
+Effort estimation: 21
+Topic: Configuration
