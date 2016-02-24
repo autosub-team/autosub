@@ -1,0 +1,18 @@
+Source: autosub
+Section: main
+Priority: optional
+Maintainer: Andreas Platschek <andi.platschek@gmail.com>
+Build-Depends: debhelper (>= 9)
+Standards-Version: 3.9.5
+Homepage: https://github.com/andipla/autosub
+XS-Python-Version: >= 2.4
+
+Package: autosub
+Architecture: all
+Depends: ${misc:Depends} , python (>= 3.2)
+XB-Python-Version: ${python:Versions}
+Recommends: 
+Description: An automatic submission system, that allows the automatic
+ generation and checking of homework examples. The package comes with a
+ number of VHDL examples, but can be extended to other examples as well.
+ TODO: A more lengthy package description needed!
