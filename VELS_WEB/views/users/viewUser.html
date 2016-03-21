@@ -1,0 +1,45 @@
+{{extend 'layout.html'}}
+<br>
+User Id: {{=userInfo['UserId']}}<br>
+User Name: {{=userInfo['Name']}}<br>
+User Email: {{=userInfo['Email']}}<br>
+User First Mail: {{=userInfo['FirstMail']}}<br>
+{{if(userInfo['LastDone']==None):}}
+    User finished all Tasks: No
+{{else:}}
+    User finished all Tasks: Yes
+{{pass}}
+<br>
+User Score: {{=userInfo['UserScore']}} 
+<br>
+User Current Task: {{=userInfo['CurrentTask']}}<br>
+<br>
+<hr>
+<hr>
+{{for taskInfo in taskInfos:}}
+    TaskNr: {{=taskInfo['TaskNr']}}<br>
+    Total Number of Submissions: {{=taskInfo['NrSubmissions']}}<br>
+
+    {{if(taskInfo['FirstSuccessful']!=None):}} 
+        Task Successfull: Yes<br>
+    {{else:}}
+        Task Successfull: No <br>
+    {{pass}}
+
+    {{for attachment in taskInfo['TaskAttachments']:}}
+       Attachment: {{=attachment}}<br>
+    {{pass}}
+
+    {{if(taskInfo['NrSubmissions']!=0):}}
+        Last Submission: users/{{=userInfo['UserId']}}/Task{{=taskInfo['TaskNr']}}/Submission_{{=taskInfo['NrSubmissions']}} <br>
+    {{pass}}
+
+    {{if(taskInfo['FirstSuccessful']!=None):}}
+       First Successful Submission: users/{{=userInfo['UserId']}}/Task{{=taskInfo['TaskNr']}}/Submission_{{=taskInfo['FirstSuccessful']}}<br>
+    {{pass}}
+<br>
+<hr>
+{{pass}}
+
+
+{{=A('Back to Users overview', _href=URL('index' ))}}

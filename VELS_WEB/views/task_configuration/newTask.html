@@ -1,0 +1,35 @@
+{{extend 'layout.html'}}
+    <h1>Current Task Configuration</h1>
+    <table border="1">
+       <thead>
+          <tr>
+             <th>TaskNr</th>
+             <th>Task Start</th>
+             <th>Task Deadline</th>
+             <th>Path To Task</th>
+             <th>Generator Executable</th>
+             <th>Test Executable</th>
+             <th>Score</th>
+             <th>TaskOperator</th>
+             <th>TaskActive</th>
+             <th></th>
+          </tr>
+        </thead>
+    {{for entry in entries:}}
+       <tr>
+           <td>{{=entry['TaskNr']}}</td>
+           <td>{{=entry['TaskStart']}} </td>
+           <td>{{=entry['TaskDeadline']}} </td>
+           <td>{{=entry['PathToTask']}} </td>
+           <td>{{=entry['GeneratorExecutable']}} </td>
+           <td>{{=entry['TestExecutable']}} </td>
+           <td>{{=entry['Score']}} </td>
+           <td>{{=entry['TaskOperator']}} </td>
+           <td>{{=entry['TaskActive']}} </td>
+        </tr>
+    {{pass}}
+         <tr>
+         {{=form}}
+         </tr>
+    </table>
+    {{=A('Back to overview', callback=URL('index'))}}

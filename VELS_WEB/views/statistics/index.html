@@ -1,0 +1,59 @@
+{{extend 'layout.html'}}
+<h1>Task Statistics</h1>
+<table border="1">
+    <tr>
+        <th>Task Id</th>
+        <th>Number Submissions</th>
+        <th>Number Successful</th>
+        <th>Success Percentage</th>
+    </tr>
+    {{for entry in entriesTaskStats:}}
+    <tr>
+        <td>{{=entry['TaskId']}}</td>
+        <td>{{=entry['NrSubmissions']}}</td>
+        <td>{{=entry['NrSuccessful']}}</td>
+        <td>{{=entry['Percentage']}}</td>
+    </tr>
+    {{pass}}
+</table>
+
+<h1>Statistics Counters</h1>
+<table border="1">
+    <tr>
+        <th>Name</th>
+        <th>Value</th>
+    </tr>
+    {{for entry in entriesStatCounters:}}
+    <tr>
+        <td>{{=entry['Name']}}</td>
+        <td>{{=entry['Value']}}</td>
+    </tr>
+    {{pass}}
+</table>
+
+<h1>Statistics over Time</h1>
+
+<table>
+    <tr><td><center><h3>Number of Mails Received</h3></center></td></tr>
+    <tr>
+        <td>{{=IMG(_src=URL('static','images/nr_mails_received.png'))}}</td>
+    </tr>
+    
+    <tr><td><center><h3>Number of Mails Sent</h3></center></td></tr>
+    <tr>
+        <td>{{=IMG(_src=URL('static','images/nr_mails_sent.png'))}}</td>
+    </tr>
+    
+    <tr><td><center><h3>Number of Users</h3></center></td></tr>
+    <tr>
+        <td>{{=IMG(_src=URL('static','images/nr_users.png'))}}</td>
+    </tr>
+    
+    <tr><td><center><h3>Number of Questions Received</h3></center></td></tr>
+    <tr>
+        <td>{{=IMG(_src=URL('static','images/nr_questions_received.png'))}}</td>
+    </tr>
+    
+</table>
+            
+

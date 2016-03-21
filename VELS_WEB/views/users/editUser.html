@@ -1,0 +1,28 @@
+{{extend 'layout.html'}}
+<h1>Existing Users</h1>
+    <table border="1">
+       <thead>
+          <tr>
+             <th>Name</th>
+             <th>Email</th>
+             <th>First Email</th>
+             <th>Last Done</th>
+             <th>Current Task</th>
+             <th></th>
+          </tr>
+        </thead>
+    {{for entry in entries:}}
+        <tr>
+        {{if entry['UserId'] == editUserId:}}
+            {{=form}}
+        </tr>
+        {{else:}}
+           <td>{{=entry['Name']}}</td>
+           <td>{{=entry['Email']}}</td>
+           <td>{{=entry['FirstMail']}}</td>
+           <td>{{=entry['LastDone']}}</td>
+           <td>{{=entry['CurrentTask']}}</td>
+       </tr>
+        {{pass}}
+    {{pass}}
+    </table>

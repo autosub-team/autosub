@@ -1,0 +1,28 @@
+{{extend 'layout.html'}}
+<h1>Existing User Task Mappings</h1>
+<table border="1">
+    <thead>
+          <tr>
+             <th>UniqueId</th>
+             <th>TaskNr</th>
+             <th>UserId</th>
+             <th>NrSubmissions</th>
+             <th>FirstSuccessful</th>
+             <th>TaskDescription</th>
+             <th>TaskAttachments</th>
+             <th>TaskParameters</th>
+         </tr>
+        </thead>
+       {{for entry in entries:}}
+          <tr>
+              <td>{{=entry['UniqueId']}}</td>         
+              <td>{{=entry['TaskNr']}}</td>            
+              <td>{{=entry['UserId']}}</td>           
+              <td>{{=entry['NrSubmissions']}}</td>
+              <td>{{=entry['FirstSuccessful']}}</td>  
+              <td>{{=entry['TaskDescription']}}</td>  
+              <td>{{=entry['TaskAttachments']}} </td> 
+              <td>{{=entry['TaskParameters']}}</td> 
+        </tr>
+      {{pass}}
+</table>

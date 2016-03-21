@@ -1,0 +1,11 @@
+{{extend 'layout.html'}}
+<h1>General Configuration</h1>
+<table border="1">
+{{=TR(TD("Number of tasks"),       TD(entries['num_tasks']))}}
+{{=TR(TD("Registration Deadline"), TD(entries['registration_deadline']))}}
+{{=TR(TD("Archive Directory"),     TD(entries['archive_dir']))}}
+{{=TR(TD("Administrator E-Mail"),  TD(entries['admin_email']))}}
+{{=TR(TD("Challenge Mode"),        TD(entries['challenge_mode']))}}
+{{=TR(TD("Course Name"),           TD(entries['course_name']))}}
+{{=TR(TD(A('Change',_href=URL('edit')),_colspan=2))}}
+</table>

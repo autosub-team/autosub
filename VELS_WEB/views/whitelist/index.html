@@ -1,0 +1,18 @@
+{{extend 'layout.html'}}
+ <h1>Whitelisted Emails</h1>
+    <table border="1">
+       <thead>
+          <tr>
+             <th>Email</th>
+             <th>Delete?</th>
+          </tr>
+        </thead>
+    {{for entry in entries:}}
+       <tr>
+           <td>{{=entry['Email']}}</td>
+           <td>{{=A('Delete', callback=URL('deleteEmail?UniqueId='+str(entry['UniqueId'])))}}</td>
+       </tr>
+    {{pass}}
+    </table>
+   {{=A('Add Single Email', _href=URL('newEmail'))}}<br>
+   {{=A('Mass Email Whitelisting', _href=URL('massEmail'))}}

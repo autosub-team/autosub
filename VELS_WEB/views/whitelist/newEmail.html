@@ -1,0 +1,19 @@
+{{extend 'layout.html'}}
+ <h1>Whitelisted Emails</h1>
+    <table border="1">
+       <thead>
+          <tr>
+             <th>Email</th>
+          </tr>
+        </thead>
+    {{for entry in entries:}}
+       <tr>
+           <td>{{=entry['Email']}}</td>
+           <td></td>
+       </tr>
+    {{pass}}
+    <tr>
+    {{=form}}    
+    </tr>
+    </table>
+   {{=A('Back to overview', _href=URL('index'))}}

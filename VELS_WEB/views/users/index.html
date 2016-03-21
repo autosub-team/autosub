@@ -1,0 +1,31 @@
+{{extend 'layout.html'}}
+    <h1>Existing Users</h1>
+    <table border="1" class="sortierbar">
+       <thead>
+          <tr>
+             <th>UserId</th>
+             <th>Name</th>
+             <th>Email</th>
+             <th>First Email</th>
+             <th>Last Done</th>
+             <th>Current Task</th>
+             <th>View?</th>
+             <th>Edit?</th>
+             <th>Delete?</th>
+          </tr>
+        </thead>
+    {{for entry in entries:}}
+       <tr>
+           <td>{{=entry['UserId']}}</td>
+           <td>{{=entry['Name']}}</td>
+           <td>{{=entry['Email']}}</td>
+           <td>{{=entry['FirstMail']}}</td>
+           <td>{{=entry['LastDone']}}</td>
+           <td>{{=entry['CurrentTask']}}</td>
+           <td>{{=A('View', callback=URL('viewUser?UserId='+str(entry['UserId'])))}}</td>
+           <td>{{=A('Edit', callback=URL('editUser?editUserId='+str(entry['UserId'])))}}</td>
+           <td>{{=A('Delete', callback=URL('deleteUser?UserId='+str(entry['UserId'])))}}</td>
+       </tr>
+    {{pass}}
+    </table>
+   {{=A('New User', _href=URL('newUser' ))}}

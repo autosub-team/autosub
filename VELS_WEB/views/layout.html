@@ -1,0 +1,76 @@
+<html>
+    <head>
+        <script src="{{=URL('static','js/TableSort.js')}}" type="text/JavaScript">   </script> <!-- for sorting -->
+        <title>VELS Web Interface</title>
+    </head>
+    <body>
+    <style type="text/css">
+    .logos {margin-left: 10px; margin-right padding: 10px;}
+#container {height: 100px; width:100%; font-size: 0;}
+#left, #middle, #right {display: inline-block; *display: inline; zoom: 1; vertical-align: top; font-size: 12px;}
+
+ul.menu {
+    
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    display:inline-block;
+    border: 2px solid #FFFFFF;
+}
+
+li.menu {
+    float: left;
+    border-right: 2px solid #FFFFFF;
+}
+
+a:link.menu,a:visited.menu {
+    display: block;
+    font-weight: bold;
+    color: #FFFFFF;
+    background-color: #0033CC;
+    text-align: center;
+    padding: 4px;
+    text-decoration: none;
+}
+
+a:hover.menu, menulink.a:active.menu {
+    background-color: #0066FF;
+}
+
+</style>
+</style>
+</head>
+<body>
+
+
+
+<a href="{{=URL(c='default',f='index')}}"><div id="container">
+    <div align="center">
+       <div id="left" class="logos"><img src= "{{=URL('static','images/tu_logo.png')}}" height="100px"></div>
+       <div id="middle" class="logos"><img height="100px" src= "{{=URL('static','images/VELS_logo.png')}}"></div>
+       <div id="right" class="logos"><img height="100px" src= "{{=URL('static','images/ict_logo.png')}}"></div>
+    </div>
+</div></a>
+     
+    <hr>
+<div style="text-align:center;">
+    <ul class="menu">
+  <li class="menu"><a class="menu" href="{{=URL(c='default',f='index')}}">Start</a></li>
+  <li class="menu"><a class="menu" href="{{=URL(c='users',f='index')}}">Users</a></li>
+  <li class="menu"><a class="menu" href="{{=URL(c='task_configuration',f='index')}}">Tasks</a></li>
+  <li class="menu"><a class="menu" href="{{=URL(c='whitelist',f='index')}}">Whitelist</a></li>
+  <li class="menu"><a class="menu" href="{{=URL(c='general_config',f='index')}}">General Config</a></li>
+<li class="menu"><a class="menu" href="{{=URL(c='special_messages',f='index')}}">Special Messages</a></li>
+<li class="menu"><a class="menu" href="{{=URL(c='statistics',f='index')}}">Statistics</a></li>
+<li class="menu"><a class="menu" href="{{=URL(c='user_tasks',f='index')}}">User Tasks</a></li>
+</ul>
+</div>
+      
+    <div id="content">
+        {{include}}
+       
+        </div>
+    </div>
+    </body>    
+</html>

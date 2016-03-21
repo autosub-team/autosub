@@ -1,0 +1,40 @@
+{{extend 'layout.html'}}
+    <h1>Current Task Configuration</h1>
+    <table border="1">
+       <thead>
+          <tr>
+             <th>TaskNr</th>
+             <th>Task Start</th>
+             <th>Task Deadline</th>
+             <th>Path To Task</th>
+             <th>Generator Executable</th>
+             <th>Test Executable</th>
+             <th>Score</th>
+             <th>TaskOperator</th>
+             <th>TaskActive</th>
+             <th>Position</th>
+             <th>Edit?</th>
+             <th>Delete?</th>
+          </tr>
+        </thead>
+    {{for entry in entries:}}
+       <tr>
+           <td>{{=entry['TaskNr']}} </td>
+           <td>{{=entry['TaskStart']}} </td>
+           <td>{{=entry['TaskDeadline']}} </td>
+           <td>{{=entry['PathToTask']}} </td>
+           <td>{{=entry['GeneratorExecutable']}} </td>
+           <td>{{=entry['TestExecutable']}} </td>
+           <td>{{=entry['Score']}} </td>
+           <td>{{=entry['TaskOperator']}} </td>
+           <td>{{=entry['TaskActive']}} </td>
+           <td> {{=A( IMG(_src=URL('static','images/up.png'),_height="40em"),
+_href=URL('posSwitchUp?TaskNr='+str(entry['TaskNr'])))}}{{=A( IMG(_src=URL('static','images/down.png'),_height="40em"),
+_href=URL('posSwitchDown?TaskNr='+str(entry['TaskNr'])))}}
+           </td>
+           <td>{{=A('Edit', callback=URL('editTask?editTaskNr='+str(entry['TaskNr'])))}}</td>
+           <td>{{=A('Delete', callback=URL('deleteTask?TaskNr='+str(entry['TaskNr'])))}}</td>
+       </tr>
+    {{pass}}
+    </table>
+    {{=A('Add new Task', callback=URL('newTask'))}}
