@@ -134,15 +134,15 @@ def init_ressources(numTasks, coursedb, semesterdb, submissionEmail, challenge_m
    ####################
    ret = check_and_init_db_table(cur, con, "SpecialMessages", "EventName TEXT PRIMARY KEY, EventText TEXT")
    if ret: # that table did not exists, therefore we use the .txt files to initialize it!
-      load_specialmessage_to_db(cur, con, 'WELCOME', 'SpecialMessages/welcome.txt', submissionEmail, course_name)
-      load_specialmessage_to_db(cur, con, 'USAGE', 'SpecialMessages/usage.txt', submissionEmail, course_name)
-      load_specialmessage_to_db(cur, con, 'QUESTION', 'SpecialMessages/question.txt', submissionEmail, course_name)
-      load_specialmessage_to_db(cur, con, 'INVALID', 'SpecialMessages/invalidtask.txt', submissionEmail, course_name)
-      load_specialmessage_to_db(cur, con, 'CONGRATS', 'SpecialMessages/congratulations.txt', submissionEmail, course_name)
-      load_specialmessage_to_db(cur, con, 'REGOVER', 'SpecialMessages/registrationover.txt', submissionEmail, course_name)
-      load_specialmessage_to_db(cur, con, 'NOTALLOWED', 'SpecialMessages/notallowed.txt', submissionEmail, course_name)
-      load_specialmessage_to_db(cur, con, 'CURLAST', 'SpecialMessages/curlast.txt', submissionEmail, course_name)
-      load_specialmessage_to_db(cur, con, 'DEADTASK', 'SpecialMessages/deadtask.txt', submissionEmail, course_name)
+      load_specialmessage_to_db(cur, con, 'WELCOME', '{0}SpecialMessages/welcome.txt'.format(specialpath), submissionEmail, course_name)
+      load_specialmessage_to_db(cur, con, 'USAGE', '{0}SpecialMessages/usage.txt'.format(specialpath), submissionEmail, course_name)
+      load_specialmessage_to_db(cur, con, 'QUESTION', '{0}SpecialMessages/question.txt'.format(specialpath), submissionEmail, course_name)
+      load_specialmessage_to_db(cur, con, 'INVALID', '{0}SpecialMessages/invalidtask.txt'.format(specialpath), submissionEmail, course_name)
+      load_specialmessage_to_db(cur, con, 'CONGRATS', '{0}SpecialMessages/congratulations.txt'.format(specialpath), submissionEmail, course_name)
+      load_specialmessage_to_db(cur, con, 'REGOVER', '{0}SpecialMessages/registrationover.txt'.format(specialpath), submissionEmail, course_name)
+      load_specialmessage_to_db(cur, con, 'NOTALLOWED', '{0}SpecialMessages/notallowed.txt'.format(specialpath), submissionEmail, course_name)
+      load_specialmessage_to_db(cur, con, 'CURLAST', '{0}SpecialMessages/curlast.txt'.format(specialpath), submissionEmail, course_name)
+      load_specialmessage_to_db(cur, con, 'DEADTASK', '{0}SpecialMessages/deadtask.txt'.format(specialpath), submissionEmail, course_name)
    #####################
    # TaskConfiguration #
    #####################
@@ -208,6 +208,11 @@ if __name__ == '__main__':
       coursedb = config.get('general', 'coursedb')
    except:
       coursedb = 'course.db'
+
+   try:
+      specialpath = config.get('general', 'specialpath')
+   except:
+      specialpath = ''
 
    try:
       course_name = config.get('general', 'course_name')
