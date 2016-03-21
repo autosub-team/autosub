@@ -142,8 +142,8 @@ class mailSender (threading.Thread):
       msg =  "Username: {0}\nEmail: {1}\nCurrent Task: {2}\n Your current Score: {3}\n".format(str(uname[0]), user_email, str(curtask[0]), str(tmpscore))
 
       try:
-         cur_deadline = c.get_task_deadline(str(curtask[0]), self.logger_queue, self.name)
-         cur_start = c.get_task_starttime(str(curtask[0]), self.logger_queue, self.name)
+         cur_deadline = c.get_task_deadline(self.coursedb, str(curtask[0]), self.logger_queue, self.name)
+         cur_start = c.get_task_starttime(self.coursedb, str(curtask[0]), self.logger_queue, self.name)
 
          msg = "{0}\nStarttime current Task: {1}\n".format(msg, cur_start)
          msg = "{0}Deadline current Task: {1}".format(msg, cur_deadline)
@@ -263,7 +263,7 @@ class mailSender (threading.Thread):
             if ((int(TaskNr)-1) <= (int(ctasknr)) or int(ctasknr) == 1):
                msg['Subject'] = "Description Task" + str(TaskNr)
 
-               dl_text = "\nDeadline for this Task: {0}\n".format(c.get_task_deadline(TaskNr, self.logger_queue, self.name))
+               dl_text = "\nDeadline for this Task: {0}\n".format(c.get_task_deadline(self.coursedb, TaskNr, self.logger_queue, self.name))
 
                sql_cmd="SELECT PathToTask FROM TaskConfiguration WHERE TaskNr == "+str(TaskNr)
                curc.execute(sql_cmd)
@@ -388,7 +388,7 @@ class mailSender (threading.Thread):
          c.user_set_currentTask(cur, con, TaskNr, UserId) # we still need to increment the users task counter!
          msg['Subject'] = "Task{0} is not available yet".format(str(TaskNr))
          TEXT = self.read_specialmessage('CURLAST')
-         TEXT = "{0}\n\nThe Task is currently scheduled for: {1}".format(TEXT, c.get_task_starttime(str(TaskNr), self.logger_queue, self.name))
+         TEXT = "{0}\n\nThe Task is currently scheduled for: {1}".format(TEXT, c.get_task_starttime(self.coursedb, str(TaskNr), self.logger_queue, self.name))
          self.backup_message(messageid)
          msg = self.assemble_email(msg, TEXT, '')
          self.send_out_email(recipient, msg.as_string(), message_type, cur, con)

@@ -64,8 +64,8 @@ def increment_db_statcounter(cur, con, countername):
    con.commit();
 
 
-def get_task_starttime(tasknr, lqueue, lname):
-   curc, conc = connect_to_db('course.db', lqueue, lname)
+def get_task_starttime(coursedb, tasknr, lqueue, lname):
+   curc, conc = connect_to_db(coursedb, lqueue, lname)
 
    try:
       sqlcmd = "SELECT TaskStart FROM TaskConfiguration WHERE TaskNr == '"+ str(tasknr) +"'"
@@ -79,8 +79,8 @@ def get_task_starttime(tasknr, lqueue, lname):
    return ret
 
 
-def get_task_deadline(tasknr, lqueue, lname):
-   curc, conc = connect_to_db('course.db', lqueue, lname)
+def get_task_deadline(coursedb, tasknr, lqueue, lname):
+   curc, conc = connect_to_db(coursedb, lqueue, lname)
    sqlcmd = "SELECT TaskDeadline FROM TaskConfiguration WHERE TaskNr == '"+ str(tasknr) +"'"
    curc.execute(sqlcmd)
    deadline_string = str(curc.fetchone()[0])
