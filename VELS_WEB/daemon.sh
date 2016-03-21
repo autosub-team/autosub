@@ -21,7 +21,7 @@ fi
 
 if [ $1 = "start" ];
 then
-	python2.7 /home/$USER/web2py/web2py.py --nogui -i $server_ip -p $port -a $password -d $VELS_WEB_PATH/daemon.pid -c server.crt -k server.key &
+	web2py.py --nogui -i $server_ip -p $port -a $password -d $VELS_WEB_PATH/daemon.pid -c server.crt -k server.key &
 elif [ $1 = "stop" ];
 then
 	PID=$(cat $VELS_WEB_PATH/daemon.pid)

@@ -8,5 +8,6 @@ include /usr/share/dpkg/default.mk
 	dh $@ 
 
 override_dh_link:
-	dh_link /usr/share/pyshared/autosub/autosub_debian.sh /usr/bin/autosub
+	dh_link /usr/share/pyshared/autosub/autosub_debian.sh /usr/bin/autosub \
+	/usr/share/web2py/applications/VELS_WEB/daemon.sh /usr/bin/autosub-webinterface
 
