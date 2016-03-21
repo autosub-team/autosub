@@ -9,17 +9,17 @@ import threading
 import logging
 
 class autosubLogger (threading.Thread):
-   def __init__(self, threadID, name, logger_queue): #, log_level):
+   def __init__(self, threadID, name, logger_queue, logfile): #, log_level):
       threading.Thread.__init__(self)
       self.name = name
       self.threadID = threadID
       self.logger_queue = logger_queue
-      #self.log_level = log_level
+      self.logfile = logfile
 
    def run(self):
 
       FORMAT = "%(asctime)-15s [%(loggername)-12s] %(levelname)s: %(logmsg)s"
-      logging.basicConfig(format=FORMAT, filename='autosub.log',level=logging.DEBUG)
+      logging.basicConfig(format=FORMAT, filename=self.logfile,level=logging.DEBUG)
 
       while True:
          next_log_msg = self.logger_queue.get(True)

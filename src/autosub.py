@@ -219,6 +219,12 @@ if __name__ == '__main__':
    except:
       course_name = 'No name set'
 
+   try:
+      logfile = config.get('general', 'logfile')
+   except:
+      logfile = '/tmp/autosub.log'
+
+
    numTasks = config.getint('challenge','num_tasks')
 
    job_queue = queue.Queue(queueSize)
@@ -228,7 +234,7 @@ if __name__ == '__main__':
    arch_queue = queue.Queue(queueSize)
 
    #Before we do anything else: start the logger thread, so we can log whats going on
-   logger_t = logger.autosubLogger(threadID, "logger", logger_queue)#, logging.DEBUG)
+   logger_t = logger.autosubLogger(threadID, "logger", logger_queue, logfile)#, logging.DEBUG)
    logger_t.daemon = True # make the logger thread a daemon, this way the main
                        # will clean it up before terminating!
    logger_t.start()
