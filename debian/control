@@ -9,7 +9,7 @@ XS-Python-Version: >= 2.4
 
 Package: autosub
 Architecture: all
-Depends: ${misc:Depends} , python (>= 3.2)
+Depends: ${misc:Depends} , python3 (>= 3.2)
 XB-Python-Version: ${python:Versions}
 Recommends: 
 Description: An automatic submission system, that allows the automatic

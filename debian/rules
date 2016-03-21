@@ -1,0 +1,12 @@
+#!/usr/bin/make -f
+
+DPKG_EXPORT_BUILDFLAGS = 1
+include /usr/share/dpkg/default.mk
+
+# main packaging script based on dh7 syntax
+%:
+	dh $@ 
+
+override_dh_link:
+	dh_link /usr/share/pyshared/autosub/autosub_debian.sh /usr/bin/autosub
+

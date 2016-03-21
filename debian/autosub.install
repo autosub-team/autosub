@@ -1,1 +1,4 @@
 autosub/doc/user_manual/* /usr/share/doc/autosub/user_manual
+autosub/src/* /usr/share/pyshared/autosub/
+autosub/src/default.cfg /etc/autosub
+autosub/src/SpecialMessages /etc/autosub

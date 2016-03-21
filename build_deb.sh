@@ -20,12 +20,15 @@ cd /tmp/$PACKAGE_NAME
 git clone https://github.com/andipla/autosub.git
 
 dh_make -y -i --native -c gpl2
+dh_link /usr/share/pyshared/autosub/autosub.sh /usr/bin/autosub
 
 #copy prepared config files
 cp $ORIG_PATH/debian/control debian/
 cp $ORIG_PATH/debian/autosub.install debian/
+cp $ORIG_PATH/debian/rules debian/
 
 dpkg-buildpackage -uc -us
+
 
 #clean it all up
 cd ..
