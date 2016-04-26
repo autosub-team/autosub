@@ -144,7 +144,7 @@ class worker (threading.Thread):
                    finally:
                        conc.close() 
          
-                   task_start = c.get_task_starttime(int(TaskNr)+1, self.logger_queue, self.name)
+                   task_start = c.get_task_starttime(self.coursedb, int(TaskNr)+1, self.logger_queue, self.name)
                    if task_start < datetime.datetime.now():    
                       if res != None: # generator script for this task configured?
                          logmsg="Calling Generator Script: " + str(res[0])

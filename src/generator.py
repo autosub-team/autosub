@@ -69,6 +69,7 @@ class taskGenerator (threading.Thread):
       logmsg = "generator command: {0}".format(command)
       c.log_a_msg(self.logger_queue, self.name, logmsg, "DEBUG")
       generator_res = os.system(command)
+
       if generator_res:
          logmsg = "Failed to call generator script, return value: " + str(generator_res)
          c.log_a_msg(self.logger_queue, self.name, logmsg, "DEBUG")
