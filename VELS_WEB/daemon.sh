@@ -6,7 +6,7 @@
 port=8000 #default port
 password="notSecure" #default password
 
-VELS_WEB_PATH=$(readlink -f $0|xargs dirname)
+VELS_WEB_PATH=/usr/share/web2py/applications/VELS_WEB
 server_ip=$(ip addr | grep 'state UP' -A2 | tail -n1 | awk '{print $2}' | cut -f1  -d'/')
 
 if [ -n $2 ]; #port given
@@ -21,7 +21,7 @@ fi
 
 if [ $1 = "start" ];
 then
-	web2py.py --nogui -i $server_ip -p $port -a $password -d $VELS_WEB_PATH/daemon.pid -c server.crt -k server.key &
+	web2py --nogui -i $server_ip -p $port -a $password -d $VELS_WEB_PATH/daemon.pid -c server.crt -k server.key &
 elif [ $1 = "stop" ];
 then
 	PID=$(cat $VELS_WEB_PATH/daemon.pid)

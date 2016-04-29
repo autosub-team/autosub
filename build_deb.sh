@@ -18,6 +18,11 @@ mkdir /tmp/$PACKAGE_NAME/doc
 cd /tmp/$PACKAGE_NAME
 
 git clone https://github.com/andipla/autosub.git
+cd autosub
+wget http://www.web2py.com/examples/static/web2py_src.zip
+unzip web2py_src.zip 
+rm web2py_src.zip
+cd -
 
 dh_make -y -i --native -c gpl2
 dh_link /usr/share/pyshared/autosub/autosub.sh /usr/bin/autosub
