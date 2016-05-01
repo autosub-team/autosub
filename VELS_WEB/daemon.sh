@@ -6,9 +6,8 @@
 port=8000 #default port
 password="notSecure" #default password
 
-VELS_WEB_PATH=/usr/share/web2py/applications/VELS_WEB
+VELS_WEB_PATH=$HOME/web2py/applications/VELS_WEB
 server_ip=$(ip addr | grep 'state UP' -A2 | tail -n1 | awk '{print $2}' | cut -f1  -d'/')
-
 if [ -n $2 ]; #port given
 then
 	port=$2         
