@@ -20,10 +20,10 @@ class dailystatsTask(threading.Thread):
    ####
    #
    ###
-   def get_statcounter_value(self, cur, con, countername):
+   def get_statcounter_value(self, curst, const, countername):
       sql_cmd = "SELECT Value FROM StatCounters WHERE Name=='" + countername + "';"
-      cur.execute(sql_cmd)
-      res = cur.fetchone()
+      curst.execute(sql_cmd)
+      res = curst.fetchone()
       return int(res[0])
 
    ####
@@ -42,20 +42,20 @@ class dailystatsTask(threading.Thread):
         c.log_a_msg(self.logger_queue, self.name, logmsg, "DEBUG")
         con.execute("CREATE TABLE " + tablename +" (TimeStamp STRING PRIMARY KEY, value INT)")
 
-   def insert_stat_db(self, cur, con, table, count):
+   def insert_stat_db(self, curst, const, table, count):
       sql_cmd = "INSERT INTO " + table + " (TimeStamp, value) VALUES('" + str(datetime.datetime.now()) + "', " + str(count) +");"
-      cur.execute(sql_cmd);
-      con.commit();
+      curst.execute(sql_cmd);
+      const.commit();
 
-   def plot_stat_graph(self, cur, con, tablename, filename):
-      cur.execute("select TimeStamp from " + tablename + ";")
-      list_of_datetimes = cur.fetchall()
+   def plot_stat_graph(self, curst, const, tablename, filename):
+      curst.execute("select TimeStamp from " + tablename + ";")
+      list_of_datetimes = curst.fetchall()
       dates =[]
       for s in list_of_datetimes:
          dates.append(datetime.datetime.strptime(s[0], "%Y-%m-%d %H:%M:%S.%f"))
 
-      cur.execute("SELECT value FROM " + tablename)
-      counts = cur.fetchall()
+      curst.execute("SELECT value FROM " + tablename)
+      counts = curst.fetchall()
 
       plt.plot(dates,counts)
       plt.gcf().autofmt_xdate()
@@ -66,37 +66,37 @@ class dailystatsTask(threading.Thread):
    def run(self):
       while True:
          #connect to sqlite database ...
-         cur1, con1 = c.connect_to_db(self.semesterdb, self.logger_queue, self.name)
+         curs, cons = c.connect_to_db(self.semesterdb, self.logger_queue, self.name)
 
          # get number of users
-         cur1.execute("SELECT COUNT(UserId) FROM Users;")
-         res = cur1.fetchone()
+         curs.execute("SELECT COUNT(UserId) FROM Users;")
+         res = curs.fetchone()
          count = int(res[0])
 
-         nr_mails_sent = self.get_statcounter_value(cur1, con1, 'nr_mails_sent')
-         nr_mails_fetched = self.get_statcounter_value(cur1, con1, 'nr_mails_fetched')
-         nr_questions_received = self.get_statcounter_value(cur1, con1, 'nr_questions_received')
+         nr_mails_sent = self.get_statcounter_value(curs, cons, 'nr_mails_sent')
+         nr_mails_fetched = self.get_statcounter_value(curs, cons, 'nr_mails_fetched')
+         nr_questions_received = self.get_statcounter_value(curs, cons, 'nr_questions_received')
 
          #connect to sqlite database ...
-         cur2, con2 = c.connect_to_db('semesterstats.db', self.logger_queue, self.name)
+         curst, const = c.connect_to_db('semesterstats.db', self.logger_queue, self.name)
 
-         self.check_and_create_table(cur2, con2, 'NrUserStats')
-         self.check_and_create_table(cur2, con2, 'NrSendStats')
-         self.check_and_create_table(cur2, con2, 'NrReceiveStats')
-         self.check_and_create_table(cur2, con2, 'NrQuestionStats')
+         self.check_and_create_table(curst, const, 'NrUserStats')
+         self.check_and_create_table(curst, const, 'NrSendStats')
+         self.check_and_create_table(curst, const, 'NrReceiveStats')
+         self.check_and_create_table(curst, const, 'NrQuestionStats')
 
-         self.insert_stat_db(cur2, con2, 'NrUserStats', count)
-         self.insert_stat_db(cur2, con2, 'NrSendStats', nr_mails_sent)
-         self.insert_stat_db(cur2, con2, 'NrReceiveStats', nr_mails_fetched)
-         self.insert_stat_db(cur2, con2, 'NrQuestionStats', nr_questions_received)
+         self.insert_stat_db(curst, const, 'NrUserStats', count)
+         self.insert_stat_db(curst, const, 'NrSendStats', nr_mails_sent)
+         self.insert_stat_db(curst, const, 'NrReceiveStats', nr_mails_fetched)
+         self.insert_stat_db(curst, const, 'NrQuestionStats', nr_questions_received)
 
-         self.plot_stat_graph(cur2, con2, 'NrUserStats', 'nr_users.png')
-         self.plot_stat_graph(cur2, con2, 'NrSendStats', 'nr_mails_sent.png')
-         self.plot_stat_graph(cur2, con2, 'NrReceiveStats', 'nr_mails_received.png')
-         self.plot_stat_graph(cur2, con2, 'NrQuestionStats', 'nr_questions_received.png')
+         self.plot_stat_graph(curst, const, 'NrUserStats', 'nr_users.png')
+         self.plot_stat_graph(curst, const, 'NrSendStats', 'nr_mails_sent.png')
+         self.plot_stat_graph(curst, const, 'NrReceiveStats', 'nr_mails_received.png')
+         self.plot_stat_graph(curst, const, 'NrQuestionStats', 'nr_questions_received.png')
 
-         con1.close()
-         con2.close()
+         cons.close()
+         const.close()
 
          time.sleep(3600*12) #updating the images every 12h is enough
 

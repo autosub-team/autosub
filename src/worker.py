@@ -85,7 +85,7 @@ class worker (threading.Thread):
              
              # get the taskParameters
              curs, cons = c.connect_to_db(self.semesterdb, self.logger_queue, self.name)
-             taskParameters= self.get_taskParameters(curs,cons,UserId,TaskNr)
+             taskParameters = self.get_taskParameters(curs, cons, UserId, TaskNr)
              cons.close()
              
              # run the test script
