@@ -283,7 +283,7 @@ if __name__ == '__main__':
       logger_queue.put(dict({"msg": "All threads started successfully", "type": "INFO", "loggername": "Main"}))
 
 
-   dailystats_t = dailystats.dailystatsTask(threadID, "dailystats", logger_queue, semesterdb)
+   dailystats_t = dailystats.DailystatsTask("dailystats", logger_queue, semesterdb)
    dailystats_t.daemon = True # make the fetcher thread a daemon, this way the main
                              # will clean it up before terminating!
    dailystats_t.start()
