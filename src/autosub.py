@@ -262,7 +262,7 @@ if __name__ == '__main__':
    generator_t.start()
    threadID += 1
 
-   activator_t = activator.taskActivator(threadID, "activator", gen_queue, sender_queue, logger_queue, coursedb, semesterdb)
+   activator_t = activator.TaskActivator("activator", gen_queue, sender_queue, logger_queue, coursedb, semesterdb)
    activator_t.daemon = True # make the fetcher thread a daemon, this way the main
                              # will clean it up before terminating!
    activator_t.start()
