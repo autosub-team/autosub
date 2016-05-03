@@ -29,25 +29,27 @@ class taskActivator (threading.Thread):
        curc, conc = c.connect_to_db(self.coursedb, self.logger_queue, self.name)
 
        # first we need to know, for which tasks, the message has already been sent out
-       sqlcmd = "SELECT * FROM TaskConfiguration WHERE TaskActive==0;"
-       curc.execute(sqlcmd)
+       sql_cmd = "SELECT * FROM TaskConfiguration WHERE TaskActive==0;"
+       curc.execute(sql_cmd)
        res = curc.fetchone()
        while res != None:
-          TaskNr=res[0]
-          logmsg='Task '+str(TaskNr)+' is still inactive'
+          TaskNr = res[0]
+          logmsg = "Task {0} is still inactive".format(str(TaskNr))
           c.log_a_msg(self.logger_queue, self.name, logmsg, "INFO")
           # check if a tasks start time has come
           task_starttime = datetime.datetime.strptime(res[1], c.format_string)
           if task_starttime < datetime.datetime.now():
              # first, let's set the task active!
-             sqlcmd = "UPDATE TaskConfiguration SET TaskActive=1 WHERE TaskNr=={0}".format(str(TaskNr))
-             curc.execute(sqlcmd)
+             data = {'tasknr': TaskNr}
+             sql_cmd = "UPDATE TaskConfiguration SET TaskActive = 1 WHERE TaskNr == :tasknr;"
+             curc.execute(sqlcmd, data)
              conc.commit()
  
              # next, check if any users are waiting for that task
              curs, cons = c.connect_to_db(self.semesterdb, self.logger_queue, self.name)
-             sqlcmd = "SELECT * FROM Users WHERE CurrentTask=={0}".format(str(TaskNr))
-             curs.execute(sqlcmd)
+             data = {'tasknr': TaskNr}
+             sqlcmd = "SELECT * FROM Users WHERE CurrentTask == :tasknr;"
+             curs.execute(sqlcmd, data)
              nextuser = curs.fetchone()
              while nextuser != None:
                 logmsg="The next example is sent to User {0} now.".format(str(TaskNr))
@@ -56,9 +58,10 @@ class taskActivator (threading.Thread):
                 UserEmail = nextuser[2]
 
                 try:
-                   sql_cmd="SELECT GeneratorExecutable FROM TaskConfiguration WHERE TaskNr == " + str(TaskNr) + ";"
-                   curc.execute(sql_cmd);
-                   res = curc.fetchone();
+                   data = {'tasknr': TaskNr}
+                   sql_cmd = "SELECT GeneratorExecutable FROM TaskConfiguration WHERE TaskNr == :tasknr;"
+                   curc.execute(sql_cmd, data)
+                   res = curc.fetchone()
                 except:
                    logmsg = "Failed to fetch Generator Script for Tasknr: "+ str(TaskNr) 
                    logmsg = logmsg + "from the Database! Table TaskConfiguration corrupted?"

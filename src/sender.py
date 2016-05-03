@@ -37,8 +37,8 @@ class mailSender (threading.Thread):
    ####
    def get_admin_emails(self):
       curc, conc = c.connect_to_db(self.coursedb, self.logger_queue, self.name)
-      sqlcmd = "SELECT Content FROM GeneralConfig WHERE ConfigItem == 'admin_email'"
-      curc.execute(sqlcmd)
+      sql_cmd = "SELECT Content FROM GeneralConfig WHERE ConfigItem == 'admin_email'"
+      curc.execute(sql_cmd)
       result = str(curc.fetchone()[0])
       adminEmails = [email.strip() for email in result.split(',')] #split and put it in list
       conc.close()
@@ -49,18 +49,19 @@ class mailSender (threading.Thread):
    # increment_db_statcounter()
    ####
    def increment_db_statcounter(self, curs, cons, countername):
-      sql_cmd = "UPDATE StatCounters SET Value=(SELECT Value FROM StatCounters WHERE Name=='" + countername + "')+1 WHERE Name=='" + countername + "';"
-      curs.execute(sql_cmd)
+      data = {'cname' = countername}
+      sql_cmd = "UPDATE StatCounters SET Value=(SELECT Value FROM StatCounters WHERE Name == :cname)+1 WHERE Name == :cname;"
+      curs.execute(sql_cmd, data)
       cons.commit();
 
    ####
    # increment_db_taskcounter()
    ####
    def increment_db_taskcounter(self, curs, cons, countername, tasknr):
-      sql_cmd = "UPDATE TaskStats SET " + countername + "=(SELECT "+ countername + " FROM TaskStats WHERE TaskId==" + tasknr + ")+1 WHERE TaskId==" + tasknr + ";"
-      curs.execute(sql_cmd)
-      cons.commit();
-
+      data = {'cname' = countername, 'tasknr': tasknr}
+      sql_cmd = "UPDATE TaskStats SET :cname =(SELECT :cname FROM TaskStats WHERE TaskId == :tasknr)+1 WHERE TaskId == :tasknr;"
+      curs.execute(sql_cmd, data)
+      cons.commit()
 
    ####
    # check_and_set_last_done()
@@ -71,16 +72,18 @@ class mailSender (threading.Thread):
    # If this is the first time, write the current timestamp into the database.
    ####
    def check_and_set_last_done(self, curs, cons, userid):
-      sql_cmd = "SELECT LastDone FROM Users WHERE UserId==" + userid + ";"
-      curs.execute(sql_cmd)
+      data = {'uid': userid}
+      sql_cmd = "SELECT LastDone FROM Users WHERE UserId == :uid;"
+      curs.execute(sql_cmd, data)
       res = curs.fetchone();
       logmsg = "RES: "+ str(res[0])
       c.log_a_msg(self.logger_queue, self.name, logmsg, "DEBUG")
 
       if str(res[0]) == 'None':
-         sql_cmd = "UPDATE Users SET LastDone=" + "datetime("+str(int(time.time()))+", 'unixepoch', 'localtime')" + " WHERE UserId==" + str(userid) + ";"
-         curs.execute(sql_cmd)
-         cons.commit();
+         data = {'uid': str(userid), 'now': str(int(time.time()))}
+         sql_cmd = "UPDATE Users SET LastDone = datetime(:now, 'unixepoch', 'localtime') WHERE UserId == uid;"
+         curs.execute(sql_cmd, data)
+         cons.commit()
    
    ####
    # check_and_set_first_successful
@@ -90,18 +93,20 @@ class mailSender (threading.Thread):
    def check_and_set_first_successful(self, curs, cons, UserId, TaskNr):
 
       # check if allready previous successful submission, if not set it
-      sqlcmd="SELECT FirstSuccessful FROM UserTasks WHERE UserId = {0} AND TaskNr = {1};".format(UserId, TaskNr) 
-      curs.execute(sqlcmd)
+      data = {'uid': UserID, 'tasknr': TaskNr}
+      sql_cmd="SELECT FirstSuccessful FROM UserTasks WHERE UserId = :uid AND TaskNr = :tasknr;"
+      curs.execute(sql_cmd, data)
       res = curs.fetchone()
       if res[0] == None:
          # get last submission number
-         sqlcmd="SELECT NrSubmissions FROM UserTasks WHERE UserId = {0} AND TaskNr = {1};".format(UserId, TaskNr)  
-         curs.execute(sqlcmd)
+         sql_cmd="SELECT NrSubmissions FROM UserTasks WHERE UserId = :uid AND TaskNr :tasknr;"
+         curs.execute(sql_cmd)
          res = curs.fetchone()
          submissionNr = int(res[0])
          # set first successful
-         sqlcmd="UPDATE UserTasks SET FirstSuccessful = {0} WHERE UserId = {1} AND TaskNr = {2};".format(submissionNr, UserId, TaskNr) 
-         curs.execute(sqlcmd)
+         data['subnr'] = submissionNr
+         sql_cmd="UPDATE UserTasks SET FirstSuccessful = :subnr WHERE UserId = :uid AND TaskNr = :tasknr;"
+         curs.execute(sql_cmd)
          cons.commit()
 
    ####
@@ -110,8 +115,9 @@ class mailSender (threading.Thread):
    ####
    def read_specialmessage(self, msgname):
       curc, conc = c.connect_to_db(self.coursedb, self.logger_queue, self.name)
-      sqlcmd = "SELECT EventText FROM SpecialMessages WHERE EventName=='" + msgname + "';"
-      curc.execute(sqlcmd)
+      data = {'msgname': msgname}
+      sql_cmd = "SELECT EventText FROM SpecialMessages WHERE EventName == :msgname;"
+      curc.execute(sql_cmd, data)
       res = curc.fetchone()
       conc.close()
       return str(res[0])
@@ -120,17 +126,19 @@ class mailSender (threading.Thread):
    # generate_status_update()
    ####
    def generate_status_update(self, curs, cons, user_email):
-      sqlcmd = "SELECT Name FROM Users WHERE Email=='" + user_email + "';"
-      curs.execute(sqlcmd)
+      data = {'user_email': user_email}
+      sql_cmd = "SELECT Name FROM Users WHERE Email == :user_email;"
+      curs.execute(sqlcmd, data)
       uname = curs.fetchone()
-      sqlcmd = "SELECT CurrentTask FROM Users WHERE Email=='" + user_email + "';"
-      curs.execute(sqlcmd)
+      sql_cmd = "SELECT CurrentTask FROM Users WHERE Email == :user_email;"
+      curs.execute(sql_cmd, data)
       curtask = curs.fetchone()
 
       conc = lite.connect(self.coursedb)
       curc = conc.cursor()
-      sqlcmd = "SELECT SUM(Score) FROM TaskConfiguration WHERE TaskNr <" + str(curtask[0])
-      curc.execute(sqlcmd)
+      data = {'curtask': str(curtask[0])}
+      sql_cmd = "SELECT SUM(Score) FROM TaskConfiguration WHERE TaskNr < :curtask;"
+      curc.execute(sql_cmd, data)
       curscore = curc.fetchone()
       curc.close()
 
@@ -265,23 +273,26 @@ class mailSender (threading.Thread):
 
                dl_text = "\nDeadline for this Task: {0}\n".format(c.get_task_deadline(self.coursedb, TaskNr, self.logger_queue, self.name))
 
-               sql_cmd="SELECT PathToTask FROM TaskConfiguration WHERE TaskNr == "+str(TaskNr)
-               curc.execute(sql_cmd)
+               data = {'tasknr': str(TaskNr)}
+               sql_cmd="SELECT PathToTask FROM TaskConfiguration WHERE TaskNr == :tasknr;"
+               curc.execute(sql_cmd, data)
                paths = curc.fetchone()
+
                if not paths:
-                  c.log_a_msg(self.logger_queue, self.name, "It seems, the Path to Task "+ str(TaskNr) + " is not configured.", "WARNING")
-                  TEXT = "Sorry, but something went wrong... probably misconfiguration or missing configuration of Task " + str(TaskNr)
+                  logmsg = "It seems, the Path to Task {0} is not configured.".format(TaskNr)
+                  c.log_a_msg(self.logger_queue, self.name, logmsg, "WARNING")
+
+                  TEXT = "Sorry, but something went wrong... probably misconfiguration or missing configuration of Task {0}".format(TaskNr)
                   msg = self.assemble_email(msg, TEXT, '')
                   self.send_out_email(recipient, msg.as_string(),message_type, curs, cons)
                else:
                   path_to_task = str(paths[0])
                   path_to_msg = path_to_task + "/description.txt"
                   TEXT = self.read_text_file(path_to_msg) + dl_text
-                  logmsg="used sql comand: SELECT TaskAttachments FROM UserTasks WHERE TaskNr == " + TaskNr + " AND UserId == '"+ UserId + "';"
-                  c.log_a_msg(self.logger_queue, self.name, logmsg, "DEBUG");
 
-                  sql_cmd="SELECT TaskAttachments FROM UserTasks WHERE TaskNr == " + TaskNr + " AND UserId == '"+ UserId + "';"
-                  curs.execute(sql_cmd)
+                  data = {'tasknr': str(TaskNr), 'uid': UserId}
+                  sql_cmd="SELECT TaskAttachments FROM UserTasks WHERE TaskNr == :tasknr AND UserId == :uid;"
+                  curs.execute(sql_cmd, data)
                   res = curs.fetchone()
 
                   logmsg = "got the following attachments: " + str(res)
@@ -310,7 +321,7 @@ class mailSender (threading.Thread):
          reply_attachments = []
 
          try:
-            logmsg = "searchin attachments in: {0}/error_attachments".format(path_to_msg)
+            logmsg = "searching attachments in: {0}/error_attachments".format(path_to_msg)
             c.log_a_msg(self.logger_queue, self.name, logmsg, "DEBUG")
             ats = os.listdir("{0}/error_attachments".format(path_to_msg))
             logmsg = "got the following attachments: {0}".format(ats)
@@ -363,8 +374,9 @@ class mailSender (threading.Thread):
          numTasks = c.get_num_Tasks(self.coursedb, self.logger_queue, self.name)
          if (int(numTasks) >=  int(TaskNr)):
             #also attach current task
-            sql_cmd="SELECT TaskAttachments FROM UserTasks WHERE TaskNr == " + str(TaskNr) + " AND UserId == '"+ UserId + "';"
-            curs.execute(sql_cmd)
+            data = {'tasknr': str(TaskNr), 'uid': UserId}
+            sql_cmd="SELECT TaskAttachments FROM UserTasks WHERE TaskNr == :tasknr AND UserId == :uid;"
+            curs.execute(sql_cmd, data)
             res = curs.fetchone()
             logmsg = "got the following attachments: " + str(res)
             c.log_a_msg(self.logger_queue, self.name, logmsg, "DEBUG")

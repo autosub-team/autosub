@@ -21,8 +21,9 @@ class dailystatsTask(threading.Thread):
    #
    ###
    def get_statcounter_value(self, curst, const, countername):
-      sql_cmd = "SELECT Value FROM StatCounters WHERE Name=='" + countername + "';"
-      curst.execute(sql_cmd)
+      data = {'Name' : countername}
+      sql_cmd = "SELECT Value FROM StatCounters WHERE Name==:Name;"
+      curst.execute(sql_cmd, data)
       res = curst.fetchone()
       return int(res[0])
 
@@ -32,29 +33,36 @@ class dailystatsTask(threading.Thread):
    # check if table exists and create if it does not exist
    ####
    def check_and_create_table(self, cur, con, tablename):
-      cur.execute("SELECT name FROM sqlite_master WHERE type == 'table' AND name = '" + tablename + "';")
+      data = {'Table': tablename}
+      sql_cmd = "SELECT name FROM sqlite_master WHERE type == 'table' AND name == :Table;"
+      cur.execute(sql_cmd, data)
       res = cur.fetchall()
       if res:
-        logmsg = 'table ' + tablename + ' exists'
+        logmsg = "table {0} exists".format(tablename)
         c.log_a_msg(self.logger_queue, self.name, logmsg, "DEBUG")
       else:
-        logmsg = 'table ' +tablename + ' does not exist ... creating it now.'
+        logmsg = "table {0} does not exist ... creating it now".format(tablename)
         c.log_a_msg(self.logger_queue, self.name, logmsg, "DEBUG")
-        con.execute("CREATE TABLE " + tablename +" (TimeStamp STRING PRIMARY KEY, value INT)")
+        data = {'Table': tablename}
+        sql_cmd = "CREATE TABLE :Table (TimeStamp STRING PRIMARY KEY, value INT)"
+        cur.execute(sql_cmd, data)
 
    def insert_stat_db(self, curst, const, table, count):
-      sql_cmd = "INSERT INTO " + table + " (TimeStamp, value) VALUES('" + str(datetime.datetime.now()) + "', " + str(count) +");"
-      curst.execute(sql_cmd);
-      const.commit();
+      data = {'Count': count, 'Now': str(datetime.datetime.now())}
+      sql_cmd = "INSERT INTO {0} (TimeStamp, value) VALUES(:Now, :Count);".format(table)
+      curst.execute(sql_cmd, data)
+      const.commit()
 
    def plot_stat_graph(self, curst, const, tablename, filename):
-      curst.execute("select TimeStamp from " + tablename + ";")
+      sql_cmd = "SELECT TimeStamp FROM {0};".format(tablename)
       list_of_datetimes = curst.fetchall()
+      curst.execute(sql_cmd);
       dates =[]
       for s in list_of_datetimes:
          dates.append(datetime.datetime.strptime(s[0], "%Y-%m-%d %H:%M:%S.%f"))
 
-      curst.execute("SELECT value FROM " + tablename)
+      sql_cmd = "SELECT value FROM {0};".format(tablename)
+      curst.execute(sql_cmd)
       counts = curst.fetchall()
 
       plt.plot(dates,counts)
@@ -69,7 +77,8 @@ class dailystatsTask(threading.Thread):
          curs, cons = c.connect_to_db(self.semesterdb, self.logger_queue, self.name)
 
          # get number of users
-         curs.execute("SELECT COUNT(UserId) FROM Users;")
+         sql_cmd = "SELECT COUNT(UserId) FROM Users;"
+         curs.execute(sql_cmd)
          res = curs.fetchone()
          count = int(res[0])
 
@@ -98,5 +107,6 @@ class dailystatsTask(threading.Thread):
          cons.close()
          const.close()
 
-         time.sleep(3600*12) #updating the images every 12h is enough
+#         time.sleep(3600*12) #updating the images every 12h is enough
+         time.sleep(12) #updating the images every 12h is enough
 

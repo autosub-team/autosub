@@ -31,8 +31,9 @@ class worker (threading.Thread):
    #  a indididual task
    ####
    def get_taskParameters(self, curs, cons, UserId, TaskNr):
-      sql_cmd="SELECT TaskParameters FROM UserTasks WHERE TaskNr == "+str(TaskNr)+" AND UserId== "+str(UserId)
-      curs.execute(sql_cmd)
+      data = {'tasknr': TaskNr, 'uid': UserId}
+      sql_cmd="SELECT TaskParameters FROM UserTasks WHERE TaskNr == :tasknr AND UserId == :uid;"
+      curs.execute(sql_cmd, data)
       taskParameters = curs.fetchone()[0]
       return taskParameters
 
@@ -60,18 +61,20 @@ class worker (threading.Thread):
              # test script.
              curc, conc = c.connect_to_db(self.coursedb, self.logger_queue, self.name)
              try:
-                sql_cmd="SELECT TestExecutable FROM TaskConfiguration WHERE TaskNr == "+str(TaskNr)
-                curc.execute(sql_cmd);
+                data = {'tasknr': TaskNr}
+                sql_cmd="SELECT TestExecutable FROM TaskConfiguration WHERE TaskNr == :tasknr;"
+                curc.execute(sql_cmd, data);
                 testname = curc.fetchone();
              except:
-                logmsg = "Failed to fetch TestExecutable for Tasknr: "+ str(TaskNr) 
+                logmsg = "Failed to fetch TestExecutable for Tasknr: {0}".format(TaskNr) 
                 logmsg = logmsg + " from the Database! Table TaskConfiguration corrupted?"
                 c.log_a_msg(self.logger_queue, self.name, logmsg, "ERROR")
     
              if testname != None:
                 try:
-                   sql_cmd="SELECT PathToTask FROM TaskConfiguration WHERE TaskNr == "+str(TaskNr)
-                   curc.execute(sql_cmd);
+                   data = {'tasknr': TaskNr}
+                   sql_cmd="SELECT PathToTask FROM TaskConfiguration WHERE TaskNr == :tasknr;"
+                   curc.execute(sql_cmd, data);
                    path = curc.fetchone();
                    scriptpath = str(path[0]) + "/" + str(testname[0])
                 except: #if a testname was given, then a Path should be there as well!
@@ -134,8 +137,9 @@ class worker (threading.Thread):
 
                 if (currenttask < int(TaskNr)+1): 
                    try:
-                      sql_cmd="SELECT GeneratorExecutable FROM TaskConfiguration WHERE TaskNr == " + str(int(TaskNr)+1) + ";"
-                      curc.execute(sql_cmd);
+                      data = {'tasknr': str(int(TaskNr)+1)}
+                      sql_cmd="SELECT GeneratorExecutable FROM TaskConfiguration WHERE TaskNr == :tasknr;"
+                      curc.execute(sql_cmd, data);
                       res = curc.fetchone();
                    except:
                       logmsg = "Failed to fetch Generator Script for Tasknr: "+ str(TaskNr) 
