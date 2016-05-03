@@ -49,7 +49,7 @@ class mailSender (threading.Thread):
    # increment_db_statcounter()
    ####
    def increment_db_statcounter(self, curs, cons, countername):
-      data = {'cname' = countername}
+      data = {'cname': countername}
       sql_cmd = "UPDATE StatCounters SET Value=(SELECT Value FROM StatCounters WHERE Name == :cname)+1 WHERE Name == :cname;"
       curs.execute(sql_cmd, data)
       cons.commit();
@@ -58,7 +58,7 @@ class mailSender (threading.Thread):
    # increment_db_taskcounter()
    ####
    def increment_db_taskcounter(self, curs, cons, countername, tasknr):
-      data = {'cname' = countername, 'tasknr': tasknr}
+      data = {'cname': countername, 'tasknr': tasknr}
       sql_cmd = "UPDATE TaskStats SET :cname =(SELECT :cname FROM TaskStats WHERE TaskId == :tasknr)+1 WHERE TaskId == :tasknr;"
       curs.execute(sql_cmd, data)
       cons.commit()
