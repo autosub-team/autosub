@@ -274,7 +274,7 @@ if __name__ == '__main__':
 
    while (threadID <= numThreads + 5):
       tName = "Worker" + str(threadID - 5)
-      t = worker.worker(threadID, tName, job_queue, gen_queue, sender_queue, logger_queue, coursedb, semesterdb)
+      t = worker.Worker(tName, job_queue, gen_queue, sender_queue, logger_queue, coursedb, semesterdb)
       t.daemon = True
       t.start()
       worker_t.append(t)

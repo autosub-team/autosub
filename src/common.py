@@ -50,7 +50,7 @@ def connect_to_db(dbname, lqueue, lname):
    except:
       logmsg = "Failed to connect to database: " + dbname
       log_a_msg(lqueue, lname, logmsg, "ERROR")
-      return -1, -1
+      return None, None 
 
    cur = con.cursor()
 
