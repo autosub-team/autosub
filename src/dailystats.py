@@ -21,7 +21,7 @@ class dailystatsTask(threading.Thread):
    #
    ###
    def get_statcounter_value(self, cur, con, countername):
-      sql_cmd = "SELECT Value from StatCounters WHERE Name=='" + countername + "';"
+      sql_cmd = "SELECT Value FROM StatCounters WHERE Name=='" + countername + "';"
       cur.execute(sql_cmd)
       res = cur.fetchone()
       return int(res[0])
@@ -54,7 +54,7 @@ class dailystatsTask(threading.Thread):
       for s in list_of_datetimes:
          dates.append(datetime.datetime.strptime(s[0], "%Y-%m-%d %H:%M:%S.%f"))
 
-      cur.execute("select value from " + tablename)
+      cur.execute("SELECT value FROM " + tablename)
       counts = cur.fetchall()
 
       plt.plot(dates,counts)
@@ -69,7 +69,7 @@ class dailystatsTask(threading.Thread):
          cur1, con1 = c.connect_to_db(self.semesterdb, self.logger_queue, self.name)
 
          # get number of users
-         cur1.execute("SELECT COUNT(UserId) from Users;")
+         cur1.execute("SELECT COUNT(UserId) FROM Users;")
          res = cur1.fetchone()
          count = int(res[0])
 

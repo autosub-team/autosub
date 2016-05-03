@@ -78,7 +78,7 @@ class mailSender (threading.Thread):
       c.log_a_msg(self.logger_queue, self.name, logmsg, "DEBUG")
 
       if str(res[0]) == 'None':
-         sql_cmd = "UPDATE Users SET LastDone=" + "datetime("+str(int(time.time()))+", 'unixepoch', 'localtime')" + " where UserId==" + str(userid) + ";"
+         sql_cmd = "UPDATE Users SET LastDone=" + "datetime("+str(int(time.time()))+", 'unixepoch', 'localtime')" + " WHERE UserId==" + str(userid) + ";"
          cur.execute(sql_cmd)
          con.commit();
    
@@ -129,7 +129,7 @@ class mailSender (threading.Thread):
 
       conc = lite.connect(self.coursedb)
       curc = conc.cursor()
-      sqlcmd = "SELECT sum(Score) FROM TaskConfiguration WHERE TaskNr <" + str(curtask[0])
+      sqlcmd = "SELECT SUM(Score) FROM TaskConfiguration WHERE TaskNr <" + str(curtask[0])
       curc.execute(sqlcmd)
       curscore = curc.fetchone()
       curc.close()

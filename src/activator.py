@@ -29,7 +29,7 @@ class taskActivator (threading.Thread):
        curc, conc = c.connect_to_db(self.coursedb, self.logger_queue, self.name)
 
        # first we need to know, for which tasks, the message has already been sent out
-       sqlcmd="SELECT * from TaskConfiguration WHERE TaskActive==0;"
+       sqlcmd = "SELECT * FROM TaskConfiguration WHERE TaskActive==0;"
        curc.execute(sqlcmd)
        res = curc.fetchone()
        while res != None:
