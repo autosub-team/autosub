@@ -1,0 +1,17 @@
+The VELS System has three major databases:
+1) semester
+2) course
+3) semeststats
+
+Connection to these databases via sqlite 3 shall be established using the following rules:
+
+1) All classes which have the paths to the databases as member variables shall connect to the database
+locally in the function, cur or con shall not be passed to other functions
+
+2) All functions which are not part of a class that has the paths to the databases, shall get the paths 
+as parameters
+
+3) To clearly identify the connections the following naming convention shall be upheld:
+	cons, curs for connections to semester
+	conc, curc for connections to course
+	const, curst for connections to semesterstats
