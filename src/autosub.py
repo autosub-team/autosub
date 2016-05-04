@@ -244,7 +244,7 @@ if __name__ == '__main__':
 
    init_ressources(numTasks, coursedb, semesterdb, autosub_mail, challenge_mode, course_name)
 
-   sender_t = sender.mailSender(threadID, "sender", sender_queue, autosub_mail, autosub_user, autosub_passwd, smtpserver, logger_queue, arch_queue, coursedb, semesterdb)
+   sender_t = sender.MailSender("sender", sender_queue, autosub_mail, autosub_user, autosub_passwd, smtpserver, logger_queue, arch_queue, coursedb, semesterdb)
    sender_t.daemon = True # make the sender thread a daemon, this way the main
                           # will clean it up before terminating!
    sender_t.start()
