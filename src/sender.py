@@ -300,9 +300,9 @@ class MailSender(threading.Thread):
         if message_type == "Task":
             logmsg = "Task in send_queue: " + str(next_send_msg)
             c.log_a_msg(self.logger_queue, self.name, logmsg, "DEBUG")
-            numtasks = c.get_num_Tasks(self.coursedb, \
+            numtasks = c.get_num_tasks(self.coursedb, \
                        self.logger_queue, self.name)
-            ctasknr = c.user_get_currentTask(self.semesterdb, uid, \
+            ctasknr = c.user_get_current_task(self.semesterdb, uid, \
                                              self.logger_queue, self.name)
             if numtasks+1 == int(tasknr): # last task solved!
                 msg['Subject'] = "Congratulations!"
@@ -311,7 +311,7 @@ class MailSender(threading.Thread):
                 if int(tasknr)-1 == int(ctasknr):
                     # statistics shall only be udated on the first
                     # successful submission
-                    c.user_set_currentTask(self.semesterdb, tasknr, uid, \
+                    c.user_set_current_task(self.semesterdb, tasknr, uid, \
                                            self.logger_queue, self.name)
                     self.increment_db_taskcounter(curs, cons, 'NrSuccessful', \
                                                   str(int(tasknr)-1))
@@ -362,7 +362,7 @@ class MailSender(threading.Thread):
 
                         # statistics shall only be udated on the first
                         # succesful submission
-                        c.user_set_currentTask(self.semesterdb, tasknr, uid, \
+                        c.user_set_current_task(self.semesterdb, tasknr, uid, \
                                                self.logger_queue, self.name)
                         self.increment_db_taskcounter(curs, cons, \
                                                       'NrSuccessful', \
@@ -439,7 +439,7 @@ class MailSender(threading.Thread):
         elif message_type == "Status":
             msg['Subject'] = "Your Current Status"
             message_text = self.generate_status_update(curs, recipient)
-            numtasks = c.get_num_Tasks(self.coursedb, self.logger_queue, \
+            numtasks = c.get_num_tasks(self.coursedb, self.logger_queue, \
                                        self.name)
             if int(numtasks) >= int(tasknr):
                 #also attach current task
@@ -467,7 +467,7 @@ class MailSender(threading.Thread):
             self.send_out_email(recipient, msg.as_string(), message_type)
         elif message_type == "CurLast":
             # we still need to increment the users task counter!
-            c.user_set_currentTask(self.semesterdb, tasknr, uid, \
+            c.user_set_current_task(self.semesterdb, tasknr, uid, \
                                    self.logger_queue, self.name)
             msg['Subject'] = "Task{0} is not available yet".format(str(tasknr))
             message_text = self.read_specialmessage('CURLAST')

@@ -141,7 +141,7 @@ class Worker(threading.Thread):
                                                  self.logger_queue, \
                                                  self.name)
 
-                    currenttask = int(c.user_get_currentTask(self.semesterdb, \
+                    currenttask = int(c.user_get_current_task(self.semesterdb, \
                                                              user_id, \
                                                              self.logger_queue, \
                                                              self.name))
