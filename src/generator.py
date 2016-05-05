@@ -8,84 +8,130 @@
 
 import threading
 import sqlite3 as lite
-import datetime
-import logger
-import common as c
 import os
 
-class taskGenerator (threading.Thread):
-   def __init__(self, threadID, name, gen_queue, sender_queue, logger_queue, coursedb, submissionEmail):
-      threading.Thread.__init__(self)
-      self.threadID = threadID
-      self.name = name
-      self.gen_queue = gen_queue
-      self.sender_queue = sender_queue
-      self.logger_queue = logger_queue
-      self.coursedb = coursedb
-      self.submissionEmail = submissionEmail 
+import logger
+import common as c
 
-   def get_challenge_mode(self, curc, conc):
-      sql_cmd="SELECT Content FROM GeneralConfig WHERE ConfigItem='challenge_mode'"  
-      curc.execute(sql_cmd)
-      challenge_mode = curc.fetchone()
-      return str(challenge_mode[0]) 
+class taskGenerator(threading.Thread):
+    """
+     Thread to generate unique tasks using a task generator scripts.
+    """
 
-   def generator_loop(self):
-      next_gen_msg = self.gen_queue.get(True) #blocking wait on gen_queue
+    ####
+    # init
+    ####
+    def __init__(self, thread_id, name, gen_queue, sender_queue, logger_queue, coursedb, \
+                     submission_email):
+        """
+        Constructor for the thread.
+        """
 
-      logmsg = "gen_queue content:" + str(next_gen_msg)
-      c.log_a_msg(self.logger_queue, self.name, logmsg, "DEBUG")
+        threading.Thread.__init__(self)
+        self.thread_id = thread_id
+        self.name = name
+        self.gen_queue = gen_queue
+        self.sender_queue = sender_queue
+        self.logger_queue = logger_queue
+        self.coursedb = coursedb
+        self.submission_email = submission_email
 
-      TaskNr=next_gen_msg.get('TaskNr')
-      UserId=next_gen_msg.get('UserId')
-      UserEmail=next_gen_msg.get('UserEmail')
-      MessageId=next_gen_msg.get('MessageId')
+    ####
+    # get_challenge_mode
+    ###
+    def get_challenge_mode(self):
+        """
+        Get the configured challenge mode
+        """
 
-      #generate the directory for the task
-      task_dir = 'users/'+str(UserId)+"/Task"+str(TaskNr)
-      c.check_dir_mkdir(task_dir, self.logger_queue, self.name)
-      #and the task description
-      desc_dir = task_dir+"/desc"
-      c.check_dir_mkdir(desc_dir, self.logger_queue, self.name)
+        curc, conc = c.connect_to_db(self.coursedb, self.logger_queue, self.name)
 
-      # check if there is a generator executable configured in the database -- if not fall back on static
-      # generator script.
-      curc, conc = c.connect_to_db(self.coursedb, self.logger_queue, self.name)
-      sql_cmd="SELECT GeneratorExecutable FROM TaskConfiguration WHERE TaskNr == "+str(TaskNr)
-      curc.execute(sql_cmd)
-      generatorname = curc.fetchone()
-    
-      if generatorname != None:
-         sql_cmd="SELECT PathToTask FROM TaskConfiguration WHERE TaskNr == "+str(TaskNr)
-         curc.execute(sql_cmd)
-         path = curc.fetchone()
-         scriptpath = str(path[0]) + "/" + str(generatorname[0])
-      else:
-         scriptpath = "tasks/task" + str(TaskNr) + "/./generator.sh"
+        sql_cmd = "SELECT Content FROM GeneralConfig WHERE ConfigItem = 'challenge_mode'"
+        curc.execute(sql_cmd)
+        challenge_mode = curc.fetchone()
 
-      challenge_mode = self.get_challenge_mode(curc, conc)      
+        conc.close()
 
-      command = scriptpath + " " + str(UserId) + " " + str(TaskNr) + " " + self.submissionEmail + " " + str(challenge_mode) + " >> autosub.stdout 2>>autosub.stderr"
-      logmsg = "generator command: {0}".format(command)
-      c.log_a_msg(self.logger_queue, self.name, logmsg, "DEBUG")
-      generator_res = os.system(command)
+        return str(challenge_mode[0])
 
-      if generator_res:
-         logmsg = "Failed to call generator script, return value: " + str(generator_res)
-         c.log_a_msg(self.logger_queue, self.name, logmsg, "DEBUG")
+    ####
+    # generator_loop
+    ####
+    def generator_loop(self):
+        """
+        Loop code for the generator thread
+        """
 
-      logmsg = "Generated individual task for user/tasknr:" + str(UserId) + "/" + str(TaskNr)
-      c.log_a_msg(self.logger_queue, self.name, logmsg, "DEBUG")
+        #blocking wait on gen_queue
+        next_gen_msg = self.gen_queue.get(True)
+        logmsg = "gen_queue content:" + str(next_gen_msg)
+        c.log_a_msg(self.logger_queue, self.name, logmsg, "DEBUG")
 
-      c.send_email(self.sender_queue, str(UserEmail), str(UserId), "Task", str(TaskNr), "Your personal example", str(MessageId))
+        task_nr = next_gen_msg.get('task_nr')
+        user_id = next_gen_msg.get('user_id')
+        user_email = next_gen_msg.get('user_email')
+        messageid = next_gen_msg.get('messageid')
 
-      curc.close()
+        #generate the directory for the task
+        task_dir = 'users/' + str(user_id) + "/Task"+str(task_nr)
+        c.check_dir_mkdir(task_dir, self.logger_queue, self.name)
 
-   ####
-   # thread code for the generator thread.
-   ####
-   def run(self):
-      c.log_a_msg(self.logger_queue, self.name, "Task Generator thread started", "INFO")
+        #generate the task description
+        desc_dir = task_dir + "/desc"
+        c.check_dir_mkdir(desc_dir, self.logger_queue, self.name)
 
-      while True:
-         self.generator_loop()
+        # check if there is a generator executable configured in the database
+        # if not fall back on static generator script.
+        curc, conc = c.connect_to_db(self.coursedb, self.logger_queue, self.name)
+
+        data = {'task_nr': task_nr}
+        sql_cmd = ("SELECT GeneratorExecutable FROM TaskConfiguration "
+                   "WHERE task_nr == :task_nr")
+        curc.execute(sql_cmd, data)
+        generatorname = curc.fetchone()
+
+        if generatorname != None:
+            data = {'task_nr': task_nr}
+            sql_cmd = "SELECT PathToTask FROM TaskConfiguration WHERE task_nr == :task_nr"
+            curc.execute(sql_cmd, data)
+            path = curc.fetchone()
+            scriptpath = str(path[0]) + "/" + str(generatorname[0])
+        else:
+            scriptpath = "tasks/task" + str(task_nr) + "/./generator.sh"
+
+        challenge_mode = self.get_challenge_mode()
+
+        command = scriptpath + " " + str(user_id) + " " + str(task_nr) + " " + \
+                  self.submission_email + " " + str(challenge_mode) + \
+                  " >> autosub.stdout 2>>autosub.stderr"
+
+        logmsg = "generator command: {0}".format(command)
+        c.log_a_msg(self.logger_queue, self.name, logmsg, "DEBUG")
+        generator_res = os.system(command)
+
+        if generator_res:
+            logmsg = "Failed to call generator script, return value: " + \
+                     str(generator_res)
+            c.log_a_msg(self.logger_queue, self.name, logmsg, "DEBUG")
+
+        logmsg = "Generated individual task for user/tasknr:" + str(user_id) + "/" + \
+                 str(task_nr)
+        c.log_a_msg(self.logger_queue, self.name, logmsg, "DEBUG")
+
+        c.send_email(self.sender_queue, str(user_email), str(user_id), \
+                     "Task", str(task_nr), "Your personal example", str(messageid))
+
+        conc.close()
+
+    ####
+    # run
+    ####
+    def run(self):
+        """
+        Thread code for the generator thread.
+        """
+
+        c.log_a_msg(self.logger_queue, self.name, "Task Generator thread started", "INFO")
+
+        while True:
+            self.generator_loop()
