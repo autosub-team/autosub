@@ -63,9 +63,8 @@ class DailystatsTask(threading.Thread):
         else:
             logmsg = "table {0} does not exist ... creating it now".format(tablename)
             c.log_a_msg(self.logger_queue, self.name, logmsg, "DEBUG")
-            data = {'Table': tablename}
-            sql_cmd = "CREATE TABLE :Table (TimeStamp STRING PRIMARY KEY, value INT)"
-            cur.execute(sql_cmd, data)
+            sql_cmd = "CREATE TABLE {0} (TimeStamp STRING PRIMARY KEY, value INT)".format(tablename)
+            cur.execute(sql_cmd)
 
     def run(self):
         while True:
@@ -115,4 +114,3 @@ class DailystatsTask(threading.Thread):
             const.close()
 
             time.sleep(3600*12) #updating the images every 12h is enough
-
