@@ -117,14 +117,14 @@ class MailSender(threading.Thread):
         res = curs.fetchone()
         if res[0] == None:
             # get last submission number
-            sql_cmd = "SELECT NrSubmissions FROM UserTasks WHERE UserId = :uid AND TaskNr :tasknr;"
-            curs.execute(sql_cmd)
+            sql_cmd = "SELECT NrSubmissions FROM UserTasks WHERE UserId = :uid AND TaskNr = :tasknr;"
+            curs.execute(sql_cmd, data)
             res = curs.fetchone()
             submission_nr = int(res[0])
             # set first successful
             data['subnr'] = submission_nr
             sql_cmd = "UPDATE UserTasks SET FirstSuccessful = :subnr WHERE UserId = :uid AND TaskNr = :tasknr;"
-            curs.execute(sql_cmd)
+            curs.execute(sql_cmd , data)
             cons.commit()
 
 ####
@@ -140,7 +140,7 @@ class MailSender(threading.Thread):
                                      self.name)
 
         data = {'msgname': msgname}
-        sql_cmd = "SELECT EventText FROM SpecialMessages WHERE EventName == :msgname;"
+        sql_cmd = "SELECT EventText FROM SpecialMessages WHERE EventName = :msgname;"
         curc.execute(sql_cmd, data)
         res = curc.fetchone()
         conc.close()
@@ -154,10 +154,10 @@ class MailSender(threading.Thread):
         generate the e-mail body for response to a status mail
         """
         data = {'user_email': user_email}
-        sql_cmd = "SELECT Name FROM Users WHERE Email == :user_email;"
+        sql_cmd = "SELECT Name FROM Users WHERE Email = :user_email;"
         curs.execute(sql_cmd, data)
         uname = curs.fetchone()
-        sql_cmd = "SELECT CurrentTask FROM Users WHERE Email == :user_email;"
+        sql_cmd = "SELECT CurrentTask FROM Users WHERE Email = :user_email;"
         curs.execute(sql_cmd, data)
         curtask = curs.fetchone()
 

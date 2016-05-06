@@ -197,10 +197,10 @@ class Worker(threading.Thread):
                                 c.log_a_msg(self.logger_queue, self.name, \
                                             logmsg, "DEBUG")
 
-                                self.gen_queue.put(dict({"UserId": str(user_id), \
-                                         "UserEmail": str(user_email), \
-                                         "TaskNr": str(int(tasknr)+1), \
-                                         "MessageId": ""}))
+                                self.gen_queue.put(dict({"user_id": str(user_id), \
+                                         "user_email": str(user_email), \
+                                         "task_nr": str(int(tasknr)+1), \
+                                         "messageid": ""}))
                             else:
                                 c.send_email(self.sender_queue, \
                                              str(user_email), str(user_id), \
