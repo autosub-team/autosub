@@ -73,8 +73,8 @@ def check_and_init_db_table(dbname, tablename, fields):
         c.log_a_msg(logger_queue, "autosub.py", logmsg, "DEBUG")
 
         data = {'fields': fields}
-        sql_cmd = "CREATE TABLE {0}(:fields)".format(tablename)
-        cur.execute(sql_cmd, data)
+        sql_cmd = "CREATE TABLE {0}({1})".format(tablename, fields)
+        cur.execute(sql_cmd)
         con.commit()
 
         con.close()
@@ -125,22 +125,22 @@ def load_specialmessage_to_db(coursedb, msgname, filename, subsmission_email, co
     Load the SpecialMessages in the db.
     """
 
-    curc, conc = c.connect_to_db(coursedb, logger_queue, "autosub.py")
-
-    with open(filename, "r") as smfp:
+    with open(filename, 'r') as smfp:
         filecontent = smfp.read()
 
         filecontent = filecontent.replace("<SUBMISSIONEMAIL>", \
                                           "<" + subsmission_email + ">")
         filecontent = filecontent.replace("<COURSENAME>", course_name)
 
-        data = {'EventName': msgname, 'EventText': filecontent}
-        sql_cmd = ("INSERT INTO SpecialMessages (EventName, EventText) "
-                   "VALUES(:EventName, :EventText)")
-        curc.execute(sql_cmd, data)
-        conc.commit()
+    curc, conc = c.connect_to_db(coursedb, logger_queue, "autosub.py")
 
-        conc.close()
+    data = {'EventName': msgname, 'EventText': filecontent}
+    sql_cmd = ("INSERT INTO SpecialMessages (EventName, EventText) "
+                   "VALUES(:EventName, :EventText)")
+    curc.execute(sql_cmd, data)
+    conc.commit()
+
+    conc.close()
 
 ####
 # init_ressources
@@ -171,7 +171,7 @@ def init_ressources(semesterdb, coursedb, num_tasks, subsmission_email, challeng
         for t in range(1, num_tasks + 1):
             data = {'TaskId': t}
             sql_cmd = ("INSERT INTO TaskStats (TaskId, NrSubmissions, NrSuccessful) "
-                       "VALUES(:TaskID, 0, 0)")
+                       "VALUES(:TaskId, 0, 0)")
             curs.execute(sql_cmd, data)
         cons.commit()
 
@@ -231,7 +231,7 @@ def init_ressources(semesterdb, coursedb, num_tasks, subsmission_email, challeng
         load_specialmessage_to_db(coursedb, 'QUESTION', filename, subsmission_email, \
                                   course_name)
 
-        filename = '{0}SpecialMessages/invalidtask.txt'.format(specialpath),
+        filename = '{0}SpecialMessages/invalidtask.txt'.format(specialpath)
         load_specialmessage_to_db(coursedb, 'INVALID', filename, subsmission_email, \
                                   course_name)
 
@@ -385,7 +385,7 @@ if __name__ == '__main__':
     ####################
     ## Start Threads  ##
     ####################
-    sender_t = sender.mailSender(thread_id, "sender", sender_queue, autosub_mail, \
+    sender_t = sender.MailSender("sender", sender_queue, autosub_mail, \
                                  autosub_user, autosub_passwd, smtpserver, logger_queue, \
                                  arch_queue, coursedb, semesterdb)
 
@@ -416,7 +416,7 @@ if __name__ == '__main__':
     generator_t.start()
     thread_id += 1
 
-    activator_t = activator.taskActivator(thread_id, "activator", gen_queue, \
+    activator_t = activator.TaskActivator("activator", gen_queue, \
                                           sender_queue, logger_queue, coursedb, \
                                           semesterdb)
 
@@ -432,7 +432,7 @@ if __name__ == '__main__':
     #Next start a couple of worker threads
     while thread_id <= numThreads + 5:
         tName = "Worker" + str(thread_id - 5)
-        t = worker.worker(thread_id, tName, job_queue, gen_queue, sender_queue, \
+        t = worker.Worker(tName, job_queue, gen_queue, sender_queue, \
                           logger_queue, coursedb, semesterdb)
         t.daemon = True
         t.start()
@@ -443,7 +443,7 @@ if __name__ == '__main__':
                                "type": "INFO", "loggername": "Main"}))
 
 
-    dailystats_t = dailystats.dailystatsTask(thread_id, "dailystats", logger_queue, \
+    dailystats_t = dailystats.DailystatsTask("dailystats", logger_queue, \
                                              semesterdb)
     # make the fetcher thread a daemon, this way the main will clean it up before
     # terminating!
