@@ -13,8 +13,19 @@ import datetime
 
 
 class Worker(threading.Thread):
+    """
+    Thread that tests given user submissions.
+    """
+
+####
+# __init__
+####
     def __init__(self, name, job_queue, gen_queue, sender_queue, \
                  logger_queue, coursedb, semesterdb):
+        """
+        Constructor of the Worker thread.
+        """
+
         threading.Thread.__init__(self)
         self.name = name
         self.job_queue = job_queue
@@ -25,24 +36,30 @@ class Worker(threading.Thread):
         self.semesterdb = semesterdb
 
 ####
-#  get_task_parameters
-#
-#  look up the taskParmeters, that were generated from the generator for
-#  a indididual task
+# get_task_parameters
 ####
     def get_task_parameters(self, uid, tasknr):
+        """
+        Look up the taskParmeters, that were generated from the generator for
+        a indididual task.
+        """
+
         curs, cons = c.connect_to_db(self.semesterdb, self.logger_queue, self.name)
         data = {'tasknr': tasknr, 'uid': uid}
-        sql_cmd = "SELECT TaskParameters FROM UserTasks WHERE TaskNr == :tasknr AND UserId == :uid;"
+        sql_cmd = "SELECT TaskParameters FROM UserTasks WHERE TaskNr == :tasknr AND UserId == :uid"
         curs.execute(sql_cmd, data)
         params = curs.fetchone()[0]
         cons.close()
         return params
 
 ####
-# thread code for the worker thread.
+# run
 ####
     def run(self):
+        """
+        Thread code for the worker thread.
+        """
+
         logmsg = "Starting " + self.name
         c.log_a_msg(self.logger_queue, self.name, logmsg, "INFO")
 
@@ -65,18 +82,18 @@ class Worker(threading.Thread):
                                              self.logger_queue, self.name)
                 try:
                     data = {'tasknr': tasknr}
-                    sql_cmd = "SELECT TestExecutable FROM TaskConfiguration WHERE TaskNr == :tasknr;"
+                    sql_cmd = "SELECT TestExecutable FROM TaskConfiguration WHERE TaskNr == :tasknr"
                     curc.execute(sql_cmd, data)
                     testname = curc.fetchone()
                 except:
-                    logmsg = "Failed to fetch TestExecutable for Tasknr: {0}".format(tasknr)
+                    logmsg = "Failed to fetch TestExecutable for TaskNr: {0}".format(tasknr)
                     logmsg = logmsg + " from the Database! Table TaskConfiguration corrupted?"
                     c.log_a_msg(self.logger_queue, self.name, logmsg, "ERROR")
 
                 if testname != None:
                     try:
                         data = {'tasknr': tasknr}
-                        sql_cmd = "SELECT PathToTask FROM TaskConfiguration WHERE TaskNr == :tasknr;"
+                        sql_cmd = "SELECT PathToTask FROM TaskConfiguration WHERE TaskNr == :tasknr"
                         curc.execute(sql_cmd, data)
                         path = curc.fetchone()
                         scriptpath = str(path[0]) + "/" + str(testname[0])
@@ -155,7 +172,7 @@ class Worker(threading.Thread):
                     if currenttask < int(tasknr)+1:
                         try:
                             data = {'tasknr': str(int(tasknr)+1)}
-                            sql_cmd = "SELECT GeneratorExecutable FROM TaskConfiguration WHERE TaskNr == :tasknr;"
+                            sql_cmd = "SELECT GeneratorExecutable FROM TaskConfiguration WHERE TaskNr == :tasknr"
                             curc.execute(sql_cmd, data)
                             res = curc.fetchone()
                         except:

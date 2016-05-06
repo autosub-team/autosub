@@ -25,6 +25,10 @@ class mailFetcher(threading.Thread):
     def __init__(self, threadID, name, job_queue, sender_queue, gen_queue, autosub_user, \
                  autosub_passwd, autosub_imapserver, logger_queue, arch_queue, \
                  poll_period, coursedb, semesterdb):
+        """
+        Constructor for fetcher thread
+        """
+
         threading.Thread.__init__(self)
         self.threadID = threadID
         self.name = name
@@ -118,9 +122,9 @@ class mailFetcher(threading.Thread):
             # description.txt which shall be used.
             c.send_email(self.sender_queue, user_email, user_id, "Task", "1", "", "")
 
-     ###
-     # increment_submission_nr
-     ##
+    ###
+    # increment_submission_nr
+    ##
     def increment_submission_nr(self, user_id, task_nr):
         """
         Increment submission number for a specific user and task.
@@ -184,7 +188,7 @@ class mailFetcher(threading.Thread):
         else:
             # get the user's UserId
             data = {'Email': user_email}
-            sql_cmd = "SELECT UserId FROM Users WHERE Email= :Email"
+            sql_cmd = "SELECT UserId FROM Users WHERE Email = :Email"
             curs.execute(sql_cmd, data)
             res = curs.fetchone()
             user_id = res[0]
@@ -202,7 +206,7 @@ class mailFetcher(threading.Thread):
             c.check_dir_mkdir(current_dir, self.logger_queue, self.name)
 
             # use walk to create a generator, iterate on the parts and forget
-            # about the recursive headach
+            # about the recursive headache
             for part in mail.walk():
             # multipart are just containers, so skip them
                 if part.get_content_maintype() == 'multipart':

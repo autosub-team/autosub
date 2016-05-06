@@ -11,12 +11,12 @@ import logging
 
 class autosubLogger(threading.Thread):
     """
-    Logger thread for autosub
+    Logger thread for autosub.
     """
 
     def __init__(self, thread_id, name, logger_queue, logfile):
         """
-        Constructor for autosubLogger thread
+        Constructor for autosubLogger thread.
         """
 
         threading.Thread.__init__(self)
@@ -27,7 +27,7 @@ class autosubLogger(threading.Thread):
 
     def run(self):
         """
-        Thread main code
+        Thread main code.
         """
 
         log_format = "%(asctime)-15s [%(loggername)-12s] %(levelname)s: %(logmsg)s"
