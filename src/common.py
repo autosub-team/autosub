@@ -86,8 +86,9 @@ def increment_db_statcounter(semesterdb, countername, lqueue, lname):
     curs, cons = connect_to_db(semesterdb, lqueue, lname)
 
     data = {'Name': countername}
-    sql_cmd = ("UPDATE StatCounters SET Value = (SELECT Value FROM StatCounters"
-               "WHERE Name == :Name)+1 WHERE Name == :Name")
+    #change to?: SET Value = Value + 1 WHERE ...
+    sql_cmd = ("UPDATE StatCounters SET Value = (SELECT Value FROM StatCounters "
+               "WHERE Name == :Name) + 1 WHERE Name == :Name")
     curs.execute(sql_cmd, data)
     cons.commit()
 
