@@ -81,7 +81,7 @@ class mailFetcher(threading.Thread):
         data = {'Name': user_name, 'Email': user_email, 'TimeNow': str(int(time.time()))}
         sql_cmd = ("INSERT INTO Users "
                    "(UserId, Name, Email, FirstMail, LastDone, CurrentTask) "
-                   "VALUES(NULL, :Name, :Email, datetime(:Time, 'unixepoch', 'localtime')"
+                   "VALUES(NULL, :Name, :Email, datetime(:TimeNow, 'unixepoch', 'localtime')"
                    ", NULL, 1)")
         curs.execute(sql_cmd, data)
         cons.commit()
@@ -115,8 +115,8 @@ class mailFetcher(threading.Thread):
             c.log_a_msg(self.logger_queue, self.name, logmsg, "DEBUG")
             logmsg = "UserID " + user_id + ",UserEmail " + user_email
             c.log_a_msg(self.logger_queue, self.name, logmsg, "DEBUG")
-            self.gen_queue.put(dict({"UserId": user_id, "UserEmail": user_email, \
-                                     "TaskNr": "1", "MessageId": ""}))
+            self.gen_queue.put(dict({"user_id": user_id, "user_email": user_email, \
+                                     "task_nr": "1", "message_id": ""}))
         else:
             # If there is no generator script, we assume, that there is a static
             # description.txt which shall be used.
@@ -589,4 +589,3 @@ class mailFetcher(threading.Thread):
 
         logmsg = "Exiting fetcher - this should NEVER happen!"
         c.log_a_msg(self.logger_queue, self.name, logmsg, "ERROR")
-
