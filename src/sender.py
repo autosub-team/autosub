@@ -69,7 +69,7 @@ class MailSender(threading.Thread):
         users have solved that task successfully
         """
         data = {'cname': countername, 'tasknr': tasknr}
-        sql_cmd = "UPDATE TaskStats SET :cname =(SELECT :cname FROM TaskStats WHERE TaskId == :tasknr)+1 WHERE TaskId == :tasknr;"
+        sql_cmd = "UPDATE TaskStats SET {0} =(SELECT :cname FROM TaskStats WHERE TaskId == :tasknr)+1 WHERE TaskId == :tasknr".format(countername)
         curs.execute(sql_cmd, data)
         cons.commit()
 

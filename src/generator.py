@@ -84,15 +84,15 @@ class taskGenerator(threading.Thread):
         # if not fall back on static generator script.
         curc, conc = c.connect_to_db(self.coursedb, self.logger_queue, self.name)
 
-        data = {'task_nr': task_nr}
+        data = {'TaskNr': task_nr}
         sql_cmd = ("SELECT GeneratorExecutable FROM TaskConfiguration "
-                   "WHERE task_nr == :task_nr")
+                   "WHERE TaskNr== :TaskNr")
         curc.execute(sql_cmd, data)
         generatorname = curc.fetchone()
 
         if generatorname != None:
-            data = {'task_nr': task_nr}
-            sql_cmd = "SELECT PathToTask FROM TaskConfiguration WHERE task_nr == :task_nr"
+            data = {'TaskNr': task_nr}
+            sql_cmd = "SELECT PathToTask FROM TaskConfiguration WHERE TaskNr == :TaskNr"
             curc.execute(sql_cmd, data)
             path = curc.fetchone()
             scriptpath = str(path[0]) + "/" + str(generatorname[0])

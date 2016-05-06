@@ -589,3 +589,4 @@ class mailFetcher(threading.Thread):
 
         logmsg = "Exiting fetcher - this should NEVER happen!"
         c.log_a_msg(self.logger_queue, self.name, logmsg, "ERROR")
+
