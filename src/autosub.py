@@ -379,7 +379,7 @@ if __name__ == '__main__':
     ####################
     # Init Ressources  #
     ####################
-    init_ressources(coursedb, semesterdb, num_tasks, autosub_mail, challenge_mode, \
+    init_ressources(semesterdb, coursedb, num_tasks, autosub_mail, challenge_mode, \
                     course_name)
 
     ####################
