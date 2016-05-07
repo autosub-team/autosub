@@ -95,7 +95,7 @@ class MailSender(threading.Thread):
 
         if str(res[0]) == 'None':
             data = {'uid': str(userid), 'now': str(int(time.time()))}
-            sql_cmd = "UPDATE Users SET LastDone = datetime(:now, 'unixepoch', 'localtime') WHERE UserId == uid;"
+            sql_cmd = "UPDATE Users SET LastDone = datetime(:now, 'unixepoch', 'localtime') WHERE UserId == :uid;"
             curs.execute(sql_cmd, data)
             cons.commit()
 

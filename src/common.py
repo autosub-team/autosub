@@ -129,11 +129,15 @@ def get_task_deadline(coursedb, tasknr, lqueue, lname):
     TOTHINK: Return datetime?
     """
 
+    logmsg = "Got tasknr= {0}".format(tasknr)
+    log_a_msg(lqueue, "common.py", \
+                                    logmsg, "DEBUG")
+
     curc, conc = connect_to_db(coursedb, lqueue, lname)
 
     data = {'TaskNr': tasknr}
-    sqlcmd = "SELECT TaskDeadline FROM TaskConfiguration WHERE TaskNr == :TaskNr"
-    curc.execute(sqlcmd, data)
+    sql_cmd = "SELECT TaskDeadline FROM TaskConfiguration WHERE TaskNr == :TaskNr"
+    curc.execute(sql_cmd, data)
     deadline_string = str(curc.fetchone()[0])
 
     conc.close()
