@@ -29,6 +29,9 @@ Questions:
    If you do so, I will redirect your e-mail to a human being who will
    take care of it as soon as possible (this might take a couple of days
    though!)
+   If your question is concerning a specific task, include the task number in
+   the subject line, e.g.: "Question Task 3".
+
 
 Other:
    If you send any other text in the subject that does not follow the above

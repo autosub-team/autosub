@@ -66,6 +66,29 @@ class mailFetcher(threading.Thread):
         return admin_emails
 
     ####
+    # get_taskoperator_emails
+    ####
+    def get_taskoperator_emails(self, task_nr):
+        """
+        Get the email adresses of all configured operators for a specific task.
+
+        Return a list.
+        """
+
+        curc, conc = c.connect_to_db(self.coursedb, self.logger_queue, self.name)
+
+        data = {'TaskNr': task_nr}
+        sql_cmd = "SELECT TaskOperator FROM TaskConfiguration WHERE TaskNr = :TaskNr"
+        curc.execute(sql_cmd, data)
+        result = str(curc.fetchone()[0])
+        taskoperator_emails = [email.strip() for email in result.split(',')]
+
+        conc.close()
+
+        return taskoperator_emails
+
+
+    ####
     # add_new_user
     ####
     def add_new_user(self, user_name, user_email):
@@ -254,13 +277,24 @@ class mailFetcher(threading.Thread):
         Process a question that was asked by a user.
         """
 
+        mail_subject = str(mail['subject'])
+
         logmsg = 'The user has a question, please take care of that!'
         c.log_a_msg(self.logger_queue, self.name, logmsg, "DEBUG")
-
         c.send_email(self.sender_queue, user_email, "", "Question", "", "", "")
-        admin_mails = self.get_admin_emails()
-        for admin_mail in admin_mails:
-            c.send_email(self.sender_queue, admin_mail, "", "QFwd", "", mail, messageid)
+
+        # was the question asked to a specific task_nr that is valid?
+        search_obj = re.search('[0-9]+', mail_subject, )
+
+        if (search_obj != None) and int(search_obj.group()) <= c.get_num_tasks(self.coursedb, \
+                                            self.logger_queue, self.name):
+            fwd_mails = self.get_taskoperator_emails(search_obj.group())
+
+        else:
+            fwd_mails = self.get_admin_emails()
+
+        for mail in fwd_mails:
+            c.send_email(self.sender_queue, mail, "", "QFwd", "", mail, messageid)
 
         c.increment_db_statcounter(self.semesterdb, 'nr_questions_received', \
                                    self.logger_queue, self.name)
@@ -465,6 +499,7 @@ class mailFetcher(threading.Thread):
                         logmsg = "Got mail from an already known user!"
                         c.log_a_msg(self.logger_queue, self.name, logmsg, "INFO")
 
+                        #TODO: Does sending a mail "Result bla" without number crash this?
                         if re.search('[Rr][Ee][Ss][Uu][Ll][Tt]', mail_subject):
                             searchObj = re.search('[0-9]+', mail_subject, )
                             if int(searchObj.group()) <= c.get_num_tasks(self.coursedb, \
