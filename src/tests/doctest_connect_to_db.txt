@@ -7,9 +7,7 @@ connection is established, or not (e.g. due to insufficient permissions).
 >>> lqueue = queue.Queue(10)
 >>> cur, con = common.connect_to_db('/etc/test.db', lqueue, 'tester')
 >>> cur
--1
 >>> con
--1
 >>> cur, con = common.connect_to_db('test.db', lqueue, 'tester')
 >>> cur #doctest: +ELLIPSIS
 <sqlite3.Cursor object at 0x...>
