@@ -37,7 +37,7 @@ class Test_sender(unittest.TestCase):
     # but instead throws it into a message queu from where it can be retrieved and the
     # content be tested.
     ####
-    def mock_send_out_email(self, recipient, message, msg_type, cur, con):
+    def mock_send_out_email(self, recipient, message, msg_type):
         self.email_queue.put(dict({"recipient": recipient, "message": message})) 
 #        print("MOCK: send out an email")
 
@@ -53,7 +53,7 @@ class Test_sender(unittest.TestCase):
 
         autosub.init_ressources('testsemester.db', 'testcourse.db', 3, \
                                 "submission@test.xy", "normal", "testcourse", \
-                                "../SpecialMessages")
+                                "")
 
         #give the sender thread some work
         ms.sender_queue.put(dict({"recipient": "student@studentmail.com", \
@@ -87,7 +87,7 @@ class Test_sender(unittest.TestCase):
 
         autosub.init_ressources('testsemester.db', 'testcourse.db', 3, \
                                 "submission@test.xy", "normal", "testcourse2", \
-                                "../SpecialMessages")
+                                "")
 
         #give the sender thread some work
         ms.sender_queue.put(dict({"recipient": "student@studentmail.com", \
