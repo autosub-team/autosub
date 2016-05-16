@@ -146,7 +146,7 @@ def load_specialmessage_to_db(coursedb, msgname, filename, subsmission_email, co
 # init_ressources
 ####
 def init_ressources(semesterdb, coursedb, num_tasks, subsmission_email, challenge_mode, \
-                    course_name):
+                    course_name, special_path):
     """
     Check if all databases, tables, etc. are available, or if they have to be created.
     If non-existent --> create them.
@@ -218,40 +218,40 @@ def init_ressources(semesterdb, coursedb, num_tasks, subsmission_email, challeng
 
     # that table did not exists, therefore we use the .txt files to initialize it!
     if ret:
-        filename = '{0}SpecialMessages/welcome.txt'.format(specialpath)
+        filename = '{0}SpecialMessages/welcome.txt'.format(special_path)
         load_specialmessage_to_db(coursedb, 'WELCOME', filename, subsmission_email, \
                                   course_name)
 
-        filename = '{0}SpecialMessages/usage.txt'.format(specialpath)
+        filename = '{0}SpecialMessages/usage.txt'.format(special_path)
         load_specialmessage_to_db(coursedb, 'USAGE', filename, subsmission_email, \
                                   course_name)
 
-        filename = '{0}SpecialMessages/question.txt'.format(specialpath)
+        filename = '{0}SpecialMessages/question.txt'.format(special_path)
 
         load_specialmessage_to_db(coursedb, 'QUESTION', filename, subsmission_email, \
                                   course_name)
 
-        filename = '{0}SpecialMessages/invalidtask.txt'.format(specialpath)
+        filename = '{0}SpecialMessages/invalidtask.txt'.format(special_path)
         load_specialmessage_to_db(coursedb, 'INVALID', filename, subsmission_email, \
                                   course_name)
 
-        filename = '{0}SpecialMessages/congratulations.txt'.format(specialpath)
+        filename = '{0}SpecialMessages/congratulations.txt'.format(special_path)
         load_specialmessage_to_db(coursedb, 'CONGRATS', filename, subsmission_email, \
                                   course_name)
 
-        filename = '{0}SpecialMessages/registrationover.txt'.format(specialpath)
+        filename = '{0}SpecialMessages/registrationover.txt'.format(special_path)
         load_specialmessage_to_db(coursedb, 'REGOVER', filename, subsmission_email, \
                                   course_name)
 
-        filename = '{0}SpecialMessages/notallowed.txt'.format(specialpath)
+        filename = '{0}SpecialMessages/notallowed.txt'.format(special_path)
         load_specialmessage_to_db(coursedb, 'NOTALLOWED', filename, subsmission_email, \
                                   course_name)
 
-        filename = '{0}SpecialMessages/curlast.txt'.format(specialpath)
+        filename = '{0}SpecialMessages/curlast.txt'.format(special_path)
         load_specialmessage_to_db(coursedb, 'CURLAST', filename, subsmission_email, \
                                   course_name)
 
-        filename = '{0}SpecialMessages/deadtask.txt'.format(specialpath)
+        filename = '{0}SpecialMessages/deadtask.txt'.format(special_path)
         load_specialmessage_to_db(coursedb, 'DEADTASK', filename, subsmission_email, \
                                   course_name)
 
@@ -380,7 +380,7 @@ if __name__ == '__main__':
     # Init Ressources  #
     ####################
     init_ressources(semesterdb, coursedb, num_tasks, autosub_mail, challenge_mode, \
-                    course_name)
+                    course_name, specialpath)
 
     ####################
     ## Start Threads  ##
