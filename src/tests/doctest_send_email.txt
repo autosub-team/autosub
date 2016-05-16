@@ -5,9 +5,8 @@ First lets test the correct case:
 >>> squeue=queue.Queue(10)
 >>> common.send_email(squeue, "testuser@test.com", "42", "Welcome", "33", "e-mail body content", "unique message id")
 >>> res = squeue.get()
->>> res
-{'Body': 'e-mail body content', 'Task': '33', 'MessageId': 'unique message id', 'recipient': 'testuser@test.com', 'UserId': '42', 'message_type': 'Welcome'}
-
+>>> res == {'Body': 'e-mail body content', 'Task': '33', 'MessageId': 'unique message id', 'recipient': 'testuser@test.com', 'UserId': '42', 'message_type': 'Welcome'}
+True
 
 The only thing that may actually go wrong, is that the UserId and/or TaskNr are
 given as integer instead of string, so let's put that into three cases:
@@ -15,11 +14,11 @@ given as integer instead of string, so let's put that into three cases:
 >>> common.send_email(squeue, "testuser@test.com", "42", "Welcome", 33, "e-mail body content", "unique message id")
 >>> common.send_email(squeue, "testuser@test.com", 42, "Welcome", 33, "e-mail body content", "unique message id")
 >>> res = squeue.get()
->>> res
-{'Body': 'e-mail body content', 'Task': '33', 'MessageId': 'unique message id', 'recipient': 'testuser@test.com', 'UserId': '42', 'message_type': 'Welcome'}
+>>> res == {'Body': 'e-mail body content', 'Task': '33', 'MessageId': 'unique message id', 'recipient': 'testuser@test.com', 'UserId': '42', 'message_type': 'Welcome'}
+True
 >>> res = squeue.get()
->>> res
-{'Body': 'e-mail body content', 'Task': '33', 'MessageId': 'unique message id', 'recipient': 'testuser@test.com', 'UserId': '42', 'message_type': 'Welcome'}
+>>> res == {'Body': 'e-mail body content', 'Task': '33', 'MessageId': 'unique message id', 'recipient': 'testuser@test.com', 'UserId': '42', 'message_type': 'Welcome'}
+True
 >>> res = squeue.get()
->>> res
-{'Body': 'e-mail body content', 'Task': '33', 'MessageId': 'unique message id', 'recipient': 'testuser@test.com', 'UserId': '42', 'message_type': 'Welcome'}
+>>> res == {'Body': 'e-mail body content', 'Task': '33', 'MessageId': 'unique message id', 'recipient': 'testuser@test.com', 'UserId': '42', 'message_type': 'Welcome'}
+True
