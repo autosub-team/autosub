@@ -28,15 +28,18 @@ parser.add_option("-p", "--parameters", dest="generation_parameters", type="stri
            help=("Parameters used to generate this example."))
 parser.set_defaults(generation_parameters="")
 parser.add_option("-a", "--attachments", dest="attachments", type="string",
-           help=("Space seperated list of attachments."))
+           help=("Space separated list of attachments."))
 parser.set_defaults(attachments="")
+parser.add_option("-d", "--dbname", dest="semesterdb", type="string",
+           help=("Name of the database used as semesterdb."))
+parser.set_defaults(semesterdb="../semester.db")
 
 opts, args = parser.parse_args()
 
 if (opts.userid == 0) or (opts.tasknr == 0):
    print ("Make sure to pass a UserID (-u) AND a TaskNr (-t)!")
 
-cur, con = connect_to_db('../semester.db')
+cur, con = connect_to_db(opts.semesterdb)
 
 sql_cmd = "SELECT * FROM UserTasks WHERE TaskNr==" + str(opts.tasknr) + " AND UserId ==" + str(opts.userid) +";"
 cur.execute(sql_cmd);

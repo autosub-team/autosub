@@ -408,7 +408,7 @@ if __name__ == '__main__':
 
     generator_t = generator.taskGenerator(thread_id, "generator", gen_queue, \
                                           sender_queue, logger_queue, coursedb, \
-                                          autosub_mail)
+                                          semesterdb, autosub_mail)
 
     # make the fetcher thread a daemon, this way the main will clean it up before
     # terminating!

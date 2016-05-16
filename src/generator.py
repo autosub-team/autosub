@@ -22,7 +22,7 @@ class taskGenerator(threading.Thread):
     # init
     ####
     def __init__(self, thread_id, name, gen_queue, sender_queue, logger_queue, coursedb, \
-                     submission_email):
+                     semesterdb, submission_email):
         """
         Constructor for the thread.
         """
@@ -34,6 +34,7 @@ class taskGenerator(threading.Thread):
         self.sender_queue = sender_queue
         self.logger_queue = logger_queue
         self.coursedb = coursedb
+        self.semesterdb = semesterdb
         self.submission_email = submission_email
 
     ####
@@ -102,8 +103,8 @@ class taskGenerator(threading.Thread):
         challenge_mode = self.get_challenge_mode()
 
         command = scriptpath + " " + str(user_id) + " " + str(task_nr) + " " + \
-                  self.submission_email + " " + str(challenge_mode) + \
-                  " >> autosub.stdout 2>>autosub.stderr"
+                  self.submission_email + " " + str(challenge_mode) + " " + \
+                  self.semesterdb + " >> autosub.stdout 2>>autosub.stderr"
 
         logmsg = "generator command: {0}".format(command)
         c.log_a_msg(self.logger_queue, self.name, logmsg, "DEBUG")
