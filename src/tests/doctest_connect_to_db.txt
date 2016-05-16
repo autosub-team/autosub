@@ -5,7 +5,7 @@ connection is established, or not (e.g. due to insufficient permissions).
 >>> import common
 >>> import queue
 >>> lqueue = queue.Queue(10)
->>> cur, con = common.connect_to_db('/etc/test.db', lqueue, 'tester')
+>>> cur, con = common.connect_to_db('/some/nonexistent/path/test.db', lqueue, 'tester')
 >>> cur
 >>> con
 >>> cur, con = common.connect_to_db('test.db', lqueue, 'tester')
