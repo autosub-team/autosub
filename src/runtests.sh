@@ -13,3 +13,5 @@ rm -f semester.db
 rm -f course.db
 rm -f testsemester.db
 rm -f testcourse.db
+
+rm -rf /tmp/test_logfile

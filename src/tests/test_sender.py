@@ -24,13 +24,14 @@ class Test_sender(unittest.TestCase):
 
    def setUp(self):
       self.email_queue = queue.Queue(10) # used instead of mailbox!
+      lfile = "/tmp/test_logfile"
 
       self.logger_queue = queue.Queue(10)
-      mailSender.logger_queue = self.logger_queue
-      autosub.logger_queue = mailSender.logger_queue
+      MailSender.logger_queue = self.logger_queue
+      autosub.logger_queue = MailSender.logger_queue
       #Before we do anything else: start the logger thread, so we can log whats going on
       threadID=1
-      logger_t = logger.autosubLogger(threadID, "logger", mailSender.logger_queue)
+      logger_t = logger.autosubLogger(threadID, "logger", MailSender.logger_queue, lfile)
       logger_t.daemon = True # make the logger thread a daemon, this way the main
                       # will clean it up before terminating!
       logger_t.start()
@@ -51,14 +52,14 @@ class Test_sender(unittest.TestCase):
       sender_queue = queue.Queue(10)
       arch_queue = queue.Queue(10)
 
-      ms = mailSender(2, "sender", sender_queue, "autosub@testdomain.com", "autosub_testuser", "autosub_test_passwd", "smtp.testdomain.com", autosub.logger_queue, arch_queue, 'testcourse.db', 'testsemester.db')
+      ms = MailSender("sender", sender_queue, "autosub@testdomain.com", "autosub_testuser", "autosub_test_passwd", "smtp.testdomain.com", autosub.logger_queue, arch_queue, 'testcourse.db', 'testsemester.db')
 
       autosub.init_ressources(3, 'testcourse.db', 'testsemester.db', "submission@test.xy", "normal", "testcourse")
 
       #give the sender thread some work
       ms.sender_queue.put(dict({"recipient": "student@studentmail.com", "UserId": "42" ,"message_type": "Welcome", "Task": "1", "Body": "WElcome Message Body", "MessageId": "4711"}))
 
-      with mock.patch("sender.mailSender.send_out_email", self.mock_send_out_email):
+      with mock.patch("sender.MailSender.send_out_email", self.mock_send_out_email):
          ms.handle_next_mail()
 
          #wait for / get the result
@@ -77,14 +78,14 @@ class Test_sender(unittest.TestCase):
       sender_queue = queue.Queue(10)
       arch_queue = queue.Queue(10)
 
-      ms = mailSender(2, "sender", sender_queue, "autosub@testdomain.com", "autosub_testuser", "autosub_test_passwd", "smtp.testdomain.com", autosub.logger_queue, arch_queue, 'testcourse.db', 'testsemester.db')
+      ms = MailSender("sender", sender_queue, "autosub@testdomain.com", "autosub_testuser", "autosub_test_passwd", "smtp.testdomain.com", autosub.logger_queue, arch_queue, 'testcourse.db', 'testsemester.db')
 
       autosub.init_ressources(3, 'testcourse.db', 'testsemester.db',"submission@test.xy","normal", "testcourse2" )
 
       #give the sender thread some work
       ms.sender_queue.put(dict({"recipient": "student@studentmail.com", "UserId": "42" ,"message_type": "Question", "Task": "1", "Body": "", "MessageId": "4711"}))
 
-      with mock.patch("sender.mailSender.send_out_email", self.mock_send_out_email):
+      with mock.patch("sender.MailSender.send_out_email", self.mock_send_out_email):
          ms.handle_next_mail()
 
          #wait for / get the result

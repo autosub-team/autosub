@@ -8,9 +8,10 @@ import os
 class Test_common(unittest.TestCase):
    def setUp(self):
       self.logger_queue = queue.Queue(10)
+      self.lfile = "/tmp/test_logfile"
       #Before we do anything else: start the logger thread, so we can log whats going on
       threadID=1
-      logger_t = logger.autosubLogger(threadID, "logger", self.logger_queue)
+      logger_t = logger.autosubLogger(threadID, "logger", self.logger_queue, self.lfile)
       logger_t.daemon = True # make the logger thread a daemon, this way the main
                       # will clean it up before terminating!
       logger_t.start()
@@ -19,7 +20,7 @@ class Test_common(unittest.TestCase):
       common.log_a_msg(self.logger_queue, "testlogger", logmsg, loglvl)
       time.sleep(.25) # give the logger some time...
 
-      with open('autosub.log', "r") as fd:
+      with open(self.lfile, "r") as fd:
          for line in fd.readlines():
             #nothing - only interested in the very last line!
             pass
