@@ -26,13 +26,13 @@ class Test_TaskActivator(unittest.TestCase):
 
     def add_task(self, cur, con, tasknr, start, deadline, pathtotask, genexe, \
                  testexe, score, operator, active):
-        sqlcmd = ("INSERT INTO TaskConfiguration (TaskNr, TaskStart, ",
-                  "TaskDeadline, PathToTask, GeneratorExecutable, ",
-                  "TestExecutable, Score, TaskOperator, TaskActive) ",
-                  "VALUES({0}, '{1}', '{2}', '{3}', '{4}', '{5}', '{6}', ",
-                  "'{7}', '{8}');".format(str(tasknr), start, deadline,
+        sqlcmd = ("INSERT INTO TaskConfiguration (TaskNr, TaskStart, "
+                  "TaskDeadline, PathToTask, GeneratorExecutable, "
+                  "TestExecutable, Score, TaskOperator, TaskActive) "
+                  "VALUES({0}, '{1}', '{2}', '{3}', '{4}', '{5}', '{6}', "
+                  "'{7}', '{8}');").format(str(tasknr), start, deadline,
                                           pathtotask, genexe, testexe, score,
-                                          operator, active))
+                                          operator, active)
         cur.execute(sqlcmd)
         con.commit()
       
@@ -58,10 +58,10 @@ class Test_TaskActivator(unittest.TestCase):
             logmsg = "No Table TaskConfiguration?"
             c.log_a_msg(self.logger_queue, "Debugger", logmsg, "DEBUG")
 
-        sqlcmd = ("CREATE TABLE TaskConfiguration (TaskNr INT PRIMARY KEY, ",
-                  "TaskStart DATETIME, TaskDeadline DATETIME, ",
-                  "PathToTask TEXT, GeneratorExecutable TEXT, ",
-                  "TestExecutable TEXT, Score INT, TaskOperator TEXT, ",
+        sqlcmd = ("CREATE TABLE TaskConfiguration (TaskNr INT PRIMARY KEY, "
+                  "TaskStart DATETIME, TaskDeadline DATETIME, "
+                  "PathToTask TEXT, GeneratorExecutable TEXT, " 
+                  "TestExecutable TEXT, Score INT, TaskOperator TEXT, "
                   "TaskActive BOOLEAN);")
         curc.execute(sqlcmd)
         conc.commit()
