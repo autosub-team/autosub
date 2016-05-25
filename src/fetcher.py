@@ -293,8 +293,8 @@ class mailFetcher(threading.Thread):
         else:
             fwd_mails = self.get_admin_emails()
 
-        for mail in fwd_mails:
-            c.send_email(self.sender_queue, mail, "", "QFwd", "", mail, messageid)
+        for mail_address in fwd_mails:
+            c.send_email(self.sender_queue, mail_address, "", "QFwd", "", mail, messageid)
 
         c.increment_db_statcounter(self.semesterdb, 'nr_questions_received', \
                                    self.logger_queue, self.name)
