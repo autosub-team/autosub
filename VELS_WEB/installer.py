@@ -77,7 +77,7 @@ os.makedirs(vels_web_path+"/databases",exist_ok=True)
 os.symlink(semesterdb_file,vels_web_path+"/databases/semester.db")
 os.symlink(coursedb_file,vels_web_path+"/databases/course.db")
 
-os.symlink(autosub_path+"/src/nr_mails_received.png",vels_web_path+"/static/images/nr_mails.received.png")
+os.symlink(autosub_path+"/src/nr_mails_received.png",vels_web_path+"/static/images/nr_mails_received.png")
 os.symlink(autosub_path+"/src/nr_mails_sent.png",vels_web_path+"/static/images/nr_mails_sent.png")
 os.symlink(autosub_path+"/src/nr_questions_received.png",vels_web_path+"/static/images/nr_questions_received.png")
 os.symlink(autosub_path+"/src/nr_users.png",vels_web_path+"/static/images/nr_users.png ")
