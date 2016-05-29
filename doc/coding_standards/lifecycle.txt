@@ -1,0 +1,134 @@
+autosub development lifecycle (DLC)
+============================================
+
+1. General
+2. First Steps
+3. Feature Branches
+
+============================================
+
+1. General
+
+The following describes the development lifecycle that is used for autosub, in
+order to allow developers to work collaboratively.
+
+The repository is hosted at GitHub, you can clone it without having an account:
+
+git clone https://github.com/andipla/autosub.git
+
+If you want to contribute, you will need to have an account, there are several
+ways to push into a GitHub repository, please refer to GitHub help. In example
+for ssh everything is described in detail here:
+
+https://help.github.com/articles/generating-an-ssh-key/
+
+Since the number of developers is rather small, we stick with a simple
+development lifecycle (DLC), which just consists of 2 major branches:
+
+-) master : is the stable branch, this is the version that shall currently be
+	used for deployment, as it is well tested and stable.
+
+-) autosub_devel : thats the development branch, this is the version were
+	developers may directly push smaller changes or merge feature branches
+	after the feature is working.
+
+In addition, the developers shall (based on their own judgement) create feature
+branches in which they work on larger changes. Only after the whole feature is
+developed, the feature branch is merged into autosub_devel, so it can be tested
+by all developers. 
+
+TODO: We need to define when/how autosub_devel is stable and merged into master.
+
+============================================
+
+2. First steps
+
+As already mentioned above the first step is to clone the repository:
+
+$ git clone https://github.com/andipla/autosub.git
+
+After cloning, you are by default on the master branch. If you want to deploy
+autosub that is fine, and you may no switch to the user manual and start
+configuring. If you want do develop, you want to checkout the autosub_devel
+branch:
+
+$ cd autosub
+$ git checkout -b autosub_devel origin/autosub_devel
+
+You can check at any point in time on which branch you are currently operating
+using the "git branch" command:
+
+autosub $ git branch
+* autosub_devel
+  master
+
+Currently only two branches are available, the current branch is marked with
+an asterisk in the very first column.
+
+If the changes you are making are small changes, you may just directly commit
+and push everything into autosub_devel. 
+
+autosub $ git commit -sa
+autosub $ git push
+
+The commit part only commits the changes into your local repository, only with
+the "git push" all local commits are sent to the remote repository at GitHub.
+
+At this point you may get the message that you are behind the remote repository,
+at which point you have do a 
+
+$ git pull
+
+to get the latest version from GitHub -- of course can do this at any point in
+time.
+
+============================================
+
+3. Feature Branches
+
+If you are doing bigger changes (more commits, new feature, longer development
+time, etc.) please do not commit parts of that bigger change over time, but
+create a feature branch that is then merged into autosub_devel after you have
+tested everything. The following is way to do exactly that. Assuming you
+currently are on branch autosub_devel, please start with a
+
+$ git pull
+
+to assure you start with the current development version.
+
+$ git checkout -b my_new_feature autosub_devel
+
+If you want to check if you are on that new branch, just ask git:
+
+$ git branch
+  autosub_devel
+  master
+* my_new_feature
+
+Please note, that branch names should have descriptive names that give an idea
+on why that branch was created (so my_new_feature is a *BAD* example :-) ).
+
+If you want to make your feature branch available to everyone on GitHub you
+may do a:
+
+$ git push -u origin my_new_feature
+
+This not mandatory though but may be of advantage if you want someone else to
+review your experimental changes, or if you are working on several machines
+and want all of them to have access to you latest developments.
+
+Now you may work on your feature branch as you are used to (git commit, git push,
+git log, etc.).
+
+Once your feature is finished and tested, you want to feed it back into
+autosub_devel by merging the feature branch:
+
+$ git checkout autosub_devel
+$ git merge my_new_feature
+
+Since autosub_devel may have changed in the meantime, it may be necessary to
+resolve some conflicts, a detailed description may be found here:
+
+https://git-scm.com/book/en/v2/Git-Branching-Basic-Branching-and-Merging#Basic-Merge-Conflicts
+
+

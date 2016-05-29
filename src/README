@@ -6,22 +6,6 @@ Stop the autosub daemon:
 
 ./autosub.sh stop
 
-If you want to check the data in the sqlite database, here is an example
-that shows how to do that:
-
-andi@PC63:~/working_git/submission_framework/src$ sqlite3 autosub.db 
-SQLite version 3.7.13 2012-06-11 02:05:22
-Enter ".help" for instructions
-Enter SQL statements terminated with a ";"
-sqlite> select * from Users;
-1|Andreas Platschek |andi.platschek@gmail.com|1416132904||1
-2|Andreas Platschek |andreas.platschek@opentech.at|1416132905||1
-3|Andreas Platschek |andreas.platschek@tuwien.ac.at|1416133162||1
-sqlite> 
-
-A more serious front-end is planned, but not available as of now.
-
-
 ==============
 
 If you want to run the testsuite, just go to
@@ -37,3 +21,7 @@ this will run all doctest as well as unittest test cases.
 If you also want the code coverage of the test-suite then run it as follows:
 
 nosetests3 --with-doctest --doctest-extension=txt --nologcapture -v --with-coverage
+
+==============
+
+More Information can be found in the usermanual located in doc/usermanual
