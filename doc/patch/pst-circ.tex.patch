@@ -1,0 +1,130 @@
+--- a/pst-circ.tex	2014-10-11 00:04:19.000000000 +0200
++++ b/pst-circ.tex	2015-07-09 16:12:17.927673328 +0200
+@@ -4141,9 +4141,9 @@
+ 	% Inputs
+ 	\ifcase\psk@ninputs\or
+ 		\ifPst@inputa
+-			\psline(0,1)(1.08,1) % Input A
++			\psline(0,1)(1,1) % Input A
+ 			\ifPst@invertinputa
+-				\pscircle[fillstyle=solid](! 1.08 \space\psk@bubblesize\space sub 1){{\psk@bubblesize}} % Invert Input A
++				\pscircle[fillstyle=solid](! 1 \space\psk@bubblesize\space sub 1){{\psk@bubblesize}} % Invert Input A
+ 			\fi
+ 		\fi
+ 	\or
+@@ -4167,9 +4167,9 @@
+ 			\fi
+ 		\fi
+ 		\ifPst@inputb
+-			\psline(0,1)(1.06,1) % Input B
++			\psline(0,1)(1,1) % Input B
+ 			\ifPst@invertinputb
+-				\pscircle[fillstyle=solid](! 1.09 \space\psk@bubblesize\space sub 1){{\psk@bubblesize}} % Invert Input B
++				\pscircle[fillstyle=solid](! 1 \space\psk@bubblesize\space sub 1){{\psk@bubblesize}} % Invert Input B
+ 			\fi
+ 		\fi
+ 		\ifPst@inputc
+@@ -4178,29 +4178,29 @@
+ 				\pscircle[fillstyle=solid](! 1 \space\psk@bubblesize\space sub 0.5){{\psk@bubblesize}} % Invert Input C
+ 			\fi
+ 		\fi
+-	\or	
++	\or
+ 		\ifPst@inputa
+-			\psline(0,1.75)(0.88,1.75) % Input A
++			\psline(0,1.75)(1,1.75) % Input A
+ 			\ifPst@invertinputa
+-				\pscircle[fillstyle=solid](! 0.87 \space\psk@bubblesize\space sub 1.75){{\psk@bubblesize}} % Invert Input A
++				\pscircle[fillstyle=solid](! 1 \space\psk@bubblesize\space sub 1.75){{\psk@bubblesize}} % Invert Input A
+ 			\fi
+ 		\fi
+ 		\ifPst@inputb
+-			\psline(0,1.25)(1.05,1.25) % Input B
++			\psline(0,1.25)(1,1.25) % Input B
+ 			\ifPst@invertinputb
+-				\pscircle[fillstyle=solid](! 1.07 \space\psk@bubblesize\space sub 1.25){{\psk@bubblesize}} % Invert Input B
++				\pscircle[fillstyle=solid](! 1 \space\psk@bubblesize\space sub 1.25){{\psk@bubblesize}} % Invert Input B
+ 			\fi
+ 		\fi
+ 		\ifPst@inputc
+-			\psline(0,0.75)(1.05,0.75) % Input C
++			\psline(0,0.75)(1,0.75) % Input C
+ 			\ifPst@invertinputc
+-				\pscircle[fillstyle=solid](! 1.07 \space\psk@bubblesize\space sub 0.75){{\psk@bubblesize}} % Invert Input C
++				\pscircle[fillstyle=solid](! 1 \space\psk@bubblesize\space sub 0.75){{\psk@bubblesize}} % Invert Input C
+ 			\fi
+ 		\fi
+-		\ifPst@inputc
+-			\psline(0,0.25)(0.88,0.25) % Input D
++		\ifPst@inputd
++			\psline(0,0.25)(1,0.25) % Input D
+ 			\ifPst@invertinputd
+-				\pscircle[fillstyle=solid](! 0.87 \space\psk@bubblesize\space sub 0.25){{\psk@bubblesize}} % Invert Input D
++				\pscircle[fillstyle=solid](! 1 \space\psk@bubblesize\space sub 0.25){{\psk@bubblesize}} % Invert Input D
+ 			\fi
+ 		\fi
+ 	\fi
+@@ -4255,12 +4255,12 @@
+ 	% Inputs
+ 	\ifcase\psk@ninputs\or
+ 		\ifPst@inputa
+-			\psline(0,1)(1.08,1) % Input A
++			\psline(0,1)(1,1) % Input A
+ 			\ifPst@invertinputa
+-				\pscircle[fillstyle=solid](! 1.08 \space\psk@bubblesize\space sub 1.5){{\psk@bubblesize}} % Invert Input A
++				\pscircle[fillstyle=solid](! 1 \space\psk@bubblesize\space sub 1){{\psk@bubblesize}} % Invert Input A
+ 			\fi
+ 		\fi
+-	\or	
++	\or
+ 		\ifPst@inputa
+ 			\psline(0,1.5)(1,1.5) % Input A
+ 			\ifPst@invertinputa
+@@ -4281,9 +4281,9 @@
+ 			\fi
+ 		\fi
+ 		\ifPst@inputb
+-			\psline(0,1)(1.06,1) % Input B
++			\psline(0,1)(1,1) % Input B
+ 			\ifPst@invertinputb
+-				\pscircle[fillstyle=solid](! 1.09 \space\psk@bubblesize\space sub 1){{\psk@bubblesize}} % Invert Input B
++				\pscircle[fillstyle=solid](! 1 \space\psk@bubblesize\space sub 1){{\psk@bubblesize}} % Invert Input B
+ 			\fi
+ 		\fi
+ 		\ifPst@inputc
+@@ -4294,27 +4294,27 @@
+ 		\fi
+ 	\or
+ 		\ifPst@inputa
+-			\psline(0,1.75)(0.88,1.75) % Input A
++			\psline(0,1.75)(1,1.75) % Input A
+ 			\ifPst@invertinputa
+-				\pscircle[fillstyle=solid](! 0.87 \space\psk@bubblesize\space sub 1.75){{\psk@bubblesize}} % Invert Input A
++				\pscircle[fillstyle=solid](! 1 \space\psk@bubblesize\space sub 1.75){{\psk@bubblesize}} % Invert Input A
+ 			\fi
+ 		\fi
+ 		\ifPst@inputb
+-			\psline(0,1.25)(1.05,1.25) % Input B
++			\psline(0,1.25)(1,1.25) % Input B
+ 			\ifPst@invertinputb
+-				\pscircle[fillstyle=solid](! 1.07 \space\psk@bubblesize\space sub 1.25){{\psk@bubblesize}} % Invert Input B
++				\pscircle[fillstyle=solid](! 1 \space\psk@bubblesize\space sub 1.25){{\psk@bubblesize}} % Invert Input B
+ 			\fi
+ 		\fi
+ 		\ifPst@inputc
+-			\psline(0,0.75)(1.05,0.75) % Input C
++			\psline(0,0.75)(1,0.75) % Input C
+ 			\ifPst@invertinputc
+-				\pscircle[fillstyle=solid](! 1.07 \space\psk@bubblesize\space sub 0.75){{\psk@bubblesize}} % Invert Input C
++				\pscircle[fillstyle=solid](! 1 \space\psk@bubblesize\space sub 0.75){{\psk@bubblesize}} % Invert Input C
+ 			\fi
+ 		\fi
+ 		\ifPst@inputd
+-			\psline(0,0.25)(0.88,0.25) % Input D
++			\psline(0,0.25)(1,0.25) % Input D
+ 			\ifPst@invertinputd
+-				\pscircle[fillstyle=solid](! 0.87 \space\psk@bubblesize\space sub 0.25){{\psk@bubblesize}} % Invert Input D
++				\pscircle[fillstyle=solid](! 1 \space\psk@bubblesize\space sub 0.25){{\psk@bubblesize}} % Invert Input D
+ 			\fi
+ 		\fi
+ 	\fi

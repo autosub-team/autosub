@@ -1,0 +1,212 @@
+\section{Overview of the VELS system} \label{velsoverview}
+The VELS system is an e-learning system for students who are learning VHDL. The
+interaction between students and the system is solely via email. Configuration of the
+system is done with a configuration file (for configuration items that can not change
+during runtime) and a web interface (for configuration items that can change dynamically).
+
+The VELS system can roughly be divided into 3 parts:
+\begin{enumerate}
+    \item The autosub submission system.
+    \item The configuration and status web interface VELS\_WEB.
+    \item The individual tasks.
+\end{enumerate}
+
+The autosub submission system has the following responsibilities:
+\begin{itemize}
+    \item Fetch, process and send e-mails.
+    \item Store and manage tasks, users and submissions.
+    \item Initiate generation of tasks and testing of submissions.
+    \item Produce statistics.
+\end{itemize}
+
+The configuration and status web interface VELS\_WEB offers the following for a course
+operator:
+\begin{itemize}
+    \item Configure a task queue for the course.
+    \item Whitelist, create, edit and view users and their course progress.
+    \item Change general configuration parameters of the system.
+    \item Modify the messages that get sent to the students at certain events.
+    \item View statistics about e-mails and task submission success.
+\end{itemize}
+
+The responsibilities of a specific task are the following:
+\begin{itemize}
+    \item Generate random task parameters.
+    \item Generate an appropriate task description and the files that shall
+        be provided to the student.
+    \item Generate testbenches for task submissions.
+    \item Test student submissions and offer meaningful error messages.
+\end{itemize}
+
+The following subsections aim to describe the VELS parts internals in order to develop an
+understanding what configurations are needed for the VELS system.
+
+\newpage
+
+\subsection{The autosub submission system} \label{sub:autosub}
+The autosub submission system is a daemon that is composed of multiple threads
+communicating over queues. This multi-threading approach is especially important
+for the testing process. As the test of a single task can take rather long and
+each student can hand in multiple (correct and incorrect) solutions. Furthermore
+the goal is to assure, that there still is progress, even if a test is running.
+
+Therefore the following threads are implemented:
+
+\begin{description}
+\item [fetcher: ] The fetcher's purpose is to check the mailbox for incoming 
+    e-mails using IMAP 4 and SSL. If a new e-mail is in the mailbox the fetcher
+    interprets the header and performs some basic checks (e.g. Is the user on 
+    the Whitelist?). It then triggers other tasks to act on the e-mail.
+
+    One further purpose of the fetcher is to archive e-mails that have already
+    been handled. If a response to an e-mail was sent, the message-id of the
+    original e-mail is passed back to the fetcher who then moves the original
+    e-mail from the Inbox to the directory used for archiving of e-mails.
+\item [sender: ] The sender thread sends out response e-mails based using SMTP. 
+    The content of the e-mail depends on the type, the necessary information 
+    is provided by the thread that triggers the response.
+
+\item [generator: ] The generator thread generates new tasks for students. This
+    way each student will get its own individual task. The generator calls the
+    individual generator executables.
+
+\item [activator: ] As tasks can have an arbitrary start time, someone has to check
+    whether or not this start time has already come and if the task shall
+    be active. This is done by the activator thread -- it periodically checks
+    for all tasks that are not active yet, whether or not its start time
+    has already come.
+
+\item [workers: ] The worker threads are the ones that check a submitted solution.
+    Since testing a solution can take a considerable amount of time, multiple
+    workers threads are created. The number of workers is configured via the
+    configuration file (see Section \ref{sub:configfile}), ideally this is set
+    to something like 2x Number of CPU-Cores. The workers call the
+    individual test executables.
+\item [dailystats: ] The dailystats thread is used to get a timeline of some very
+    basic statistics. Currently the number users, sent e-mails, received e-mails
+    and received questions over time are evaluated and plotted into a graph.
+    This graph can e.g. be viewed in the Statistics tab of the web interface.
+\end{description}
+
+For storing data two databases are used. The name and location of those databases can be configured
+through the configuration file, in the following we will refer to them with the default
+name that is used, if no other name is provided in the configuration file:
+\begin{description}
+\item [semester.db: ] The {\tt semester.db} database is used to store all data that is
+    specific to one semester. This includes, users, parameterization of tasks assigned
+    for users, statistics, etc. The {\tt semester.db} default location is in the root
+    autosub directory {\tt "autosub/src"}.
+\item [course.db: ] The {\tt course.db} database consists of configuration data that will
+    very likely be reused in multiple semesters. This separation makes it very easy
+    to start a new semester: just backup {\tt semester.db} to some safe location and
+    remove it in the original location (a new empty one will be made automatically upon 
+    starting the autosub daemon).Then use the VELS web interface to perform the small 
+    modifcations(year/semester,deadlines, etc.) needed in {\tt course.db}. The
+    {\tt course.db} default location is in the root autosub directory {\tt "autosub/src"}.
+\end{description}
+
+In addition there is one important directory that is used by autosub to store data in,
+the directory: {\tt autosub/src/users}. In this directory a unique directory for every
+user is created, and this directory the description of each individual received task and submissions 
+for the individual tasks are stored. Every Task directory has the form 
+{\tt "autosub/src/users/<user\_id>/Task<nr>/"}. Submissions are stored in separate folders which are named {\tt "Submission<nr>\_<date>\_<time>/"}. Task description files are stored in the folder named {\tt "desc/"}.
+
+\subsection{The web inteface VELS\_WEB} \label{sub:VELS_WEB}
+
+The configuration and status web interface VELS\_WEB was designed as an easy interface
+for a course operator to view and change course parameters and monitor the course progress.
+It was only designed for internal operator use! Therefore it should only reachable via 
+the internal institute network using a web browser.
+
+The menu items of the VELS\_WEB are the following:
+\begin{description}
+\item [Start:] The start page.
+\item [Users:] View of the registered students, allows to change or a student via the
+    "Edit" button, delete a student via the "Delete" button  and show the progress of
+    a student in the course via the "View" button. The table is sortable by column by
+    clicking on the head of the column.
+\item [Tasks:] The task configuration, will be discussed in Section \ref{sub:configTasks}.
+\item [Whitelist:] Change whitelisting for students, will be discussed in Section
+    \ref{sub:whitelisting}.
+\item [General Config:] Change dynamic configuration items of VELS, will be discussed in
+    Section \ref{sub:generalconfig}.
+\item [Special Messages:] View and change messages the student gets sent at special events
+    (e.g. welcome, not registered, usage, etc.).
+\item [Statistics:] View statistics about sent and received emails and task success of
+    the students.
+\item [User Tasks:] View mappings from students to individual tasks.
+\end{description}
+
+
+\subsection{The tasks structure} \label{sub:TasksStructure}
+Every task is located in an individual folder in {\tt "autosub/tasks/implementation"}. Every task is 
+composed of the following elements:
+
+\begin{tabular}{|p{3cm}|p{10cm}|}
+\hline
+
+Minimal  & \begin{itemize}
+    \item {\bf Generator executable:} Generates random parameters for the task, creates entity 
+        and behavioral vhdl files and description test and pdf file for the student. Stores the 
+        individual task parameters in the \textit{UserTasks} database table.  
+    \item {\bf Tester executable:} Given the individual task parameters, tries to compile the 
+        student's solution. Generates an individual test bench for the student's solution. Tests 
+        the solution and creates feedback text and files for the student. 
+    \item {\bf description.txt:} Contains a textual task description. The text in description.txt 
+    	is sent to the user as the body of the e-mail that contains a new task description.
+	\end{itemize} 
+\\
+\hline
+\end{tabular}
+
+\begin{tabular}{|p{3cm}|p{10cm}|}
+\hline
+
+Optional & \begin{itemize}
+    \item {\bf Scripts:} Scripts that are called from the executables in order to aid the 
+        generation or test process
+    \item {\bf Templates:} These files have to be filled with parameters and can be used to generate entity 
+        declarations, test benches or description texts and files for the students.
+    \item {\bf Static:} These files are static for the task, therefore the same for every student.
+    \item {\bf Exam:} Files that are needed for the VELS exam mode.
+\end{itemize} 
+\\
+\hline
+\end{tabular} 
+
+
+A sequence for the task generation can go as follows:
+\begin{enumerate}
+    \item The generator executable is called by the autosub generator thread.
+    \item The generator executable calls a task generation script
+        {\tt "scripts/generateTask.py"}.
+    \item The task generation script generates random task parameters and returns
+        them, fills a LaTeX description template and vhdl templates and stores
+        the results in the directory {\tt "tmp/"}.
+    \item The generator executable generates the task description pdf file from the
+        filled template and copies it, all filled vhdl files and static vhdl files
+        to the users task description path.
+        {\tt "autosub/users/<user\_id>/Task<task\_nr>/desc/"}.
+    \item The generator executable stores the path to files that need to be attached
+        to the task email for the student in the {\tt semester.db UserTasks}
+        database table.
+\end{enumerate}
+
+The usual sequence for task submission testing is the following:
+\begin{enumerate}
+\item The tester executable is called by a autosub worker thread.
+\item The tester executable calls a testbench generation script
+    {\tt "scripts/generateTestBench.py"}.
+\item The tesbench generation script creates a testbench with test vectors and returns it.
+\item The tester executable stores the testbench and copies needed files from the task.
+    description in the taks directory {\tt "austosub/users/<user\_id>/Task<task\_nr>"}
+\item The tester executable checks if the appropiate submission files are present.
+    These files are copied to the user- task- folder by the fetcher thread.
+\item The tester executable analyzes files generated by the task generation, if errors
+    occur the process stops and sends an email to student and system administrator.
+\item The tester executable analyzes the student submission files, if errors occur they
+    are written to a {\tt error\_msg} file and the process stops.
+\item The tester elaborates and runs the testbench, if the tests fail meaningful messages
+    are written to a {\tt error\_msg} file and the process stops.
+\item The tester returns success.
+\end{enumerate}

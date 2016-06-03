@@ -1,0 +1,150 @@
+\section{Interaction with the system}\label{interactions}
+The VELS E-Learning system has 2 distinctive user groups: course operators and students. 
+To satisfy the use cases for each of the 2 user groups the following interfaces have
+to be defined:
+\begin{itemize}
+\item VELS Email Interface
+\item VELS Web Interface
+\item VELS direct server access
+\end{itemize} 
+
+The different use cases for students and operator and the responsible interface can be seen in 
+Table \ref{tab:usestudent} and Table \ref{tab:useoperator}.
+
+\begin{table}[h]
+\centering
+\begin{tabular}{||l | l||} 
+    \hline
+    Use Case & Responsible interface \\ [0.5ex] 
+    \hline\hline
+    register with the system & VELS Email Interface
+    \\
+    \hline
+    get status in course & VELS Email Interface 
+    \\
+    \hline
+    get current task & VELS Email Interface 
+    \\
+    \hline
+    submit a task & VELS Email Interface
+    \\
+    \hline
+    ask a question & VELS Email Interface
+    \\
+    \hline
+\end{tabular}
+\caption{Use cases for students}
+\label{tab:usestudent}
+\end{table}
+
+
+\begin{table}[h]
+\centering
+\begin{tabular}{||c | c||} 
+    \hline
+    Use Case & Responsible interface \\ [0.5ex] 
+     \hline\hline
+    configure a course & VELS Web Interface
+    \\
+    \hline
+    modify task generation or testbench generation & VELS direct server access
+    \\
+    \hline
+    create a new task & VELS direct server access
+    \\
+    \hline
+    view the progress for students & VELS Web Interface
+    \\
+    \hline
+    view task statistics & VELS Web Interface
+    \\
+    \hline
+    read log files & VELS direct server access 
+    \\
+    \hline
+\end{tabular}
+\caption{Use cases for course operators}
+\label{tab:useoperator}
+\end{table}
+
+\newpage
+
+\subsection{VELS Email Interface}\label{emailinterface}
+The VELS Email Interface is the primary interface for students. Students are uniquely identified by their email 
+address to interact with this interface. The student has to interact with a single, non-changing email address
+during the whole duration of a course. This email address should contain the student id ("Matrikelnummer")
+therefore only
+the generic University of Technology email address can be used by the students. These email addresses have to be added to the system's whitelist by a course operator in order to enable them to be authorized for interaction.
+
+The different actions a student can take are defined via email subject and address. The following cases
+are possible:
+\begin{itemize}
+\item \textit{Sender email address is not on whitelist:} The student is sent an e-mail that he should use
+    his generic University of Technology email address to interact with the system. If that does not help, he 
+    should contact on of the course operators.
+\item \textit{Sender email address is on whitelist, arbitrary Subject:} If the student is not registered 
+    with the system, registration will be initiated. Registration with the system creates the appropriate
+    data entries in the database for the student. If adding the new user was successful, two e-mails are 
+    sent to the user: a welcome message with general information on how the system works and if already
+    available the description of the first task. If the student is already registered he is sent an 
+    e-mail with the usage for this interface. 
+\item \textit{Subject contains the word "Question":} The student has a question about the course, this 
+    question is forwarded to all course operators. The student receives a confirmation that the 
+    question has been passed on.
+\item \textit{Subject contains the phrase "Question Task N" where N is the task number:} The student 
+    has a question about the course, this question is forwarded to all task operators for task N.
+    The student receives a confirmation that the question has been passed on.
+\item \textit{Subject contains the phrase "Result Task N" where N is the task number:} The student wants 
+    to hand in a solution, for Task N. Students are allowed to hand in solutions for all tasks that 
+    have already been solved previously, as well as the one task that has not been solved yet -- they
+    are not allowed to hand in solutions for tasks they did not receive the task description yet. The
+    solution is tested on the server. If the task solution was appropriate the student will receive the
+    next task (or a congratulations message, if no more examples are available). If the tests were not
+    successful, the student receives an error message that gives a hint on what may be wrong (output of the
+    simulation tool, expected output vs. actual output, etc.)
+\item \textit{Subject contains the word "Status":} The student is send an e-mail with the list of
+    his completed tasks and his current task description.
+\item \textit{\textit{default:}} The student is sent an e-mail with the usage for this interface.
+\end{itemize}
+
+
+\subsection{VELS Web Interface}\label{webinterface}
+
+The VELS Web Interface is a configuration and status tool for the course operators.
+
+Course operators can create a course. A course consists of a task queue, which explicitly orders a 
+selection of the available tasks. The following actions for course configuration shall be implemented:
+\begin{itemize}
+\item Configuration of the task queue (position of task in the queue, start and end date for the task,
+    points for task completion.
+\item Configure course registration deadline
+\item Modify course registration email whitelist 
+\item Set Number of tasks 
+\item Modify Archive Directory
+\item Set Administrator E-Mail
+\end{itemize}
+
+Course operators can view the progress of each student and is presented with the following informations:
+\begin{itemize}
+\item Student name and student identification number ("Matrikelnummer").
+\item Task the student is working on and the tasks the student has completed.
+\item Score which was accumulated by the student.
+\item Number of submissions for each task the student has received.
+\item List of attached files for each task the student has received.
+\end{itemize}
+
+Course operators can view statistical informations about his course:
+\begin{itemize}
+\item Number of wrong and right submissions for each tasks.
+\item General statistical informations about his course (e.g number emails received/sent).
+\end{itemize}
+
+The VELS Web Interface may also be used by the course operator to read the results at the end of the semester,
+that is the points that have been scored by the individual students.
+
+
+\subsection{VELS direct server access}\label{directserveraccess}
+The VELS direct server access can be used by course operators to generate new task, modify code for task
+generation, description and testing of existing tasks, read log files or fix bugs of the VELS system. 
+It also can be used to view every submission a student has done. These procedures will be described in 
+the VELS Usermanual.

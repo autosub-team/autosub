@@ -1,4 +1,12 @@
-#!/usr/bin/python
+#######################################################################
+# dailystats.py -- periodically (by default twice a day) generate a graph
+#                  of how many users have registered, mails sent/received
+#                  and questions asked
+#
+# Copyright (C) 2015 Andreas Platschek <andi.platschek@gmail.com>
+#                    Martin  Mosbeck   <martin.mosbeck@gmx.at>
+# License GPL V2 or later (see http://www.gnu.org/licenses/gpl2.txt)
+########################################################################
 
 import threading
 import matplotlib
@@ -23,8 +31,8 @@ def insert_stat_db(curst, const, table, count):
 
 def plot_stat_graph(curst, tablename, filename):
     sql_cmd = "SELECT TimeStamp FROM {0};".format(tablename)
-    list_of_datetimes = curst.fetchall()
     curst.execute(sql_cmd)
+    list_of_datetimes = curst.fetchall()
     dates = []
 
     for dtime in list_of_datetimes:
@@ -113,4 +121,5 @@ class DailystatsTask(threading.Thread):
             cons.close()
             const.close()
 
-            time.sleep(3600*12) #updating the images every 12h is enough
+            #time.sleep(3600*12) #updating the images every 12h is enough
+            time.sleep(360) #updating the images every 12h is enough
