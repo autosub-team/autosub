@@ -6,6 +6,8 @@ import random
 import subprocess
 import sqlite3 as lite
 
+used_tool_prefix = "ghdl_" #ISE_
+
 def copytree(src, dst, symlinks=False, ignore=None):
     for item in os.listdir(src):
         s = os.path.join(src, item)
@@ -29,7 +31,7 @@ class taskTestBase(unittest.TestCase):
                          "Error with generator.sh for task " + task_name)
 
     def runTester(self, task_name, taskParameters):
-        executable = "tasks/implementation/VHDL/{0}/tester.sh".format(task_name)
+        executable = "tasks/implementation/VHDL/{0}/{1}tester.sh".format(task_name,used_tool_prefix)
         tmpself = [executable, str(self.userId), \
                    str(self.taskNr), str(taskParameters)]
         ret = subprocess.check_call(tmpself, stdout=subprocess.PIPE, \

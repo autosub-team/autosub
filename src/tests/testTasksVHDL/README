@@ -2,3 +2,5 @@ Every task is checked with 3 tests:
 1) descFilesCreation -- test if generator generates all description files
 2) descVHDLFilesAnalyze -- test if the VHDl files of description compile
 3) testerExecution -- Check if the tester returns success for a given valid test submission
+
+The VHDL Simulator which is used can be changed in taskTestBase.py . Default: ghdl
