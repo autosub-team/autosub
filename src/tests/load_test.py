@@ -159,6 +159,150 @@ class Test_LoadTest(unittest.TestCase):
         con.commit()
         con.close()
 
+    def init_db_statvalue(self, countername, value):
+        """
+        Add entries for the statistics counters, and initialize them to 0.
+        """
+
+        curs, cons = c.connect_to_db(self.semesterdb, self.logger_queue, "loadtester")
+
+        data = {'Name': countername, 'Value': str(value)}
+        sql_cmd = ("INSERT INTO StatCounters (CounterId, Name, Value) "
+                   "VALUES(NULL, :Name, :Value)")
+        curs.execute(sql_cmd, data)
+        cons.commit()
+
+        cons.close()
+
+    def load_specialmessage_to_db(self, msgname):
+        """
+        Load the SpecialMessages in the db.
+        """
+
+        filecontent = "Dummy {0} Special Message".format(msgname)
+
+        curc, conc = c.connect_to_db(self.coursedb, self.logger_queue, "loadtest")
+
+        data = {'EventName': msgname, 'EventText': filecontent}
+        sql_cmd = ("INSERT INTO SpecialMessages (EventName, EventText) "
+                   "VALUES(:EventName, :EventText)")
+        curc.execute(sql_cmd, data)
+        conc.commit()
+        conc.close()
+
+    def clean_specialmsg(self):
+        conc = lite.connect(self.coursedb)
+        curc = conc.cursor()
+        #drop if exists
+        try:
+            sqlcmd = "DROP TABLE SpecialMessages;"
+            curc.execute(sqlcmd)
+            conc.commit()
+        except:
+            pass
+
+        sqlcmd = ("CREATE TABLE SpecialMessages ("
+                  "EventName TEXT PRIMARY KEY, EventText TEXT);")
+        curc.execute(sqlcmd)
+        conc.commit()
+        conc.close()
+
+        self.load_specialmessage_to_db('WELCOME')
+        self.load_specialmessage_to_db('USAGE')
+        self.load_specialmessage_to_db('QUESTION')
+        self.load_specialmessage_to_db('INVALID')
+        self.load_specialmessage_to_db('CONGRATS')
+        self.load_specialmessage_to_db('REGOVER')
+        self.load_specialmessage_to_db('NOTALLOWED')
+        self.load_specialmessage_to_db('CURLAST')
+        self.load_specialmessage_to_db('DEADTASK')
+
+    def clean_statcounters(self):
+        con = lite.connect(self.semesterdb)
+        cur = con.cursor()
+        #drop if exists
+        try:
+            sqlcmd = "DROP TABLE StatCounters;"
+            cur.execute(sqlcmd)
+            con.commit()
+        except:
+            pass
+
+        sqlcmd = ("CREATE TABLE StatCounters ("
+                  "CounterId INTEGER PRIMARY KEY AUTOINCREMENT, "
+                  "Name TEXT, Value INT);")
+        cur.execute(sqlcmd)
+        con.commit()
+        con.close()
+
+        # add the stat counter entries and initialize them to 0:
+        self.init_db_statvalue('nr_mails_fetched', 0)
+        self.init_db_statvalue('nr_mails_sent', 0)
+        self.init_db_statvalue('nr_questions_received', 0)
+        self.init_db_statvalue('nr_non_registered', 0)
+        self.init_db_statvalue('nr_status_requests', 0)
+
+    def clean_taskstats(self):
+        con = lite.connect(self.semesterdb)
+        cur = con.cursor()
+        #drop if exists
+        try:
+            sqlcmd = "DROP TABLE TaskStats;"
+            cur.execute(sqlcmd)
+            con.commit()
+        except:
+            pass
+
+        sqlcmd = ("CREATE TABLE TaskStats ("
+                  "TaskId INTEGER PRIMARY KEY, NrSubmissions INT, "
+                  "NrSuccessful INT);")
+        cur.execute(sqlcmd)
+        con.commit()
+
+        for t in range(1, 42):
+            data = {'TaskId': t}
+            sql_cmd = ("INSERT INTO TaskStats (TaskId, NrSubmissions, NrSuccessful) "
+                       "VALUES(:TaskId, 0, 0)")
+            cur.execute(sql_cmd, data)
+        con.commit()
+        con.close()
+
+    def set_general_config_param(self, configitem, content):
+        """
+        Set a general config parameter in the database.
+        """
+        curc, conc = c.connect_to_db(self.coursedb, self.logger_queue, "loadtester")
+
+        data = {'ConfigItem' : configitem, 'Content': content}
+        sql_cmd = ("INSERT INTO GeneralConfig (ConfigItem, Content) "
+               "VALUES(:ConfigItem, :Content)")
+        curc.execute(sql_cmd, data)
+        conc.commit()
+
+        conc.close()
+
+    def clean_generalconfig(self):
+        curc, conc = c.connect_to_db(self.coursedb, self.logger_queue, "loadtester")
+        try:
+            sqlcmd = "DROP TABLE GeneralConfig;"
+            curc.execute(sqlcmd)
+            conc.commit()
+        except:
+            pass
+
+        sqlcmd = ("CREATE TABLE GeneralConfig ("
+                  "ConfigItem Text PRIMARY KEY, Content TEXT);")
+        curc.execute(sqlcmd)
+        conc.commit()
+        conc.close()
+
+        self.set_general_config_param('num_tasks', "42")
+        self.set_general_config_param('registration_deadline', 'NULL')
+        self.set_general_config_param('archive_dir', 'archive/')
+        self.set_general_config_param('admin_email', '')
+        self.set_general_config_param('challenge_mode', "normal")
+        self.set_general_config_param('course_name', "load_test")
+
     def clean_taskconfig(self):
         conc = lite.connect(self.coursedb)
         curc = conc.cursor()
@@ -216,6 +360,10 @@ class Test_LoadTest(unittest.TestCase):
         self.clean_whitelist()
         self.clean_users()
         self.clean_usertasks()
+        self.clean_statcounters()
+        self.clean_taskstats()
+        self.clean_generalconfig()
+        self.clean_specialmsg()
         self.clean_taskconfig()
 
         curc, conc = c.connect_to_db(self.coursedb, self.logger_queue, "loadtester")
