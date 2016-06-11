@@ -21,10 +21,13 @@ class Test_generator(unittest.TestCase):
       senderq = queue.Queue(10)
       lqueue = queue.Queue(100)
 
-      testgen = generator.taskGenerator(1, self.name, genq, senderq, lqueue, 'testcourse.db', "submission@test.xy")
+      testgen = generator.taskGenerator(1, self.name, genq, senderq, lqueue, \
+                                        'testcourse.db', 'testsemester.db', \
+                                        "submission@test.xy")
 
       os.mkdir("users/42")
-      genq.put(dict({"UserId": "42", "UserEmail": "testuser@testdomain.com", "TaskNr": "1", "MessageId": "47110815"}))
+      genq.put(dict({"user_id": "42", "user_email": "testuser@testdomain.com", \
+                     "task_nr": "1", "messageid": "47110815"}))
 
       testgen.generator_loop()
       sendout = senderq.get(False, 1)
@@ -32,7 +35,8 @@ class Test_generator(unittest.TestCase):
       self.assertEqual(sendout.get('message_type'), "Task")
       self.assertEqual(sendout.get('Task'), "1")
 
-      genq.put(dict({"UserId": "42", "UserEmail": "testuser@testdomain.com", "TaskNr": "11", "MessageId": "47110815"}))
+      genq.put(dict({"user_id": "42", "user_email": "testuser@testdomain.com", \
+                     "task_nr": "11", "messageid": "47110815"}))
 
       testgen.generator_loop()
       sendout = senderq.get(False, 1)

@@ -17,6 +17,7 @@
 # $2 ... TaskNr
 # $3 ... Submission Email
 # $4 ... Mode
+# $5 ... SemesterDB
 
 ##########################
 ########## PATHS #########
@@ -102,6 +103,6 @@ fi
 ##########################
 #NOTE: do not attach solution in final version :)
 cd $autosubPath/tools
-python3 add_to_usertasks.py -u $1 -t $2 -p "$task_parameters" -a "$taskAttachments"
+python3 add_to_usertasks.py -u $1 -t $2 -p "$task_parameters" -a "$taskAttachments" -d $5
 
 cd $autosubPath

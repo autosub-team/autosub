@@ -18,6 +18,8 @@ exam/ --files for the exam mode
 
 generator.sh --> executable that gets called from the generator thread
 
-tester.sh --> executable that gets called from the worker thread
+...tester.sh --> executable that gets called from the worker thread
+                 the testers should have a prefix corresponding to the simulator they are using 
+                 e.g ghdl_tester.sh
 
 description.txt -->message that will be sent in the task description email
