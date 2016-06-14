@@ -1,0 +1,33 @@
+\documentclass[a4paper,12pt]{article}
+\usepackage{a4wide}
+\usepackage{tikz}
+\usetikzlibrary{calc}
+
+\begin{document}
+\pagestyle{empty}
+\setlength{\parindent}{0em} 
+\section*{Exercise 0}
+
+Your task is to program the behavior of an entity called "ALU". This entity is declared in the attached file "ALU.vhdl" and has the following properties:
+\begin{itemize}
+\item Inputs:  A, B, Clk with type std\_logic
+\item Outputs: O with type std\_logic
+\end{itemize}
+
+Do not change the file "ALU.vhdl".
+\\
+
+The "ALU" entity shall behave according to the following ALU:
+\\
+it has two input data, a clock cycle and a selector to select which insructions has to be performed. the length of data is 2 bits. Clock cycle is %%CLK and instrution set includes %%INS1 when the selector is 0 and %%INS2 when the selcetor is 1. The ALU performs the seleced instruction on the inputs and then outputs the result. The result is the same size as the input and overflow bit is ignored.
+\\
+This behavior has to be programmed in the attached file "ALU\_beh.vhdl". The clock period is 1 ns.
+\\
+
+To turn in your solution write an email to %%SUBMISSIONEMAIL with Subject "Result Task %%TASKNR" and attach your file "ALU_beh.vhdl".
+
+\vspace{0.7cm}
+Good Luck and May the Force be with you.
+
+
+\end{document}
