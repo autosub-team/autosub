@@ -59,7 +59,7 @@ python3 scripts/generateTestBench.py $3 > $userTaskPath/gates_tb_$1_Task$2.vhdl
 cp $descPath/gates.vhdl $userTaskPath
 
 # copy the isim tcl file for testing to user's folder
-cp $taskPath/static/isim.cmd $userTaskPath
+cp $taskPath/scripts/isim.cmd $userTaskPath
 
 #copy needed files for IEEE 1164 gates to user's folder
 cp $descPath/IEEE_1164_Gates_pkg.vhdl $userTaskPath
