@@ -1,5 +1,7 @@
 Autosub implements an E-Mail based automatic submission system for E-Learning.
 
+For documenation, please refer to our user manual (https://github.com/andipla/autosub/blob/master/doc/doc_pdf/usermanual.pdf) as well as the autosub specification (https://github.com/andipla/autosub/blob/master/doc/doc_pdf/specification.pdf).
+
 --
 
 Autosub received funding as an VHDL E-Learning Platform(VELS) from the
