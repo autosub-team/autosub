@@ -1,4 +1,12 @@
-Autosub implements an E-Mail based automatic submission system for E-Learning.
+Autosub is an email based system for submitting and automatically
+testing student assignments in courses.
+
+It includes VELS (VHDL E-Learning System) for supporting VHDL
+training courses. The students submit VHDL models by Email, which are
+automatically simulated and tested by a testbench on the server. The
+student receives an email response about the success or failure of the
+test within seconds or minutes.
+The system comes with a set of VHDL assignments for VHDL beginners.
 
 --
 
@@ -20,7 +28,7 @@ Many Thanks!
 
 --
 
-IMPORTANT: 
+IMPORTANT:
 The C example tasks given in this repository are not meant for usage, as they
 impose a severe security threat if used unchanged -- it means you allow everyone
 who submitts to the task to execute arbitraty code on YOUR machine. These are really
