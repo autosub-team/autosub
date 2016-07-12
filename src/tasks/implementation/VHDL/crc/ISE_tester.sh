@@ -61,7 +61,7 @@ cp $descPath/fsr.vhdl $userTaskPath
 cp $descPath/crc.vhdl $userTaskPath
 
 # copy the isim tcl file for testing to user's folder
-cp $taskPath/static/isim.cmd $userTaskPath
+cp $taskPath/scripts/isim.cmd $userTaskPath
 
 #change to userTaskPath, generate space for errors
 cd $userTaskPath

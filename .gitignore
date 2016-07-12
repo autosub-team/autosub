@@ -1,5 +1,6 @@
 test.cfg
 *.pdf
-autosub.log
-autosub.db
+!doc/doc_pdf/*.pdf
+*.log
+*.db
 

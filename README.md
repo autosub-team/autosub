@@ -8,6 +8,8 @@ student receives an email response about the success or failure of the
 test within seconds or minutes.
 The system comes with a set of VHDL assignments for VHDL beginners.
 
+For documenation, please refer to our user manual (https://github.com/andipla/autosub/blob/master/doc/doc_pdf/usermanual.pdf) as well as the autosub specification (https://github.com/andipla/autosub/blob/master/doc/doc_pdf/specification.pdf).
+
 --
 
 Autosub received funding as an VHDL E-Learning Platform(VELS) from the
