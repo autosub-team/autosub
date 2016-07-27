@@ -88,8 +88,8 @@ with open (filename, "w") as output_file:
 #################################
 random_num=[]
 paramsExam={}
-random_tmp=random.sample(range(x[3], x[3]+x[4]-1),10)    
-for i in range(0,10):
+random_tmp=random.sample(range(x[3], x[3]+x[4]),x[4])    
+for i in range(0,x[4]):
     random_num.append(str(random_tmp[i]))    
 
 for i in range(len(random_num)-1):
@@ -97,7 +97,7 @@ for i in range(len(random_num)-1):
     
 random_num=("\n"+(28)*" ").join(random_num)
 
-paramsExam.update({"RANDOM":random_num,"ADDRLENGTH":str(x[1]-1),"INSTRUCTIONLENGTH":str(x[2]-1),"START":start})
+paramsExam.update({"RANDOM":random_num,"ADDRLENGTH":str(x[1]-1),"INSTRUCTIONLENGTH":str(x[2]-1),"START":str(x[3]),"DATALENGTH":str(x[4])})
 
 ##########################
 #### CHANGE EXAM FILE ####
