@@ -25,16 +25,18 @@ class MailSender(threading.Thread):
     Thread in charge of sending out mails (responses to users as well as
     notifications for admins).
     """
-    def __init__(self, name, sender_queue, autosub_mail, autosub_user, \
-                 autosub_passwd, autosub_smtpserver, logger_queue, arch_queue, \
+    def __init__(self, name, sender_queue, smtpmail, smtpuser, \
+                 smtppasswd, smtpserver, smtpport, smtpsecurity, logger_queue, arch_queue, \
                  coursedb, semesterdb):
         threading.Thread.__init__(self)
         self.name = name
         self.sender_queue = sender_queue
-        self.autosub_user = autosub_user
-        self.mail_user = autosub_mail
-        self.mail_pwd = autosub_passwd
-        self.smtpserver = autosub_smtpserver
+        self.smtp_user = smtpuser
+        self.smtp_mail = smtpmail
+        self.smtp_pwd = smtppasswd
+        self.smtp_server = smtpserver
+        self.smtp_port = smtpport
+        self.smtp_security = smtpsecurity
         self.logger_queue = logger_queue
         self.arch_queue = arch_queue
         self.coursedb = coursedb
@@ -69,7 +71,8 @@ class MailSender(threading.Thread):
         users have solved that task successfully
         """
         data = {'cname': countername, 'tasknr': tasknr}
-        sql_cmd = "UPDATE TaskStats SET {0} =(SELECT :cname FROM TaskStats WHERE TaskId == :tasknr)+1 WHERE TaskId == :tasknr".format(countername)
+        sql_cmd = ("UPDATE TaskStats SET {0} =(SELECT :cname FROM TaskStats "
+                   "WHERE TaskId == :tasknr)+1 WHERE TaskId == :tasknr").format(countername)
         curs.execute(sql_cmd, data)
         cons.commit()
 
@@ -124,7 +127,7 @@ class MailSender(threading.Thread):
             # set first successful
             data['subnr'] = submission_nr
             sql_cmd = "UPDATE UserTasks SET FirstSuccessful = :subnr WHERE UserId = :uid AND TaskNr = :tasknr;"
-            curs.execute(sql_cmd , data)
+            curs.execute(sql_cmd, data)
             cons.commit()
 
 ####
@@ -209,17 +212,40 @@ class MailSender(threading.Thread):
         connect to the smtp server and send out an e-mail
         """
         try:
-            # port 465 doesn't seem to work!
-            server = smtplib.SMTP(self.smtpserver, 587)
+            # connecting to smtp server
+            if self.smtp_security == 'ssl':
+                server = smtplib.SMTP_SSL(self.smtp_server, int(self.smtp_port))
+            else:
+                server = smtplib.SMTP(self.smtp_server, int(self.smtp_port))
+
+            #server.ehlo_or_helo_if_needed()
             server.ehlo()
-            server.starttls()
-            server.login(self.autosub_user, self.mail_pwd)
-            server.sendmail(self.mail_user, recipient, message)
+
+            if self.smtp_security == 'starttls':
+                server.starttls()
+
+            server.login(self.smtp_user, self.smtp_pwd)
+        except smtplib.SMTPConnectError:
+            logmsg = "Error while login to server with security= " + \
+                     self.smtp_security + " , port= " + str(self.smtp_port)
+            c.log_a_msg(self.logger_queue, self.name, logmsg, "ERROR")
+        except smtplib.SMTPAuthenticationError:
+            logmsg = ("Authentication error")
+            c.log_a_msg(self.logger_queue, self.name, logmsg, "ERROR")
+        except:
+            logmsg = "Error with server connection with security= " + \
+                     self.smtp_security + " , port= " + str(self.smtp_port)
+            c.log_a_msg(self.logger_queue, self.name, logmsg, "ERROR")
+
+        try:
+            server.sendmail(self.smtp_mail, recipient, message)
             server.close()
             c.log_a_msg(self.logger_queue, self.name, "Successfully sent an e-mail of type '{0}'!".format(msg_type), "DEBUG")
             c.increment_db_statcounter(self.semesterdb, 'nr_mails_sent', \
                                        self.logger_queue, self.name)
-        except:
+        except Exception as e:
+            logmsg = str(e)
+            c.log_a_msg(self.logger_queue, self.name, logmsg, "ERROR")
             c.log_a_msg(self.logger_queue, self.name, "Failed to send out an e-mail of type '{0}'!".format(msg_type), "ERROR")
 
     def read_text_file(self, path_to_msg):
@@ -236,7 +262,11 @@ class MailSender(threading.Thread):
                         "Failed to read from config file", "WARNING")
 
         return message_text
-
+####
+# assemble_email()
+#
+# Assemble email from text and attachments
+####
     def assemble_email(self, msg, message_text, attachments):
         """
         assemble e-mail content
@@ -268,6 +298,9 @@ class MailSender(threading.Thread):
 #        c.log_a_msg(self.logger_queue, self.name, logmsg, "DEBUG")
         return msg
 
+####
+# handle_next_mail()
+####
     def handle_next_mail(self):
         """
         parse the subject/content of a mail and take appropriate action.
@@ -290,7 +323,7 @@ class MailSender(threading.Thread):
 
         # prepare fields for the e-mail
         msg = MIMEMultipart()
-        msg['From'] = self.mail_user
+        msg['From'] = self.smtp_mail
         msg['To'] = recipient
         logmsg = "RECIPIENT: " + recipient
         c.log_a_msg(self.logger_queue, self.name, logmsg, "DEBUG")

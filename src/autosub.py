@@ -136,7 +136,7 @@ def load_specialmessage_to_db(coursedb, msgname, filename, subsmission_email, co
 
     data = {'EventName': msgname, 'EventText': filecontent}
     sql_cmd = ("INSERT INTO SpecialMessages (EventName, EventText) "
-                   "VALUES(:EventName, :EventText)")
+               "VALUES(:EventName, :EventText)")
     curc.execute(sql_cmd, data)
     conc.commit()
 
@@ -306,11 +306,51 @@ if __name__ == '__main__':
 
     config = configparser.ConfigParser()
     config.readfp(open(opts.configfile))
+
     imapserver = config.get('imapserver', 'servername')
-    autosub_user = config.get('imapserver', 'username')
-    autosub_passwd = config.get('imapserver', 'password')
-    autosub_mail = config.get('imapserver', 'email')
+    imapuser = config.get('imapserver', 'username') #was autosub_user
+    imappasswd = config.get('imapserver', 'password') #was autosub_passwd
+    imapmail = config.get('imapserver', 'email') #was autosub_mail
+
+    try:
+        imapsecurity = config.get('imapserver', 'security')
+        if imapsecurity not in ['none', 'ssl', 'starttls']:
+            imapsecurity = 'ssl'
+    except:
+        imapsecurity = 'ssl'
+
+    try:
+        imapport = config.getint('imapserver', 'serverport')
+    except:
+        if imapsecurity == 'ssl':
+            imapport = 993
+        else:
+            imapport = 143
+
     smtpserver = config.get('smtpserver', 'servername')
+    smtpuser = config.get('smtpserver', 'username')
+    smtppasswd = config.get('smtpserver', 'password')
+    smtpmail = config.get('smtpserver', 'email')
+
+    try:
+        smtpsecurity = config.get('smtpserver', 'security')
+        if smtpsecurity not in ['none', 'ssl', 'starttls']:
+            smtpsecurity = 'ssl'
+    except:
+        smtpsecurity = 'ssl'
+
+    try:
+        smtpport = config.getint('smtpserver', 'serverport')
+    except:
+        if smtpsecurity == 'ssl':
+            smtpport = 465
+        elif smtpsecurity == 'starttls':
+            smtpport = 587
+        else:
+            smtpport = 25
+
+
+
     numThreads = config.getint('general', 'num_workers')
     queue_size = config.getint('general', 'queue_size')
 
@@ -379,15 +419,15 @@ if __name__ == '__main__':
     ####################
     # Init Ressources  #
     ####################
-    init_ressources(semesterdb, coursedb, num_tasks, autosub_mail, challenge_mode, \
+    init_ressources(semesterdb, coursedb, num_tasks, smtpmail, challenge_mode, \
                     course_name, specialpath)
 
     ####################
     ## Start Threads  ##
     ####################
-    sender_t = sender.MailSender("sender", sender_queue, autosub_mail, \
-                                 autosub_user, autosub_passwd, smtpserver, logger_queue, \
-                                 arch_queue, coursedb, semesterdb)
+    sender_t = sender.MailSender("sender", sender_queue, smtpmail, \
+                                 smtpuser, smtppasswd, smtpserver, smtpport, smtpsecurity, \
+                                 logger_queue, arch_queue, coursedb, semesterdb)
 
     # make the sender thread a daemon, this way the main will clean it up before
     # terminating!
@@ -395,8 +435,8 @@ if __name__ == '__main__':
     sender_t.start()
     thread_id += 1
 
-    fetcher_t = fetcher.mailFetcher(thread_id, "fetcher", job_queue, sender_queue, \
-                                    gen_queue, autosub_user, autosub_passwd, imapserver, \
+    fetcher_t = fetcher.mailFetcher(thread_id, "fetcher", job_queue, sender_queue, gen_queue, \
+                                    imapuser, imappasswd, imapserver, imapport, imapsecurity, \
                                     logger_queue, arch_queue, poll_period, coursedb, \
                                     semesterdb)
 
@@ -408,7 +448,7 @@ if __name__ == '__main__':
 
     generator_t = generator.taskGenerator(thread_id, "generator", gen_queue, \
                                           sender_queue, logger_queue, coursedb, \
-                                          semesterdb, autosub_mail)
+                                          semesterdb, smtpmail)
 
     # make the fetcher thread a daemon, this way the main will clean it up before
     # terminating!

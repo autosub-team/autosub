@@ -22,8 +22,8 @@ class mailFetcher(threading.Thread):
     assigns work to other threads.
     """
 
-    def __init__(self, threadID, name, job_queue, sender_queue, gen_queue, autosub_user, \
-                 autosub_passwd, autosub_imapserver, logger_queue, arch_queue, \
+    def __init__(self, threadID, name, job_queue, sender_queue, gen_queue, imapuser, \
+                 imappasswd, imapserver, imapport, imapsecurity, logger_queue, arch_queue, \
                  poll_period, coursedb, semesterdb):
         """
         Constructor for fetcher thread
@@ -35,9 +35,11 @@ class mailFetcher(threading.Thread):
         self.job_queue = job_queue
         self.sender_queue = sender_queue
         self.gen_queue = gen_queue
-        self.autosub_user = autosub_user
-        self.autosub_pwd = autosub_passwd
-        self.imapserver = autosub_imapserver
+        self.imap_user = imapuser
+        self.imap_pwd = imappasswd
+        self.imap_server = imapserver
+        self.imap_port = imapport
+        self.imap_security = imapsecurity
         self.logger_queue = logger_queue
         self.arch_queue = arch_queue
         self.poll_period = poll_period
@@ -334,29 +336,37 @@ class mailFetcher(threading.Thread):
 
         try:
             # connecting to the imap server
-            m = imaplib.IMAP4_SSL(self.imapserver)
-            m.login(self.autosub_user, self.autosub_pwd)
+            if self.imap_security == 'ssl':
+                server = imaplib.IMAP4_SSL(self.imap_server, int(self.imap_port))
+            else:
+                server = imaplib.IMAP4(self.imap_server, int(self.imap_port))
+
+            if self.imap_security == 'starttls':
+                server.starttls()
+
+            server.login(self.imap_user, self.imap_pwd)
         except imaplib.IMAP4.abort:
-            logmsg = ("Login to server was aborted (probably a server-side problem). "
-                      "Trying to connect again ...")
+            logmsg = "Login to server was aborted with security= " + self.imap_security + \
+                     " , port= " + str(self.imap_port)
             c.log_a_msg(self.logger_queue, self.name, logmsg, "ERROR")
             #m.close()
             return 0
         except imaplib.IMAP4.error:
-            logmsg = ("Got an error when trying to connect to the imap server. "
-                      "Trying to connect again ...")
+            logmsg = "Got an error when trying to connect to the imap server with" + \
+                     " security= " + self.imap_security + " , port= " + str(self.imap_port)
             c.log_a_msg(self.logger_queue, self.name, logmsg, "ERROR")
             return 0
         except:
-            logmsg = ("Got an unknown exception when trying to connect to the imap "\
-                      "server. Trying to connect again ...")
+            logmsg = "Got an unknown exception when trying to connect to the imap " + \
+                     "server with security= " + self.imap_security + " , port= " + str(self.imap_port)
             c.log_a_msg(self.logger_queue, self.name, logmsg, "ERROR")
             return 0
 
-        logmsg = "Successfully logged into imap server"
+        logmsg = "Successfully logged into imap server with security= " + self.imap_security + \
+                 " , port= " + str(self.imap_port)
         c.log_a_msg(self.logger_queue, self.name, logmsg, "DEBUG")
 
-        return m
+        return server
 
     ####
     # fetch_new_emails
@@ -614,7 +624,7 @@ class mailFetcher(threading.Thread):
 
         c.log_a_msg(self.logger_queue, self.name, "Starting Mail Fetcher Thread!", "INFO")
 
-        logmsg = "Imapserver: '" + self.imapserver + "'"
+        logmsg = "Imapserver: '" + self.imap_server + "'"
         c.log_a_msg(self.logger_queue, self.name, logmsg, "DEBUG")
 
         # This thread is running as a daemon thread, this is the while(1) loop that is
