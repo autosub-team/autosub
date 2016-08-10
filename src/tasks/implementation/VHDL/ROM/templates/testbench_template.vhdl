@@ -60,7 +60,7 @@ begin
              end if;             
          end loop; 
          if err='1' then 
-           report " Probebly you did not use the enable signal properly, or there is a problem with using signals and variables" severity failure;
+           report " Probably you did not use the enable signal correctly, or there is a problem with using signals and variables." severity failure;
          end if;
          err := '0';   
 
@@ -85,7 +85,7 @@ begin
         end if;
    
       if err='1' then 
-         report " Probebly ROM is not operating on right edge of clock cycle, or there is a problem with using signals and variables" severity failure;
+         report " Probably ROM is not operating on the right edge of clock cycle, or there is a problem with using signals and variables." severity failure;
       end if;
       err :='0';
       
@@ -117,7 +117,7 @@ begin
      end loop;
      
     if (err = '1') then 
-        report "ROM is not properly filled with the data specified in description file." severity failure;       
+        report " ROM is not properly filled with the data specified in the description file." severity failure;       
     else
         report "Success" severity failure;  
     end if; 

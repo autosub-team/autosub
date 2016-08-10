@@ -8,9 +8,9 @@ END ALU_tb;
 ARCHITECTURE behavior OF ALU_tb IS
 
    signal Clk,enable : std_logic := '0'; --clock signal and enable
-   signal A,B : unsigned(3 downto 0) := (others => '0'); --input operands
+   signal A,B : std_logic_vector(3 downto 0) := (others => '0'); --input operands
    signal slc : std_logic_vector(1 downto 0) := (others => '0'); --Operation to be performed
-   signal R : unsigned(3 downto 0) := (others => '0');  --output of ALU
+   signal R : std_logic_vector(3 downto 0) := (others => '0');  --output of ALU
    signal flag : std_logic := '0'; --flag (carry,sign,zero or parity)
    constant Clk_period : time := 10 ns;
 
@@ -34,7 +34,7 @@ BEGIN
    
 	    variable fail : std_logic :='0';
            --to_string function for report
-           function to_string ( a: unsigned) return string is
+           function to_string ( a: std_logic_vector) return string is
                     variable b : string (a'length downto 1) := (others => '0');
             begin
                     for i in a'length downto 1 loop
@@ -44,7 +44,7 @@ BEGIN
             end function;
             --result of ADD, SUB, AND, OR, XOR and comparator
             type pattern_type_add is record
-                     O1,O2,O3 : unsigned(3 downto 0);
+                     O1,O2,O3 : std_logic_vector(3 downto 0);
                      end record;        
             type out_add_array is array (0 to 16*16-1) of pattern_type_add;
             constant out_add : out_add_array :=(
@@ -57,7 +57,7 @@ BEGIN
             constant out_flag : flag_array :=(
                                           %%FLAG); 
             --result of Shift instructions         
-            type out_shift_array is array (0 to 15) of unsigned(3 downto 0);
+            type out_shift_array is array (0 to 15) of std_logic_vector(3 downto 0);
             constant out_shift : out_shift_array :=(
                     %%RESULT2); 
             --result of flag Shift instructions 
@@ -68,7 +68,7 @@ BEGIN
             type selector is array (0 to 3) of std_logic_vector(1 downto 0);
             constant slcr : selector :=("00","01","10","11");
             --inputs
-            type input_array is array (0 to 15) of unsigned(3 downto 0);
+            type input_array is array (0 to 15) of std_logic_vector(3 downto 0);
             constant input : input_array :=("0000","0001","0010","0011",
                                             "0100","0101","0110","0111",
                                             "1000","1001","1010","1011",
@@ -92,7 +92,7 @@ BEGIN
               end if;             
           end loop; 
           if fail='1' then 
-            report " Probebly you did not use the enable signal properly, or there is a problem with using signals and variables" severity failure;
+            report " Probably you did not use the enable signal correctly, or there is a problem with using signals and variables." severity failure;
           end if;
           fail :='0';
               
@@ -115,7 +115,7 @@ BEGIN
     end loop;
    
       if fail='1' then 
-         report " Probebly ALU is not operating on rising edge of clock cycle, or there is a problem with using signals and variables" severity failure;
+         report " Probably ALU is not operating on rising edge of clock cycle, or there is a problem with using signals and variables." severity failure;
       end if;
       -------------------check specification-----------------------
       enable <= '1';

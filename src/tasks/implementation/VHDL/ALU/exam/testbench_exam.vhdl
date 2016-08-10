@@ -8,9 +8,9 @@ END ALU_tb;
 ARCHITECTURE behavior OF ALU_tb IS
 
    signal Clk,enable : std_logic := '0'; --clock signal and enable
-   signal A,B : unsigned(3 downto 0) := (others => '0'); --input operands
+   signal A,B : std_logic_vector(3 downto 0) := (others => '0'); --input operands
    signal slc : std_logic_vector(1 downto 0) := (others => '0'); --Operation to be performed
-   signal R : unsigned(3 downto 0) := (others => '0');  --output of ALU
+   signal R : std_logic_vector(3 downto 0) := (others => '0');  --output of ALU
    signal flag : std_logic := '0'; --flag (carry,sign,zero or parity)
    constant Clk_period : time := 10 ns;
 
@@ -36,7 +36,7 @@ BEGIN
             type selector is array (0 to 3) of std_logic_vector(1 downto 0);
             constant slcr : selector :=("00","01","10","11");
             --inputs
-            type input_array is array (0 to 15) of unsigned(3 downto 0);
+            type input_array is array (0 to 15) of std_logic_vector(3 downto 0);
             constant input : input_array :=("0000","0001","0010","0011",
                                             "0100","0101","0110","0111",
                                             "1000","1001","1010","1011",
