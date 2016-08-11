@@ -2,6 +2,7 @@
 \usepackage{a4wide}
 \usepackage{tikz}
 \usetikzlibrary{calc}
+\usepackage{hyperref}
 
 \begin{document}
 \pagestyle{empty}
@@ -16,6 +17,25 @@ Your task is to program the behavior of an entity called "ROM". This entity is d
 \item Outputs: output with type std\_logic\_vector; this is the data (instruction) which is read 
 \end{itemize}
 \vspace{0.3cm}
+\begin{center}
+\begin{tikzpicture}
+\draw node [draw,rectangle, minimum height=25mm, minimum width=35mm,rounded corners=2mm,thick](entity){};
+\draw[->,thick] ($ (entity.west)-(10mm,-7.5mm)$) -- ($ (entity.west) - (0mm,-7.5mm)$);
+\draw node at ($ (entity.west)-(15mm,-7.5mm)$){addr};
+\draw[->,thick] ($ (entity.west)-(10mm,2mm)$) -- ($ (entity.west) - (0mm,2mm)$);
+\draw node at ($ (entity.west)-(15mm,2mm)$){Clk};
+\draw[->,thick] ($ (entity.west)-(10mm,8mm)$) -- ($ (entity.west) - (0mm,8mm)$);
+\draw node at ($ (entity.west)-(17mm,8mm)$){enable};
+
+\draw[->,thick] ($ (entity.east) + (0mm,0mm)$) -- ($ (entity.east) + (10mm,0mm)$);
+\draw node at ($ (entity.east) + (17mm,0mm)$){output};
+
+
+
+\draw node at ($ (entity) - (0,15mm)$){ROM};
+
+\end{tikzpicture}
+\end{center}
 
 Do not change the file "ROM.vhdl".\\
 
@@ -45,4 +65,7 @@ Good Luck and May the Force be with you.
 
 
 \end{document}
+\grid
+\grid
+\grid
 \grid

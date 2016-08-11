@@ -195,6 +195,7 @@ else #; timeout returns 124 if it had to kill process
     cd $autosubPath
     logPrefix && echo "${logPre}Wrong behavior for Task$2 for user with ID $1!"
     echo "Your submitted behavior file does not behave like specified in the task description:" >$userTaskPath/error_msg
+    cat $userTaskPath/isim.log | grep "ERROR: " >> $userTaskPath/error_msg
     cat $userTaskPath/isim.log | grep Failure >> $userTaskPath/error_msg
     #echo "Please see which signal your entity produces:" >> $userTaskPath/error_msg
     exit 1  

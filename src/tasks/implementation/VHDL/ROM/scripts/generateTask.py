@@ -78,7 +78,7 @@ filename ="templates/ROM_template.vhdl"
 with open (filename, "r") as template_file:
     data=template_file.read()
     
-filename ="static/ROM.vhdl"
+filename ="tmp/ROM_{0}_Task{1}.vhdl".format(userId,taskNr)
 with open (filename, "w") as output_file:
     s = MyTemplate(data)
     output_file.write(s.substitute(paramsEntity))

@@ -65,8 +65,10 @@ rm desc_$1_Task$2.log
 rm desc_$1_Task$2.tex
 mv $taskPath/tmp/desc_$1_Task$2.pdf $descPath
 
+#move the generated entity file to user's descritption folder
+mv $taskPath/tmp/ROM_$1_Task$2.vhdl $descPath/ROM.vhdl
+
 #copy static files to user's description folder
-cp $taskPath/static/ROM.vhdl $descPath
 cp $taskPath/static/ROM_beh.vhdl $descPath
 
 #for exam
