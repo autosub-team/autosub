@@ -110,7 +110,7 @@ Instr_Text= ["add", # 0
 		 "OR",  # 3
 		 "XOR", # 4
 		 "NOR", # 5
-		 "The slt (set-on-lower) instruction uses the ALU to compare two register values. The control signal for the ALU can be found in Table~1. ",
+		 "The slt (set on less than) instruction uses the ALU to compare two register values. The control signal for the ALU can be found in Table~1. ",
 		 "The lw instruction loads data from a memory address into a register. The address is calculated by adding a base address to the immediate value from the instruction. ",
 		 "The sw instruction stores data from a register in a memory address. The address is calculated by adding a base address to the immediate value from the instruction. ",
 		 "The j instruction jumps to the address specified in the instruction. ",
