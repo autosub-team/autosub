@@ -61,7 +61,7 @@ architecture Behavioral of SC_CU_tb is
              
 begin
 	-- concatenate all control signals to one std_logic_vector:
-      Controls <= RegDst & RegWrite & ALUSrc & ALUControl & MemWrite & MemRead & MemtoReg & Jump & Branch;
+      Controls <= RegDst & Branch & Jump & MemRead & MemtoReg & MemWrite & ALUControl & ALUSrc & RegWrite;
       
       UUT: SC_CU_beh
             port map
