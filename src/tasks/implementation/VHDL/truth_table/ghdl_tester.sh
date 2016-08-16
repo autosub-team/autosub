@@ -62,6 +62,12 @@ cp $descPath/truth_table.vhdl $userTaskPath
 cd $userTaskPath
 touch error_msg
 
+# create tmp directory
+if [ ! -d "/tmp/$USER" ]
+then
+   mkdir /tmp/$USER
+fi
+
 #check if the user supplied a file
 if [ ! -f $userfile ]
 then
@@ -70,6 +76,9 @@ then
     echo "You did not attach your solution. Please attach the file $userfile" >$userTaskPath/error_msg
     exit 1 
 fi
+
+#delete all comments from the file
+sed -i 's:--.*$::g' $userfile
 
 ##########################
 ######### ANALYZE ########
@@ -93,11 +102,6 @@ then
    logPrefix && echo "${logPre}Error with Task $2 testbench for user with ID $1";
    echo "Something went wrong with the task $2 test generation. This is not your fault. We are working on a solution" > $userTaskPath/error_msg
    exit 3 
-fi
-
-if [ ! -d "/tmp/$USER" ]
-then
-   mkdir /tmp/$USER
 fi
 
 #this is the file from the user

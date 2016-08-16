@@ -65,6 +65,12 @@ cp $taskPath/scripts/isim.cmd $userTaskPath
 cd $userTaskPath
 touch error_msg
 
+# create tmp directory
+if [ ! -d "/tmp/$USER" ]
+then
+   mkdir /tmp/$USER
+fi
+
 #check if the user supplied a file
 if [ ! -f $userfile ]
 then
@@ -74,11 +80,8 @@ then
     exit 1 
 fi
 
-# create tmp directory
-if [ ! -d "/tmp/$USER" ]
-then
-   mkdir /tmp/$USER
-fi
+#delete all comments from the file
+sed -i 's:--.*$::g' $userfile
 
 ##########################
 ######### ANALYZE ########
