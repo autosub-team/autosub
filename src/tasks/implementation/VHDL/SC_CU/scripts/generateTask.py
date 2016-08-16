@@ -110,13 +110,13 @@ Instr_Text= ["add", # 0
 		 "OR",  # 3
 		 "XOR", # 4
 		 "NOR", # 5
-		 "The slt (set on less than) instruction uses the ALU to compare two register values. The control signal for the ALU can be found in Table~1. ",
-		 "The lw instruction loads data from a memory address into a register. The address is calculated by adding a base address to the immediate value from the instruction. ",
-		 "The sw instruction stores data from a register in a memory address. The address is calculated by adding a base address to the immediate value from the instruction. ",
+		 "The slt (set on less than) instruction uses the ALU to compare two register values. The result is stored in the destination register. The control signal for the ALU can be found in Table~1. ",
+		 "The lw instruction loads data from a memory address to a register. The memory address is calculated by adding a base address to the immediate value from the instruction. The base address is retrieved from the register specified in rs. The loaded data is stored in the register specified in rt. ",
+		 "The sw instruction stores data, from the register specified in rt, in a memory address. The address is calculated by adding a base address to the immediate value from the instruction. The base address is retrieved from the register specified in rs. ",
 		 "The j instruction jumps to the address specified in the instruction. ",
-		 "The beq instruction initiates a branch to a new PC value only if the ALU flags its two input register values as equal. ",
+		 "The beq instruction initiates a branch to a new PC value only if the ALU flags its two input register values as equal. The input registers are specified in rs and rt. The new PC value is calculated by adding the PC value and the immediate value of the instruction. Before adding the immediate value it is extendend from 16 to 32 bits and shiftet to the left by two bits. ",
 		 "nothing",
-		 "The bne instruction initiates a branch to a new PC value only if the ALU flags its two input register values as unequal. " ]
+		 "The bne instruction initiates a branch to a new PC value only if the ALU flags its two input register values as unequal. The input registers are specified in rs and rt. The new PC value is calculated by adding the PC value and the immediate value of the instruction. Before adding the immediate value it is extendend from 16 to 32 bits and shiftet to the left by two bits. " ]
 
 
 # select Instruction types:
@@ -164,7 +164,7 @@ if (In_1 == 9) or (In_2 == 9) or (In_3 == 9) or (In_4 == 9) :   # J-type
 				    "    \\hline\n"
 				    "    \\end{tabular}\n"
 				    "\\end{table}\n"
-				    "With the opcode representing the instruction and the address being part of a 32 bit address. The 32 bit address is constructed by using the first four bits of the Program Counter as most significant bits and setting the two least significant bits to 0.")
+				    "With the opcode representing the instruction and the address being part of a 32 bit address. The 32 bit address is constructed by using the first four bits of the program counter as most significant bits and setting the two least significant bits to 0.")
 
 if number_of_Instruction_types >= 2 :
 	sel_Instr_type.append("\\\\\\\\ \n")
@@ -292,11 +292,11 @@ paramsDesc.update({"TASKNR":str(taskNr),"SUBMISSIONEMAIL":submissionEmail})
 #############################
 # FILL DESCRIPTION TEMPLATE #
 #############################
-filename ="templates/task_description_template.tex"   # TODO: add templates/ to path to file again
+filename ="templates/task_description_template.tex"
 with open (filename, "r") as template_file:
     data=template_file.read()
 
-filename ="tmp/desc_{0}_Task{1}.tex".format(userId,taskNr) # TODO: add tmp/ to path to file again
+filename ="tmp/desc_{0}_Task{1}.tex".format(userId,taskNr)
 with open (filename, "w") as output_file:
     s = MyTemplate(data)
     output_file.write(s.substitute(paramsDesc))
