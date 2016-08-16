@@ -27,7 +27,7 @@
 ########## PATHS #########
 ##########################
 # src path of autosub system
-autosubPath=$(pwd) 
+autosubPath=$(pwd)
 # root path of the task itself
 taskPath=$(readlink -f $0|xargs dirname)
 # path for all the files that describe the created path
@@ -40,7 +40,7 @@ userTaskPath="$autosubPath/users/$1/Task$2"
 ##########################
 zero=0
 userfile="pwm_beh.vhdl"
-simulationTimeout="15s"
+simulationTimeout="50s"
 
 TaskNr=$2
 logPrefix()
@@ -54,7 +54,7 @@ logPrefix()
 cd $taskPath
 
 #generate the testbench and move testbench to user's folder
-python3 scripts/generateTestBench.py $3 > $userTaskPath/pwm_tb_$1_Task$2.vhdl 
+python3 scripts/generateTestBench.py $3 > $userTaskPath/pwm_tb_$1_Task$2.vhdl
 
 #copy the entity vhdl file for testing to user's folder
 cp $descPath/pwm.vhdl $userTaskPath
@@ -72,7 +72,7 @@ then
     logPrefix && echo "${logPre}Error with Task $2. User $1 did not attach the right file"
     cd $autosubPath
     echo "You did not attach your solution. Please attach the file $userfile" >$userTaskPath/error_msg
-    exit 1 
+    exit 1
 fi
 
 # create tmp directory
@@ -82,7 +82,7 @@ then
 fi
 
 #make sure the error_attachments folder is empty
-if [ ! -d "$userTaskPath/error_attachments" ]; 
+if [ ! -d "$userTaskPath/error_attachments" ];
 then
    mkdir $userTaskPath/error_attachments
 else
@@ -91,7 +91,7 @@ else
 fi
 
 #first strip the file of all comments for constraint check
-sed -i '/^--/ d' pwm_beh.vhdl 
+sed -i '/^--/ d' pwm_beh.vhdl
 
 ##########################
 ######### ANALYZE ########
@@ -102,22 +102,22 @@ sed -i '/^--/ d' pwm_beh.vhdl
 
 #entity, not from user, should have no errors
 vhpcomp pwm.vhdl
-RET=$? 
+RET=$?
 if [ "$RET" -ne "$zero" ]
 then
    logPrefix && echo "${logPre}Error with Task $2 entity for user with ID $1";
    echo "Something went wrong with the task $2 test generation. This is not your fault. We are working on a solution" > $userTaskPath/error_msg
-   exit 3 
+   exit 3
 fi
 
 #testbench, not from user, should have no errors
 vhpcomp pwm_tb_$1_Task$2.vhdl
-RET=$? 
+RET=$?
 if [ "$RET" -ne "$zero" ]
 then
    logPrefix && echo "${logPre}Error with Task $2 testbench for user with ID $1";
    echo "Something went wrong with the task $2 test generation. This is not your fault. We are working on a solution" > $userTaskPath/error_msg
-   exit 3 
+   exit 3
 fi
 
 #this is the file from the user
@@ -133,12 +133,18 @@ else
    cd $autosubPath
    echo "Analyzation of your submitted behavior file failed:" >$userTaskPath/error_msg
    cat /tmp/$USER/tmp_Task$2_User$1 | grep ERROR >> $userTaskPath/error_msg
-   exit 1 
+   exit 1
 fi
 
 ##########################
 ## TASK CONSTRAINT CHECK #
 ##########################
+
+# delete all comments from the file
+touch tmp_file
+grep -o '^[^--]*' pwm_beh.vhdl >> tmp_file
+mv tmp_file pwm_beh.vhdl
+rm tmp_file
 
 #check for the keywords after and wait
 if `egrep -oq "(wait|after)" pwm_beh.vhdl`
@@ -148,7 +154,7 @@ then
    echo "You are not complying to the specified rules in your task discription.">$userTaskPath/error_msg
    echo "You are not using the input clock to generate your signal! You are either using the keyword 'after' or 'wait'." >>$userTaskPath/error_msg
    echo "Use counting of periods of the input clock to generate the output PWM. Do not use 'after' or 'wait' signal generation." >> $userTaskPath/error_msg
-   exit 1 
+   exit 1
 fi
 
 ##########################
@@ -165,7 +171,7 @@ else
    cd $autosubPath
    echo "Elaboration with your submitted behavior file failed:" >$userTaskPath/error_msg
    cat $userTaskPath/fuse.log | grep ERROR >> $userTaskPath/error_msg
-   exit 1 
+   exit 1
 fi
 
 ##########################
@@ -184,11 +190,11 @@ RETegrep=$?
 
 
 # filesize=$(stat -c%s "signals.vcd") #in Bytes
-# #compression factor is approx 10, so we dont wont anything above 20MB 
-# if [ "$filesize" -gt 20000000 ]; then 
+# #compression factor is approx 10, so we dont wont anything above 20MB
+# if [ "$filesize" -gt 20000000 ]; then
 #    head --bytes=20000K signals.vcd >signals_tmp.vcd; #first x K Bytes
 #    rm signals.vcd
-#    mv signals_tmp.vcd signals.vcd  
+#    mv signals_tmp.vcd signals.vcd
 # fi
 
 #zip isim.wdb and move it
@@ -201,17 +207,17 @@ then
     logPrefix && echo "${logPre}Functionally correct for Task$2 for user with ID $1!"
     exit 0
 elif [ "$RETghdl" -eq 124 ] #; timeout returns 124 if it had to kill process
-then  
+then
     cd $autosubPath
     logPrefix && echo "${logPre}Wrong behavior for Task$2 for user with ID $1!"
     echo "Your submitted behavior file does not behave like specified in the task description:" >$userTaskPath/error_msg
     echo "No continuous signal detected. Please look at the attached wave file to see what signal your entity produces." >> $userTaskPath/error_msg
-    exit 1  
+    exit 1
 else
     cd $autosubPath
     logPrefix && echo "${logPre}Wrong behavior for Task$2 for user with ID $1!"
     echo "Your submitted behavior file does not behave like specified in the task description:" >$userTaskPath/error_msg
     cat $userTaskPath/isim.log | grep Failure >> $userTaskPath/error_msg
     echo "Please look at the attached wave file to see what signal your entity produces." >> $userTaskPath/error_msg
-    exit 1 
+    exit 1
 fi
