@@ -27,7 +27,7 @@ TaskNr=$2
 ########## PATHS #########
 ##########################
 # src path of autosub system
-autosubPath=$(pwd) 
+autosubPath=$(pwd)
 # root path of the task itself
 taskPath=$(readlink -f $0|xargs dirname)
 # path for all the files that describe the created path
@@ -76,7 +76,7 @@ then
     logPrefix && echo "${logPre}Error with Task $2. User $1 did not attach the right file"
     cd $autosubPath
     echo "You did not attach your solution. Please attach the file $userfile" >$userTaskPath/error_msg
-    exit 1 
+    exit 1
 fi
 
 # create tmp directory
@@ -94,59 +94,59 @@ fi
 
 #entity, not from user, should have no errors
 vhpcomp gates.vhdl
-RET=$? 
+RET=$?
 if [ "$RET" -ne "$zero" ]
 then
    logPrefix && echo "${logPre}Error with Task $2 entity for user with ID $1";
    echo "Something went wrong with the task $2 test generation. This is not your fault. We are working on a solution" > $userTaskPath/error_msg
-   exit 3 
+   exit 3
 fi
 
 #testbench, not from user, should have no errors
 vhpcomp gates_tb_$1_Task$2.vhdl
-RET=$? 
+RET=$?
 if [ "$RET" -ne "$zero" ]
 then
    logPrefix && echo "${logPre}Error with Task$2 testbench for user with ID $1";
    echo "Something went wrong with the task $2 test generation. This is not your fault. We are working on a solution" > $userTaskPath/error_msg
-   exit 3 
+   exit 3
 fi
 
 #IEEE 1164 Gates package, not from user, should have no errors
 vhpcomp IEEE_1164_Gates_pkg.vhdl
-RET=$? 
+RET=$?
 if [ "$RET" -ne "$zero" ]
 then
    logPrefix && echo "${logPre}Error with Task$2 IEEE_1164_Gates pkg for user with ID $1";
    echo "Something went wrong with the task $2 test generation. This is not your fault. We are working on a solution" > $userTaskPath/error_msg
-   exit 3 
+   exit 3
 fi
 
 #IEEE 1164 Gates entities, not from user, should have no errors
 vhpcomp IEEE_1164_Gates.vhdl
-RET=$? 
+RET=$?
 if [ "$RET" -ne "$zero" ]
 then
    logPrefix && echo "${logPre}Error with Task$2 IEEE_1164_Gates entities for user with ID $1";
    echo "Something went wrong with the task $2 test generation. This is not your fault. We are working on a solution" > $userTaskPath/error_msg
-   exit 3 
+   exit 3
 fi
 
 #IEEE 1164 Gates behaviors, not from user, should have no errors
 vhpcomp IEEE_1164_Gates_beh.vhdl
-RET=$? 
+RET=$?
 if [ "$RET" -ne "$zero" ]
 then
    logPrefix && echo "${logPre}Error with Task$2 IEEE_1164_Gates behavior for user with ID $1";
    echo "Something went wrong with the task $2 test generation. This is not your fault. We are working on a solution" > $userTaskPath/error_msg
-   exit 3 
+   exit 3
 fi
 
 
 #this is the file from the user
 
 #first strip the file of all comments for constraint check
-sed -i '/^--/ d' gates_beh.vhdl 
+sed -i '/^--/ d' gates_beh.vhdl
 
 vhpcomp gates_beh.vhdl 2> /tmp/$USER/tmp_Task$2_User$1
 RET=$?
@@ -159,16 +159,22 @@ else
    cd $autosubPath
    echo "Analyzation of your submitted behavior file failed:" >$userTaskPath/error_msg
    cat /tmp/$USER/tmp_Task$2_User$1 | grep ERROR >> $userTaskPath/error_msg
-   exit 1 
+   exit 1
 fi
 
 ##########################
 ## TASK CONSTRAINT CHECK #
 ##########################
+# delete all comments from the file
+touch tmp_file
+grep -o '^[^--]*' gates_beh.vhdl >> tmp_file
+mv tmp_file gates_beh.vhdl
+rm tmp_file
+
 #check if  the user really uses the provided IEEE 1164 entities
 #look for the entity names NAND, AND, OR, NOR, XOR, XNOR; smallest search is for AND<N> and OR<N>; vhdl is not case sensitive
-#user needs 5 gates to build the network
 
+#user needs 5 gates to build the network
 numgates=$(egrep -o "([Aa][Nn][Dd][2-4]|[Oo][Rr][2-4])" gates_beh.vhdl | wc -l)
 aimednum=5
 
@@ -179,7 +185,7 @@ then
    echo "You are not complying to the specified rules in your task discription.">$userTaskPath/error_msg
    echo "You are not using the provided IEEE 1164 gate entities." >>$userTaskPath/error_msg
    echo "Use the provided entities to build a gate network with the specified behavior." >> $userTaskPath/error_msg
-   exit 1 
+   exit 1
 fi
 
 ##########################
@@ -196,7 +202,7 @@ else
    cd $autosubPath
    echo "Elaboration with your submitted behavior file failed:" >$userTaskPath/error_msg
    cat $userTaskPath/fuse.log | grep ERROR >> $userTaskPath/error_msg
-   exit 1 
+   exit 1
 fi
 
 ##########################
@@ -221,6 +227,6 @@ else
    logPrefix && echo "${logPre}Wrong behavior for Task$2 for user with ID $1"
    echo "Your submitted behavior file does not behave like specified in the task description:" >$userTaskPath/error_msg
    cat $userTaskPath/isim.log | grep Error >> $userTaskPath/error_msg
-   exit 1 
+   exit 1
 fi
 
