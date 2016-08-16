@@ -63,6 +63,21 @@ cp $descPath/pwm.vhdl $userTaskPath
 cd $userTaskPath
 touch error_msg
 
+# create tmp directory
+if [ ! -d "/tmp/$USER" ]
+then
+   mkdir /tmp/$USER
+fi
+
+#make sure the error_attachments folder is empty
+if [ ! -d "$userTaskPath/error_attachments" ];
+then
+   mkdir $userTaskPath/error_attachments
+else
+   rm -r $userTaskPath/error_attachments
+   mkdir $userTaskPath/error_attachments
+fi
+
 #check if the user supplied a file
 if [ ! -f $userfile ]
 then
@@ -71,6 +86,9 @@ then
     echo "You did not attach your solution. Please attach the file $userfile" >$userTaskPath/error_msg
     exit 1
 fi
+
+#delete all comments from the file
+sed -i 's:--.*$::g' $userfile
 
 ##########################
 ######### ANALYZE ########
@@ -97,15 +115,6 @@ then
 fi
 
 #this is the file from the user
-
-#first strip the file of all comments for constraint check
-sed -i '/^--/ d' pwm_beh.vhdl
-
-if [ ! -d "/tmp/$USER" ]
-then
-   mkdir /tmp/$USER
-fi
-
 ghdl -a pwm_beh.vhdl 2> /tmp/$USER/tmp_Task$2_User$1
 RET=$?
 
@@ -123,12 +132,6 @@ fi
 ##########################
 ## TASK CONSTRAINT CHECK #
 ##########################
-
-# delete all comments from the file
-touch tmp_file
-grep -o '^[^--]*' pwm_beh.vhdl >> tmp_file
-mv tmp_file pwm_beh.vhdl
-rm tmp_file
 
 #check for the keywords after and wait
 if `egrep -oq "(wait|after)" pwm_beh.vhdl`
@@ -166,15 +169,6 @@ timeout $simulationTimeout ghdl -r pwm_tb --vcd=signals.vcd 2> /tmp/$USER/tmp_Ta
 RETghdl=$?
 egrep -oq "Success" /tmp/$USER/tmp_Task$2_User$1
 RETegrep=$?
-
-#make sure the error_attachments folder is empty
-if [ ! -d "$userTaskPath/error_attachments" ];
-then
-   mkdir $userTaskPath/error_attachments
-else
-   rm -r $userTaskPath/error_attachments
-   mkdir $userTaskPath/error_attachments
-fi
 
 filesize=$(stat -c%s "signals.vcd") #in Bytes
 

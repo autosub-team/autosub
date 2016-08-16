@@ -22,7 +22,7 @@
 # $1 ... UserId
 # $2 ... TaskNr
 # $3 ... TaskParameters
-TaskNr=$2
+
 ##########################
 ########## PATHS #########
 ##########################
@@ -70,6 +70,12 @@ cp $descPath/IEEE_1164_Gates.vhdl $userTaskPath
 cd $userTaskPath
 touch error_msg
 
+# create tmp directory
+if [ ! -d "/tmp/$USER" ]
+then
+   mkdir /tmp/$USER
+fi
+
 #check if the user supplied a file
 if [ ! -f $userfile ]
 then
@@ -79,11 +85,8 @@ then
     exit 1
 fi
 
-# create tmp directory
-if [ ! -d "/tmp/$USER" ]
-then
-   mkdir /tmp/$USER
-fi
+#delete all comments from the file
+sed -i 's:--.*$::g' $userfile
 
 #############################################
 ################### ANALYZE #################
@@ -144,10 +147,6 @@ fi
 
 
 #this is the file from the user
-
-#first strip the file of all comments for constraint check
-sed -i '/^--/ d' gates_beh.vhdl
-
 vhpcomp gates_beh.vhdl 2> /tmp/$USER/tmp_Task$2_User$1
 RET=$?
 
@@ -165,11 +164,6 @@ fi
 ##########################
 ## TASK CONSTRAINT CHECK #
 ##########################
-# delete all comments from the file
-touch tmp_file
-grep -o '^[^--]*' gates_beh.vhdl >> tmp_file
-mv tmp_file gates_beh.vhdl
-rm tmp_file
 
 #check if  the user really uses the provided IEEE 1164 entities
 #look for the entity names NAND, AND, OR, NOR, XOR, XNOR; smallest search is for AND<N> and OR<N>; vhdl is not case sensitive
@@ -229,4 +223,3 @@ else
    cat $userTaskPath/isim.log | grep Error >> $userTaskPath/error_msg
    exit 1
 fi
-

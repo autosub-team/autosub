@@ -66,15 +66,6 @@ cp $taskPath/scripts/isim.cmd $userTaskPath
 cd $userTaskPath
 touch error_msg
 
-#check if the user supplied a file
-if [ ! -f $userfile ]
-then
-    logPrefix && echo "${logPre}Error with Task $2. User $1 did not attach the right file"
-    cd $autosubPath
-    echo "You did not attach your solution. Please attach the file $userfile" >$userTaskPath/error_msg
-    exit 1
-fi
-
 # create tmp directory
 if [ ! -d "/tmp/$USER" ]
 then
@@ -90,8 +81,17 @@ else
    mkdir $userTaskPath/error_attachments
 fi
 
-#first strip the file of all comments for constraint check
-sed -i '/^--/ d' pwm_beh.vhdl
+#check if the user supplied a file
+if [ ! -f $userfile ]
+then
+    logPrefix && echo "${logPre}Error with Task $2. User $1 did not attach the right file"
+    cd $autosubPath
+    echo "You did not attach your solution. Please attach the file $userfile" >$userTaskPath/error_msg
+    exit 1
+fi
+
+#delete all comments from the file
+sed -i 's:--.*$::g' $userfile
 
 ##########################
 ######### ANALYZE ########
@@ -121,7 +121,6 @@ then
 fi
 
 #this is the file from the user
-
 vhpcomp pwm_beh.vhdl 2> /tmp/$USER/tmp_Task$2_User$1
 RET=$?
 
@@ -139,12 +138,6 @@ fi
 ##########################
 ## TASK CONSTRAINT CHECK #
 ##########################
-
-# delete all comments from the file
-touch tmp_file
-grep -o '^[^--]*' pwm_beh.vhdl >> tmp_file
-mv tmp_file pwm_beh.vhdl
-rm tmp_file
 
 #check for the keywords after and wait
 if `egrep -oq "(wait|after)" pwm_beh.vhdl`
