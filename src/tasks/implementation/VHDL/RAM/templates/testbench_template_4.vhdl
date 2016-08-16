@@ -1,7 +1,6 @@
 LIBRARY IEEE;
 USE IEEE.std_logic_1164.ALL;
 USE IEEE.numeric_std.ALL;
-use IEEE.STD_LOGIC_UNSIGNED.ALL; 
 
 entity RAM_tb is
 end RAM_tb;
@@ -69,6 +68,12 @@ begin
 begin
       
     --------------------check the ROM------------------------
+    -- 'Z' display on the output
+    en_read <= '0';
+    wait for Clk_period;
+    if (output/=no_reading) then
+       report " 'ZZ...' should be displayed on the output when nothing is read from the memory." severity failure;
+    end if; 
     --check the size of RAM
      en_write <= '1';
      en_read <= '0';
@@ -79,14 +84,7 @@ begin
      end if;
      input <= content_in(1);  
      wait for Clk_period;
-     
-      -- the output should be "ZZZ.." when control signals are zero
-     en_read <= '0';
-     wait for Clk_period;
-     if (output/=no_reading) then
-        report " 'ZZ...' should be displayed on the output when nothing is read from the memory." severity failure;
-     end if; 
-     
+
     -- first: writing data in the memory
      for i in random_addr'range loop
          en_write <= '1';
@@ -108,7 +106,7 @@ begin
          end if;
          
          if (%%WRITELENGTH+1)/(%%READLENGTH+1)=2 then
-             addr2 <= std_logic_vector(to_unsigned(conv_integer(random_addr(i))+1,%%ADDRLENGTH+1));
+             addr2 <= std_logic_vector(to_unsigned(to_integer(unsigned(random_addr(i)))+1, %%ADDRLENGTH+1));
              wait for Clk_period;   
              if (output/=content_in(i)(%%WRITELENGTH downto %%READLENGTH+1)) then
                  report " The more significant half of input is not written to the memory correctly. Or, the content of memory cannot be read." severity failure;
@@ -144,7 +142,7 @@ begin
          end if;
          
          if (%%WRITELENGTH+1)/(%%READLENGTH+1)=2 then
-             addr2 <= std_logic_vector(to_unsigned(conv_integer(random_addr(i))+1,%%ADDRLENGTH+1));
+             addr2 <= std_logic_vector(to_unsigned(to_integer(unsigned(random_addr(i)))+1, %%ADDRLENGTH+1));
              wait for Clk_period;   
              if (output/=content_test_in(i)(%%WRITELENGTH downto %%READLENGTH+1)) then
                  report " The more significant half of input is not written to the memory correctly. Or, the content of memory cannot be read." severity failure;

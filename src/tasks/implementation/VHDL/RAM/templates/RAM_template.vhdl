@@ -1,7 +1,6 @@
 library IEEE;
 use IEEE.std_logic_1164.all;
-use IEEE.Numeric_Std.all;
-use IEEE.STD_LOGIC_UNSIGNED.all;
+use IEEE.numeric_std.all;
 
 entity RAM is
     port( Clk : in std_logic;

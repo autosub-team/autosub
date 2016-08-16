@@ -1,7 +1,6 @@
 LIBRARY IEEE;
 USE IEEE.std_logic_1164.ALL;
 USE IEEE.numeric_std.ALL;
-use IEEE.STD_LOGIC_UNSIGNED.ALL; 
 
 entity RAM_tb is
 end RAM_tb;
@@ -73,18 +72,7 @@ begin
 begin
       
     --------------------check the ROM------------------------
-    --check the size of RAM
-     en_write <= '1';
-     en_read1 <= '0';
-     en_read2 <= '0';
-     if (%%WRITELENGTH+1)/(%%DATASIZE)=2 then
-        addr1 <= std_logic_vector(to_unsigned((2**(%%ADDRLENGTH+1)-2),%%ADDRLENGTH+1)); 
-     else
-        addr1 <= std_logic_vector(to_unsigned((2**(%%ADDRLENGTH+1)-1),%%ADDRLENGTH+1));  
-     end if;     input <= content_in(1);  
-     wait for Clk_period;
-     
-    -- the output should be "ZZZ.." when control signals are zero
+     -- the output should be "ZZZ.." when control signals are zero
      en_read2 <= '0';
      wait for Clk_period;
      if (output2/=no_reading) then
@@ -96,6 +84,17 @@ begin
         report " 'ZZ...' should be displayed on the output when nothing is read from the memory." severity failure;
      end if;   
     
+    --check the size of RAM
+     en_write <= '1';
+     en_read1 <= '0';
+     en_read2 <= '0';
+     if (%%WRITELENGTH+1)/(%%DATASIZE)=2 then
+        addr1 <= std_logic_vector(to_unsigned((2**(%%ADDRLENGTH+1)-2),%%ADDRLENGTH+1)); 
+     else
+        addr1 <= std_logic_vector(to_unsigned((2**(%%ADDRLENGTH+1)-1),%%ADDRLENGTH+1));  
+     end if;     input <= content_in(1);  
+     wait for Clk_period;
+     
      -- check both read lines
      for i in random_addr'range loop
         en_write <= '1';
@@ -137,7 +136,7 @@ begin
      en_read2 <= '1';
      for i in random_addr'range loop                  
         if (%%WRITELENGTH+1)/(%%READLENGTH+1)=2 then
-            addr2 <= std_logic_vector(to_unsigned(conv_integer(random_addr(i))+1,%%ADDRLENGTH+1));
+            addr2 <= std_logic_vector(to_unsigned(to_integer(unsigned(random_addr(i)))+1, %%ADDRLENGTH+1));
             wait for Clk_period;   
             if (output2/=content_in(i)(%%WRITELENGTH downto %%READLENGTH+1)) then
                 report " The higher significant half of input is not written to the memory correctly, or the content of memory cannot be read." severity failure;
@@ -227,7 +226,7 @@ begin
      en_read2 <= '1';
      for i in random_addr'range loop                  
         if (%%WRITELENGTH+1)/(%%READLENGTH+1)=2 then
-            addr2 <= std_logic_vector(to_unsigned(conv_integer(random_addr(i))+1,%%ADDRLENGTH+1));
+            addr2 <= std_logic_vector(to_unsigned(to_integer(unsigned(random_addr(i)))+1, %%ADDRLENGTH+1));
             wait for Clk_period;   
             if (output2/=content_test_in(i)(%%WRITELENGTH downto %%READLENGTH+1)) then
                 report " The higher significant half of input is not written to the memory correctly, or the content of memory cannot be read." severity failure;

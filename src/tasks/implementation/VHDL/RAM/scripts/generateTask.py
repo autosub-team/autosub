@@ -125,7 +125,7 @@ filename ="templates/RAM_template.vhdl"
 with open (filename, "r") as template_file:
     data=template_file.read()
     
-filename ="static/RAM.vhdl"
+filename ="tmp/RAM_{0}_Task{1}.vhdl".format(userId,taskNr)
 with open (filename, "w") as output_file:
     s = MyTemplate(data)
     output_file.write(s.substitute(paramsEntity))
@@ -270,7 +270,7 @@ elif x[2]==3:
 with open (filename, "r") as template_file:
     data=template_file.read()
     
-filename ="exam/testbench_exam.vhdl"
+filename ="tmp/RAM_tb_exam_{0}_Task{1}.vhdl".format(userId,taskNr)
 with open (filename, "w") as output_file:
     s = MyTemplate(data)
     output_file.write(s.substitute(paramsExam))

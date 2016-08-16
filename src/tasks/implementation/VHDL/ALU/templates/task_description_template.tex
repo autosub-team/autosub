@@ -17,6 +17,32 @@ Your task is to program the behavior of an entity called "ALU". This entity is d
 \item Outputs: flag with type std\_logic; this is one-bit flag
 \end{itemize}
 \vspace{0.3cm}
+\begin{center}
+\begin{tikzpicture}
+\draw node [draw,rectangle, minimum height=35mm, minimum width=35mm,rounded corners=2mm,thick](entity){};
+\draw[->,thick] ($ (entity.west)-(10mm,-12mm)$) -- ($ (entity.west) - (0mm,-12mm)$);
+\draw node at ($ (entity.west)-(12mm,-12mm)$){A};
+\draw[->,thick] ($ (entity.west)-(10mm,-4mm)$) -- ($ (entity.west) - (0mm,-4mm)$);
+\draw node at ($ (entity.west)-(12mm,-4mm)$){B};
+
+\draw[->,thick] ($ (entity.west)-(10mm,7mm)$) -- ($ (entity.west) - (0mm,7mm)$);
+\draw node at ($ (entity.west)-(15mm,7mm)$){Clk};
+\draw[->,thick] ($ (entity.west)-(10mm,12mm)$) -- ($ (entity.west) - (0mm,12mm)$);
+\draw node at ($ (entity.west)-(17mm,12mm)$){enable};
+
+\draw[->,thick] ($ (entity.east) + (0mm,-3mm)$) -- ($ (entity.east) + (10mm,-3mm)$);
+\draw node at ($ (entity.east) + (14mm,-3mm)$){flag};
+\draw[->,thick] ($ (entity.east) + (0mm,3mm)$) -- ($ (entity.east) + (10mm,3mm)$);
+\draw node at ($ (entity.east) + (12mm,3mm)$){R};
+
+\draw[->,thick] ($ (entity.north) + (0mm,7mm)$) -- (entity.north) ;
+\draw node at ($ (entity) + (0mm,27mm)$){slc};
+
+
+\draw node at ($ (entity) - (0,22mm)$){ALU};
+
+\end{tikzpicture}
+\end{center}
 
 Do not change the file "ALU.vhdl".
 \\
@@ -63,6 +89,3 @@ Good Luck and May the Force be with you.
 
 
 \end{document}\grid\grid
-\grid
-\grid
-\grid

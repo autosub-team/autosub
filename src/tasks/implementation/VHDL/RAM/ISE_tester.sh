@@ -137,19 +137,24 @@ fi
 ##########################
 ## TASK CONSTRAINT CHECK #
 ##########################
-rising=$(egrep -o "rising_edge" RAM_beh.vhdl| wc -l)
-falling=$(egrep -o "falling_edge" RAM_beh.vhdl| wc -l)
-event=$(egrep -o "Clk'event" RAM_beh.vhdl| wc -l)
-aimednum=1
+cd $userTaskPath
+touch file
 
-#check for the keywords falling_edge and rising_edge
-if [ "$rising" -eq "$aimednum" ] || [ "$falling" -eq "$aimednum" ] || [ "$event" -eq "$aimednum" ]
+grep -o '^[^--]*' RAM_beh.vhdl >> file
+mv file RAM_beh.vhdl
+cat RAM_beh.vhdl | tr -d " \t\n\r" >> file
+rising=$(egrep -o "rising_edge" file | wc -l)
+falling=$(egrep -o "falling_edge" file | wc -l)
+event=$(egrep -o "Clk'eventandClk='1'" file | wc -l)
+
+#check for the keywords rising_edge and Clk'event and Clk='1'
+if ( [ "$rising" -ne "$zero" ] || [ "$event" -ne "$zero" ] ) && [ "$falling" -eq "$zero" ] 
 then
   logPrefix && echo "${logPre}Task$2 using clock cycle for user with ID $1!"
 else
-   logPrefix && echo "${logPre}Task$2 does not operate on any clock edge!"
+   logPrefix && echo "${logPre}Task$2 does not operate on a rising edge of clock cycle!"
    cd $autosubPath
-   echo "You are not specifying falling or rising edge of the clock cycle.">$userTaskPath/error_msg
+   echo "You are not using the rising edge of clock cycle.">$userTaskPath/error_msg
    exit 1 
 fi
 
@@ -208,6 +213,7 @@ else #; timeout returns 124 if it had to kill process
     cd $autosubPath
     logPrefix && echo "${logPre}Wrong behavior for Task$2 for user with ID $1!"
     echo "Your submitted behavior file does not behave like specified in the task description:" >$userTaskPath/error_msg
+    cat $userTaskPath/isim.log | grep "ERROR: " >> $userTaskPath/error_msg
     cat $userTaskPath/isim.log | grep Failure >> $userTaskPath/error_msg
     #echo "Please see which signal your entity produces:" >> $userTaskPath/error_msg
     exit 1  
