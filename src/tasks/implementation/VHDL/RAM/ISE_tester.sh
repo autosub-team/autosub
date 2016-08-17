@@ -142,13 +142,16 @@ touch file
 
 grep -o '^[^--]*' RAM_beh.vhdl >> file
 mv file RAM_beh.vhdl
-cat RAM_beh.vhdl | tr -d " \t\n\r" >> file
+cat RAM_beh.vhdl | tr '[:upper:]' '[:lower:]' >> file
+cat file | tr -d " \t\n\r" >> file
 rising=$(egrep -o "rising_edge" file | wc -l)
 falling=$(egrep -o "falling_edge" file | wc -l)
-event=$(egrep -o "Clk'eventandClk='1'" file | wc -l)
+rising_event=$(egrep -o "clk'eventandclk='1'" file | wc -l)
+falling_event=$(egrep -o "clk'eventandclk='0'" file | wc -l)
 
-#check for the keywords rising_edge and Clk'event and Clk='1'
-if ( [ "$rising" -ne "$zero" ] || [ "$event" -ne "$zero" ] ) && [ "$falling" -eq "$zero" ] 
+#check the occurrence of phrases concerning rising/falling edge
+if ( [ "$rising" -ne "$zero" ] || [ "$rising_event" -ne "$zero" ] )\
+ && [ "$falling" -eq "$zero" ] && [ "$falling_event" -eq "$zero" ]
 then
   logPrefix && echo "${logPre}Task$2 using clock cycle for user with ID $1!"
 else

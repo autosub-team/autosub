@@ -104,8 +104,8 @@ for i in range(0,4):
                     while val:
                         parity = not parity
                         val = val & (val - 1)
-                    if (parity): flag[ind]='1'          # parity
-                    else: flag[ind]='0'
+                    if (parity): flag[ind]='0'          # parity
+                    else: flag[ind]='1'
 
                 elif flag_name[taskParameters[5]]=='Zero':
                     if z[ind]=='0000': flag[ind]='1'      # zero
