@@ -140,8 +140,11 @@ fi
 cd $userTaskPath
 touch file
 
-grep -o '^[^--]*' RAM_beh.vhdl >> file
-mv file RAM_beh.vhdl
+#grep -o '--' RAM_beh.vhdl >> file
+#sed -i 's:--.*$::g' RAM_beh.vhdl
+#cat RAM_beh.vhdl | cut -d'--' -f1 >> file
+sed -i 's:--.*$::g' RAM_beh.vhdl
+#mv file RAM_beh.vhdl
 cat RAM_beh.vhdl | tr '[:upper:]' '[:lower:]' >> file
 cat file | tr -d " \t\n\r" >> file
 rising=$(egrep -o "rising_edge" file | wc -l)
