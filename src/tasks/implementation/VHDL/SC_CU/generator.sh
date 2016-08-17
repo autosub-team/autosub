@@ -53,6 +53,9 @@ echo $task_parameters
 # copy single cycle processor image from static to tmp directory
 cp static/Single_Cycle_Processor_V_3_0.pdf tmp
 
+# copy Latex style file bytefield from static to tmp directory
+cp static/bytefield.sty tmp
+
 #generate the description pdf and move it to user's description folder
 cd $taskPath/tmp
 
@@ -70,6 +73,7 @@ rm desc_$1_Task$2.log
 rm desc_$1_Task$2.out
 rm desc_$1_Task$2.tex
 rm Single_Cycle_Processor_V_3_0.pdf
+rm bytefield.sty
 
 # move the task description PDF to users description path
 mv $taskPath/tmp/desc_$1_Task$2.pdf $descPath

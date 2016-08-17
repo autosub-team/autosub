@@ -114,9 +114,9 @@ Instr_Text= ["add", # 0
 		 "The lw instruction loads data from a memory address to a register. The memory address is calculated by adding a base address to the immediate value from the instruction. The base address is retrieved from the register specified in rs. The loaded data is stored in the register specified in rt. ",
 		 "The sw instruction stores data, from the register specified in rt, in a memory address. The address is calculated by adding a base address to the immediate value from the instruction. The base address is retrieved from the register specified in rs. ",
 		 "The j instruction jumps to the address specified in the instruction. ",
-		 "The beq instruction initiates a branch to a new PC value only if the ALU flags its two input register values as equal. The input registers are specified in rs and rt. The new PC value is calculated by adding the PC value and the immediate value of the instruction. Before adding the immediate value it is extendend from 16 to 32 bits and shiftet to the left by two bits. ",
+		 "The beq instruction initiates a branch to a new PC value only if the ALU flags its two input register values as equal. The input registers are specified in rs and rt. The new PC value is calculated by adding the PC value and the immediate value of the instruction. Before adding the immediate value it is extendend from 16 to 32 bits and shiftet to the left by two bits. The ALU checks for equality by substracting its input values and setting the Zero flag on equality. ",
 		 "nothing",
-		 "The bne instruction initiates a branch to a new PC value only if the ALU flags its two input register values as unequal. The input registers are specified in rs and rt. The new PC value is calculated by adding the PC value and the immediate value of the instruction. Before adding the immediate value it is extendend from 16 to 32 bits and shiftet to the left by two bits. " ]
+		 "The bne instruction initiates a branch to a new PC value only if the ALU flags its two input register values as unequal. The input registers are specified in rs and rt. The new PC value is calculated by adding the PC value and the immediate value of the instruction. Before adding the immediate value it is extendend from 16 to 32 bits and shiftet to the left by two bits. The ALU checks for equality by substracting its input values and setting the Zero flag on equality. " ]
 
 
 # select Instruction types:
@@ -127,15 +127,16 @@ if (In_1 <= 6) or (In_2 <= 6) or(In_3 <= 6) or(In_4 <= 6) :   # R-type
 				    "\\vspace*{-5mm}\n"
 				    "\\begin{table}[h!]\n"
 				    "\\centering\n"
-				    "    \\begin{tabular}{|c|c|c|c|c|c|} \\hline \\Tstrut\n"
-				    "    opcode & rs & rt & rd & \\textcolor{grau}{unused} & funct \\\\ \\hline \\Tstrut\n"
-				    "    6 bits & 5 bits & 5 bits & 5 bits & 5 bits & 6 bits\\\\\n"
-				    "    \\hline\n"
-				    "    \\end{tabular}\n"
+				    "    \\begin{bytefield}[boxformatting=\\baselinealign]{32}\n"
+				    "        \\bitheader[b]{0,5,6,10,11,15,16,20,21,25,26,31}\\\\\n"
+				    "        \\bitbox{6}{opcode} & \\bitbox{5}{rs} & \\bitbox{5}{rt} & \\bitbox{5}{rd} &\n"
+				    "        \\bitbox{5}{\\textcolor{grau}{unused}} & \\bitbox{6}{funct}\n"
+				    "    \\end{bytefield}\n"
 				    "\\end{table}\n"
-				    "With the opcode representing the instruction, rs and rt the source registers and rd the destination register and funct representing an instruction for the ALU.")
-	if (In_1 <= 6) and (In_2 <= 6) and (In_3 <= 6) and (In_4 <= 6) :
-		sel_Instr_type.append("\\newpage\n")
+				    "With the opcode representing the instruction, rs and rt the source registers and rd the destination register and funct representing an instruction for the ALU. The R-type instruction processes the two source registers in the ALU. The ALU result is saved in the destination register specified by rd.")
+	
+	if not ((In_1 >= 7 and In_1 != 9) or (In_2 >= 7 and In_2 != 9) or (In_3 >= 7 and In_3 != 9) or (In_4 >= 7 and In_4 != 9)) : # no I-type
+		sel_Instr_type.append("\\newpage\n")   # insert newpage for formatting when required
 
 if (In_1 >= 7 and In_1 != 9) or (In_2 >= 7 and In_2 != 9) or (In_3 >= 7 and In_3 != 9) or (In_4 >= 7 and In_4 != 9) :   # I-type
 	number_of_Instruction_types = number_of_Instruction_types + 1
@@ -144,13 +145,12 @@ if (In_1 >= 7 and In_1 != 9) or (In_2 >= 7 and In_2 != 9) or (In_3 >= 7 and In_3
 				    "\\vspace*{-5mm}\n"
 				    "\\begin{table}[h!]\n"
 				    "\\centering\n"
-				    "\\begin{tabular}{|c|c|c|c|} \\hline \\Tstrut\n"
-				    "opcode & rs & rd & IMM \\\\ \\hline \\Tstrut\n"
-				    "6 bits & 5 bits & 5 bits & 15 bits\\\\\n"
-				    "\\hline\n"
-				    "\\end{tabular}\n"
-				    "\\end{table}\n"
-				    "With the opcode representing the instruction, rs the source register, rd the destination register and IMM the immediate value.")
+				    "    \\begin{bytefield}[boxformatting=\\baselinealign]{32}\n"
+				    "        \\bitheader[b]{0,15,16,20,21,25,26,31}\\\\\n"
+				    "        \\bitbox{6}{opcode} & \\bitbox{5}{rs} & \\bitbox{5}{rt} & \\bitbox{16}{IMM}\n"
+				    "    \\end{bytefield}\n"
+				    "\end{table}\n"
+				    "With the opcode representing the instruction, rs a source register and IMM the immediate value. The usage of rt depends on the instruction, see below for details.")
 
 if (In_1 == 9) or (In_2 == 9) or (In_3 == 9) or (In_4 == 9) :   # J-type
 	number_of_Instruction_types = number_of_Instruction_types + 1
@@ -158,16 +158,15 @@ if (In_1 == 9) or (In_2 == 9) or (In_3 == 9) or (In_4 == 9) :   # J-type
 				    "\\vspace*{-5mm}\n"
 				    "\\begin{table}[h!]\n"
 				    "\\centering\n"
-				    "    \\begin{tabular}{|c|c|} \\hline \\Tstrut\n"
-				    "    opcode & address \\\\ \\hline \\Tstrut\n"
-				    "    6 bits & 26 bits\\\\\n"
-				    "    \\hline\n"
-				    "    \\end{tabular}\n"
+				    "    \\begin{bytefield}[boxformatting=\\baselinealign]{32}\n"
+				    "        \\bitheader[b]{0,25,26,31}\\\\\n"
+				    "        \\bitbox{6}{opcode} & \\bitbox{26}{address}\n"
+				    "    \\end{bytefield}\n"
 				    "\\end{table}\n"
-				    "With the opcode representing the instruction and the address being part of a 32 bit address. The 32 bit address is constructed by using the first four bits of the program counter as most significant bits and setting the two least significant bits to 0.")
+				    "With the opcode representing the instruction and the address being part of a 32 bit address. The 32 bit address is constructed by using the first four bits of the program counter as most significant bits, concatenating the 16 bit address from the instruction and setting the two least significant bits to 0.")
 
-if number_of_Instruction_types >= 2 :
-	sel_Instr_type.append("\\\\\\\\ \n")
+if (number_of_Instruction_types >= 2) or  (In_1 >= 7 and In_1 != 9) or (In_2 >= 7 and In_2 != 9) or (In_3 >= 7 and In_3 != 9) or (In_4 >= 7 and In_4 != 9):    # if (more than one Instruction) or I-type
+	sel_Instr_type.append("\\\\\\\\ \n")   # spacing
 sel_Instr_type = ("\n").join(sel_Instr_type)
 
 
@@ -218,7 +217,7 @@ if R_type_Instr_counter_processed > 0 :
 	if In_4 <= 5 :
 		sel_Instr_Text.append(Instr_Text[In_4])
 		
-	sel_Instr_Text.append(" instruction uses the ALU to process two register values. See Table~1 to find the respective control signal. ")
+	sel_Instr_Text.append(" instruction uses the ALU to process two register values. The result is stored in the destination register. See Table~1 to find the respective control signal. ")
 
 if In_1 >= 6 :
 	sel_Instr_Text.append(Instr_Text[In_1])

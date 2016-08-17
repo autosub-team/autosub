@@ -5,6 +5,14 @@
 \usepackage{hyperref}
 \usepackage{color}
 \usepackage{pdflscape}
+\usepackage{bytefield}
+
+\newlength{\maxheight}
+\setlength{\maxheight}{\heightof{W}}
+\newcommand{\baselinealign}[1]{%
+	\centering
+	\raisebox{0pt}[\maxheight][0pt]{#1}%
+}
 
 \newcommand\Tstrut{\rule{0pt}{2.6ex}}       % "top" strut
 
