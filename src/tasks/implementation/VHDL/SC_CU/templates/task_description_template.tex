@@ -108,6 +108,29 @@ The ``SC\_CU" entity shall control the single cycle processor depicted in Figure
     \label{tab:ALUControls}  
 \end{table}
 
+To get a better understanding of the control signals, here is a description of each control signal. Use Figure~1 to see how the control signals control the data paths.
+\begin{itemize}
+
+	\item{RegDst: Selects whether the register destination comes from the bits 20 -- 16 or bits 15 -- 11 of the instruction. In other words, this control signal selects if the destination register comes from rt or rd.}
+
+	\item{Branch: Has an effect on the source for the next program counter value. If the branch condition is met it will be `1'. If the current instruction is not a branch instruction it will always be set to `0'.}
+
+	\item{Jump: Has an effect on the source for the next program counter value. If the current instruction is not a jump instruction it will always be set to `0'.}
+
+	\item{MemRead: When the MemRead signal is set to `1', then the data memory outputs the data specified by the read address input.}
+
+	\item{MemtoReg: Selects whether the register's write data input will come from the data memory or the ALU output.}
+
+	\item{MemWrite: When the MemWrite signal is set to `1', then the data memory writes its write data to the write address. }
+
+	\item{ALUControl: Selects the ALU operation the ALU performs on its two input values. The controls for the available operations are listed in Table~1.}
+
+	\item{ALUSrc: Selects whether the ALU gets a value from the register's read data 2 output, or from the sign extended immediate value of the instruction.}
+
+	\item{RegWrite: When the RegWrite signal is set to `1', then the register writes the write data to the write register.}
+	
+\end{itemize}
+
 Consider which actions each part of the processor in Figure~1 has to take to fulfill the functions of the operations and set the control signals accordingly. This behavior has to be programmed in the attached file ``SC\_CU\_beh.vhdl".\\
 
 To turn in your solution write an email to %%SUBMISSIONEMAIL with Subject ``Result Task %%TASKNR" and attach your file ``SC\_CU\_beh.vhdl".
