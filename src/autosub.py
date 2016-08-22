@@ -308,9 +308,9 @@ if __name__ == '__main__':
     config.readfp(open(opts.configfile))
 
     imapserver = config.get('imapserver', 'servername')
-    imapuser = config.get('imapserver', 'username') #was autosub_user
-    imappasswd = config.get('imapserver', 'password') #was autosub_passwd
-    imapmail = config.get('imapserver', 'email') #was autosub_mail
+    imapuser = config.get('imapserver', 'username')
+    imappasswd = config.get('imapserver', 'password')
+    imapmail = config.get('imapserver', 'email')
 
     try:
         imapsecurity = config.get('imapserver', 'security')
@@ -448,7 +448,7 @@ if __name__ == '__main__':
 
     generator_t = generator.taskGenerator(thread_id, "generator", gen_queue, \
                                           sender_queue, logger_queue, coursedb, \
-                                          semesterdb, smtpmail)
+                                          semesterdb, imapmail)
 
     # make the fetcher thread a daemon, this way the main will clean it up before
     # terminating!
