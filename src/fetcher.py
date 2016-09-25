@@ -518,7 +518,7 @@ class mailFetcher(threading.Thread):
                                 c.send_email(self.sender_queue, user_email, "", "Usage", "", \
                                              "", messageid)
 
-                            if int(searchObj.group()) <= c.get_num_tasks(self.coursedb, \
+                            elif int(searchObj.group()) <= c.get_num_tasks(self.coursedb, \
                                     self.logger_queue, self.name):
                                 logmsg = "Processing a Result, UserId:{0} TaskNr:{1}"\
                                          .format(user_email, searchObj.group())
