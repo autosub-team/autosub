@@ -509,9 +509,15 @@ class mailFetcher(threading.Thread):
                         logmsg = "Got mail from an already known user!"
                         c.log_a_msg(self.logger_queue, self.name, logmsg, "INFO")
 
-                        #TODO: Does sending a mail "Result bla" without number crash this?
                         if re.search('[Rr][Ee][Ss][Uu][Ll][Tt]', mail_subject):
                             searchObj = re.search('[0-9]+', mail_subject, )
+                            if searchObj == None : # no number found
+                                logmsg = ("Got a kind of message I do not understand. "
+                                          "Sending a usage mail...")
+                                c.log_a_msg(self.logger_queue, self.name, logmsg, "DEBUG")
+                                c.send_email(self.sender_queue, user_email, "", "Usage", "", \
+                                             "", messageid)
+
                             if int(searchObj.group()) <= c.get_num_tasks(self.coursedb, \
                                     self.logger_queue, self.name):
                                 logmsg = "Processing a Result, UserId:{0} TaskNr:{1}"\
