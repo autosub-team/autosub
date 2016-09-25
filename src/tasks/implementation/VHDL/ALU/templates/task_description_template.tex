@@ -70,10 +70,10 @@ The instruction description is as below:
 
 When the ALU is disabled, the outputs are zero and when it is enabled it performs the selected instruction on the inputs and then outputs the result. The result is as the same size as the input. There is also another output which is one-bit flag and should be calculated for each selected operation. The flag for each instruction is as follow and should be applied to the result which is R:
 \begin{itemize}
-\item %%INS1: %%FLAG1 
-\item %%INS2: %%FLAG2
-\item %%INS3: %%FLAG3
-\item %%INS4: Carry flag changes during the operation (based on the above description)
+\item %%INS1 --\textgreater \enspace %%FLAG1: %%DESCflag1
+\item %%INS2 --\textgreater \enspace %%FLAG2: %%DESCflag2
+\item %%INS3 --\textgreater \enspace %%FLAG3: %%DESCflag2
+\item %%INS4 --\textgreater \enspace Carry flag: %%FLAG4 (based on the description of %%INS4)
 \end{itemize}
 \vspace{0.3cm}
 
@@ -89,3 +89,4 @@ Good Luck and May the Force be with you.
 
 
 \end{document}\grid\grid
+\grid
