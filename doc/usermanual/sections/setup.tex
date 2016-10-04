@@ -3,23 +3,11 @@
 \subsection{VELS server setup} \label{sub:serversetup}
 
 The first thing to do when you want to install the autosub submission system and the VELS
-web interface is to clone the git repositories:
+web interface is to clone the git repository:
 
 \begin{verbatim}
 git clone https://github.com/andipla/autosub.git
 \end{verbatim}
-
-for the autosub project, as well as the VELS specific part from our local server:
-
-\begin{verbatim}
-git clone vels@vels.ict.tuwien.ac.at:/shared/autosub_internal
-\end{verbatim}
-
-In the following if not explicitly stated the autosub (not autosub\_internal) repository
-will be used. The difference between those two is, that the first one is located on github
-containing all the already released source and documentation, while the second one contains
-source and documents that are specific to the ICT VELS project and need to be generalized
-before they can be released into the wild.
 
 \subsection{Autosub submission config file}\label{sub:configfile}
 The autosub config file is used to configure the connection to the mail server and set
@@ -28,65 +16,81 @@ folder {\tt "autosub/src/"} and is used when starting the autosub system. It is 
 in groups and entries. An example is given in the next subsection \ref{sub:exampleconfig}.
 
 The configuration file should include the following entries:
-\begin{tabular}{|p{4cm}|p{4cm}|p{5cm}|}
+\begin{tabular}{|p{2.5cm}|p{2.5cm}|p{8cm}|}
 \hline
 
 {\bf Group} & {\bf Field} & {\bf Description} \\
 \hline
 \hline
-imapserver & servername & Hostname.domain of the imap server.\\
+imapserver & servername & Hostname.domain of the IMAP server.\\
 \hline
-imapserver & username & Username used to login to the imap server. \\
+imapserver & serverport & Port to be used.\\
 \hline
-imapserver & password & Password used to login to the imap server. \\
+imapserver & security & Security protocol to be used when connecting 
+	(none or ssl or starttls). \\
 \hline
-imapserver & e-mail & E-Mail address at the imap server. \\
+imapserver & username & Username to be used to login. \\ 
+\hline
+imapserver & password & Password to be used to login. \\
+\hline
+imapserver & email & Email address at the IMAP server. \\
 \hline
 \hline
-smtpserver & servername & Hostname.domain of the smtp server.\\
+smtpserver & servername & Hostname.domain of the SMTP server.\\
+\hline
+smtpserver & serverport & Port to be used. \\
+\hline
+smtpserver & security & Security protocol to be used when connecting
+	(none or ssl or starttls). \\
+\hline
+smtpserver & username & Username to be used to login. \\
+\hline
+smtpserver & password & Password to be used to login. \\
+\hline
+smtpserver & email & Email address at the SMTP server. \\
 \hline
 \hline
 general & num\_workers & Number of Worker threads. This influences how many
-tests can conducted in parallel. \\
+	tests can conducted in parallel. \\
 \hline
-general & queue\_size & Size of the thread communication queues.\\
+general & queue\_size & Size of the thread communication queues. \\
 \hline
 general & poll\_period & Period in seconds at which the mailbox is checked.\\
 \hline
+general & course\_name & The name of course.\\
+\hline
 general & semesterdb & The name and path of the database that shall be used for data specific to
-    this semester. (default: semester.db)\\
+    this semester. (default: semester.db) \\
 \hline
 general & coursedb & The name and path of the database that shall be used for data specific to
     this course. (default: course.db)\\
 \hline
 general & logfile & The name and path of the autosub logfile. (default: autosub.log)\\
 \hline
-general & specialpath & Not used at the moment. Will be used in the future \\
 \hline
-general & course\_name & The name of course.\\
+challenge & num\_tasks & The mode in which to run (exam or normal).\\
 \hline
-\hline
-challenge & num\_tasks & Number of tasks for the course.\\
-\hline
-challenge & mode & The mode in which to run (exam or normal).\\
+challenge & mode & The mode in which to run (exam or normal). \\ 
 \hline
 \end{tabular}
 
-For the SMTP connection it is assumed that the e-mail, user and password are the same as for IMAP.
-
+\newpage
 
 \subsection{Example Configuration File} \label{sub:exampleconfig}
 
 \begin{lstlisting}[frame=single,captionpos=b,caption=example.cfg, belowcaptionskip=4pt]]
 [imapserver]
 servername: imap.gmail.com
-serverport: 587
+serverport: 993
+security: ssl
 username: submission@gmail.com
 password: mysupersecurepassword
 email: submission@gmail.com
 
 [smtpserver]
 servername: smtp.gmail.com
+serverport: 587
+security: starttls
 username: submission@gmail.com
 password: mysupersecurepassword
 email: submission@gmail.com
@@ -95,12 +99,14 @@ email: submission@gmail.com
 num_workers: 3
 queue_size: 200
 poll_period: 60
-coursedb: /tmp/course.db
+course_name: Course Default
 semesterdb: /tmp/semester.db
+coursedb: /tmp/course.db
 logfile: /home/andi/working_git/autosub/src/autosub.log
 
 [challenge]
 num_tasks: 6
+mode: normal
 \end{lstlisting}
 
 \subsection{Starting the Daemon}
@@ -152,6 +158,12 @@ already have keyfiles you can use!):
 To start the VELS\_WEB daemon at port <port> and with password <password> run:
 \begin{verbatim}
 ./daemon.sh <port> <password> 
+\end{verbatim}
+
+After this step the VELS\_WEB interface will be reachable via your browser at
+address:
+\begin{verbatim}
+https://<server_ip>:<port>/VELS_WEB
 \end{verbatim}
 
 \subsection{General Configuration}\label{sub:generalconfig}
