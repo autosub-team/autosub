@@ -43,6 +43,8 @@ class TaskActivator(threading.Thread):
                 sql_cmd = "UPDATE TaskConfiguration SET TaskActive = 1 WHERE TaskNr == :tasknr;"
                 curc.execute(sql_cmd, data)
                 conc.commit()
+                logmsg = "Turned Task {0} to active.".format(str(tasknr))
+                c.log_a_msg(self.logger_queue, self.name, logmsg, "INFO")
 
                 # next, check if any users are waiting for that task
                 curs, cons = c.connect_to_db(self.semesterdb, \
@@ -73,14 +75,14 @@ class TaskActivator(threading.Thread):
                         c.log_a_msg(self.logger_queue, self.name, \
                                     logmsg, "DEBUG")
 
-                        logmsg = "UserID {0}, UserEmail{1}".format(uid, \
-                                                                   user_email)
+                        logmsg = "UserEmail: {0}, TaskNr : {1}, UserId: {0},".format(user_email, \
+                                                                                     tasknr, uid)
                         c.log_a_msg(self.logger_queue, self.name, \
                                     logmsg, "DEBUG")
-                        self.gen_queue.put(dict({"UserId": str(uid), \
-                                                 "UserEmail": str(user_email), \
-                                                 "TaskNr": str(tasknr), \
-                                                 "MessageId": ""}))
+                        self.gen_queue.put(dict({"user_id": str(uid), \
+                                                 "user_email": str(user_email), \
+                                                 "task_nr": str(tasknr), \
+                                                 "messageid": ""}))
                     else:
                         c.send_email(self.sender_queue, str(user_email), \
                                      str(uid), "Task", str(tasknr), "", "")
@@ -102,6 +104,6 @@ class TaskActivator(threading.Thread):
 
         while True:
             self.activator_loop()
-            time.sleep(3600) # it's more than enough to check every hour!
+            time.sleep(60) # it's more than enough to check every hour!
 
 
