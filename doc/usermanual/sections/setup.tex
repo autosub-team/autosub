@@ -166,6 +166,9 @@ address:
 https://<server_ip>:<port>/VELS_WEB
 \end{verbatim}
 
+If you plan to run multiple instances of the VELS system on one server, be sure to 
+use different ports when starting the VELS\_WEB daemon.
+
 \subsection{General Configuration}\label{sub:generalconfig}
 Configuration items that can be changed dynamically are changeable in VELS\_WEB ->
 General Config. These configurable items are:
@@ -221,7 +224,7 @@ Each task in the queue has to be created with the following properties:
 \item Configured the email server, including an email archive folder.
 \item Created a config file for autosub.
 \item Started the autosub system via {\tt autosub.sh start <configfile>}.
-\item Started VELS\_WEB using the daemon 
+\item Started VELS\_WEB using the daemon.
 \item Configured all parameters in General Config in VELS\_WEB.
 \item Configured all Tasks in VELS\_WEB.
 \item Whitelisted all students in VELS\_WEB.

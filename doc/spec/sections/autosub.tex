@@ -128,10 +128,9 @@
         \hline
         Rate & Triggered by registration of a new user, and successful submission of a task.  \\
         \hline
-        Comment & The tasks are tailored for each student using randomized parameters as described
-            later on in Section \ref{sec:taskspec}. 
+        Comment & The tasks are tailored for each student using randomized parameters. 
 
-            The generation of the example is done as soon as it is needed e.g. for the first
+            The generation of a task is done as soon as it is needed e.g. for the first
             task after the user registered, for all the other tasks, as soon as the previous
             task has successfully been submitted.
 
@@ -191,9 +190,8 @@
     \end{itemize}
 \item [gen\_queue] The gen\_queue is used to trigger the Generator Thread to generate a new (variant of) a 
     task. That means that certain parameters of the task are randomized, in order to assure that each student 
-    receives his/her very own example. The actual setting of parameters is done as described 
-    in Section \ref{sec:taskspec}.
-    \begin{itemize}
+    receives his/her very own example. 
+	\begin{itemize}
         \item {\bf UserId:} The unique UserID of the User for whom the task is generated.
         \item {\bf UserEmail:} E-Mail address of the User for whom the task is generated.
         \item {\bf TaskNr:} Number of the task that shall be generated.
