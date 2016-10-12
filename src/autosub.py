@@ -389,6 +389,14 @@ if __name__ == '__main__':
     except:
         logfile = '/tmp/autosub.log'
 
+    try:
+        auto_advance = config.get('general','auto_advance')
+        if auto_advance = "yes" or auto_advance ="1":
+            auto_advance = True
+        else
+            auto_advance = False
+    except:
+        auto_advance = False;
 
     num_tasks = config.getint('challenge', 'num_tasks')
 
@@ -458,7 +466,7 @@ if __name__ == '__main__':
 
     activator_t = activator.TaskActivator("activator", gen_queue, \
                                           sender_queue, logger_queue, coursedb, \
-                                          semesterdb)
+                                          semesterdb, auto_advance)
 
     # make the fetcher thread a daemon, this way the main will clean it up before
     # terminating!
