@@ -1,0 +1,231 @@
+\section{Truth Table} \label{truthtable}
+    \begin{tabular}{|p{2cm}|p{11cm}|}
+        \hline
+        Overview & The student has to program the behavior of an entity which behaves according to a given 
+        truth table. The student learns how computations on inputs can be done and and the proper output 
+        can be set.
+        \\
+        \hline
+        Description & The student receives pdf file with a truth table for 4 inputs and 1 output. 
+        It is noted that the task can be solved via look up table or prior simplification via KV
+		(Karnaugh Veith)
+        algorithm. The student receives a vhdl file with the entity declaration, which should 
+        not be changed and a vhdl file with for the student's behavioral implementation. 
+        \\
+        \hline
+        Creation & In a 4 input system the truth table is composed of $N=2^4$ rows. Therefore 
+        $2^N=2^{16}=65536$ possible truth tables can be created. In order to allow  KV optimizations 
+        as a DNF(Disjunctive Normal Form) the truth table is generated and then checked if optimization 
+		is possible using the Quine–McCluskey algorithm.
+        \\
+        \hline
+        Submission & The student has to submit his behavioral implementation vhdl file.
+        \\
+        \hline
+        Testing & A testbench tests the students entity with all 16 possible input combinations and compares 
+        them to the given truth table via a lookup table. 
+        \\
+        \hline
+        Feedback & If the syntax analysis returned errors, they are sent to the student. If one of the 
+        tests results in a wrong result, the chosen operands and the proper result is sent to the student. 
+        The student is informed if his solution was proper or not. 
+        \\
+        \hline 
+    \end{tabular}
+    
+    \newpage    
+
+\section{Basic Gates} \label{basicgates}
+    \begin{tabular}{|p{2cm}|p{11cm}|}
+        \hline
+        Overview & The student has to program the behavior of an entity which behaves according to a given
+        gate network. The student learns how to use predefined components and connect them. 
+        \\
+        \hline
+        Description & The student receives a pdf file with a gate network as a picture. It is noted that the 
+        tasks should be solved using IEEE 1164 gates. The student receives a vhdl file 
+        with the entity declaration, which should not be changed and a vhdl file with for the behavioral
+        implementation. The to be used IEEE 1164 gates are supplied in the form of the following files: a 
+        file for the entities, a file for the behavior and a package file.
+        \\
+        \hline
+         Creation & The randomly generated gate network has the following properties:
+         \begin{itemize}
+             \item 2 level depth
+             \item maximum of 4 gates per level
+             \item 4 inputs, 1 output
+             \item gate types: AND, NAND, OR, NOR, XOR, XNOR
+             \item every input can be negated 
+        \end{itemize}
+        The generated network is converted to a pdf file using \LaTeX. 
+        \\
+        \hline
+        Submission & The student has to submit his behavioral implementation vhdl file.
+        \\
+        \hline
+        Testing & A testbench tests the students entity with all 16 possible input combinations 
+        and compares the output them to server side calculated proper values.
+        \\
+        \hline
+        Feedback & If the syntax analysis returned errors, they are sent to the student. If one of the 
+        tests results in a wrong result, the chosen operands and the proper result is sent to the student. 
+        The student is informed if his solution was proper or not. 
+        \\
+        \hline 
+    \end{tabular}
+    
+    \newpage
+
+\section{PWM(Pulse-Width Modulation) Generator}\label{pwmgenerator}
+    \begin{tabular}{|p{2cm}|p{11cm}|}
+        \hline
+        Overview &  The student has to program the behavior of an entity which produces a PWM 
+        signal with a given output frequency and a given duty cycle. The output PWM signal shall 
+        be generated with the help of a given input clock signal at 50 MHz. The student 
+        learns how to handle clock signals for output signal generation.
+        \\
+        \hline
+        Description & The student receives information about what PWM is, the frequency of the input 
+        clock (50 MHz), the frequency of the desired PWM output signal and the desired duty cycle. 
+        The student receives a vhdl file with the entity declaration, which should not be changed 
+        and a vhdl file with for the behavioral implementation. The student is informed that the
+                use of the keywords 'after' and 'wait' is prohibited for this task.
+        \\
+        \hline
+        Creation & Both the output frequency and duty cycle are randomly generated. The input clock is fixed
+        at 50 MHz.
+        \\
+        \hline
+        Submission & The student has to submit his behavioral implementation vhdl file.
+        \\
+        \hline
+        Testing & A test bench feeds the student's entity with the specified input frequency, tries to 
+        calculate a frequency and a duty cycle of the output signal and compares it to the specified 
+        frequency and duty cycle. Students' entities which use the keywords 'after' and 'wait' are rejected. 
+        \\
+        \hline
+        Feedback & If the syntax analysis returned errors, they are sent to the student. The students' 
+        PWM signal is tested for the specified frequency and duty cycle. If the solution is not proper,
+        the student is informed of the measured values and receives a gtkwave file containing his output 
+        signal. If no continuous signal is detectable, the student is told so and also receives the 
+        gtkwave file. The student is informed if his solution was proper or not. 
+        \\
+        \hline 
+    \end{tabular}
+    
+    \newpage
+    
+\section{Arithmetic}\label{arithmetic}
+    \begin{tabular}{|p{2cm}|p{11cm}|}
+        \hline
+        Overview & The student has to program the behavior of an entity which acts as an adder or subtracter
+        for 2 operands of a given bit width and a given number representation. The student learns how simple 
+        add and subtract operations can be implemented in hardware via vhdl   
+        \\
+        \hline
+        Description & The student receives which type of operation for which operand bit length and number 
+        representation has to be implemented. The appropriate flags (carry, overflow) for the given 
+        operation are described. The student receives a vhdl file with the entity declaration,
+        which should not be changed and a vhdl file the behavioral implementation. 
+        \\
+        \hline
+        Creation & The operation, the bit width of the 2 operands and number representation is randomly 
+        chosen from the following choices:
+        \begin{itemize}
+            \item addition or subtraction
+            \item ones' complement, two's complement or unsigned
+            \item both operands have the same length between 4 and 16 bit
+        \end{itemize}      
+        The appropriate flags are included as outputs of the predefined entity.
+        \\
+        \hline
+        Submission & The student has to submit his behavioral implementation vhdl file.   
+        \\
+        \hline
+        Testing & A test bench tests the student's entity with random operands. All error 
+        cases (overflow, carry) are at least tested once.
+        \\
+        \hline
+        Feedback & If the syntax analysis returned errors, they are sent to the student. If one of the 
+        tests results in a wrong result or the appropriate flags were not set, the chosen operands 
+        and the proper result including flags is sent to the student. The student is informed if 
+        his solution was proper or not.
+        \\
+        \hline 
+    \end{tabular}
+
+    \newpage
+
+\section{Finite State Machine}\label{finitestatemachine}
+    \begin{tabular}{|p{2cm}|p{11cm}|}
+        \hline
+        Overview & The student has to program the behavior of an entity which acts as a Mealy Finite 
+        State Machine according to a given state diagram. The student learns how a simple Mealy Finite
+        State Machine can be implemented with vhdl using synchronous design principles.
+        \\
+        \hline
+        Description & The student receives information about Finite State Machines and synchronous
+        design and a pdf file with a picture of a state diagram. It is noted that the whole design should be 
+        programmed according to synchronous design. The student receives a vhdl file with the 
+        entity declaration, which should not be changed and a vhdl file with the states predefined 
+        for the behavioral implementation.
+        \\
+        \hline
+        Creation &  The randomly generated state diagram has the following properties:
+        \begin{itemize}
+            \item 5 states
+            \item 2 input bits, 2 output bits
+        \end{itemize}
+        For testing the state the state machine is in is also a entity output. The generated state diagram 
+        is converted to a pdf file via \LaTeX. 
+        \\
+        \hline
+        Submission & The student has to submit his behavioral implementation vhdl file.
+        \\
+        \hline
+        Testing & A test bench feeds the student's entity with inputs and checks both output and state
+        transitions. The state machine is tested extensively to achieve 100\% test coverage. 
+        \\
+        \hline
+        Feedback & If the syntax analysis returned errors, they are sent to the student. If the end 
+        state was not reached the student receives information about the last valid state and the next 
+        expected state. The student is informed if his solution was proper or not.
+        \\
+        \hline 
+    \end{tabular}
+    
+    \newpage
+
+\section{CRC(Cyclic Redundancy Check Generator)}\label{crcgenerator}
+    \begin{tabular}{|p{2cm}|p{11cm}|}
+        \hline
+        Overview & The student has to program the behavior of an entity which generates the CRC for data 
+        of a given bit width with a given generator polynomial. The student learns how shift register can be 
+        used for calculations.
+        \\
+        \hline
+        Description & The student receives an explanation about CRC a bit width, a generator 
+        polynomial and an example input and result. It is noted that shift registers should
+        be used for implementation. The student receives a vhdl file with the entity declaration,
+        which should not be changed and a vhdl file the behavioral implementation. 
+        \\
+        \hline
+        Creation & The generator polynom and the message bit length is randomly generated. The message 
+        bit length is chosen between 12 and 24 bit, the generator polynomial degree is chosen between 5 
+        and 11. It is assured that the degree of the generator polynomial is smaller than the message 
+        bit length. 
+        \\
+        \hline
+        Submission & The student has to submit his behavioral implementation vhdl file. 
+        \\
+        \hline
+        Testing & A test bench feeds the student's entity sequentially with multiple data words and checks the 
+        resulting CRC values.
+        \\
+        \hline
+        Feedback & If the syntax analysis returned errors, they are sent to the student. If one of the 
+        tests results in a wrong CRC value, the chosen data, the wrong CRC and the proper
+        solution are sent to the student. The student is informed if his solution was proper or not.
+        \\
+        \hline 
+    \end{tabular}

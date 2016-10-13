@@ -1,0 +1,106 @@
+\section{Specification Overview}
+This document aims to specify the tasks and the interaction and processes which are involved 
+for the VELS system. Tasks are dynamically generated using a task template and parameters. 
+If a student wants a new task the parameters are randomly chosen and inserted into the 
+template. The general goal is that every student of a unique course year gets a similar,
+but not identical task.
+
+After submission the student's task solution will be checked via a dynamically generated testbench. 
+Before testing, the entity is compiled to check for syntax errors. The testbench feeds the student's 
+design, the UUT (Unit Under Test) with test vectors and compares the UUT's output to the desired output.
+To check the behavior of the UUT as best as possible and prevent the student to design a UUT that 
+does only have the right behavior for a limited portion of the test vector space, the test vectors are randomly
+chosen from the test vector space. Furthermore every separate submission is checked by a different 
+test vectors set, either by permuting, choosing a random portion of the test vector space or by varying the 
+test duration. For the case that the testing of a UUT produces an endless loop, each task is tested with a simulation timeout.
+
+To specify each task the following sequential notation is used: 
+
+\begin{description}
+
+
+
+%    \item [Number] \textbf{Name} \\
+%    \begin{tabular}{|p{2cm}|p{11cm}|}
+%        \hline
+%        Overview &  
+%        \\
+%        \hline
+%        Description &  
+%        \\
+%        \hline
+%        Creation &  
+%        \\
+%        \hline
+%        Submission &  
+%        \\
+%        \hline
+%        Testing & 
+%        \\
+%        \hline
+%        Feedback & 
+%        \\
+%        \hline 
+%    \end{tabular}
+
+    \item \textbf{<Task Name>}\\
+    \begin{tabular}{|p{2cm}|p{11cm}|}
+        \hline
+        Overview & General Overview of the the task, the intent and learning objective.
+        \\
+        \hline
+        Description & Which informations the student will get to solve the task. 
+        \\
+        \hline
+        Creation & How the individual task for the student is created on the server.  
+        \\
+        \hline
+        Submission & What the student has to submit.
+        \\
+        \hline
+        Testing & How the student solution is tested on the server.
+        \\
+        \hline
+        Feedback & What feedback the student gets after testing.
+        \\
+        \hline 
+    \end{tabular}
+\end{description}
+
+A course is composed of a task queue that explicitly orders a selection of the available tasks. Creation
+and modification of this queue is done by the VELS Web Interface.
+
+
+\newpage
+
+All files related to a task are located in a directory. This directory contains:
+    
+    
+\begin{tabular}{|p{3cm}|p{10cm}|}
+\hline
+
+Minimal  & \begin{itemize}
+    \item {\bf Generator executable:} Generates random parameters for the task, creates entity 
+        and behavioral vhdl files and description test and pdf file for the student. Stores the 
+        individual task parameters in the \textit{UserTasks} database table.  
+    \item {\bf Tester executable:} Given the individual task parameters, tries to compile the 
+        student's solution. Generates an individual test bench for the student's solution. Tests 
+        the solution and creates feedback text and files for the student. 
+    \end{itemize} 
+\\
+\hline
+Optional & \begin{itemize}
+    \item {\bf Scripts:} Scripts that are called from the executables in order to aid the 
+        generation or test process
+    \item {\bf Templates:} These files have to be filled with parameters and can be used to generate entity 
+        declarations, test benches or description texts and files for the students.
+    \item {\bf Static:} These files are static for the task, therefore the same for every student.
+    \item {\bf Exam:} Files that are needed for the VELS exam mode.
+\end{itemize} 
+\\
+\hline
+\end{tabular} 
+
+
+The following sections define a set of initial tasks for the VELS E-learning system. New tasks 
+can be added at any time by a course operator via VELS direct server access.
