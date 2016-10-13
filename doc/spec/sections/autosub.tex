@@ -236,7 +236,7 @@ imapserver & servername & Hostname.domain of the IMAP server.\\
 imapserver & serverport & Port to be used.\\
 \hline
 imapserver & security & Security protocol to be used when connecting 
-	(none or ssl or starttls). \\
+    Possible values: none ssl starttls \\
 \hline
 imapserver & username & Username to be used to login. \\ 
 \hline
@@ -249,8 +249,8 @@ smtpserver & servername & Hostname.domain of the SMTP server.\\
 \hline
 smtpserver & serverport & Port to be used. \\
 \hline
-smtpserver & security & Security protocol to be used when connecting
-	(none or ssl or starttls). \\
+smtpserver & security & Security protocol to be used when connecting.
+    Possible values: none ssl starttls \\
 \hline
 smtpserver & username & Username to be used to login. \\
 \hline
@@ -276,6 +276,8 @@ general & coursedb & The name and path of the database that shall be used for da
 \hline
 general & logfile & The name and path of the autosub logfile. (default: autosub.log)\\
 \hline
+general & auto\_advance & Decides if users get auto advanced to a task which is
+    activated by its TaskStart. Possible values: yes no (default:no) \\
 \hline
 challenge & num\_tasks & The mode in which to run (exam or normal).\\
 \hline
