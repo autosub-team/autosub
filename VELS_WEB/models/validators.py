@@ -1,5 +1,8 @@
 # -*- coding: utf-8 -*-
 
+from os.path import isfile
+from os.path import isdir
+
 class IS_EMAIL_LIST(object):
     def __init__(self, error_message="Email %s is invalid", sep=","):
         self.error_message = error_message
@@ -26,6 +29,29 @@ class IS_EMAIL_MASS(object):
                 if IS_EMAIL()(email)[1] != None:
                     return (email, self.error_message % email)
             return (value, None)
+
+class FILE_EXISTS(object):
+    def __init__(self, error_message="File does not exist"):
+        self.error_message = error_message
+
+    def __call__(self, value):
+        filename = value
+        if isfile(filename) == False:
+            return(filename, self.error_message)
+        else:
+            return (filename, None)
+
+class PATH_EXISTS(object):
+    def __init__(self, error_message="Path does not exist"):
+        self.error_message = error_message
+
+    def __call__(self, value):
+        pathname = value
+        if isdir(pathname) == False:
+            return(pathname, self.error_message)
+        else:
+            return (pathname, None)
+
 
 class ANY(object):
     """

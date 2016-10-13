@@ -1,4 +1,5 @@
 from os.path import expanduser
+from os.path import isdir
 
 #Validators
 val={'TaskNr'              :[IS_NOT_EMPTY(),IS_DECIMAL_IN_RANGE(minimum=0)],
@@ -6,7 +7,7 @@ val={'TaskNr'              :[IS_NOT_EMPTY(),IS_DECIMAL_IN_RANGE(minimum=0)],
                        error_message='must be YYYY-MM-DD HH:MM:SS!')],
      'TaskDeadline'        :[IS_NOT_EMPTY(),IS_DATETIME(format=T('%Y-%m-%d %H:%M:%S'),
                        error_message='must be YYYY-MM-DD HH:MM:SS!')],
-     'PathToTask'          :[IS_NOT_EMPTY()],
+     'PathToTask'          :[IS_NOT_EMPTY(),PATH_EXISTS()],
      'GeneratorExecutable' :[IS_NOT_EMPTY()],
      'TestExecutable'      :[IS_NOT_EMPTY()],
      'Score'               :[IS_NOT_EMPTY(),IS_DECIMAL_IN_RANGE(minimum=1)],
@@ -49,6 +50,10 @@ def newTask():
 
     # guess for path of tasks
     task_path = str(expanduser("~")) + "/autosub/src/tasks/implementation/"
+
+    #reset it to empty if that is not a existing path
+    if(isdir(task_path)==False):
+        task_path = ""
 
     inputs= TD(newTaskNr,INPUT(_type='hidden',_name='TaskNr',_value=newTaskNr) ),\
             TD(INPUT(_name='TaskStart',           requires=val['TaskStart']           , _placeholder="YYYY-MM-DD HH:MM:SS"                      )),\
