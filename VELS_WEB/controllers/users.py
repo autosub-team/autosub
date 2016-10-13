@@ -18,7 +18,7 @@ def __entries():
             nrs = []
             for row_nrs in rows_nrs:
                 nrs.append(str(row_nrs.TaskNr))
-            successfuls = ','.join(nrs)
+            successfuls = str(len(nrs)) + ': ' + ','.join(nrs)
 
         entry={'UserId'      :row.UserId,
                'Name'        :row.Name,
