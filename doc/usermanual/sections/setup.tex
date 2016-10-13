@@ -157,13 +157,19 @@ already have keyfiles you can use!):
 
 To start the VELS\_WEB daemon at port <port> and with password <password> run:
 \begin{verbatim}
-./daemon.sh <port> <password> 
+./daemon.sh start <port> <password> 
 \end{verbatim}
 
 After this step the VELS\_WEB interface will be reachable via your browser at
 address:
 \begin{verbatim}
 https://<server_ip>:<port>/VELS_WEB
+\end{verbatim}
+
+To stop the daemon just run the command:
+
+\begin{verbatim}
+./daemon.sh stop
 \end{verbatim}
 
 If you plan to run multiple instances of the VELS system on one server, be sure to 
