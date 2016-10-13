@@ -30,10 +30,10 @@ class TaskActivator(threading.Thread):
         # first we need to know, which tasks are not active at the moment
         sql_cmd = "SELECT * FROM TaskConfiguration WHERE TaskActive==0;"
         curc.execute(sql_cmd)
-        rows_tasks = curc.fetchall
+        rows_tasks = curc.fetchall()
 
         # loop through all the inactive tasks
-        for row_task in rows_task:
+        for row_task in rows_tasks:
             tasknr = row_task[0]
             logmsg = "Task {0} is still inactive".format(str(tasknr))
             c.log_a_msg(self.logger_queue, self.name, logmsg, "INFO")
@@ -49,9 +49,12 @@ class TaskActivator(threading.Thread):
                 logmsg = "Turned Task {0} to active.".format(str(tasknr))
                 c.log_a_msg(self.logger_queue, self.name, logmsg, "INFO")
 
+                curs, cons = c.connect_to_db(self.semesterdb, \
+                                             self.logger_queue, self.name)
+
                 # if auto_advance is activated, all users should be
                 # advanced to that task
-                if self.auto_advance = True:
+                if self.auto_advance == True:
                     data = {'tasknr': tasknr}
                     sqlcmd = "SELECT UserId FROM Users WHERE CurrentTas < :tasknr;"
                     curs.execute(sqlcmd, data)
@@ -62,15 +65,13 @@ class TaskActivator(threading.Thread):
                         users_list.append(row[0])
                     users_comma_list = ','.join (users_list)
 
-                    data = {'tasknr': tasknr, 'users_list': users_lis)
+                    data = {'tasknr': tasknr, 'users_list': users_comma_list}
                     sqlcmd = ("UPDATE Users SET CurrenTask = :tasknr WHERE "
                                   "UserId IN (:users_comma_list);")
                     curs.execute(sqlcmd, data)
                     curs.commit()
 
                 # next, check if any users are waiting for that task
-                curs, cons = c.connect_to_db(self.semesterdb, \
-                                             self.logger_queue, self.name)
                 data = {'tasknr': tasknr}
                 sqlcmd = "SELECT * FROM Users WHERE CurrentTask == :tasknr;"
                 curs.execute(sqlcmd, data)
@@ -100,7 +101,7 @@ class TaskActivator(threading.Thread):
                         c.log_a_msg(self.logger_queue, self.name, \
                                     logmsg, "DEBUG")
 
-                        logmsg = "UserEmail: {0}, TaskNr : {1}, UserId: {0},".format(user_email, \
+                        logmsg = "UserEmail: {0}, TaskNr : {1}, UserId: {2},".format(user_email, \
                                                                                      tasknr, uid)
                         c.log_a_msg(self.logger_queue, self.name, \
                                     logmsg, "DEBUG")
