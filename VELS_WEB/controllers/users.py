@@ -9,14 +9,27 @@ def __entries():
     rows=semester().select(Users.ALL)
     array=[]
     for row in rows:
+
+        rows_nrs = semester((UserTasks.UserId == row.UserId) & \
+                            (UserTasks.FirstSuccessful <> None)).select(UserTasks.TaskNr)
+        if(len(rows_nrs) == 0):
+            successfuls = "None"
+        else:
+            nrs = []
+            for row_nrs in rows_nrs:
+                nrs.append(str(row_nrs.TaskNr))
+            successfuls = ','.join(nrs)
+
         entry={'UserId'      :row.UserId,
                'Name'        :row.Name,
                'Email'       :row.Email,
+               'FinishedTasks': successfuls,
                'LastDone'    :row.LastDone,
                'UserId'      :row.UserId,
                'FirstMail'   :row.FirstMail,
                'CurrentTask' :row.CurrentTask}
         array.append(entry)
+
     return dict(entries=array)
 
 
@@ -40,7 +53,7 @@ def newUser():
         #strip all whitespaces from begin and end
         for var in form.vars:
             var=var.strip()
-            
+
         Users.insert(Name            =form.vars.Name,
                      Email           =form.vars.Email,
                      FirstMail       =form.vars.FirstMail,
@@ -77,7 +90,7 @@ def editUser():
         #strip all whitespaces from begin and end
         for var in form.vars:
             var=var.strip()
-            
+
         semester(Users.UserId ==UserId).update(Name            =form.vars.Name,
                                                Email           =form.vars.Email,
                                                FirstMail       =form.vars.FirstMail,
@@ -98,7 +111,7 @@ def viewUser():
     row=semester(Users.UserId==UserId).select(Users.ALL).first()
 
     userInfoDict= {'UserId':UserId,
-                   'Name':row.Name, 
+                   'Name':row.Name,
                    'Email':row.Email,
                    'FirstMail':row.FirstMail,
                    'LastDone':row.LastDone,
@@ -108,27 +121,27 @@ def viewUser():
     rowsDoneTasks= semester(UserTasks.UserId == UserId, UserTasks.FirstSuccessful != None).select(UserTasks.TaskNr)
     userScore= 0
 
-    for rowDoneTasks in rowsDoneTasks: 
+    for rowDoneTasks in rowsDoneTasks:
         taskScore= course(TaskConfiguration.TaskNr == rowDoneTasks.TaskNr).select(TaskConfiguration.Score).first().Score
-        userScore= userScore + taskScore 
-   
-    
+        userScore= userScore + taskScore
+
+
     userInfoDict['UserScore']= userScore
 
-    
-    
+
+
     returnDict.update(dict(userInfo=userInfoDict))
 
     #Statistics for each task
     rows=semester(UserTasks.UserId==UserId).select(UserTasks.ALL,orderby=UserTasks.TaskNr)
-    
+
     taskInfosArray=[]
-    for row in rows:   
-        taskInfosArray.append({'TaskNr':row.TaskNr, 
-                     'NrSubmissions':row.NrSubmissions, 
+    for row in rows:
+        taskInfosArray.append({'TaskNr':row.TaskNr,
+                     'NrSubmissions':row.NrSubmissions,
                      'FirstSuccessful':row.FirstSuccessful,
                      'TaskAttachments':row.TaskAttachments.split()})
-    
+
     returnDict.update(dict(taskInfos=taskInfosArray))
-    
+
     return returnDict
