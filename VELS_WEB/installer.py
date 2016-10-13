@@ -33,6 +33,7 @@ if(os.path.isfile(configfile) == False):
 
 #strip trailing / from autosub_path
 autosub_path = autosub_path.rstrip('/')
+
 #get path to the VELS_WEB itself
 vels_web_path = os.path.dirname(os.path.realpath(__file__))
 
@@ -44,11 +45,15 @@ try:
     semesterdb_file = config.get('general', 'semesterdb')
 except:
     print("Your configfile has no semesterdb specified")
+    print("Assuming:" + autosub_path +"/src/semester.db")
+    semesterdb = autosub_path + "/" +"src/semester.db"
 
 try:
     coursedb_file = config.get('general', 'coursedb')
 except:
     print("Your configfile has no coursedb specified")
+    print("Assuming:" + autosub_path +"/src/course.db")
+    semesterdb = autosub_path + "/src/course.db"
 
 
 #download and place web2py
