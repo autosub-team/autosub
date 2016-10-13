@@ -7,6 +7,7 @@
 # License GPL V2 or later (see http://www.gnu.org/licenses/gpl2.txt)
 ########################################################################
 
+import sys
 import threading
 import queue
 
@@ -305,7 +306,12 @@ if __name__ == '__main__':
     opts, args = parser.parse_args()
 
     config = configparser.ConfigParser()
-    config.readfp(open(opts.configfile))
+
+    try:
+        config.readfp(open(opts.configfile))
+    except FileNotFoundError:
+        print("Your configfile was not found\ndaemon exited...")
+        sys.exit(-1)
 
     imapserver = config.get('imapserver', 'servername')
     imapuser = config.get('imapserver', 'username')
@@ -391,9 +397,9 @@ if __name__ == '__main__':
 
     try:
         auto_advance = config.get('general','auto_advance')
-        if auto_advance = "yes" or auto_advance ="1":
+        if auto_advance == "yes" or auto_advance =="1":
             auto_advance = True
-        else
+        else:
             auto_advance = False
     except:
         auto_advance = False;

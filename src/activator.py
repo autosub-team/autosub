@@ -56,27 +56,34 @@ class TaskActivator(threading.Thread):
                 # advanced to that task
                 if self.auto_advance == True:
                     data = {'tasknr': tasknr}
-                    sqlcmd = "SELECT UserId FROM Users WHERE CurrentTas < :tasknr;"
+                    sqlcmd = "SELECT UserId FROM Users WHERE CurrentTask < :tasknr;"
                     curs.execute(sqlcmd, data)
                     rows = curs.fetchall()
 
                     users_list = []
                     for row in rows:
-                        users_list.append(row[0])
-                    users_comma_list = ','.join (users_list)
+                        users_list.append(str(row[0]))
+                    users_comma_list = ','.join(users_list)
 
-                    data = {'tasknr': tasknr, 'users_list': users_comma_list}
-                    sqlcmd = ("UPDATE Users SET CurrenTask = :tasknr WHERE "
-                                  "UserId IN (:users_comma_list);")
-                    curs.execute(sqlcmd, data)
-                    curs.commit()
+                    # TODO: Why does this not work, it's basically the same!
+                   # data = {'tasknr': tasknr, 'users_comma_list': users_comma_list}
+                   # sqlcmd = ("UPDATE Users SET CurrentTask = :tasknr WHERE "
+                   #           "UserId IN (:users_comma_list);")
+                   # curs.execute(sqlcmd, data)
+
+                    sqlcmd = ("UPDATE Users SET CurrentTask = {0} WHERE "
+                              "UserId in ({1});").format(tasknr,users_comma_list)
+                    curs.execute(sqlcmd)
+                    cons.commit()
+                    logmsg = "Advanced users with ids: " + users_comma_list
+                    c.log_a_msg(self.logger_queue, self.name, logmsg, "INFO")
 
                 # next, check if any users are waiting for that task
                 data = {'tasknr': tasknr}
                 sqlcmd = "SELECT * FROM Users WHERE CurrentTask == :tasknr;"
                 curs.execute(sqlcmd, data)
 
-                rows = curs.fetall()
+                rows = curs.fetchall()
                 for row in rows:
                     uid = row[0]
                     user_email = row[2]
@@ -84,7 +91,7 @@ class TaskActivator(threading.Thread):
                     logmsg = "The next task({0} is sent to User {1} now." \
                         .format(tasknr, uid)
                     c.log_a_msg(self.logger_queue, self.name, logmsg, "INFO")
-                    
+
                     try:
                         data = {'tasknr': tasknr}
                         sql_cmd = "SELECT GeneratorExecutable FROM TaskConfiguration WHERE TaskNr == :tasknr;"
@@ -124,6 +131,6 @@ class TaskActivator(threading.Thread):
 
         while True:
             self.activator_loop()
-            time.sleep(3600) # it's more than enough to check every hour!
+            time.sleep(60) # it's more than enough to check every hour!
 
 
