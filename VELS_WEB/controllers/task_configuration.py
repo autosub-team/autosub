@@ -1,3 +1,5 @@
+from os.path import expanduser
+
 #Validators
 val={'TaskNr'              :[IS_NOT_EMPTY(),IS_DECIMAL_IN_RANGE(minimum=0)],
      'TaskStart'           :[IS_NOT_EMPTY(),IS_DATETIME(format=T('%Y-%m-%d %H:%M:%S'),
@@ -45,15 +47,18 @@ def newTask():
         newTaskNr=rows.last().TaskNr+1
     returnDict.update({'newTaskNr': newTaskNr})
 
+    # guess for path of tasks
+    task_path = str(expanduser("~")) + "/autosub/src/tasks/implementation/"
+
     inputs= TD(newTaskNr,INPUT(_type='hidden',_name='TaskNr',_value=newTaskNr) ),\
-            TD(INPUT(_name='TaskStart',           requires=val['TaskStart']           ,_placeholder="YYYY-MM-DD HH:MM:SS")),\
-            TD(INPUT(_name='TaskDeadline',        requires=val['TaskDeadline']        ,_placeholder="YYYY-MM-DD HH:MM:SS")),\
-            TD(INPUT(_name='PathToTask',          requires=val['PathToTask']          ,_placeholder="Path without ending /",)),\
-            TD(INPUT(_name='GeneratorExecutable', requires=val['GeneratorExecutable'],_value="generator.sh" )),\
-            TD(INPUT(_name='TestExecutable',      requires=val['TestExecutable'],_value="tester.sh"      )),\
-            TD(INPUT(_name='Score',               requires=val['Score']               )),\
-            TD(INPUT(_name='TaskOperator',        requires=val['TaskOperator'],_placeholder="Email"        )),\
-            TD(INPUT(_name='TaskActive',        requires=val['TaskActive'],_placeholder="1/0"        )),\
+            TD(INPUT(_name='TaskStart',           requires=val['TaskStart']           , _placeholder="YYYY-MM-DD HH:MM:SS"                      )),\
+            TD(INPUT(_name='TaskDeadline',        requires=val['TaskDeadline']        , _placeholder="YYYY-MM-DD HH:MM:SS"                      )),\
+            TD(INPUT(_name='PathToTask',          requires=val['PathToTask']          , _placeholder="Path without ending /", _value = task_path)),\
+            TD(INPUT(_name='GeneratorExecutable', requires=val['GeneratorExecutable'],  _value="generator.sh"                                   )),\
+            TD(INPUT(_name='TestExecutable',      requires=val['TestExecutable'],       _value="tester.sh"                                      )),\
+            TD(INPUT(_name='Score',               requires=val['Score'],                _value=1                                                )),\
+            TD(INPUT(_name='TaskOperator',        requires=val['TaskOperator'],         _placeholder="Email"                                    )),\
+            TD(INPUT(_name='TaskActive',          requires=val['TaskActive'],           _placeholder="1/0"                                      )),\
             TD(INPUT(_type='submit',_label='Save'))
     form=FORM(inputs)
     
