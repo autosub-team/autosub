@@ -11,7 +11,6 @@ import email
 import imaplib
 import os
 import time
-import sqlite3 as lite
 import re #regex
 import datetime
 import common as c
@@ -60,8 +59,12 @@ class mailFetcher(threading.Thread):
 
         sql_cmd = "SELECT Content FROM GeneralConfig WHERE ConfigItem == 'admin_email'"
         curc.execute(sql_cmd)
-        result = str(curc.fetchone()[0])
-        admin_emails = [email.strip() for email in result.split(',')]
+        result = curc.fetchone()
+        if result != None:
+            result = str(result[0])
+            admin_emails = [email.strip() for email in result.split(',')]
+        else:
+            admin_emails = ""
 
         conc.close()
 
@@ -82,8 +85,12 @@ class mailFetcher(threading.Thread):
         data = {'TaskNr': task_nr}
         sql_cmd = "SELECT TaskOperator FROM TaskConfiguration WHERE TaskNr = :TaskNr"
         curc.execute(sql_cmd, data)
-        result = str(curc.fetchone()[0])
-        taskoperator_emails = [email.strip() for email in result.split(',')]
+        result = curc.fetchone()
+        if result != None:
+            result = str(result[0])
+            taskoperator_emails = [email.strip() for email in result.split(',')]
+        else:
+            taskoperator_emails = ""
 
         conc.close()
 
@@ -100,7 +107,7 @@ class mailFetcher(threading.Thread):
 
         curs, cons = c.connect_to_db(self.semesterdb, self.logger_queue, self.name)
 
-        logmsg = 'New Account: User: %s' % user_name
+        logmsg = 'Creating new Account: User: %s' % user_name
         c.log_a_msg(self.logger_queue, self.name, logmsg, "DEBUG")
 
         data = {'Name': user_name, 'Email': user_email, 'TimeNow': str(int(time.time()))}
@@ -120,6 +127,11 @@ class mailFetcher(threading.Thread):
         sql_cmd = "SELECT UserId FROM Users WHERE Email = :Email"
         curs.execute(sql_cmd, data)
         res = curs.fetchone()
+        if res == None:
+            logmsg = ("Creating new user with "
+                      "name= {0} , email={1} failed").format(user_name, user_email)
+            c.log_a_msg(self.logger_queue, self.name, logmsg, "DEBUG")
+
         user_id = str(res[0])
         dir_name = 'users/'+ user_id
         c.check_dir_mkdir(dir_name, self.logger_queue, self.name)
@@ -206,8 +218,8 @@ class mailFetcher(threading.Thread):
             c.send_email(self.sender_queue, user_email, "", "DeadTask", str(task_nr), \
                          "", messageid)
         elif curtask < task_nr:
-            #user is trying to submit a solution to a task although an earlier task
-            # was not solved.
+            #user is trying to submit a solution to a task although it is after
+            # his CurrentTask (>Currenttask) -->Invalid
             c.send_email(self.sender_queue, user_email, "", "InvalidTask", str(task_nr), \
                          "", messageid)
         else:
@@ -290,10 +302,22 @@ class mailFetcher(threading.Thread):
 
         if (search_obj != None) and int(search_obj.group()) <= c.get_num_tasks(self.coursedb, \
                                             self.logger_queue, self.name):
-            fwd_mails = self.get_taskoperator_emails(search_obj.group())
-
+            tasknr = search_obj.group()
+            fwd_mails = self.get_taskoperator_emails(tasknr)
+            if fwd_mails == "":
+                logmsg = ("Error getting the taskoperator email for task {0}. "
+                          "Question from user with email={1} "
+                          "dropped.").format(tasknr, user_email)
+                c.log_a_msg(self.logger_queue, self.name, logmsg, "DEBUG")
+                return
         else:
             fwd_mails = self.get_admin_emails()
+            if fwd_mails == "":
+                logmsg = ("Error getting the admin email for task {0}. "
+                          "Question from user with email={1} "
+                          "dropped.").format(tasknr, user_email)
+                c.log_a_msg(self.logger_queue, self.name, logmsg, "DEBUG")
+                return
 
         for mail_address in fwd_mails:
             c.send_email(self.sender_queue, mail_address, "", "QFwd", "", mail, messageid)
@@ -407,7 +431,7 @@ class mailFetcher(threading.Thread):
         return items[0].split()
 
     ####
-    #  check_if_whitelisted
+    # check_if_whitelisted
     ####
     def check_if_whitelisted(self, user_email):
         """
@@ -435,6 +459,7 @@ class mailFetcher(threading.Thread):
 
     ####
     # get_registration_deadline
+    ####
     def get_registration_deadline(self):
         """
         Get the registration deadline datetime.
@@ -455,8 +480,49 @@ class mailFetcher(threading.Thread):
             return datetime.datetime.strptime(deadline_string, format_string)
         else:
              # there is no deadline set, just assume it is in 1h from now.
-            return datetime.datetime.now() + datetime.timedelta(0, 3600)
+            date = datetime.datetime.now() + datetime.timedelta(0, 3600)
 
+            logmsg = "No Registration Deadline found, assuming: " + str(date)
+            c.log_a_msg(self.logger_queue, self.name, logmsg, "ERROR")
+            
+            return date
+
+    ####
+    # action_by_subject
+    ####
+    def action_by_subject(self, user_email, messageid, mail, mail_subject):
+        if re.search('[Rr][Ee][Ss][Uu][Ll][Tt]', mail_subject):
+            searchObj = re.search('[0-9]+', mail_subject, )
+            if searchObj == None: # no number found
+                logmsg = ("Got a kind of message I do not understand. "
+                          "Sending a usage mail...")
+                c.log_a_msg(self.logger_queue, self.name, logmsg, "DEBUG")
+                c.send_email(self.sender_queue, user_email, "", "Usage", "", \
+                             "", messageid)
+
+            elif int(searchObj.group()) <= c.get_num_tasks(self.coursedb, \
+                    self.logger_queue, self.name):
+                logmsg = "Processing a Result, UserId:{0} TaskNr:{1}"\
+                         .format(user_email, searchObj.group())
+                c.log_a_msg(self.logger_queue, self.name, logmsg, "DEBUG")
+                self.take_new_results(user_email, searchObj.group(), \
+                                      mail, messageid)
+            else:
+                logmsg = ("Given Task number is higher than actual Number"
+                          "of Tasks!")
+                c.log_a_msg(self.logger_queue, self.name, logmsg, "DEBUG")
+                c.send_email(self.sender_queue, user_email, "", \
+                             "InvalidTask", "", "", messageid)
+        elif re.search('[Qq][Uu][Ee][Ss][Tt][Ii][Oo][Nn]', mail_subject):
+            self.a_question_was_asked(user_email, mail, messageid)
+        elif re.search('[Ss][Tt][Aa][Tt][Uu][Ss]', mail_subject):
+            self.a_status_is_requested(user_email, messageid)
+        else:
+            logmsg = ("Got a kind of message I do not understand. "
+                      "Sending a usage mail...")
+            c.log_a_msg(self.logger_queue, self.name, logmsg, "DEBUG")
+            c.send_email(self.sender_queue, user_email, "", "Usage", "", \
+                         "", messageid)
     ####
     # loop_code
     ####
@@ -500,60 +566,36 @@ class mailFetcher(threading.Thread):
                 whitelisted = self.check_if_whitelisted(user_email)
 
                 if whitelisted:
+                # On Whitelist
                     data = {'Email': user_email}
                     sql_cmd = "SELECT UserId FROM Users WHERE Email = :Email"
                     curs.execute(sql_cmd, data)
                     res = curs.fetchall()
 
                     if res:
+                    # Already registered
                         logmsg = "Got mail from an already known user!"
                         c.log_a_msg(self.logger_queue, self.name, logmsg, "INFO")
 
-                        if re.search('[Rr][Ee][Ss][Uu][Ll][Tt]', mail_subject):
-                            searchObj = re.search('[0-9]+', mail_subject, )
-                            if searchObj == None : # no number found
-                                logmsg = ("Got a kind of message I do not understand. "
-                                          "Sending a usage mail...")
-                                c.log_a_msg(self.logger_queue, self.name, logmsg, "DEBUG")
-                                c.send_email(self.sender_queue, user_email, "", "Usage", "", \
-                                             "", messageid)
-
-                            elif int(searchObj.group()) <= c.get_num_tasks(self.coursedb, \
-                                    self.logger_queue, self.name):
-                                logmsg = "Processing a Result, UserId:{0} TaskNr:{1}"\
-                                         .format(user_email, searchObj.group())
-                                c.log_a_msg(self.logger_queue, self.name, logmsg, "DEBUG")
-                                self.take_new_results(user_email, searchObj.group(), \
-                                                      mail, messageid)
-                            else:
-                                logmsg = ("Given Task number is higher than actual Number"
-                                          "of Tasks!")
-                                c.log_a_msg(self.logger_queue, self.name, logmsg, "DEBUG")
-                                c.send_email(self.sender_queue, user_email, "", \
-                                             "InvalidTask", "", "", messageid)
-                        elif re.search('[Qq][Uu][Ee][Ss][Tt][Ii][Oo][Nn]', mail_subject):
-                            self.a_question_was_asked(user_email, mail, messageid)
-                        elif re.search('[Ss][Tt][Aa][Tt][Uu][Ss]', mail_subject):
-                            self.a_status_is_requested(user_email, messageid)
-                        else:
-                            logmsg = ("Got a kind of message I do not understand. "
-                                      "Sending a usage mail...")
-                            c.log_a_msg(self.logger_queue, self.name, logmsg, "DEBUG")
-                            c.send_email(self.sender_queue, user_email, "", "Usage", "", \
-                                         "", messageid)
+                        # Take action based on the subject
+                        self.action_by_subject(user_email, messageid, mail, \
+                                          mail_subject)
 
                     else:
+                    # Not yet registered
                         reg_deadline = self.get_registration_deadline()
 
                         if reg_deadline > datetime.datetime.now():
+                        # Before Registraton deadline
                             self.add_new_user(user_name, user_email)
                             c.send_email(self.sender_queue, user_email, "", "Welcome", \
                                          "", "", messageid)
                         else:
+                        # After Registration deadline
                             c.send_email(self.sender_queue, user_email, "", "RegOver", \
                                          "", "", messageid)
-
                 else:
+                # Not on Whitelist
                     c.send_email(self.sender_queue, user_email, "", "NotAllowed", \
                                  "", "", messageid)
 
