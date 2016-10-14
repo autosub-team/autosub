@@ -127,29 +127,59 @@ if [ "$RET" -eq "$zero" ]
 then
    logPrefix && echo "${logPre}Task$2 analyze success for user with ID $1!"
 else
-   echo "Task$2 analyze FAILED for user with ID $1!"
+   logPrefix && echo "Task$2 analyze FAILED for user with ID $1!"
    cd $autosubPath
    echo "Analyzation of your submitted behavior file failed:" >$userTaskPath/error_msg
    cat /tmp/$USER/tmp_Task$2_User$1 | grep ERROR >> $userTaskPath/error_msg
    exit 1 
 fi
 
+
 ##########################
 ## TASK CONSTRAINT CHECK #
 ##########################
+cd $userTaskPath
+touch file
 
-#check for the keywords after and wait
+sed -i 's:--.*$::g' ALU_beh.vhdl
+cat ALU_beh.vhdl | tr '[:upper:]' '[:lower:]' >> file
+cat file | tr -d " \t\n\r" >> file
+rising=$(egrep -o "rising_edge" file | wc -l)
+rising_event=$(egrep -o "clk'eventandclk='1'" file | wc -l)
 
+#check the occurrence of phrases concerning rising edge
+if ( [ "$rising" -ne "$zero" ] || [ "$rising_event" -ne "$zero" ] )
+then
+  logPrefix && echo "${logPre}Task$2 using clock cycle for user with ID $1!"
+else
+   logPrefix && echo "${logPre}Task$2 constraint check FAILED for user with ID $1!"
+   cd $autosubPath
+   echo "You are not using rising edge of the clock signal.">$userTaskPath/error_msg
+   exit 1 
+fi
 ##########################
 ######## ELABORATE #######
 ##########################
 fuse -top ALU_tb
 RET=$?
 
+# to detect if the student changes the entity and uses the modified one in the behavior code
+touch file
+cat $userTaskPath/fuse.log | grep ERROR:HDLCompiler:1566 >> $userTaskPath/file
+tmp=$(sed 's/[0-9]*//g' file)
+echo "$tmp" > file
+tmp=$(sed 's~[^[:alnum:]/]\+~~g' file)
+echo "$tmp" > file
+wrongEntity=$(egrep -o "ALUtbTaskvhdlLineExpressionhaselementsformalaexpects" file | wc -l)
+
 if [ "$RET" -eq "$zero" ]
 then
    logPrefix && echo "${logPre}Task$2 elaboration success for user with ID $1!"
-else
+elif [ "$wrongEntity" -ne "$zero" ]
+then
+   echo "Elaboration with your submitted behavior file failed because you have changed the entity file." >$userTaskPath/error_msg
+   exit 1 
+   else
    echo "Task$2 elaboration FAILED for user with ID $1!"
    cd $autosubPath
    echo "Elaboration with your submitted behavior file failed:" >$userTaskPath/error_msg
@@ -161,42 +191,22 @@ fi
 ####### SIMULATION #######
 ##########################
 
-# set location of licence file here
-# export LM_LICENSE_FILE=
-
-#touch test
-#Simulation reports "Success" or an error messssage
-
-#touch test
-#Simulation reports "Success" or an error message
 ./x.exe -tclbatch isim.cmd 
 egrep -oq "Success" isim.log
 RET=$?
 
 
-# filesize=$(stat -c%s "signals.vcd") #in Bytes
-# #compression factor is approx 10, so we dont wont anything above 20MB 
-# if [ "$filesize" -gt 20000000 ]; then 
-#    head --bytes=20000K signals.vcd >signals_tmp.vcd; #first x K Bytes
-#    rm signals.vcd
-#    mv signals_tmp.vcd signals.vcd  
-# fi
-
-#zip isim.wdb and move it
-#zip wavefile.zip isim.log
-# for TESTING: dont send until we know the max size:
-#mv isim.log $userTaskPath/error_attachments
-
 if [ "$RET" -eq "$zero" ]
 then
     logPrefix && echo "${logPre}Functionally correct for Task$2 for user with ID $1!"
-    cat $userTaskPath/isim.log | grep Note >> $userTaskPath/error_msg
+    #cat $userTaskPath/isim.log | grep Note >> $userTaskPath/error_msg
     exit 0
 else #; timeout returns 124 if it had to kill process  
     cd $autosubPath
     logPrefix && echo "${logPre}Wrong behavior for Task$2 for user with ID $1!"
     echo "Your submitted behavior file does not behave like specified in the task description:" >$userTaskPath/error_msg
     cat $userTaskPath/isim.log | grep Failure >> $userTaskPath/error_msg
-    #echo "Please see which signal your entity produces:" >> $userTaskPath/error_msg
+    cat $userTaskPath/isim.log | grep -oP 'Error: \K.*' >> $userTaskPath/error_msg
+
     exit 1  
 fi

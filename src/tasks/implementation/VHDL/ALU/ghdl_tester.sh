@@ -53,6 +53,7 @@ logPrefix()
 ##########################
 cd $taskPath
 
+
 #generate the testbench and move testbench to user's folder
 python3 scripts/generateTestBench.py $3 > $userTaskPath/ALU_tb_$1_Task$2.vhdl 
 
@@ -63,6 +64,12 @@ cp $descPath/ALU.vhdl $userTaskPath
 cd $userTaskPath
 touch error_msg
 
+# create tmp directory
+if [ ! -d "/tmp/$USER" ]
+then
+   mkdir /tmp/$USER
+fi
+
 #check if the user supplied a file
 if [ ! -f $userfile ]
 then
@@ -72,6 +79,8 @@ then
     exit 1 
 fi
 
+#delete all comments from the file
+sed -i 's:--.*$::g' $userfile
 ##########################
 ######### ANALYZE ########
 ##########################
@@ -115,6 +124,30 @@ else
    exit 1 
 fi
 
+
+##########################
+## TASK CONSTRAINT CHECK #
+##########################
+cd $userTaskPath
+touch file
+
+sed -i 's:--.*$::g' ALU_beh.vhdl
+cat ALU_beh.vhdl | tr '[:upper:]' '[:lower:]' >> file
+cat file | tr -d " \t\n\r" >> file
+rising=$(egrep -o "rising_edge" file | wc -l)
+rising_event=$(egrep -o "clk'eventandclk='1'" file | wc -l)
+
+#check the occurrence of phrases concerning rising edge
+if ( [ "$rising" -ne "$zero" ] || [ "$rising_event" -ne "$zero" ] )
+then
+  logPrefix && echo "${logPre}Task$2 using clock cycle for user with ID $1!"
+else
+   logPrefix && echo "${logPre}Task$2 constraint check FAILED for user with ID $1!"
+   cd $autosubPath
+   echo "You are not using rising edge of the clock signal.">$userTaskPath/error_msg
+   exit 1 
+fi
+
 ##########################
 ######## ELABORATE #######
 ##########################
@@ -124,8 +157,8 @@ RET=$?
 if [ "$RET" -eq "$zero" ]
 then
    logPrefix && echo "${logPre}Task$2 elaboration success for user with ID $1!"
-else
-   logPrefix && echo "${logPre}Task$2 elaboration FAILED for user with ID $1!"
+   else
+   echo "Task$2 elaboration FAILED for user with ID $1!"
    cd $autosubPath
    echo "Elaboration with your submitted behavior file failed:" >$userTaskPath/error_msg
    cat /tmp/$USER/tmp_Task$2_User$1 >> $userTaskPath/error_msg
@@ -136,7 +169,7 @@ fi
 ####### SIMULATION #######
 ##########################
 #Simulation reports "Success" or an error message
-ghdl -r ALU_tb 2> /tmp/$USER/tmp_Task$2_User$1
+ghdl -r ALU_tb 2> /tmp/$USER/tmp_Task$2_User$1 
 
 egrep -oq "Success" /tmp/$USER/tmp_Task$2_User$1
 RET=$?
@@ -145,10 +178,10 @@ if [ "$RET" -eq "$zero" ]
 then
     logPrefix && echo "${logPre}Functionally correct for Task$2 for user with ID $1!"
     exit 0
-else
-   cd $autosubPath
-   logPrefix && echo "${logPre}Wrong behavior for Task$2 for user with ID $1"
-   echo "Your submitted behavior file does not behave like specified in the task description:" >$userTaskPath/error_msg
-   cat /tmp/$USER/tmp_Task$2_User$1 >> $userTaskPath/error_msg
-   exit 1 
+else #; timeout returns 124 if it had to kill process  
+    cd $autosubPath
+    logPrefix && echo "${logPre}Wrong behavior for Task$2 for user with ID $1!"
+    echo "Your submitted behavior file does not behave like specified in the task description:" >$userTaskPath/error_msg    
+    cat /tmp/$USER/tmp_Task$2_User$1 >> $userTaskPath/error_msg
+    exit 1 
 fi

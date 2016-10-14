@@ -45,10 +45,20 @@ for i in range(len(random_num)-1):
     
 random_num=("\n"+(28)*" ").join(random_num)
 
+if taskParameter[0]==0:
+    main_clk='falling edge'
+    opposite_clk ='rising edge'
+elif taskParameter[0]==1:
+    main_clk='rising edge'
+    opposite_clk ='falling edge'
 #########################################
 # SET PARAMETERS FOR TESTBENCH TEMPLATE # 
 #########################################
-params.update({"CLK":clk[taskParameter[0]],"OPPOSITECLK":clk[abs(taskParameter[0]-1)],"RANDOM":str(random_num),"INSTRUCTIONLENGTH":str(taskParameter[2]-1),"ADDRLENGTH":str(taskParameter[1]-1),"ADDRESSLENGTH":str(taskParameter[1]),"ROMSIZE":str(taskParameter[1]**2-1),"START":str(taskParameter[3]),"DATALENGTH":str(taskParameter[4]-1),"INSTRUCTIONS":instructions})
+params.update({"CLK":clk[taskParameter[0]],"mainClk":main_clk,"oppositeClk":opposite_clk,
+	       "OPPOSITECLK":clk[abs(taskParameter[0]-1)],"RANDOM":str(random_num),
+	       "INSTRUCTIONLENGTH":str(taskParameter[2]-1),"ADDRLENGTH":str(taskParameter[1]-1),
+	       "ADDRESSLENGTH":str(taskParameter[1]),"ROMSIZE":str(taskParameter[1]**2-1),"START":str(taskParameter[3]),
+	       "DATALENGTH":str(taskParameter[4]-1),"INSTRUCTIONS":instructions})
 
 ###########################
 # FILL TESTBENCH TEMPLATE #

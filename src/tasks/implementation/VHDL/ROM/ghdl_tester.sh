@@ -63,6 +63,12 @@ cp $descPath/ROM.vhdl $userTaskPath
 cd $userTaskPath
 touch error_msg
 
+# create tmp directory
+if [ ! -d "/tmp/$USER" ]
+then
+   mkdir /tmp/$USER
+fi
+
 #check if the user supplied a file
 if [ ! -f $userfile ]
 then
@@ -72,6 +78,8 @@ then
     exit 1 
 fi
 
+#delete all comments from the file
+sed -i 's:--.*$::g' $userfile
 ##########################
 ######### ANALYZE ########
 ##########################
@@ -116,6 +124,32 @@ else
 fi
 
 ##########################
+## TASK CONSTRAINT CHECK #
+##########################
+cd $userTaskPath
+touch file
+
+sed -i 's:--.*$::g' ROM_beh.vhdl
+cat ROM_beh.vhdl | tr '[:upper:]' '[:lower:]' >> file
+cat file | tr -d " \t\n\r" >> file
+rising=$(egrep -o "rising_edge" file | wc -l)
+falling=$(egrep -o "falling_edge" file | wc -l)
+rising_event=$(egrep -o "clk'eventandclk='1'" file | wc -l)
+falling_event=$(egrep -o "clk'eventandclk='0'" file | wc -l)
+
+#check the occurrence of phrases concerning rising/falling edge
+if ( [ "$rising" -ne "$zero" ] || [ "$rising_event" -ne "$zero" ] \
+ || [ "$falling" -ne "$zero" ] || [ "$falling_event" -ne "$zero" ] )
+then
+  logPrefix && echo "${logPre}Task$2 using clock signal for user with ID $1!"
+else
+   logPrefix && echo "${logPre}Task$2 constraint check FAILED for user with ID $1!"
+   cd $autosubPath
+   echo "You did not specify on which edge of the signal the ROM is working; rising edge or falling edge.">$userTaskPath/error_msg
+   exit 1 
+fi
+
+##########################
 ######## ELABORATE #######
 ##########################
 ghdl -e ROM_tb 2>/tmp/$USER/tmp_Task$2_User$1
@@ -124,8 +158,8 @@ RET=$?
 if [ "$RET" -eq "$zero" ]
 then
    logPrefix && echo "${logPre}Task$2 elaboration success for user with ID $1!"
-else
-   logPrefix && echo "${logPre}Task$2 elaboration FAILED for user with ID $1!"
+   else
+   echo "Task$2 elaboration FAILED for user with ID $1!"
    cd $autosubPath
    echo "Elaboration with your submitted behavior file failed:" >$userTaskPath/error_msg
    cat /tmp/$USER/tmp_Task$2_User$1 >> $userTaskPath/error_msg

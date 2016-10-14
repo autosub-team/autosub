@@ -18,7 +18,7 @@ taskParameters=[int(a),int(b),int(c),int(d),int(f),int(g)]
 
 params={}
 
-inst_name =['ADD','SUB','AND','OR','XOR','Comparator','Shift Left','Shift Right','Rotate Left without Carry','Rotate Right without Carry']
+inst_name =['ADD','SUB','AND','OR','XOR','Comparator','Shift Left','Shift Right','Rotate Left','Rotate Right']
 flag_name=['Overflow','Carry','Zero','Sign','Odd Parity']
 #########################################
 ######### GENERATE TESTVECTORS ########## 
@@ -45,11 +45,11 @@ for i in range(0,4):
             w[A]='0'+'{0:04b}'.format(A)[0:3]
             carry[A]='{0:04b}'.format(A)[3]
                 
-        elif inst_name[taskParameters[i]]=='Rotate Left without Carry':
+        elif inst_name[taskParameters[i]]=='Rotate Left':
             w[A]='{0:04b}'.format(A)[1:5]+'{0:04b}'.format(A)[0]
             carry[A]='{0:04b}'.format(A)[0]
 
-        elif inst_name[taskParameters[i]]=='Rotate Right without Carry':
+        elif inst_name[taskParameters[i]]=='Rotate Right':
             w[A]='{0:04b}'.format(A)[3]+'{0:04b}'.format(A)[0:3]
             carry[A]='{0:04b}'.format(A)[3]
 
@@ -148,12 +148,16 @@ for i in range(len(result_shift)-1):
 
 
 result_shift=("\n"+(20)*" ").join(result_shift)
-result_carry=("\n"+(20)*" ").join(result_carry)                    
+result_carry=("\n"+(20)*" ").join(result_carry)   
 
 #########################################
 # SET PARAMETERS FOR TESTBENCH TEMPLATE # 
 #########################################
-params.update({"RESULT1":result_add,"FLAG":result_flag,"RESULT2":result_shift,"CARRY":result_carry,"INST1":inst_name[taskParameters[0]],"INST2":inst_name[taskParameters[1]],"INST3":inst_name[taskParameters[2]],"INST4":inst_name[taskParameters[3]]})
+params.update({"RESULT1":result_add,"FLAG":result_flag,"RESULT2":result_shift,
+               "CARRY":result_carry,"INST1":inst_name[taskParameters[0]],
+               "INST2":inst_name[taskParameters[1]],"INST3":inst_name[taskParameters[2]],
+               "INST4":inst_name[taskParameters[3]]})
+
 ###########################
 # FILL TESTBENCH TEMPLATE #
 ###########################
