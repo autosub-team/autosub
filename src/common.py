@@ -87,8 +87,8 @@ def increment_db_statcounter(semesterdb, countername, lqueue, lname):
 
     data = {'Name': countername}
     #change to?: SET Value = Value + 1 WHERE ...
-    sql_cmd = ("UPDATE StatCounters SET Value = (SELECT Value FROM StatCounters "
-               "WHERE Name == :Name) + 1 WHERE Name == :Name")
+    sql_cmd = ("UPDATE StatCounters SET Value = (SELECT Value FROM "
+               "StatCounters WHERE Name == :Name) + 1 WHERE Name == :Name")
     curs.execute(sql_cmd, data)
     cons.commit()
 
@@ -182,6 +182,23 @@ def user_get_current_task(semesterdb, userid, lqueue, lname):
 
     return str(res[0])
 
+####
+# is_valid_task_nr
+####
+def is_valid_task_nr(coursedb, task_nr, lqueue, lname):
+    """
+    Check if the given task_nr is valid by looking for it's
+    database entry
+    """
+    
+    curc, conc = connect_to_db(coursedb, lqueue, lname)
+    data = {'task_nr' : task_nr}
+    sql_cmd = "SELECT TaskNr from TaskConfiguration WHERE TaskNr = :task_nr"
+    curc.execute(sql_cmd, data)
+    res = curc.fetchone()
+    conc.close()
+
+    return res != None
 
 ####
 # get_num_tasks
