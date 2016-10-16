@@ -7,10 +7,8 @@
 ########################################################################
 
 import threading
-import sqlite3 as lite
 import os
 
-import logger
 import common as c
 
 class taskGenerator(threading.Thread):

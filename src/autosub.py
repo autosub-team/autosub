@@ -255,6 +255,16 @@ def init_ressources(semesterdb, coursedb, num_tasks, subsmission_email, challeng
         filename = '{0}SpecialMessages/deadtask.txt'.format(special_path)
         load_specialmessage_to_db(coursedb, 'DEADTASK', filename, subsmission_email, \
                                   course_name)
+        
+        filename = '{0}SpecialMessages/skipnotpossible.txt'.format(special_path)
+        load_specialmessage_to_db(coursedb, 'SKIPNOTPOSSIBLE', filename, subsmission_email, \
+                                  course_name)
+        
+        filename = '{0}SpecialMessages/tasknotsubmittable.txt'.format(special_path)
+        load_specialmessage_to_db(coursedb, 'TASKNOTSUBMITTABLE', filename, subsmission_email, \
+                                  course_name)
+
+
 
     #####################
     # TaskConfiguration #
@@ -309,8 +319,8 @@ if __name__ == '__main__':
 
     try:
         config.readfp(open(opts.configfile))
-    except FileNotFoundError:
-        print("Your configfile was not found\ndaemon exited...")
+    except:
+        print("Error reading your configfile\ndaemon exited...")
         sys.exit(-1)
 
     imapserver = config.get('imapserver', 'servername')
@@ -396,15 +406,25 @@ if __name__ == '__main__':
         logfile = '/tmp/autosub.log'
 
     try:
-        auto_advance = config.get('general','auto_advance')
-        if auto_advance == "yes" or auto_advance =="1":
+        auto_advance = config.get('general', 'auto_advance')
+        if auto_advance == "yes" or auto_advance == "1":
             auto_advance = True
         else:
             auto_advance = False
     except:
-        auto_advance = False;
+        auto_advance = False
 
     num_tasks = config.getint('challenge', 'num_tasks')
+
+    try:
+        allow_skipping = config.get('general', 'allow_skippoing')
+        if allow_skipping == "yes" or allow_skipping == "1":
+            allow_skipping = True
+        else:
+            allow_skipping = False
+    except:
+        allow_skipping = True
+
 
     ####################
     # Generate Queues  #
@@ -452,7 +472,7 @@ if __name__ == '__main__':
     fetcher_t = fetcher.mailFetcher(thread_id, "fetcher", job_queue, sender_queue, gen_queue, \
                                     imapuser, imappasswd, imapserver, imapport, imapsecurity, \
                                     logger_queue, arch_queue, poll_period, coursedb, \
-                                    semesterdb)
+                                    semesterdb, allow_skipping)
 
     # make the fetcher thread a daemon, this way the main will clean it up before
     # terminating!

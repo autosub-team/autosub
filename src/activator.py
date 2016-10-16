@@ -72,7 +72,7 @@ class TaskActivator(threading.Thread):
                    # curs.execute(sqlcmd, data)
 
                     sqlcmd = ("UPDATE Users SET CurrentTask = {0} WHERE "
-                              "UserId in ({1});").format(tasknr,users_comma_list)
+                              "UserId in ({1});").format(tasknr, users_comma_list)
                     curs.execute(sqlcmd)
                     cons.commit()
                     logmsg = "Advanced users with ids: " + users_comma_list
