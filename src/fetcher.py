@@ -384,6 +384,7 @@ class mailFetcher(threading.Thread):
         except:
             logmsg = "Failed to select inbox"
             c.log_a_msg(self.logger_queue, self.name, logmsg, "INFO")
+            return []
 
         # you could filter using the IMAP rules here
         # (check http://www.example-code.com/csharp/imap-search-critera.asp)
@@ -402,6 +403,7 @@ class mailFetcher(threading.Thread):
         except:
             logmsg = "Failed to select inbox"
             c.log_a_msg(self.logger_queue, self.name, logmsg, "INFO")
+            return []
 
         resp, items = m.search(None, 'All')
         return items[0].split()
