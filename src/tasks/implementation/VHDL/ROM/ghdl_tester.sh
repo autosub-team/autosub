@@ -40,7 +40,6 @@ userTaskPath="$autosubPath/users/$1/Task$2"
 ##########################
 zero=0
 userfile="ROM_beh.vhdl"
-simulationTimeout="50s"
 
 TaskNr=$2
 logPrefix()
@@ -80,6 +79,7 @@ fi
 
 #delete all comments from the file
 sed -i 's:--.*$::g' $userfile
+
 ##########################
 ######### ANALYZE ########
 ##########################
@@ -104,11 +104,6 @@ then
    exit 3 
 fi
 
-if [ ! -d "/tmp/$USER" ]
-then
-   mkdir /tmp/$USER
-fi
-
 #this is the file from the user
 ghdl -a ROM_beh.vhdl 2> /tmp/$USER/tmp_Task$2_User$1
 RET=$?
@@ -126,10 +121,8 @@ fi
 ##########################
 ## TASK CONSTRAINT CHECK #
 ##########################
-cd $userTaskPath
 touch file
 
-sed -i 's:--.*$::g' ROM_beh.vhdl
 cat ROM_beh.vhdl | tr '[:upper:]' '[:lower:]' >> file
 cat file | tr -d " \t\n\r" >> file
 rising=$(egrep -o "rising_edge" file | wc -l)

@@ -89,6 +89,8 @@ else
    mkdir $userTaskPath/error_attachments
 fi
 
+#delete all comments from the file
+sed -i 's:--.*$::g' $userfile
 
 ##########################
 ######### ANALYZE ########
@@ -117,9 +119,6 @@ then
    exit 3 
 fi
 
-#this is the file from the user
-sed -i '/^--/ d' RAM_beh.vhdl
-
 vhpcomp RAM_beh.vhdl 2> /tmp/$USER/tmp_Task$2_User$1
 RET=$?
 
@@ -137,14 +136,8 @@ fi
 ##########################
 ## TASK CONSTRAINT CHECK #
 ##########################
-cd $userTaskPath
 touch file
 
-#grep -o '--' RAM_beh.vhdl >> file
-#sed -i 's:--.*$::g' RAM_beh.vhdl
-#cat RAM_beh.vhdl | cut -d'--' -f1 >> file
-sed -i 's:--.*$::g' RAM_beh.vhdl
-#mv file RAM_beh.vhdl
 cat RAM_beh.vhdl | tr '[:upper:]' '[:lower:]' >> file
 cat file | tr -d " \t\n\r" >> file
 rising=$(egrep -o "rising_edge" file | wc -l)

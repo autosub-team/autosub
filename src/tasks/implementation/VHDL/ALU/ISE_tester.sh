@@ -89,6 +89,8 @@ else
    mkdir $userTaskPath/error_attachments
 fi
 
+#delete all comments from the file
+sed -i 's:--.*$::g' $userfile
 
 ##########################
 ######### ANALYZE ########
@@ -117,9 +119,6 @@ then
    exit 3 
 fi
 
-#this is the file from the user
-sed -i '/^--/ d' ALU_beh.vhdl
-
 vhpcomp ALU_beh.vhdl 2> /tmp/$USER/tmp_Task$2_User$1
 RET=$?
 
@@ -138,10 +137,8 @@ fi
 ##########################
 ## TASK CONSTRAINT CHECK #
 ##########################
-cd $userTaskPath
 touch file
 
-sed -i 's:--.*$::g' ALU_beh.vhdl
 cat ALU_beh.vhdl | tr '[:upper:]' '[:lower:]' >> file
 cat file | tr -d " \t\n\r" >> file
 rising=$(egrep -o "rising_edge" file | wc -l)

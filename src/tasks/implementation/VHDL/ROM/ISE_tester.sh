@@ -89,6 +89,8 @@ else
    mkdir $userTaskPath/error_attachments
 fi
 
+#delete all comments from the file
+sed -i 's:--.*$::g' $userfile
 
 ##########################
 ######### ANALYZE ########
@@ -138,10 +140,8 @@ fi
 ##########################
 ## TASK CONSTRAINT CHECK #
 ##########################
-cd $userTaskPath
 touch file
 
-sed -i 's:--.*$::g' ROM_beh.vhdl
 cat ROM_beh.vhdl | tr '[:upper:]' '[:lower:]' >> file
 cat file | tr -d " \t\n\r" >> file
 rising=$(egrep -o "rising_edge" file | wc -l)

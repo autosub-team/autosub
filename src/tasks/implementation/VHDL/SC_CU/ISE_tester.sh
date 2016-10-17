@@ -90,8 +90,8 @@ else
    mkdir $userTaskPath/error_attachments
 fi
 
-#first strip the file of all comments for constraint check
-sed -i '/^--/ d' SC_CU_beh.vhdl 
+ #delete all comments from the file
+sed -i 's:--.*$::g' $userfile
 
 ##########################
 ######### ANALYZE ########

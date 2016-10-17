@@ -40,7 +40,6 @@ userTaskPath="$autosubPath/users/$1/Task$2"
 ##########################
 zero=0
 userfile="ALU_beh.vhdl"
-simulationTimeout="50s"
 
 TaskNr=$2
 logPrefix()
@@ -52,7 +51,6 @@ logPrefix()
 #### TEST PREPARATION ####
 ##########################
 cd $taskPath
-
 
 #generate the testbench and move testbench to user's folder
 python3 scripts/generateTestBench.py $3 > $userTaskPath/ALU_tb_$1_Task$2.vhdl 
@@ -81,6 +79,7 @@ fi
 
 #delete all comments from the file
 sed -i 's:--.*$::g' $userfile
+
 ##########################
 ######### ANALYZE ########
 ##########################
@@ -128,7 +127,6 @@ fi
 ##########################
 ## TASK CONSTRAINT CHECK #
 ##########################
-cd $userTaskPath
 touch file
 
 sed -i 's:--.*$::g' ALU_beh.vhdl
