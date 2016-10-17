@@ -1,5 +1,6 @@
 from os.path import expanduser
 from os.path import isdir
+import datetime
 
 #Validators
 val={'TaskNr'              :[IS_NOT_EMPTY(),IS_DECIMAL_IN_RANGE(minimum=0)],
@@ -63,15 +64,20 @@ def newTask():
             TD(INPUT(_name='TestExecutable',      requires=val['TestExecutable'],       _value="tester.sh"                                      )),\
             TD(INPUT(_name='Score',               requires=val['Score'],                _value=1                                                )),\
             TD(INPUT(_name='TaskOperator',        requires=val['TaskOperator'],         _placeholder="Email"                                    )),\
-            TD(INPUT(_name='TaskActive',          requires=val['TaskActive'],           _placeholder="1/0"                                      )),\
             TD(INPUT(_type='submit',_label='Save'))
     form=FORM(inputs)
-    
+
     if(form.process().accepted):
         #strip all whitespaces from begin and end
         for var in form.vars:
             var=var.strip()
-            
+
+        #Set TaskActive based on the StartTime
+        if(form.vars.TaskStart < datetime.datetime.now()):
+            TaskActive = 1;
+        else:
+            TaskActive = 0;
+
         TaskConfiguration.insert(TaskNr              =form.vars.TaskNr,\
                                  TaskStart           =form.vars.TaskStart,\
                                  TaskDeadline        =form.vars.TaskDeadline,\
@@ -80,7 +86,7 @@ def newTask():
                                  TestExecutable      =form.vars.TestExecutable,\
                                  Score               =form.vars.Score,\
                                  TaskOperator        =form.vars.TaskOperator,\
-                                 TaskActive          =form.vars.TaskActive)
+                                 TaskActive          =TaskActive)
         redirect(URL('index'))
 
     returnDict.update({'form':form})
@@ -99,14 +105,20 @@ def editTask():
            TD(INPUT(_name='TestExecutable',      _value=entry['TestExecutable'] ,     requires=val['TestExecutable']      )),\
            TD(INPUT(_name='Score',               _value=entry['Score'] ,              requires=val['Score']               )),\
            TD(INPUT(_name='TaskOperator',        _value=entry['TaskOperator'] ,       requires=val['TaskOperator']        )),\
-           TD(INPUT(_name='TaskActive',        _value=entry['TaskActive'] ,       requires=val['TaskActive']        )),\
            TD(INPUT(_type='submit',_label='Save'))
     form=FORM(inputs)
     if(form.process().accepted):
         #strip all whitespaces from begin and end
         for var in form.vars:
             var=var.strip()
-            
+
+        #Set TaskActive based on the StartTime
+        if(form.vars.TaskStart < datetime.datetime.now()):
+            TaskActive = 1;
+        else:
+            TaskActive = 0;
+
+
         course(TaskConfiguration.TaskNr ==TaskNr).update(TaskStart           =form.vars.TaskStart,\
                                                          TaskDeadline        =form.vars.TaskDeadline,\
                                                          PathToTask          =form.vars.PathToTask.rstrip("/"),\
@@ -114,7 +126,7 @@ def editTask():
                                                          TestExecutable      =form.vars.TestExecutable,\
                                                          Score               =form.vars.Score,\
                                                          TaskOperator        =form.vars.TaskOperator,\
-                                                         TaskActive          =form.vars.TaskActive)
+                                                         TaskActive          =TaskActive)
         redirect(URL('index'))
 
     returnDict.update({'editTaskNr':TaskNr,'form':form})

@@ -167,13 +167,12 @@ class MailSender(threading.Thread):
         curc, conc = c.connect_to_db(self.coursedb, \
                                      self.logger_queue, \
                                      self.name)
-        curs, cons = c.connect_to_db(self.coursedb, \
+        curs, cons = c.connect_to_db(self.semesterdb, \
                                      self.logger_queue, \
                                      self.name)
 
-
         data = {'user_id': user_id}
-        sql_cmd = "SELECT Name FROM Users WHERE UserID = :user_id;"
+        sql_cmd = "SELECT Name FROM Users WHERE UserId = :user_id;"
         curs.execute(sql_cmd, data)
         user_name = curs.fetchone()[0]
 
@@ -184,17 +183,17 @@ class MailSender(threading.Thread):
 
         data = {'user_id': user_id}
         sql_cmd = ("SELECT TaskNr FROM UserTasks WHERE UserId = :user_id AND "
-                   "FirstSuccessful <> None")
-        curc.execute(sql_cmd, data)
-        rows_nrs = curc.fetchall()
+                   "FirstSuccessful IS NOT NULL")
+        curs.execute(sql_cmd, data)
+        rows_nrs = curs.fetchall()
 
         if len(rows_nrs) == 0:
             successfulls = "None"
         else:
             nrs = []
             for row_nrs in rows_nrs:
-                nrs.append(str(row_nrs.TaskNr))
-            successfulls = str(len(nrs)) + ': ' + ','.join(nrs)
+                nrs.append(str(row_nrs[0]))
+            successfulls = ','.join(nrs)
 
         conc.close()
         cons.close()
@@ -203,9 +202,9 @@ class MailSender(threading.Thread):
             tmpscore = 0
         else:
             tmpscore = curscore
-
-        msg = ("Username: {0}\nEmail: {1}\nCurrent Task: {2}\n Sucessfully "
-        "finished Tasks: {3}\n Your current Score: {4}\n").format(str(user_name), user_email, str(cur_task), successfulls, str(tmpscore))
+        msg = "Hi,\n\nYou requested your status, here you go:\n\n"
+        msg = msg + ("Username: {0}\nEmail: {1}\nCurrent Task: {2}\nSucessfully "
+        "finished Tasks: {3}\nYour current Score: {4}\n").format(str(user_name), user_email, str(cur_task), successfulls, str(tmpscore))
 
         try:
             cur_deadline = c.get_task_deadline(self.coursedb, cur_task, \
@@ -217,6 +216,7 @@ class MailSender(threading.Thread):
             msg = "{0}Deadline current Task: {1}".format(msg, cur_deadline)
         except:
             msg = "{0}\nNo more deadlines for you -- all Tasks are finished!".format(msg)
+        msg = msg + "\n\nSo long, and thanks for all the fish!"
 
         return msg
 

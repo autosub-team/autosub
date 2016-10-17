@@ -255,11 +255,11 @@ def init_ressources(semesterdb, coursedb, num_tasks, subsmission_email, challeng
         filename = '{0}SpecialMessages/deadtask.txt'.format(special_path)
         load_specialmessage_to_db(coursedb, 'DEADTASK', filename, subsmission_email, \
                                   course_name)
-        
+
         filename = '{0}SpecialMessages/skipnotpossible.txt'.format(special_path)
         load_specialmessage_to_db(coursedb, 'SKIPNOTPOSSIBLE', filename, subsmission_email, \
                                   course_name)
-        
+
         filename = '{0}SpecialMessages/tasknotsubmittable.txt'.format(special_path)
         load_specialmessage_to_db(coursedb, 'TASKNOTSUBMITTABLE', filename, subsmission_email, \
                                   course_name)
@@ -417,7 +417,7 @@ if __name__ == '__main__':
     num_tasks = config.getint('challenge', 'num_tasks')
 
     try:
-        allow_skipping = config.get('general', 'allow_skippoing')
+        allow_skipping = config.get('general', 'allow_skipping')
         if allow_skipping == "yes" or allow_skipping == "1":
             allow_skipping = True
         else:

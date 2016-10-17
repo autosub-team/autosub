@@ -88,7 +88,7 @@ class TaskActivator(threading.Thread):
                     uid = row[0]
                     user_email = row[2]
 
-                    logmsg = "The next task({0} is sent to User {1} now." \
+                    logmsg = "The next task({0}) is sent to User {1} now." \
                         .format(tasknr, uid)
                     c.log_a_msg(self.logger_queue, self.name, logmsg, "INFO")
 

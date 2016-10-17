@@ -146,7 +146,7 @@ class mailFetcher(threading.Thread):
         c.log_a_msg(self.logger_queue, self.name, logmsg, "DEBUG")
 
         self.gen_queue.put(dict({"user_id": user_id, "user_email": user_email, \
-                           "task_nr": "1", "message_id": ""}))
+                           "task_nr": "1", "messageid": ""}))
 
     ###
     # increment_submission_nr
@@ -246,7 +246,7 @@ class mailFetcher(threading.Thread):
     ####
     # a_question_was_asked
     ###
-    def a_question_was_asked(self, user_email, mail, messageid):
+    def a_question_was_asked(self, user_id, user_email, mail, messageid):
         """"
         Process a question that was asked by a user.
         """
@@ -280,7 +280,7 @@ class mailFetcher(threading.Thread):
                 return
 
         for mail_address in fwd_mails:
-            c.send_email(self.sender_queue, mail_address, "", "QFwd", "", mail, messageid)
+            c.send_email(self.sender_queue, mail_address, user_id, "QFwd", "", mail, messageid)
 
         c.increment_db_statcounter(self.semesterdb, 'nr_questions_received', \
                                    self.logger_queue, self.name)
@@ -289,19 +289,22 @@ class mailFetcher(threading.Thread):
     ####
     # a_status_is_requested
     ####
-    def a_status_is_requested(self, user_email, messageid):
+    def a_status_is_requested(self, user_id, user_email, messageid):
         """
         Tell sender to send out a status email.
         """
+        logmsg = ("STATUS requested: User with UserId:{0}, Email: {1}").format(\
+                 user_id, user_email)
+        c.log_a_msg(self.logger_queue, self.name, logmsg, "DEBUG")
+
 
         curs, cons = c.connect_to_db(self.semesterdb, self.logger_queue, self.name)
 
-        data = {'Email': user_email}
-        sql_cmd = "SELECT UserId, CurrentTask FROM Users WHERE Email == :Email"
+        data = {'user_id':user_id}
+        sql_cmd = "SELECT CurrentTask FROM Users WHERE UserId == :user_id"
         curs.execute(sql_cmd, data)
         res = curs.fetchone()
-        user_id = res[0]
-        current_task = res[1]
+        current_task = res[0]
 
         cons.close()
 
@@ -313,8 +316,8 @@ class mailFetcher(threading.Thread):
     ####
     # a_result_was_submitted
     ####
-    def a_result_was_submitted(self, user_email, user_id, task_nr, messageid, \
-                               mail, mail_subject):
+    def a_result_was_submitted(self, user_id, user_email, task_nr, messageid, \
+                               mail):
         logmsg = "Processing a Result, UserId:{0} TaskNr:{1}"\
                 .format(user_id, task_nr)
         c.log_a_msg(self.logger_queue, self.name, logmsg, "DEBUG")
@@ -367,7 +370,7 @@ class mailFetcher(threading.Thread):
     ####
     # skip_was_requested
     ####
-    def skip_was_requested(self, user_email, user_id):
+    def skip_was_requested(self, user_id, user_email, messageid):
          # at which task_nr is the user
         cur_task = c.user_get_current_task(self.semesterdb, user_id, self.logger_queue, \
                                            self.name)
@@ -380,9 +383,7 @@ class mailFetcher(threading.Thread):
         #task with this tasknr exists?
         is_task = c.is_valid_task_nr(self.coursedb, next_task, self.logger_queue,\
                                      self.name)
-
         if is_task == True:
-
             task_starttime = c.get_task_starttime(self.coursedb, next_task,
                                                   self.logger_queue, self.name)
             task_has_started = task_starttime < datetime.datetime.now()
@@ -392,11 +393,11 @@ class mailFetcher(threading.Thread):
                 c.user_set_current_task(self.semesterdb, next_task, user_id, \
                                         self.logger_queue, self.name)
                 #tell generator thread to create new task
-                logmsg = ("Calling Generator to create"
+                logmsg = ("Calling Generator to create "
                           "TaskNr:{0} for UserId:{1}").format(next_task, user_id)
                 c.log_a_msg(self.logger_queue, self.name, logmsg, "DEBUG")
                 self.gen_queue.put(dict({"user_id": user_id, "user_email": user_email, \
-                           "task_nr": "1", "message_id": ""}))
+                           "task_nr": next_task, "messageid": messageid}))
 
                 logmsg = ("Skip done: User with UserId:{0}, from "
                           "TaskNr= {1} to {2}").format(user_id, cur_task, next_task)
@@ -404,8 +405,13 @@ class mailFetcher(threading.Thread):
 
                 return
 
-            #Skip not possible
-            c.send_email(self.sender_queue, user_email, "", "SkipNotPossible", "", "", "")
+        #Skip not possible
+        logmsg = ("Skip NOT POSSIBLE: User with UserId:{0}, from "
+                  "TaskNr= {1} to {2}").format(user_id, cur_task, next_task)
+        c.log_a_msg(self.logger_queue, self.name, logmsg, "DEBUG")
+
+        c.send_email(self.sender_queue, user_email, "", "SkipNotPossible", \
+                     "", "", messageid)
 
     ####
     # connect_to_imapserver
@@ -547,7 +553,7 @@ class mailFetcher(threading.Thread):
     ####
     # action_by_subject
     ####
-    def action_by_subject(self, user_email, user_id, messageid, mail, mail_subject):
+    def action_by_subject(self, user_id, user_email, messageid, mail, mail_subject):
 
         if re.search('[Rr][Ee][Ss][Uu][Ll][Tt]', mail_subject):
         ###############
@@ -566,26 +572,26 @@ class mailFetcher(threading.Thread):
             #Result + number
             task_nr = searchObj.group()
 
-            self.a_result_was_submitted(user_email, user_id, task_nr, messageid, \
-                                        mail, mail_subject)
+            self.a_result_was_submitted(user_id, user_email, task_nr, messageid, \
+                                        mail)
 
         elif re.search('[Qq][Uu][Ee][Ss][Tt][Ii][Oo][Nn]', mail_subject):
         ###############
         #   QUESTION  #
         ###############
-            self.a_question_was_asked(user_email, mail, messageid)
+            self.a_question_was_asked(user_id, user_email, mail, messageid)
 
         elif re.search('[Ss][Tt][Aa][Tt][Uu][Ss]', mail_subject):
         ###############
         #   STATUS    #
         ###############
-            self.a_status_is_requested(user_email, messageid)
+            self.a_status_is_requested(user_id, user_email, messageid)
 
         elif (self.allow_skipping == True) and re.search('[Ss][Kk][Ii][Pp]', mail_subject):
         ####################
         # SKIP, IF ALLOWED #
         ####################
-            self.skip_was_requested(user_id, user_email)
+            self.skip_was_requested(user_id, user_email, messageid)
 
         else:
         #####################
@@ -649,7 +655,9 @@ class mailFetcher(threading.Thread):
                     if res != None:
                     # Already registered
                         user_id = res[0]
-                        logmsg = "Got mail from an already known user!"
+                        logmsg = ("Got mail from an already known user! "
+                                  "(UserId:{0}, Email:{1}").format(user_id,
+                                  user_email)
                         c.log_a_msg(self.logger_queue, self.name, logmsg, "INFO")
 
                         # Take action based on the subject

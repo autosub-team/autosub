@@ -45,12 +45,12 @@ def check_dir_mkdir(directory, lqueue, lname):
 ####
 # send_email
 ####
-def send_email(queue, recipient, userid, messagetype, tasknr, body, messageid):
+def send_email(queue, recipient, user_id, messagetype, tasknr, body, messageid):
     """
     Send Email to a user.
     """
 
-    queue.put(dict({"recipient": recipient, "UserId": str(userid), \
+    queue.put(dict({"recipient": recipient, "UserId": str(user_id), \
                     "message_type": messagetype, "Task": str(tasknr), \
                     "Body": body, "MessageId": messageid}))
 
@@ -126,36 +126,35 @@ def get_task_deadline(coursedb, tasknr, lqueue, lname):
     """
     Get the deadline datetime of a task.
 
-    TOTHINK: Return datetime?
+    Return datetime, if not found return unixepoch start.
     """
 
-    logmsg = "Got tasknr= {0}".format(tasknr)
-    log_a_msg(lqueue, "common.py", \
-                                    logmsg, "DEBUG")
-
     curc, conc = connect_to_db(coursedb, lqueue, lname)
-
-    data = {'TaskNr': tasknr}
-    sql_cmd = "SELECT TaskDeadline FROM TaskConfiguration WHERE TaskNr == :TaskNr"
-    curc.execute(sql_cmd, data)
-    deadline_string = str(curc.fetchone()[0])
+    try:
+        data = {'TaskNr': tasknr}
+        sql_cmd = "SELECT TaskDeadline FROM TaskConfiguration WHERE TaskNr == :TaskNr"
+        curc.execute(sql_cmd, data)
+        deadline_string = str(curc.fetchone()[0])
+        ret = datetime.datetime.strptime(deadline_string, format_string)
+    except:
+        ret = datetime.datetime(1970, 1, 1, 0, 0, 0)
 
     conc.close()
 
-    #format_string='%Y-%m-%d %H:%M:%S'
-    return datetime.datetime.strptime(deadline_string, format_string)
+    return ret
+
 
 ####
 # user_set_current_task
 ####
-def user_set_current_task(semesterdb, tasknr, userid, lqueue, lname):
+def user_set_current_task(semesterdb, tasknr, user_id, lqueue, lname):
     """
     Set current task number of a user.
     """
 
     curs, cons = connect_to_db(semesterdb, lqueue, lname)
 
-    data = {'TaskNr': tasknr, 'UserId': userid}
+    data = {'TaskNr': tasknr, 'UserId': user_id}
     sql_cmd = "UPDATE Users SET CurrentTask = :TaskNr WHERE UserId == :UserId"
     curs.execute(sql_cmd, data)
     cons.commit()
@@ -166,21 +165,21 @@ def user_set_current_task(semesterdb, tasknr, userid, lqueue, lname):
 ####
 # user_get_current_task
 ####
-def user_get_current_task(semesterdb, userid, lqueue, lname):
+def user_get_current_task(semesterdb, user_id, lqueue, lname):
     """
     Get current task number of a user
     """
 
     curs, cons = connect_to_db(semesterdb, lqueue, lname)
 
-    data = {'UserId': userid}
+    data = {'UserId': user_id}
     sql_cmd = "SELECT CurrentTask FROM Users WHERE UserId == :UserId"
     curs.execute(sql_cmd, data)
     res = curs.fetchone()
 
     cons.close()
 
-    return str(res[0])
+    return int(res[0])
 
 ####
 # is_valid_task_nr
@@ -190,7 +189,7 @@ def is_valid_task_nr(coursedb, task_nr, lqueue, lname):
     Check if the given task_nr is valid by looking for it's
     database entry
     """
-    
+
     curc, conc = connect_to_db(coursedb, lqueue, lname)
     data = {'task_nr' : task_nr}
     sql_cmd = "SELECT TaskNr from TaskConfiguration WHERE TaskNr = :task_nr"
