@@ -172,9 +172,6 @@ To stop the daemon just run the command:
 ./daemon.sh stop
 \end{verbatim}
 
-If you plan to run multiple instances of the VELS system on one server, be sure to 
-use different ports when starting the VELS\_WEB daemon.
-
 \subsection{General Configuration}\label{sub:generalconfig}
 Configuration items that can be changed dynamically are changeable in VELS\_WEB ->
 General Config. These configurable items are:
@@ -223,6 +220,17 @@ Each task in the queue has to be created with the following properties:
     this during operation of your course!
 \end{itemize}
 
+\subsection{Notes on multiple VELS instances on the same machine}
+
+The following should be adhered if you want to use multiple VELS instances on
+one machine:
+\begin{itemize}
+\item Use different users for running the different instances. If you dont't do
+	so you migth run into problems concerning the usage of the tmp directories of
+	tasks in the test phase.
+\item Be sure to use different ports when starting the VELS\_WEB daemon.
+\end{itemize}
+
 \subsection{Configuration Checklist} \label{sub:configChecklist}
 
 \begin{enumerate}
@@ -237,7 +245,7 @@ Each task in the queue has to be created with the following properties:
 \end{enumerate}
 
 If you forget one of this steps or mis-configure, autosub tries to generate a meaningful
-message, still its nicer to get everything running without being yelled at.
+message, still it's nicer to get everything running without being yelled at.
 
 \subsection{The Exam Mode}\label{sub:exammode}
 In Exam Mode the students additionally get sent a minimal testbench to test their design.
