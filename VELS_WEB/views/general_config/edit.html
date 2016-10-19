@@ -3,3 +3,9 @@
 <table border="1">
 {{=form}}
 </table>
+{{=A('Back to overview', _href=URL('index'))}}
+    <script>
+	/*jslint browser:true*/
+	/*global jQuery, document*/
+	jQuery('#RegistrationDeadline').datetimepicker({format:'Y-m-d H:i'});
+    </script>

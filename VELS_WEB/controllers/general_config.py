@@ -1,5 +1,7 @@
-val={'registration_deadline' :[IS_NOT_EMPTY(),IS_DATETIME(format=T('%Y-%m-%d %H:%M:%S'),
-                       error_message='must be YYYY-MM-DD HH:MM:SS!')],
+import datetime
+
+val={'registration_deadline' :[IS_NOT_EMPTY(),IS_DATETIME(format=T('%Y-%m-%d %H:%M'),
+                       error_message='must be YYYY-MM-DD HH:MM!')],
      'num_tasks'             :[IS_NOT_EMPTY(),IS_DECIMAL_IN_RANGE(minimum=1)],
      'archive_dir'           :[IS_NOT_EMPTY()],
      'admin_email'           :[IS_NOT_EMPTY(),IS_EMAIL_LIST()],
@@ -10,7 +12,12 @@ def __entries():
     rows=course().select(GeneralConfig.ALL)
     entries={}
     for row in rows:
-        entries.update({row.ConfigItem:row.Content})
+        if row.ConfigItem == 'registration_deadline':
+            registration_deadline = datetime.datetime.strptime(row.Content, "%Y-%m-%d %H:%M:%S")
+            entries.update({row.ConfigItem:registration_deadline.strftime("%Y-%m-%d %H:%M")})
+        else:
+            entries.update({row.ConfigItem:row.Content})
+
     return dict(entries=entries)
 
 def index():
@@ -22,7 +29,7 @@ def edit():
     returnDict={}
     entries=__entries()['entries']
     inputs= TR(TD("Number of tasks"),       TD(INPUT(_name="num_tasks",             _value=entries['num_tasks'], requires=val['num_tasks']))) ,\
-           TR(TD("Registration Deadline"), TD(INPUT(_name="registration_deadline", _placeholder="YYYY-MM-DD HH:MM:SS", _value=entries['registration_deadline'], requires=val['registration_deadline']))),\
+           TR(TD("Registration Deadline"), TD(INPUT(_name="registration_deadline", _placeholder="YYYY-MM-DD HH:MM", _value=entries['registration_deadline'], requires=val['registration_deadline'], _id='RegistrationDeadline'))),\
            TR(TD("Archive Directory",      TD(INPUT(_name="archive_dir",           _value=entries['archive_dir'], requires=val['archive_dir'])))),\
            TR(TD("Administrator E-Mail", TD(INPUT(_name="admin_email", _value=entries['admin_email'], requires=val['admin_email'],_size="50")))),\
            TR(TD("Challenge Mode", TD(INPUT(_name="challenge_mode", _value=entries['challenge_mode'], requires=val['challenge_mode'],_size="10")))),\

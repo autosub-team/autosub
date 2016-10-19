@@ -44,7 +44,6 @@ def newUser():
     inputs=TD(INPUT(_name='Name',        requires= val['Name']        )),\
            TD(INPUT(_name='Email',       requires= val['Email']       ,_size="30")),\
            TD(INPUT(_name='FirstMail',   requires= val['FirstMail'],_placeholder="YYYY-MM-DD HH:MM:SS"   )),\
-           TD(INPUT(_name='LastDone',    requires= val['LastDone'] ,_disabled='disabled'       )),\
            TD(INPUT(_name='CurrentTask', requires= val['CurrentTask'] )),\
            TD(INPUT(_type='submit',_label='Save'))
     form=FORM(inputs)
@@ -57,7 +56,6 @@ def newUser():
         Users.insert(Name            =form.vars.Name,
                      Email           =form.vars.Email,
                      FirstMail       =form.vars.FirstMail,
-                     LastDone        =form.vars.LastDone,
                      CurrentTask     =form.vars.CurrentTask)
         redirect(URL('index'))
 
@@ -81,7 +79,6 @@ def editUser():
     inputs=TD(INPUT(_name='Name',        _value=entry.Name ,       requires=val['Name']        )),\
            TD(INPUT(_name='Email',       _value=entry.Email ,      requires=val['Email']       )),\
            TD(INPUT(_name='FirstMail',   _value=entry.FirstMail,   requires=val['FirstMail'], _placeholder="YYYY-MM-DD HH:MM:SS"  )),\
-           TD(INPUT(_name='LastDone',    _value=entry.LastDone,    requires=val['LastDone'], _placeholder="Empty or DATETIME"    )),\
            TD(INPUT(_name='CurrentTask', _value=entry.CurrentTask, requires=val['CurrentTask'] )),\
            TD(INPUT(_type='submit',_label='Save'))
     form=FORM(inputs)
@@ -94,7 +91,6 @@ def editUser():
         semester(Users.UserId ==UserId).update(Name            =form.vars.Name,
                                                Email           =form.vars.Email,
                                                FirstMail       =form.vars.FirstMail,
-                                               LastDone        =form.vars.LastDone,
                                                CurrentTask     =form.vars.CurrentTask)
         redirect(URL('index'))
 

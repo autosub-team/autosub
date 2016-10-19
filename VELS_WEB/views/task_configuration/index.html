@@ -32,9 +32,9 @@
 _href=URL('posSwitchUp?TaskNr='+str(entry['TaskNr'])))}}{{=A( IMG(_src=URL('static','images/down.png'),_height="40em"),
 _href=URL('posSwitchDown?TaskNr='+str(entry['TaskNr'])))}}
            </td>
-           <td>{{=A('Edit', callback=URL('editTask?editTaskNr='+str(entry['TaskNr'])))}}</td>
-           <td>{{=A('Delete', callback=URL('deleteTask?TaskNr='+str(entry['TaskNr'])))}}</td>
+           <td>{{=A('Edit', _href=URL('editTask?editTaskNr='+str(entry['TaskNr'])))}}</td>
+           <td>{{=A('Delete', _href=URL('deleteTask?TaskNr='+str(entry['TaskNr'])))}}</td>
        </tr>
     {{pass}}
     </table>
-    {{=A('Add new Task', callback=URL('newTask'))}}
+    {{=A('Add new Task', _href=URL('newTask'))}}
