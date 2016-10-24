@@ -1,14 +1,14 @@
-Welcome to the course <COURSENAME>.
+Hi,
 
-You just sent your first e-mail to <SUBMISSIONEMAIL>. This way
-you subscribed to this part of the course. Very shortly you will receive
-an e-mail with your first task. But to start you need to know a little
-more than just the task. Most importantely: all e-mails sent to this
-address are automatically handled by me, a stupid little computer program.
+You just sent an e-mail to <SUBMISSIONEMAIL>. All e-mail sent
+to this address is automatically handled by me, a stupid little computer
+program.
 
-In order to submit your results, you need to know how to communicate with
-me. I only accept specially formatted emails, notably the subject has to
-be formatted in one of the following ways:
+Unfortunately, your message does not make any sense to me, therefore I will
+give you some hints on how to communicate with me:
+
+I only accept very few emails, notably the subject has to be formatted in
+one of the following ways:
 
 Results:
    If you want to commit a result, the Subject of your email has to contain
@@ -17,6 +17,14 @@ Results:
    could be "Result Task1" or "I am Submitting my ReSuLtS for TAsk1"
    the exact phrase does not matter, only that some form of the string
    "Result" and "Task1" are in the subject.
+
+Skipping:
+   If you cannot solve a task, you can get the next task by sending an
+   e-mail in which the subject contains the word "Skip". If there is 
+   a next task, which is active, the task description of the next task
+   will be sent to you. "Skipping" does not hinder you to send results 
+   for the task you "skipped", as long as that task's deadline was not 
+   reached.
 
 Status:
    If you want to know your current status in the course (what tasks did
@@ -32,9 +40,8 @@ Questions:
    the subject line, e.g.: "Question Task3".
 
 Other:
-   If your subject does not follow the above explained rules, I will send
-   you an e-mail similar to this one, because clearly you did not understand
-   how to communicate with me.
+   If you send any other text in the subject that does not follow the above
+   rules, I will send you this e-mail... over and over again...
 
 Hope this clears things on how to communicate with me! Now I am looking
 forward to hearing from you in a structured and (for me!) understandable

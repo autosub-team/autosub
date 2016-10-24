@@ -147,7 +147,7 @@ def load_specialmessage_to_db(coursedb, msgname, filename, subsmission_email, co
 # init_ressources
 ####
 def init_ressources(semesterdb, coursedb, num_tasks, subsmission_email, challenge_mode, \
-                    course_name, special_path):
+                    course_name, special_path, allow_skipping):
     """
     Check if all databases, tables, etc. are available, or if they have to be created.
     If non-existent --> create them.
@@ -219,13 +219,23 @@ def init_ressources(semesterdb, coursedb, num_tasks, subsmission_email, challeng
 
     # that table did not exists, therefore we use the .txt files to initialize it!
     if ret:
-        filename = '{0}SpecialMessages/welcome.txt'.format(special_path)
-        load_specialmessage_to_db(coursedb, 'WELCOME', filename, subsmission_email, \
-                                  course_name)
 
-        filename = '{0}SpecialMessages/usage.txt'.format(special_path)
-        load_specialmessage_to_db(coursedb, 'USAGE', filename, subsmission_email, \
-                                  course_name)
+        if allow_skipping == True:
+            filename = '{0}SpecialMessages/welcome_withskip.txt'.format(special_path)
+            load_specialmessage_to_db(coursedb, 'WELCOME', filename, subsmission_email, \
+                                      course_name)
+
+            filename = '{0}SpecialMessages/usage_withskip.txt'.format(special_path)
+            load_specialmessage_to_db(coursedb, 'USAGE', filename, subsmission_email, \
+                                      course_name)
+        else:
+            filename = '{0}SpecialMessages/welcome.txt'.format(special_path)
+            load_specialmessage_to_db(coursedb, 'WELCOME', filename, subsmission_email, \
+                                      course_name)
+
+            filename = '{0}SpecialMessages/usage.txt'.format(special_path)
+            load_specialmessage_to_db(coursedb, 'USAGE', filename, subsmission_email, \
+                                      course_name)
 
         filename = '{0}SpecialMessages/question.txt'.format(special_path)
 
@@ -423,7 +433,7 @@ if __name__ == '__main__':
         else:
             allow_skipping = False
     except:
-        allow_skipping = True
+        allow_skipping = False
 
 
     ####################
@@ -454,7 +464,7 @@ if __name__ == '__main__':
     # Init Ressources  #
     ####################
     init_ressources(semesterdb, coursedb, num_tasks, smtpmail, challenge_mode, \
-                    course_name, specialpath)
+                    course_name, specialpath, allow_skipping)
 
     ####################
     ## Start Threads  ##

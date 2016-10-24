@@ -18,6 +18,14 @@ Results:
    the exact phrase does not matter, only that some form of the string
    "Result" and "Task1" are in the subject.
 
+Skipping:
+   If you cannot solve a task, you can get the next task by sending an
+   e-mail in which the subject contains the word "Skip". If there is 
+   a next task, which is active, the task description of the next task
+   will be sent to you. "Skipping" does not hinder you to send results 
+   for the task you "skipped", as long as that task's deadline was not 
+   reached.
+
 Status:
    If you want to know your current status in the course (what tasks did
    you complete, how many points do you have, etc.), just send an e-mail
