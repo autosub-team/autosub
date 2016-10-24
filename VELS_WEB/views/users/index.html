@@ -1,11 +1,13 @@
 {{extend 'layout.html'}}
     <h1>Existing Users</h1>
+	Click on a collumn to sort by that collumn.
     <table border="1" class="sortierbar">
        <thead>
           <tr>
              <th>UserId</th>
              <th>Name</th>
              <th>Email</th>
+			 <th>Finished Tasks</th>
              <th>First Email</th>
              <th>Last Done</th>
              <th>Current Task</th>
@@ -19,6 +21,7 @@
            <td>{{=entry['UserId']}}</td>
            <td>{{=entry['Name']}}</td>
            <td>{{=entry['Email']}}</td>
+		   <td>{{=entry['FinishedTasks']}}</td>
            <td>{{=entry['FirstMail']}}</td>
            <td>{{=entry['LastDone']}}</td>
            <td>{{=entry['CurrentTask']}}</td>

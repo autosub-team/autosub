@@ -175,6 +175,10 @@
             \item {\tt QFwd} -- Forward a question to the administrator.
             \item {\tt Welcome} -- Send a welcome message to a new student.
 			\item {\tt NotAllowed} -- A user who is not on the whitelist sent a mail to the system.
+			\item {\tt SkipNotPossible} -- A user wants to skip to the next
+				task, when he is either at the last task or the next task has not started yet.
+			\item {\tt TaskNotSubmittable} -- A user wants to submit to a task
+											 which has not started yet.
             \end{itemize}
 
         \item {\bf Task} Number of the task that message concerns (e.g. the current one if the test failed, 
@@ -236,7 +240,7 @@ imapserver & servername & Hostname.domain of the IMAP server.\\
 imapserver & serverport & Port to be used.\\
 \hline
 imapserver & security & Security protocol to be used when connecting 
-	(none or ssl or starttls). \\
+    Possible values: none ssl starttls \\
 \hline
 imapserver & username & Username to be used to login. \\ 
 \hline
@@ -249,8 +253,8 @@ smtpserver & servername & Hostname.domain of the SMTP server.\\
 \hline
 smtpserver & serverport & Port to be used. \\
 \hline
-smtpserver & security & Security protocol to be used when connecting
-	(none or ssl or starttls). \\
+smtpserver & security & Security protocol to be used when connecting.
+    Possible values: none ssl starttls \\
 \hline
 smtpserver & username & Username to be used to login. \\
 \hline
@@ -276,8 +280,14 @@ general & coursedb & The name and path of the database that shall be used for da
 \hline
 general & logfile & The name and path of the autosub logfile. (default: autosub.log)\\
 \hline
+general & auto\_advance & Decides if users get auto advanced to a task which is
+    activated by its TaskStart. Possible values: yes no (default:no) \\
 \hline
-challenge & num\_tasks & The mode in which to run (exam or normal).\\
+general & allow\_skipping & Allows users to skip ahead to the next task with a 
+							 skip email. Possible values: yes no (default:no) \\
+\hline
+\hline
+challenge & num\_tasks & Number of tasks in the course. \\
 \hline
 challenge & mode & The mode in which to run (exam or normal). \\ 
 \hline
@@ -407,9 +417,14 @@ Table Entries & \begin{itemize}
         \item NOTALLOWED -- A mesage sent in case the student is not on the whitelist.
         \item CURLAST -- A mesage sent to inform the student that he has solved the current last task.
         \item DEADTASK -- A mesage sent to inform the student that he submitted a task which's deadline is allready over.
-            \end{itemize}
+		\item SKIPNOTPOSSIBLE -- A message sent to the user that the skip he
+								requested was not possible. Only sent if skipping is allowed.
+		\item TASKNOTSUBMITTABLE -- A message sent to the user to tell him that
+									he cannot submit a solution to a task he has
+									not received yet.
+        \end{itemize}
         \item {\bf Text}: The text that shall be sent in case of the event {\bf EventName} occurs.
-        \end{itemize} \\
+    \end{itemize} \\
 \hline
 \end{tabular}
 

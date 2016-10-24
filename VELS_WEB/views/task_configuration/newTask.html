@@ -11,7 +11,6 @@
              <th>Test Executable</th>
              <th>Score</th>
              <th>TaskOperator</th>
-             <th>TaskActive</th>
              <th></th>
           </tr>
         </thead>
@@ -25,11 +24,17 @@
            <td>{{=entry['TestExecutable']}} </td>
            <td>{{=entry['Score']}} </td>
            <td>{{=entry['TaskOperator']}} </td>
-           <td>{{=entry['TaskActive']}} </td>
         </tr>
     {{pass}}
          <tr>
          {{=form}}
          </tr>
     </table>
-    {{=A('Back to overview', callback=URL('index'))}}
+    {{=A('Back to overview', _href=URL('index'))}}
+
+    <script>
+	/*jslint browser:true*/
+	/*global jQuery, document*/
+	jQuery('#TaskStart').datetimepicker({format:'Y-m-d H:i'});
+	jQuery('#TaskEnd').datetimepicker({format:'Y-m-d H:i'});
+    </script>

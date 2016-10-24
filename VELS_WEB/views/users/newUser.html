@@ -6,7 +6,6 @@
              <th>Name</th>
              <th>Email</th>
              <th>First Email</th>
-             <th>Last Done</th>
              <th>Current Task</th>
              <th></th>
           </tr>
@@ -16,11 +15,10 @@
            <td>{{=entry['Name']}}</td>
            <td>{{=entry['Email']}}</td>
            <td>{{=entry['FirstMail']}}</td>
-           <td>{{=entry['LastDone']}}</td>
            <td>{{=entry['CurrentTask']}}</td>
            <td></td>
        </tr>
     {{pass}}
       <tr>{{=form}}</tr>
     </table>
-   {{=A('Back to overview', _href=URL('index'))}}</td>
+   {{=A('Back to Users overview', _href=URL('index'))}}</td>

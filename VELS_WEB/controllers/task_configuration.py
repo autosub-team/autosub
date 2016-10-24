@@ -1,12 +1,13 @@
 from os.path import expanduser
 from os.path import isdir
+import datetime
 
 #Validators
 val={'TaskNr'              :[IS_NOT_EMPTY(),IS_DECIMAL_IN_RANGE(minimum=0)],
-     'TaskStart'           :[IS_NOT_EMPTY(),IS_DATETIME(format=T('%Y-%m-%d %H:%M:%S'),
-                       error_message='must be YYYY-MM-DD HH:MM:SS!')],
-     'TaskDeadline'        :[IS_NOT_EMPTY(),IS_DATETIME(format=T('%Y-%m-%d %H:%M:%S'),
-                       error_message='must be YYYY-MM-DD HH:MM:SS!')],
+     'TaskStart'           :[IS_NOT_EMPTY(),IS_DATETIME(format=T('%Y-%m-%d %H:%M'),
+                       error_message='must be YYYY-MM-DD HH:MM!')],
+     'TaskDeadline'        :[IS_NOT_EMPTY(),IS_DATETIME(format=T('%Y-%m-%d %H:%M'),
+                       error_message='must be YYYY-MM-DD HH:MM!')],
      'PathToTask'          :[IS_NOT_EMPTY(),PATH_EXISTS()],
      'GeneratorExecutable' :[IS_NOT_EMPTY()],
      'TestExecutable'      :[IS_NOT_EMPTY()],
@@ -17,10 +18,11 @@ val={'TaskNr'              :[IS_NOT_EMPTY(),IS_DECIMAL_IN_RANGE(minimum=0)],
 def __entries():
     rows=course().select(TaskConfiguration.ALL,orderby=TaskConfiguration.TaskNr)
     array=[]
+
     for row in rows:
         entry={'TaskNr'              :row.TaskNr,
-               'TaskStart'           :row.TaskStart,
-               'TaskDeadline'        :row.TaskDeadline,
+               'TaskStart'           :row.TaskStart.strftime("%Y-%m-%d %H:%M"),
+               'TaskDeadline'        :row.TaskDeadline.strftime("%Y-%m-%d %H:%M"),
                'PathToTask'          :row.PathToTask,
                'GeneratorExecutable' :row.GeneratorExecutable,
                'TestExecutable'      :row.TestExecutable,
@@ -56,22 +58,27 @@ def newTask():
         task_path = ""
 
     inputs= TD(newTaskNr,INPUT(_type='hidden',_name='TaskNr',_value=newTaskNr) ),\
-            TD(INPUT(_name='TaskStart',           requires=val['TaskStart']           , _placeholder="YYYY-MM-DD HH:MM:SS"                      )),\
-            TD(INPUT(_name='TaskDeadline',        requires=val['TaskDeadline']        , _placeholder="YYYY-MM-DD HH:MM:SS"                      )),\
-            TD(INPUT(_name='PathToTask',          requires=val['PathToTask']          , _placeholder="Path without ending /", _value = task_path)),\
+            TD(INPUT(_name='TaskStart',           requires=val['TaskStart']           , _placeholder="YYYY-MM-DD HH:MM", _id = 'TaskStart'                    )),\
+            TD(INPUT(_name='TaskDeadline',        requires=val['TaskDeadline']        , _placeholder="YYYY-MM-DD HH:MM", _id = 'TaskEnd'                      )),\
+            TD(INPUT(_name='PathToTask',          requires=val['PathToTask']          , _placeholder="Path without ending /", _size= 40, _value = task_path)),\
             TD(INPUT(_name='GeneratorExecutable', requires=val['GeneratorExecutable'],  _value="generator.sh"                                   )),\
             TD(INPUT(_name='TestExecutable',      requires=val['TestExecutable'],       _value="tester.sh"                                      )),\
             TD(INPUT(_name='Score',               requires=val['Score'],                _value=1                                                )),\
             TD(INPUT(_name='TaskOperator',        requires=val['TaskOperator'],         _placeholder="Email"                                    )),\
-            TD(INPUT(_name='TaskActive',          requires=val['TaskActive'],           _placeholder="1/0"                                      )),\
             TD(INPUT(_type='submit',_label='Save'))
     form=FORM(inputs)
-    
+
     if(form.process().accepted):
         #strip all whitespaces from begin and end
         for var in form.vars:
             var=var.strip()
-            
+
+        #Set TaskActive based on the StartTime
+        if(form.vars.TaskStart < datetime.datetime.now()):
+            TaskActive = 1;
+        else:
+            TaskActive = 0;
+
         TaskConfiguration.insert(TaskNr              =form.vars.TaskNr,\
                                  TaskStart           =form.vars.TaskStart,\
                                  TaskDeadline        =form.vars.TaskDeadline,\
@@ -80,7 +87,7 @@ def newTask():
                                  TestExecutable      =form.vars.TestExecutable,\
                                  Score               =form.vars.Score,\
                                  TaskOperator        =form.vars.TaskOperator,\
-                                 TaskActive          =form.vars.TaskActive)
+                                 TaskActive          =TaskActive)
         redirect(URL('index'))
 
     returnDict.update({'form':form})
@@ -92,21 +99,27 @@ def editTask():
     TaskNr= int(request.vars['editTaskNr'])
     entry=returnDict['entries'][TaskNr-1]
     inputs=TD(TaskNr),\
-           TD(INPUT(_name='TaskStart',           _value=entry['TaskStart'] ,          requires=val['TaskStart']           )),\
-           TD(INPUT(_name='TaskDeadline',        _value=entry['TaskDeadline'] ,       requires=val['TaskDeadline']        )),\
+           TD(INPUT(_name='TaskStart',           _value=entry['TaskStart'] ,          requires=val['TaskStart'], _id = 'TaskStart'          )),\
+           TD(INPUT(_name='TaskDeadline',        _value=entry['TaskDeadline'] ,       requires=val['TaskDeadline'], _id = 'TaskEnd'        )),\
            TD(INPUT(_name='PathToTask',          _value=entry['PathToTask'] ,         requires=val['PathToTask']          )),\
            TD(INPUT(_name='GeneratorExecutable', _value=entry['GeneratorExecutable'], requires=val['GeneratorExecutable'] )),\
            TD(INPUT(_name='TestExecutable',      _value=entry['TestExecutable'] ,     requires=val['TestExecutable']      )),\
            TD(INPUT(_name='Score',               _value=entry['Score'] ,              requires=val['Score']               )),\
            TD(INPUT(_name='TaskOperator',        _value=entry['TaskOperator'] ,       requires=val['TaskOperator']        )),\
-           TD(INPUT(_name='TaskActive',        _value=entry['TaskActive'] ,       requires=val['TaskActive']        )),\
            TD(INPUT(_type='submit',_label='Save'))
     form=FORM(inputs)
     if(form.process().accepted):
         #strip all whitespaces from begin and end
         for var in form.vars:
             var=var.strip()
-            
+
+        #Set TaskActive based on the StartTime
+        if(form.vars.TaskStart < datetime.datetime.now()):
+            TaskActive = 1;
+        else:
+            TaskActive = 0;
+
+
         course(TaskConfiguration.TaskNr ==TaskNr).update(TaskStart           =form.vars.TaskStart,\
                                                          TaskDeadline        =form.vars.TaskDeadline,\
                                                          PathToTask          =form.vars.PathToTask.rstrip("/"),\
@@ -114,7 +127,7 @@ def editTask():
                                                          TestExecutable      =form.vars.TestExecutable,\
                                                          Score               =form.vars.Score,\
                                                          TaskOperator        =form.vars.TaskOperator,\
-                                                         TaskActive          =form.vars.TaskActive)
+                                                         TaskActive          =TaskActive)
         redirect(URL('index'))
 
     returnDict.update({'editTaskNr':TaskNr,'form':form})

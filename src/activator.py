@@ -13,7 +13,7 @@ import datetime
 
 class TaskActivator(threading.Thread):
     def __init__(self, name, gen_queue, sender_queue, logger_queue, \
-                 coursedb, semesterdb):
+                 coursedb, semesterdb, auto_advance):
         threading.Thread.__init__(self)
         self.name = name
         self.sender_queue = sender_queue
@@ -21,22 +21,25 @@ class TaskActivator(threading.Thread):
         self.gen_queue = gen_queue
         self.coursedb = coursedb
         self.semesterdb = semesterdb
+        self.auto_advance = auto_advance
 
     def activator_loop(self):
         curc, conc = c.connect_to_db(self.coursedb, self.logger_queue, \
                                      self.name)
 
-        # first we need to know, for which tasks, the message has already
-        # been sent out
+        # first we need to know, which tasks are not active at the moment
         sql_cmd = "SELECT * FROM TaskConfiguration WHERE TaskActive==0;"
         curc.execute(sql_cmd)
-        res = curc.fetchone()
-        while res != None:
-            tasknr = res[0]
+        rows_tasks = curc.fetchall()
+
+        # loop through all the inactive tasks
+        for row_task in rows_tasks:
+            tasknr = row_task[0]
             logmsg = "Task {0} is still inactive".format(str(tasknr))
             c.log_a_msg(self.logger_queue, self.name, logmsg, "INFO")
+
             # check if a tasks start time has come
-            task_starttime = datetime.datetime.strptime(res[1], c.format_string)
+            task_starttime = datetime.datetime.strptime(row_task[1], c.format_string)
             if task_starttime < datetime.datetime.now():
                 # first, let's set the task active!
                 data = {'tasknr': tasknr}
@@ -46,18 +49,48 @@ class TaskActivator(threading.Thread):
                 logmsg = "Turned Task {0} to active.".format(str(tasknr))
                 c.log_a_msg(self.logger_queue, self.name, logmsg, "INFO")
 
-                # next, check if any users are waiting for that task
                 curs, cons = c.connect_to_db(self.semesterdb, \
                                              self.logger_queue, self.name)
+
+                # if auto_advance is activated, all users should be
+                # advanced to that task
+                if self.auto_advance == True:
+                    data = {'tasknr': tasknr}
+                    sqlcmd = "SELECT UserId FROM Users WHERE CurrentTask < :tasknr;"
+                    curs.execute(sqlcmd, data)
+                    rows = curs.fetchall()
+
+                    users_list = []
+                    for row in rows:
+                        users_list.append(str(row[0]))
+                    users_comma_list = ','.join(users_list)
+
+                    # TODO: Why does this not work, it's basically the same!
+                   # data = {'tasknr': tasknr, 'users_comma_list': users_comma_list}
+                   # sqlcmd = ("UPDATE Users SET CurrentTask = :tasknr WHERE "
+                   #           "UserId IN (:users_comma_list);")
+                   # curs.execute(sqlcmd, data)
+
+                    sqlcmd = ("UPDATE Users SET CurrentTask = {0} WHERE "
+                              "UserId in ({1});").format(tasknr, users_comma_list)
+                    curs.execute(sqlcmd)
+                    cons.commit()
+                    logmsg = "Advanced users with ids: " + users_comma_list
+                    c.log_a_msg(self.logger_queue, self.name, logmsg, "INFO")
+
+                # next, check if any users are waiting for that task
                 data = {'tasknr': tasknr}
                 sqlcmd = "SELECT * FROM Users WHERE CurrentTask == :tasknr;"
                 curs.execute(sqlcmd, data)
-                nextuser = curs.fetchone()
-                while nextuser != None:
-                    logmsg = "The next example is sent to User {0} now.".format(tasknr)
+
+                rows = curs.fetchall()
+                for row in rows:
+                    uid = row[0]
+                    user_email = row[2]
+
+                    logmsg = "The next task({0}) is sent to User {1} now." \
+                        .format(tasknr, uid)
                     c.log_a_msg(self.logger_queue, self.name, logmsg, "INFO")
-                    uid = nextuser[0]
-                    user_email = nextuser[2]
 
                     try:
                         data = {'tasknr': tasknr}
@@ -75,7 +108,7 @@ class TaskActivator(threading.Thread):
                         c.log_a_msg(self.logger_queue, self.name, \
                                     logmsg, "DEBUG")
 
-                        logmsg = "UserEmail: {0}, TaskNr : {1}, UserId: {0},".format(user_email, \
+                        logmsg = "UserEmail: {0}, TaskNr : {1}, UserId: {2},".format(user_email, \
                                                                                      tasknr, uid)
                         c.log_a_msg(self.logger_queue, self.name, \
                                     logmsg, "DEBUG")
@@ -86,13 +119,7 @@ class TaskActivator(threading.Thread):
                     else:
                         c.send_email(self.sender_queue, str(user_email), \
                                      str(uid), "Task", str(tasknr), "", "")
-
-                    nextuser = curs.fetchone()
-
                 cons.close()
-
-            res = curc.fetchone()
-
         conc.close()
 
 ####
