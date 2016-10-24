@@ -23,7 +23,7 @@
 ########## PATHS #########
 ##########################
 # src path of autosub system
-autosubPath=$(pwd) 
+autosubPath=$(pwd)
 # root path of the task itself
 taskPath=$(readlink -f $0|xargs dirname)
 # path for all the files that describe the created path
@@ -65,9 +65,8 @@ rm desc_$1_Task$2.aux
 rm desc_$1_Task$2.log
 rm desc_$1_Task$2.tex
 rm desc_$1_Task$2.out
-rm fsm
-rm fsm.pdf
 mv $taskPath/tmp/desc_$1_Task$2.pdf $descPath
+mv $taskPath/tmp/fsm_$1_Task$2.png $descPath
 
 #copy static files to user's description folder
 cp $taskPath/static/fsm.vhdl $descPath
@@ -96,8 +95,8 @@ then
 fi
 if [ -z "$4" ] || [ "$4" = "normal" ]; #default to normal
 then
-    taskAttachments="$taskAttachmentsBase" 
-fi 
+    taskAttachments="$taskAttachmentsBase"
+fi
 
 ##########################
 ## ADD TASK TO DATABASE ##

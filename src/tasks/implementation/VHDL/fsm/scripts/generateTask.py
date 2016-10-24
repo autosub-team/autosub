@@ -2,7 +2,7 @@
 
 ########################################################################
 # generateTask.py for VHDL task fsm
-# Generates random tasks, generates TaskParameters, fill 
+# Generates random tasks, generates TaskParameters, fill
 # entity and description templates
 #
 # Copyright (C) 2015 Martin  Mosbeck   <martin.mosbeck@gmx.at>
@@ -107,7 +107,7 @@ while not genSuccess:
          nodematrix[lastnode][nextnode] = 1
          lastnode=nextnode
          num_trans=num_trans+1;
-    
+
       num_cycle=num_cycle+1
       if num_cycle==cycle_max:
          redoGen=True
@@ -122,9 +122,9 @@ while not genSuccess:
 
 labeled_trans = num_to_labels(nodematrix, num_nodes)
 
-
-f = Digraph('finite_state_machine', filename='tmp/fsm')
-f.format='pdf'
+filename_statechart = "fsm_{0}_Task{1}".format(userId,taskNr)
+f = Digraph('finite_state_machine', filename='tmp/' + filename_statechart)
+f.format='png'
 f.attr('graph',overlap='false',size="7,8!")
 f.attr('node', shape='circle')
 f.attr('edge',overlap='false')
@@ -168,9 +168,10 @@ with open (filename, "w") as solution:
 
 
 ###########################################
-# SET PARAMETERS FOR DESCRIPTION TEMPLATE # 
+# SET PARAMETERS FOR DESCRIPTION TEMPLATE #
 ###########################################
-paramsDesc.update({"TASKNR":str(taskNr),"SUBMISSIONEMAIL":submissionEmail})
+paramsDesc.update({"TASKNR":str(taskNr),"SUBMISSIONEMAIL":submissionEmail, \
+                   "STATECHART":filename_statechart})
 
 #############################
 # FILL DESCRIPTION TEMPLATE #
