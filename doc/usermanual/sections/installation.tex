@@ -43,7 +43,7 @@ pip-3.2 install bitstring
 pip-3.2 install matplotlib
 \end{verbatim}
 
-Last, we install ghdl, which is used as the VHDL Simulation tool. You may download
+Last, we install a vhdl simulator. If you want to use ghdl you may download
 the debian package from sourceforge \footnote{http://sourceforge.net/projects/ghdl-updates/files/Builds/ghdl-0.31/Debian/} and install it using dpkg:
 
 \begin{verbatim}
@@ -53,11 +53,11 @@ dpkg -i Downloads/ghdl_0.31-2wheezy1_amd64.deb
 All the dependencies of that package have already been resolved by the above
 list of packages installed with apt.
 
+To use the Simulator of Xilinx's ISE: ISim, see Section \ref{ISE-install}
+
 At this point you may run the test-suite, as explained in Section \ref{sub:testingvels}.
 If those tests run through without complications, everything you need to run the VELS
 E-Learning system has been installed successfully.
-
-
 
 \subsection{Debian 8 (Jessie)}
 
@@ -88,13 +88,38 @@ pip3 install bitstring
 pip3 install graphviz
 \end{verbatim}
 
-An finally ghdl is installed, this time a bit newer version\footnote{http://sourceforge.net/projects/ghdl-updates/files/Builds/ghdl-0.33/debian/} as there are no .deb packages for jessie of the older
-one (and vice-versa).
+Last, we install a vhdl simulator. If you want to use ghdl there you can use the version from \footnote{http://sourceforge.net/projects/ghdl-updates/files/Builds/ghdl-0.33/debian/} as there are no .deb packages for jessie of the older ghdl version (and vice-versa).
 
 \begin{verbatim}
 dpkg -i ghdl_0.33-1jessie1_amd64.deb
 \end{verbatim}
 
+To use the Simulator of Xilinx's ISE: ISim, see Section \ref{ISE-install}
+
 At this point you may run the test-suite, as explained in Section \ref{sub:testingvels}.
 If those tests run through without complications, everything you need to run the VELS
 E-Learning system has been installed successfully.
+
+\subsection{Instalation Notes for Xilinx ISE 14.7}\label{ISE-install}
+
+An additional option, to using the open-source software ghdl as the VHDL Simulation tool for VELS, is to use the Simulator of Xilinx's ISE: ISim. The ISE (``Full Installer for Linux'') can be downloaded from Xilinx's official download page. It requires registration and licensing agreement, but there is no charge.
+
+For installing ISE to the default location /opt/Xilinx/ where the VELS system expects it to be, you need permission to write to this location. So we will use the user root to call the graphical installer. To do so we need to allow root to use the users X server. As a user run:
+
+\begin{verbatim}
+$ xhost +
+\end{verbatim}
+
+to allow root (or anyone) to connect to your users X server temporarily. Now as root start the graphical installer, located at the top of the extracted download, with
+
+\begin{verbatim}
+# ./xsetup
+\end{verbatim}
+
+In case that you are using the KDE desktop environment, you have to remove the \verb!QT_PLUGIN_PATH! environment variable before starting the graphical installer:
+
+\begin{verbatim}
+# unset QT_PLUGIN_PATH
+\end{verbatim}
+
+If you are running the VELS system on a machine without a graphical user interface, the best way we found to get Xilinx's ISE onto a remote debian server was to copy the entire installation directory after it has been installed on a non-headless machine.
