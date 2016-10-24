@@ -65,6 +65,7 @@ rm desc_$1_Task$2.aux
 rm desc_$1_Task$2.log
 rm desc_$1_Task$2.tex
 rm desc_$1_Task$2.out
+rm fsm_$1_Task$2
 mv $taskPath/tmp/desc_$1_Task$2.pdf $descPath
 mv $taskPath/tmp/fsm_$1_Task$2.png $descPath
 
