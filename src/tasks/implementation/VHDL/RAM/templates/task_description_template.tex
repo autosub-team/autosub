@@ -61,52 +61,57 @@ Your task is to program the behavior of an entity called "RAM". This entity is d
 Do not change the file "RAM.vhdl".
 \\
 
-The "RAM" entity shall behave according to the following RAM:
+The "RAM" entity shall behave according to the following:
 \\
 
-Outputs of the entity and also the content of the RAM can only change on rising edges of the clock cycle. The initial content of the memory is zero.\\
-The address of a memory location, that the data is going to be written to or read from, is located on the address lines. When the reading or writing enables are active, the processes of reading or writing are performed on the rising edge of the clock cycle.
+Outputs of the entity and also the content of the RAM can only change on rising edges of the clock signal. The initial content of the memory is zero.\\
+The address of a memory location, that the data is going to be written to or read from, is located on the address lines. When the reading or writing enables are active ('1'), the processes of reading or writing are performed on rising edges of the clock signal.
 
 \begin{itemize}
-%%Desc0\item The first address is the address of first writing operation and also the reading operation and the second address is for the second writing operation only. 
-%%Desc0\item When en\_read is '1', the content of addr1 is read.
-%%Desc0\item When en\_write1 is '1', input1 is written to addr1.
-%%Desc0\item When en\_write2 is '1', input2 is written to addr2.
-%%Desc0\item Reading and second writing do not happen to the same address at the same time.
-%%Desc0\item en\_read and en\_write1 are not active at the same time.
-%%Desc0\item Two writing operations can happen at the same time to different addresses only.
+%%Desc0\item The first address is the address of first writing operation (enabled with en\_write1) and also the reading operation (enabled with en\_read) and the second address is for the second writing operation (enabled with en\_write2) only. 
+%%Desc0\item When only en\_read is '1', the content of addr1 is read put on the output.
+%%Desc0\item When only en\_write1 is '1', input1 is written to addr1.
+%%Desc0\item When only en\_write2 is '1', input2 is written to addr2.
+%%Desc0\item Reading from addr1 and writing to addr2 can happen at the same time if addr1 is different from addr2%%RW11%%RW22%%RW12%%RW21
+%%Desc0\item Two writing operations can happen at the same time if addr1 is different from addr2%%WW11%%WW22
+%%Desc0\item Note that in any other cases, the content of the RAM must not be changed and the output shall be high impedance (Z).
 
-%%Desc1\item The first address is the address of first reading operation and also the writing operation and the second address is for the second reading operation only. 
-%%Desc1\item When en\_read1 is '1', the content of addr1 is read.
-%%Desc1\item When en\_read2 is '1', the content of addr2 is read.
-%%Desc1\item When en\_write is '1', input is written to addr1.
-%%Desc1\item Reading and writing operations do not happen to the same address at the same time.
-%%Desc1\item en\_read1 and en\_write are not active at the same time.
 
-%%Desc2\item The first address is the address of first reading and also the first writing operations and the second address is for the second reading and writing operations only. 
-%%Desc2\item When en\_read1 is '1', the content of addr1 is read.
-%%Desc2\item When en\_read2 is '1', the content of addr2 is read.
-%%Desc2\item When en\_write1 is '1', input1 is written to addr1.
-%%Desc2\item When en\_write2 is '1', input2 is written to addr2.
-%%Desc2\item Reading and writing operations do not happen to the same address at the same time.
-%%Desc2\item en\_read1 and en\_write1 are not active at the same time.
-%%Desc2\item en\_read2 and en\_write2 are not active at the same time.
-%%Desc2\item Two writing operations can happen at the same time to different addresses only.
+%%Desc1\item The first address is the address of first reading operation (enabled with en\_read1) and also the writing operation (enabled with en\_write) and the second address is for the second reading operation (enabled with en\_read2) only. 
+%%Desc1\item When only en\_read1 is '1', the content of addr1 is read and put on output1.
+%%Desc1\item When only en\_read2 is '1', the content of addr2 is read and put on output2.
+%%Desc1\item When only en\_write is '1', input is written to addr1.
+%%Desc1\item Reading from addr2 and writing to addr1 can happen at the same time only if addr1 is different from addr2%%WR11%%WR22%%WR12%%WR21
+%%Desc1\item Two reading operations can happen at the same time.
+%%Desc1\item Note that in any other cases, the content of the RAM must not be changed and the outputs shall be high impedance (Z).
 
-%%Desc3\item The first address is the address of writing operation and the second address is for the reading operations only. 
-%%Desc3\item Reading and writing operations can be done at the same time from/to the same address. Priority is with the reading operation.
-%%Desc3\item When en\_write is '1', input1 is written to addr1.
-%%Desc3\item When en\_read is '1', the content of addr2 is read.
-\item When the memory is not read, a number of "Z" with the same length as the output is displayed on the output.
 
+%%Desc2\item The first address is the address of first reading operation (enabled with en\_read1) and also the first writing operation (enabled with en\_write1) and the second address is for the second reading (enabled with en\_read2) and writing operation (enabled with en\_write2) only. 
+%%Desc2\item When only en\_read1 is '1', the content of addr1 is read and put on output1.
+%%Desc2\item When only en\_read2 is '1', the content of addr2 is read and put on output2.
+%%Desc2\item When only en\_write1 is '1', input1 is written to addr1.
+%%Desc2\item When only en\_write2 is '1', input2 is written to addr2.
+%%Desc2\item Two writing operations can happen at the same time if addr1 is different from addr2%%WW11%%WW22
+%%Desc2\item Reading from addr1 and writing to addr2 can happen at the same time if addr1 is different from addr2%%RW11%%RW22%%RW12%%RW21
+%%Desc2\item Reading from addr2 and writing to addr1 can happen at the same time if addr1 is different from addr2%%WR11%%WR22%%WR12%%WR21
+%%Desc2\item Two reading operations can happen at the same time.
+%%Desc2\item Note that in any other cases, the content of the RAM must not be changed and the outputs shall be high impedance (Z).
+
+
+%%Desc3\item The first address is the address of writing operation (enabled with en\_write) and the second address is for the reading operation (enabled with en\_read) only. 
+%%Desc3\item When only en\_write is '1', input is written to addr1.
+%%Desc3\item When only en\_read is '1', the content of addr2 is read and put on the output.
+%%Desc3\item Reading and writing operations can be done at the same time from/to the same address. Priority is with the reading operation which means that first the reading operation is done and then the writing operation.
+%%Desc3\item Note that in any other cases, the content of the RAM must not be changed and the output shall be high impedance (Z).
+\item When the memory is not read the related output shall be high impedance (Z).
 \end{itemize}
 
  The length of the address is %%ADDRLENGTH bits, the length of input data %%WRITELENGTH, the length of output is %%READLENGTH, and the length of each location of the memory is %%DATASIZE as well.
 \begin{itemize}
-%%Desc4\item When en\_write is active, the input data is written to the specified address. The length of the input is as the same as each memory location.
-%%Desc5\item The length of input is as twice as each memory location. Therefore, the less significant half of input should be written to the specified address and the more significant half of data should be written to the next address.
-%%Desc6\item When en\_read is active, the data is read from the specified address. The length of the output is as the same as each memory location.
-%%Desc7\item The length of output is as twice as each memory location. Therefore, the content of specified address is read and put in the less significant half of output and the content of next address is read and transferred to the more significant half of output.
+%%Desc4\item When en\_write is active, the input data is written to the specified address. The length of the input is equal to the length of each memory cell.
+%%Desc5\item The length of input is twice the length of each memory cell. Therefore, the lower half of the input should be written to the specified address and the upper half of the input should be written to the next higher address. We assume that the last address is never called for writing.
+%%Desc6\item When en\_read is active, the data is read from the specified address. The length of the output is equal to the length of each memory location.
+%%Desc7\item The length of output is twice the length of each memory location. Therefore, the content of specified address is read and put in the lower half of the output and the content of next higher address is read and transferred to the upper half of output. We assume that the last address is never called for reading.
 \end{itemize}
 
 This behavior has to be programmed in the attached file "RAM\_beh.vhdl".

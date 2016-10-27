@@ -135,6 +135,16 @@ with open (filename, "w") as output_file:
 ###########################################
 paramsDesc={}
 enRead=""
+RW11="."
+RW12=", and addr2 is different from the next higher address of addr1."
+RW21=", and addr1 is different from the next higher address of addr2."
+RW22=", addr2 is different from the next higher address of addr1, and addr1 is different from the next higher address of addr2."
+WW11="."
+WW22=", addr2 is different from the next higher address of addr1, and addr1 is different from the next higher address of addr2."
+WR11="."
+WR12=", and addr1 is different from the next higher address of addr2."
+WR21=", and addr2 is different from the next higher address of addr1."
+WR22=", addr2 is different from the next higher address of addr1, and addr1 is different from the next higher address of addr2."
 
 if x[2]==0:
     enRead="%"
@@ -191,6 +201,42 @@ elif x[2]==3:
     Desc1="%"
     Desc2="%"
     Desc3=""
+
+### single and double 
+if (x[3]==0 and x[4]==0):
+    RW12=""
+    RW21=""
+    RW22=""
+    WW22=""
+    WR12=""
+    WR21=""
+    WR22=""
+    
+elif (x[3]==1 and x[4]==0):
+    RW11=""
+    RW21=""
+    RW22=""
+    WW22=""
+    WR11=""
+    WR21=""
+    WR22=""
+elif (x[3]==0 and x[4]==1):
+    RW11=""
+    RW12=""
+    RW22=""
+    WW11=""
+    WR11=""
+    WR12=""
+    WR22=""  
+  
+elif (x[3]==1 and x[4]==1):
+    RW11=""
+    RW12=""
+    RW21=""
+    WW11=""
+    WR11=""
+    WR12=""
+    WR21=""
     
 paramsDesc.update({"ENREAD":enRead,"enReadIndex":enReadIndex,"ENWRITE":enWrite,
                    "enWriteIndex":enWriteIndex,"IN2":in2,"inIndex":inIndex,"OUT2":out2,"outIndex":outIndex,
@@ -198,6 +244,9 @@ paramsDesc.update({"ENREAD":enRead,"enReadIndex":enReadIndex,"ENWRITE":enWrite,
                    "Desc0":Desc0,"Desc1":Desc1,"Desc2":Desc2,"Desc3":Desc3,"DATASIZE":str(x[0]),
                    "Desc4":Desc4,"Desc5":Desc5,"Desc6":Desc6,"Desc7":Desc7,
                    "TASKNR":str(taskNr),"SUBMISSIONEMAIL":submissionEmail})
+
+paramsDesc.update({"RW11":RW11,"RW12":RW12,"RW21":RW21,"RW22":RW22,"WW11":WW11,"WW22":WW22,
+		   "WR11":WR11,"WR12":WR12,"WR21":WR21,"WR22":WR22})
 
 #############################
 # FILL DESCRIPTION TEMPLATE #
@@ -222,7 +271,7 @@ content_test_out=[]
 paramsExam={}
 
 # array of random addresses
-a=random.sample(range(0, 2**x[1]-1), 2**x[1]-1)
+a=random.sample(range(0, 2**x[1]-3), 2**x[1]-3)
 b=[i for i in a if i%2 == 0]
 for i in range(0,16):
     random_addr.append('"'+'0'*(x[1]-len(bin(b[i])[2:]))+bin(b[i])[2:]+'"')

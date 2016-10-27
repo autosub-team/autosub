@@ -27,7 +27,7 @@
 ########## PATHS #########
 ##########################
 # src path of autosub system
-autosubPath=$(pwd)
+autosubPath=$(pwd) 
 # root path of the task itself
 taskPath=$(readlink -f $0|xargs dirname)
 # path for all the files that describe the created path
@@ -40,6 +40,7 @@ userTaskPath="$autosubPath/users/$1/Task$2"
 ##########################
 zero=0
 userfile="RAM_beh.vhdl"
+simulationTimeout="50s"
 
 TaskNr=$2
 logPrefix()
@@ -53,7 +54,7 @@ logPrefix()
 cd $taskPath
 
 #generate the testbench and move testbench to user's folder
-python3 scripts/generateTestBench.py $3 > $userTaskPath/RAM_tb_$1_Task$2.vhdl
+python3 scripts/generateTestBench.py $3 > $userTaskPath/RAM_tb_$1_Task$2.vhdl 
 
 #copy the entity vhdl file for testing to user's folder
 cp $descPath/RAM.vhdl $userTaskPath
@@ -62,40 +63,45 @@ cp $descPath/RAM.vhdl $userTaskPath
 cd $userTaskPath
 touch error_msg
 
+# create tmp directory
+if [ ! -d "/tmp/$USER" ]
+then
+   mkdir /tmp/$USER
+fi
+
 #check if the user supplied a file
 if [ ! -f $userfile ]
 then
     logPrefix && echo "${logPre}Error with Task $2. User $1 did not attach the right file"
     cd $autosubPath
     echo "You did not attach your solution. Please attach the file $userfile" >$userTaskPath/error_msg
-    exit 1
+    exit 1 
 fi
 
 #delete all comments from the file
 sed -i 's:--.*$::g' $userfile
-
 ##########################
 ######### ANALYZE ########
 ##########################
 
 #entity, not from user, should have no errors
 ghdl -a RAM.vhdl
-RET=$?
+RET=$? 
 if [ "$RET" -ne "$zero" ]
 then
    logPrefix && echo "${logPre}Error with Task $2 entity for user with ID $1";
    echo "Something went wrong with the task $2 test generation. This is not your fault. We are working on a solution" > $userTaskPath/error_msg
-   exit 3
+   exit 3 
 fi
 
 #testbench, not from user, should have no errors
 ghdl -a RAM_tb_$1_Task$2.vhdl
-RET=$?
+RET=$? 
 if [ "$RET" -ne "$zero" ]
 then
    logPrefix && echo "${logPre}Error with Task $2 testbench for user with ID $1";
    echo "Something went wrong with the task $2 test generation. This is not your fault. We are working on a solution" > $userTaskPath/error_msg
-   exit 3
+   exit 3 
 fi
 
 if [ ! -d "/tmp/$USER" ]
@@ -114,7 +120,33 @@ else
    cd $autosubPath
    echo "Analyzation of your submitted behavior file failed:" >$userTaskPath/error_msg
    cat /tmp/$USER/tmp_Task$2_User$1 >> $userTaskPath/error_msg
-   exit 1
+   exit 1 
+fi
+
+##########################
+## TASK CONSTRAINT CHECK #
+##########################
+cd $userTaskPath
+touch file
+
+sed -i 's:--.*$::g' RAM_beh.vhdl
+cat RAM_beh.vhdl | tr '[:upper:]' '[:lower:]' >> file
+cat file | tr -d " \t\n\r" >> file
+rising=$(egrep -o "rising_edge" file | wc -l)
+falling=$(egrep -o "falling_edge" file | wc -l)
+rising_event=$(egrep -o "clk'eventandclk='1'" file | wc -l)
+falling_event=$(egrep -o "clk'eventandclk='0'" file | wc -l)
+
+#check the occurrence of phrases concerning rising/falling edge
+if ( [ "$rising" -ne "$zero" ] || [ "$rising_event" -ne "$zero" ] )\
+ && [ "$falling" -eq "$zero" ] && [ "$falling_event" -eq "$zero" ]
+then
+  logPrefix && echo "${logPre}Task$2 using clock signal for user with ID $1!"
+else
+   logPrefix && echo "${logPre}Task$2 constraint check FAILED for user with ID $1!"
+   cd $autosubPath
+   echo "You are not using the rising edge of clock signal.">$userTaskPath/error_msg
+   exit 1 
 fi
 
 ##########################
@@ -126,17 +158,18 @@ RET=$?
 if [ "$RET" -eq "$zero" ]
 then
    logPrefix && echo "${logPre}Task$2 elaboration success for user with ID $1!"
-else
-   logPrefix && echo "${logPre}Task$2 elaboration FAILED for user with ID $1!"
+   else
+   echo "Task$2 elaboration FAILED for user with ID $1!"
    cd $autosubPath
    echo "Elaboration with your submitted behavior file failed:" >$userTaskPath/error_msg
    cat /tmp/$USER/tmp_Task$2_User$1 >> $userTaskPath/error_msg
-   exit 1
+   exit 1 
 fi
 
 ##########################
 ####### SIMULATION #######
 ##########################
+
 #Simulation reports "Success" or an error message
 ghdl -r RAM_tb 2> /tmp/$USER/tmp_Task$2_User$1
 
@@ -152,5 +185,5 @@ else
    logPrefix && echo "${logPre}Wrong behavior for Task$2 for user with ID $1"
    echo "Your submitted behavior file does not behave like specified in the task description:" >$userTaskPath/error_msg
    cat /tmp/$USER/tmp_Task$2_User$1 >> $userTaskPath/error_msg
-   exit 1
+   exit 1 
 fi

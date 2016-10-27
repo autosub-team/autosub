@@ -35,7 +35,7 @@ content_test_in=[]
 content_test_out=[]
 
 # array of random addresses
-a=random.sample(range(0, 2**taskParameter[1]-1), 2**taskParameter[1]-1)
+a=random.sample(range(0, 2**taskParameter[1]-3), 2**taskParameter[1]-3)
 b=[i for i in a if i%2 == 0]
 for i in range(0,16):
     random_addr.append('"'+'0'*(taskParameter[1]-len(bin(b[i])[2:]))+bin(b[i])[2:]+'"')
@@ -44,7 +44,7 @@ for i in range(len(random_addr)-1):
 random_addr=("\n"+(25)*" ").join(random_addr)
 
 # array of random first input data
-y = [randint(0,2**write_len)-1 for p in range(0,16)]
+y = [randint(1,2**write_len)-1 for p in range(0,16)]
 for i in y:
     content_in.append('"'+'0'*(write_len-len(bin(i)[2:]))+bin(i)[2:]+'"')
 
@@ -69,7 +69,7 @@ for i in range(len(content_out)-1):
 content_out=("\n"+(25)*" ").join(content_out)
 
 # array of random second input data
-y = [randint(0,2**write_len-1) for p in range(0,16)]
+y = [randint(1,2**write_len-1) for p in range(0,16)]
 for i in y:
     content_test_in.append('"'+'0'*(write_len-len(bin(i)[2:]))+bin(i)[2:]+'"')
 

@@ -89,8 +89,6 @@ else
    mkdir $userTaskPath/error_attachments
 fi
 
-#delete all comments from the file
-sed -i 's:--.*$::g' $userfile
 
 ##########################
 ######### ANALYZE ########
@@ -119,14 +117,18 @@ then
    exit 3 
 fi
 
+#this is the file from the user
+sed -i '/^--/ d' RAM_beh.vhdl
+
 vhpcomp RAM_beh.vhdl 2> /tmp/$USER/tmp_Task$2_User$1
 RET=$?
+
 
 if [ "$RET" -eq "$zero" ]
 then
    logPrefix && echo "${logPre}Task$2 analyze success for user with ID $1!"
 else
-   echo "Task$2 analyze FAILED for user with ID $1!"
+   logPrefix && echo "${logPre}Task$2 analyze FAILED for user with ID $1!"
    cd $autosubPath
    echo "Analyzation of your submitted behavior file failed:" >$userTaskPath/error_msg
    cat /tmp/$USER/tmp_Task$2_User$1 | grep ERROR >> $userTaskPath/error_msg
@@ -136,8 +138,10 @@ fi
 ##########################
 ## TASK CONSTRAINT CHECK #
 ##########################
+cd $userTaskPath
 touch file
 
+sed -i 's:--.*$::g' RAM_beh.vhdl
 cat RAM_beh.vhdl | tr '[:upper:]' '[:lower:]' >> file
 cat file | tr -d " \t\n\r" >> file
 rising=$(egrep -o "rising_edge" file | wc -l)
@@ -149,11 +153,11 @@ falling_event=$(egrep -o "clk'eventandclk='0'" file | wc -l)
 if ( [ "$rising" -ne "$zero" ] || [ "$rising_event" -ne "$zero" ] )\
  && [ "$falling" -eq "$zero" ] && [ "$falling_event" -eq "$zero" ]
 then
-  logPrefix && echo "${logPre}Task$2 using clock cycle for user with ID $1!"
+  logPrefix && echo "${logPre}Task$2 using clock signal for user with ID $1!"
 else
-   logPrefix && echo "${logPre}Task$2 does not operate on a rising edge of clock cycle!"
+   logPrefix && echo "${logPre}Task$2 constraint check FAILED for user with ID $1!"
    cd $autosubPath
-   echo "You are not using the rising edge of clock cycle.">$userTaskPath/error_msg
+   echo "You are not using the rising edge of clock signal.">$userTaskPath/error_msg
    exit 1 
 fi
 
@@ -163,10 +167,45 @@ fi
 fuse -top RAM_tb
 RET=$?
 
+# to detect if the student changes the entity and uses the modified one in the behavior code
+touch file
+cat $userTaskPath/fuse.log | grep ERROR:HDLCompiler:410 >> $userTaskPath/file
+tmp=$(sed 's/[0-9]*//g' file)
+echo "$tmp" > file
+tmp=$(sed 's~[^[:alnum:]/]\+~~g' file)
+echo "$tmp" > file
+wrongEntity=$(egrep -o "RAMtbTaskvhdlLineExpressionhaselementsexpected" file | wc -l)
+
+# Expression has incompatible type
+incompatibility=$(egrep -o "Expression has incompatible type" fuse.log | wc -l)
+
+# slice is out of range
+outOfRange=$(egrep -o "slice is out of range" fuse.log | wc -l)
+
+
 if [ "$RET" -eq "$zero" ]
 then
+  if [ "$incompatibility" -ne "$zero" ] 
+  then
+    sed -i -e 's/WARNING/ERROR/g' fuse.log
+    echo "Elaboration with your submitted behavior file failed:" >$userTaskPath/error_msg
+    cat $userTaskPath/fuse.log | grep "Expression has incompatible type" >> $userTaskPath/error_msg
+    exit 1 
+    
+    elif [ "$outOfRange" -ne "$zero" ] 
+  then
+    sed -i -e 's/WARNING/ERROR/g' fuse.log
+    echo "Elaboration with your submitted behavior file failed:" >$userTaskPath/error_msg
+    cat $userTaskPath/fuse.log | grep "slice is out of range" >> $userTaskPath/error_msg
+    exit 1     
+  else
    logPrefix && echo "${logPre}Task$2 elaboration success for user with ID $1!"
-else
+   fi
+elif [ "$wrongEntity" -ne "$zero" ]
+then
+   echo "Elaboration with your submitted behavior file failed because you have changed the entity file. Please check the expressions have the correct number of elements." >$userTaskPath/error_msg
+   exit 1 
+   else
    echo "Task$2 elaboration FAILED for user with ID $1!"
    cd $autosubPath
    echo "Elaboration with your submitted behavior file failed:" >$userTaskPath/error_msg
@@ -174,35 +213,17 @@ else
    exit 1 
 fi
 
+
 ##########################
 ####### SIMULATION #######
 ##########################
 
-# set location of licence file here
-# export LM_LICENSE_FILE=
-
-#touch test
-#Simulation reports "Success" or an error message
-
-#touch test
 #Simulation reports "Success" or an error message
 ./x.exe -tclbatch isim.cmd 
 egrep -oq "Success" isim.log
 RET=$?
 
 
-# filesize=$(stat -c%s "signals.vcd") #in Bytes
-# #compression factor is approx 10, so we dont wont anything above 20MB 
-# if [ "$filesize" -gt 20000000 ]; then 
-#    head --bytes=20000K signals.vcd >signals_tmp.vcd; #first x K Bytes
-#    rm signals.vcd
-#    mv signals_tmp.vcd signals.vcd  
-# fi
-
-#zip isim.wdb and move it
-#zip wavefile.zip isim.log
-# for TESTING: dont send until we know the max size:
-#mv isim.log $userTaskPath/error_attachments
 
 if [ "$RET" -eq "$zero" ]
 then
