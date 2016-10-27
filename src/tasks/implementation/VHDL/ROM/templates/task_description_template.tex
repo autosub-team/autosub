@@ -14,7 +14,7 @@ Your task is to program the behavior of an entity called "ROM". This entity is d
 \begin{itemize}
 \item Inputs: Clk and enable with type std\_logic; these are clock and enable signals
 \item Inputs: addr with type std\_logic\_vector; the address of the instruction which is going to be read
-\item Outputs: output with type std\_logic\_vector; this is the data (instruction) which is read 
+\item Outputs: output with type std\_logic\_vector; this is the instruction which is read 
 \end{itemize}
 \vspace{0.3cm}
 \begin{center}
@@ -39,7 +39,7 @@ Your task is to program the behavior of an entity called "ROM". This entity is d
 
 Do not change the file "ROM.vhdl".\\
 
-The "ROM" entity shall behave according to the following ROM:\\
+The "ROM" entity shall behave according to the following:\\
 
 It has three inputs which are address, clock and enable signals. The length of address is %%ADDRLENGTH bits, and the length of instruction is %%INSTRUCTIONLENGTH which is equal to the length of the output. \\
 
@@ -55,7 +55,7 @@ Note that:
 \item the content of other locations in the ROM is zero.
 \item it should be implemented as a single cycle ROM.
 \item it works on %%CLK of the clock signal.
-\item when the ROM is disabled the output is zero and when it is enabled it reads the instruction which is in the input address and then outputs it. 
+\item when the ROM is disabled the output is zero. When it is enabled the instruction stored at the input address is output at the output. 
 \end{itemize}
 
 This behavior has to be programmed in the attached file "ROM\_beh.vhdl".\\
