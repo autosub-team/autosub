@@ -110,8 +110,8 @@ The address of a memory location, that the data is going to be written to or rea
 \begin{itemize}
 %%Desc4\item When en\_write is active, the input data is written to the specified address. The length of the input is equal to the length of each memory cell.
 %%Desc5\item The length of input is twice the length of each memory cell. Therefore, the lower half of the input should be written to the specified address and the upper half of the input should be written to the next higher address. We assume that the last address is never called for writing.
-%%Desc6\item When en\_read is active, the data is read from the specified address. The length of the output is equal to the length of each memory location.
-%%Desc7\item The length of output is twice the length of each memory location. Therefore, the content of specified address is read and put in the lower half of the output and the content of next higher address is read and transferred to the upper half of output. We assume that the last address is never called for reading.
+%%Desc6\item When en\_read is active, the data is read from the specified address. The length of the output is equal to the length of each memory cell.
+%%Desc7\item The length of output is twice the length of each memory cell. Therefore, the content of specified address is read and put in the lower half of the output and the content of next higher address is read and transferred to the upper half of output. We assume that the last address is never called for reading.
 \end{itemize}
 
 This behavior has to be programmed in the attached file "RAM\_beh.vhdl".

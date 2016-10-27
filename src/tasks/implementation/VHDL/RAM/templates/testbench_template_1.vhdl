@@ -143,7 +143,7 @@ begin
              addr1 <= std_logic_vector(to_unsigned(to_integer(unsigned(random_addr(i)))+1, %%ADDRLENGTH+1));
              wait for Clk_period; 
              if (output(%%DATASIZE-1 downto 0)/=content_in(i)(%%WRITELENGTH downto %%DATASIZE)) then
-                 report " The upper half of input1 is not written to the memory correctly when en_write1 is only enabled. Note that the length of input is twice the length of each memory location." severity failure;
+                 report " The upper half of input1 is not written to the memory correctly when en_write1 is only enabled. Note that the length of input is twice the length of each memory cell." severity failure;
              end if;              
          end if;
          
