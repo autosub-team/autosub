@@ -107,7 +107,7 @@ begin
       for i in 0 to (N_n - 1) loop
          IN1 <= data_n_test_array(i);
          WA1 <= address_test_array(i)((address_width_n - 1) downto 0);
-         RA1 <= address_test_array(N_n)((address_width_n - 1) downto 0);
+         RA1 <= address_test_array(N_n - 1)((address_width_n - 1) downto 0);
          
          if i = N_n - 1 then  -- avoid writing to currently output register address
             RA1 <= (others => '0');
