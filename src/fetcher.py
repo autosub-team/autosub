@@ -340,7 +340,7 @@ class mailFetcher(threading.Thread):
         deadline = c.get_task_deadline(self.coursedb, task_nr, self.logger_queue, \
                                            self.name)
 
-        if is_task and cur_task < task_nr:
+        if is_task and cur_task < int(task_nr):
         #task_nr valid, but user has not reached that tasknr yet
             logmsg = ("User can not submit for this task yet.")
             c.log_a_msg(self.logger_queue, self.name, logmsg, "DEBUG")
