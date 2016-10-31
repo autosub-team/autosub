@@ -69,7 +69,7 @@ The address of a memory location, that the data is going to be written to or rea
 
 \begin{itemize}
 %%Desc0\item The first address is the address of first writing operation (enabled with en\_write1) and also the reading operation (enabled with en\_read) and the second address is for the second writing operation (enabled with en\_write2) only. 
-%%Desc0\item When only en\_read is '1', the content of addr1 is read put on the output.
+%%Desc0\item When only en\_read is '1', the content of addr1 is read and put on the output.
 %%Desc0\item When only en\_write1 is '1', input1 is written to addr1.
 %%Desc0\item When only en\_write2 is '1', input2 is written to addr2.
 %%Desc0\item Reading from addr1 and writing to addr2 can happen at the same time if addr1 is different from addr2%%RW11%%RW22%%RW12%%RW21
@@ -106,12 +106,12 @@ The address of a memory location, that the data is going to be written to or rea
 \item When the memory is not read the related output shall be high impedance (Z).
 \end{itemize}
 
- The length of the address is %%ADDRLENGTH bits, the length of input data %%WRITELENGTH, the length of output is %%READLENGTH, and the length of each location of the memory is %%DATASIZE as well.
+ The length of the address is %%ADDRLENGTH bits, the length of input data %%WRITELENGTH, the length of output is %%READLENGTH, and the length of each memory cell is %%DATASIZE as well.
 \begin{itemize}
 %%Desc4\item When en\_write is active, the input data is written to the specified address. The length of the input is equal to the length of each memory cell.
-%%Desc5\item The length of input is twice the length of each memory cell. Therefore, the lower half of the input should be written to the specified address and the upper half of the input should be written to the next higher address. We assume that the last address is never called for writing.
+%%Desc5\item The length of input is twice the length of each memory cell. Therefore, the lower half of the input should be written to the specified address and the upper half of the input should be written to the next higher address. We assume that the last memory address is never called for writing.
 %%Desc6\item When en\_read is active, the data is read from the specified address. The length of the output is equal to the length of each memory cell.
-%%Desc7\item The length of output is twice the length of each memory cell. Therefore, the content of specified address is read and put in the lower half of the output and the content of next higher address is read and transferred to the upper half of output. We assume that the last address is never called for reading.
+%%Desc7\item The length of output is twice the length of each memory cell. Therefore, the content of specified address is read and put in the lower half of the output and the content of next higher address is read and transferred to the upper half of output. We assume that the last memory address is never called for reading.
 \end{itemize}
 
 This behavior has to be programmed in the attached file "RAM\_beh.vhdl".
