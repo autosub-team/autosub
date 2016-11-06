@@ -114,7 +114,7 @@ def viewUser():
                    'CurrentTask':row.CurrentTask}
 
     #user score
-    rowsDoneTasks= semester(UserTasks.UserId == UserId, UserTasks.FirstSuccessful != None).select(UserTasks.TaskNr)
+    rowsDoneTasks= semester( (UserTasks.UserId == UserId) & (UserTasks.FirstSuccessful != None)).select(UserTasks.TaskNr)
     userScore= 0
 
     for rowDoneTasks in rowsDoneTasks:

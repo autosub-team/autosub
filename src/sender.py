@@ -178,12 +178,6 @@ class MailSender(threading.Thread):
         curs.execute(sql_cmd, data)
         user_name = curs.fetchone()[0]
 
-        #get current user score
-        data = {'cur_task': cur_task}
-        sql_cmd = "SELECT SUM(Score) FROM TaskConfiguration WHERE TaskNr < :cur_task;"
-        curc.execute(sql_cmd, data)
-        curscore = curc.fetchone()[0]
-
         #get the done tasks
         data = {'user_id': user_id}
         sql_cmd = ("SELECT TaskNr FROM UserTasks WHERE UserId = :user_id AND "
@@ -192,23 +186,30 @@ class MailSender(threading.Thread):
         rows_nrs = curs.fetchall()
 
         if len(rows_nrs) == 0:
-            successfulls = "None"
+            successfulls = None
         else:
             nrs = []
             for row_nrs in rows_nrs:
                 nrs.append(str(row_nrs[0]))
             successfulls = ','.join(nrs)
 
+
+        #get current user score
+        if successfulls != None:
+            sql_cmd = ("SELECT SUM(Score) FROM TaskConfiguration "
+                       "WHERE TaskNr IN ({0})").format(successfulls)
+            curc.execute(sql_cmd)
+            cur_score = curc.fetchone()[0]
+        else:
+            cur_score = 0
+
         conc.close()
         cons.close()
 
-        if str(curscore) == 'None': # no task solved yet.
-            tmpscore = 0
-        else:
-            tmpscore = curscore
         msg = "Hi,\n\nYou requested your status, here you go:\n\n"
-        msg = msg + ("Username: {0}\nEmail: {1}\nCurrent Task: {2}\nSucessfully "
-        "finished Tasks: {3}\nYour current Score: {4}\n").format(str(user_name), user_email, str(cur_task), successfulls, str(tmpscore))
+        msg = msg + ("Username: {0}\nEmail: {1}\nCurrent Task: {2}\nSuccessfully "
+        "finished Tasks: {3}\nYour current Score: {4}\n").format(str(user_name), \
+        user_email, str(cur_task), successfulls, str(cur_score))
 
         try:
             cur_deadline = c.get_task_deadline(self.coursedb, cur_task, \
@@ -376,7 +377,7 @@ class MailSender(threading.Thread):
             cur_task_nr = c.user_get_current_task(self.semesterdb, user_id, \
                                              self.logger_queue, self.name)
 
-            # did user already solve this task?
+            # did user solve this task already?
             data = {"user_id":user_id, "task_nr":task_nr}
             sql_cmd = ("SELECT UserId FROM UserTasks WHERE UserId = :user_id "
                        "AND TaskNr = :task_nr AND FirstSuccessful IS NOT NULL")
@@ -384,25 +385,36 @@ class MailSender(threading.Thread):
             res = curs.fetchone()
             task_already_solved = (res != None)
 
+            #did the user solve the previous task?
+            data = {"user_id":user_id, "task_nr":int(task_nr) - 1}
+            sql_cmd = ("SELECT UserId FROM UserTasks WHERE UserId = :user_id "
+                       "AND TaskNr = :task_nr AND FirstSuccessful IS NOT NULL")
+            curs.execute(sql_cmd, data)
+            res = curs.fetchone()
+            prev_task_already_solved = (res != None)
+
+
+            #update statistics (only if first successful submission), advance user
+            if not task_already_solved and prev_task_already_solved:
+                self.increment_db_taskcounter('NrSuccessful', \
+                                               str(int(task_nr)-1))
+                self.increment_db_taskcounter('NrSubmissions', \
+                                              str(int(task_nr)-1))
+            #advance user to this task, because he just solved the last
+            if int(cur_task_nr) < int(task_nr):
+                c.user_set_current_task(self.semesterdb, task_nr, user_id, \
+                                        self.logger_queue, self.name)
             # last task solved!
             if numtasks+1 == int(task_nr):
                 msg['Subject'] = "Congratulations!"
                 message_text = self.read_specialmessage('CONGRATS')
 
-                #update statistics (only if first successful submission), advance user
-                if not task_already_solved:
-                    c.user_set_current_task(self.semesterdb, task_nr, user_id, \
-                                           self.logger_queue, self.name)
-                    self.increment_db_taskcounter('NrSuccessful', \
-                                                  str(int(task_nr)-1))
-                    self.increment_db_taskcounter('NrSubmissions', \
-                                                  str(int(task_nr)-1))
                 self.check_and_set_last_done(user_id)
 
                 msg = self.assemble_email(msg, message_text, '')
                 self.send_out_email(recipient, msg.as_string(), message_type)
                 self.backup_message(messageid)
-            # at least one more task to do: send out the description
+            # at least one more task to do
             else:
 
                 # only send the task description, when the user just now got
@@ -443,15 +455,6 @@ class MailSender(threading.Thread):
                                     "DEBUG")
                         if res:
                             attachments = str(res[0]).split()
-
-                        #update statistics (only if first successful submission), advance user
-                        if not task_already_solved:
-                            c.user_set_current_task(self.semesterdb, task_nr, user_id, \
-                                                    self.logger_queue, self.name)
-                            self.increment_db_taskcounter('NrSuccessful', \
-                                                          str(int(task_nr)-1))
-                            self.increment_db_taskcounter('NrSubmissions', \
-                                                          str(int(task_nr)-1))
 
                         msg = self.assemble_email(msg, message_text, \
                                                   attachments)
@@ -536,6 +539,7 @@ class MailSender(threading.Thread):
             msg = self.assemble_email(msg, message_text, '')
             self.send_out_email(recipient, msg.as_string(), message_type)
             self.backup_message(messageid)
+
             #set first done if not set yet
             self.check_and_set_first_successful(user_id, task_nr)
 
