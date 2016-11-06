@@ -13,8 +13,11 @@ def __entries():
     entries={}
     for row in rows:
         if row.ConfigItem == 'registration_deadline':
-            registration_deadline = datetime.datetime.strptime(row.Content, "%Y-%m-%d %H:%M:%S")
-            entries.update({row.ConfigItem:registration_deadline.strftime("%Y-%m-%d %H:%M")})
+            if row.Content == "NULL":
+                entries.update({row.ConfigItem:"SET ME!!"})
+            else:
+                registration_deadline = datetime.datetime.strptime(row.Content, "%Y-%m-%d %H:%M:%S")
+                entries.update({row.ConfigItem:registration_deadline.strftime("%Y-%m-%d %H:%M")})
         else:
             entries.update({row.ConfigItem:row.Content})
 
