@@ -73,7 +73,7 @@ class Worker(threading.Thread):
                 user_email = nextjob.get('UserEmail')
                 message_id = nextjob.get('MessageId')
 
-                logmsg = self.name + "got a new job: {0} from the user with id: {1}".format(str(tasknr), str(user_id))
+                logmsg = self.name + " got a new job: {0} from the user with id: {1}".format(str(tasknr), str(user_id))
                 c.log_a_msg(self.logger_queue, self.name, logmsg, "INFO")
 
                 # check if there is a test executable configured in the
@@ -152,7 +152,8 @@ class Worker(threading.Thread):
 
                     # Notify, the user that the submission was successful
                     c.send_email(self.sender_queue, str(user_email), \
-                                 str(user_id), "Success", str(tasknr), "", "")
+                                 str(user_id), "Success", str(tasknr), "", \
+                                 str(message_id))
 
                     curc, conc = c.connect_to_db(self.coursedb, \
                                                  self.logger_queue, \

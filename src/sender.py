@@ -72,9 +72,10 @@ class MailSender(threading.Thread):
         curs, cons = c.connect_to_db(self.semesterdb, self.logger_queue, \
                                      self.name)
 
-        data = {'cname': countername, 'task_nr': task_nr}
-        sql_cmd = ("UPDATE TaskStats SET {0} =(SELECT :cname FROM TaskStats "
-                   "WHERE TaskId == :task_nr)+1 WHERE TaskId == :task_nr").format(countername)
+        data = {'task_nr': task_nr}
+        # SET with parameter does not work --> string substitute here
+        sql_cmd = ("UPDATE TaskStats SET {0} = {0} + 1 "
+                   "WHERE TaskId == :task_nr").format(countername)
         curs.execute(sql_cmd, data)
         cons.commit()
         cons.close()
@@ -171,16 +172,19 @@ class MailSender(threading.Thread):
                                      self.logger_queue, \
                                      self.name)
 
+        #get user name
         data = {'user_id': user_id}
         sql_cmd = "SELECT Name FROM Users WHERE UserId = :user_id;"
         curs.execute(sql_cmd, data)
         user_name = curs.fetchone()[0]
 
+        #get current user score
         data = {'cur_task': cur_task}
         sql_cmd = "SELECT SUM(Score) FROM TaskConfiguration WHERE TaskNr < :cur_task;"
         curc.execute(sql_cmd, data)
         curscore = curc.fetchone()[0]
 
+        #get the done tasks
         data = {'user_id': user_id}
         sql_cmd = ("SELECT TaskNr FROM UserTasks WHERE UserId = :user_id AND "
                    "FirstSuccessful IS NOT NULL")
@@ -366,17 +370,27 @@ class MailSender(threading.Thread):
         #################
             logmsg = "Task in send_queue: " + str(next_send_msg)
             c.log_a_msg(self.logger_queue, self.name, logmsg, "DEBUG")
+
             numtasks = c.get_num_tasks(self.coursedb, \
                        self.logger_queue, self.name)
             cur_task_nr = c.user_get_current_task(self.semesterdb, user_id, \
                                              self.logger_queue, self.name)
-            if numtasks+1 == int(task_nr): # last task solved!
+
+            # did user already solve this task?
+            data = {"user_id":user_id, "task_nr":task_nr}
+            sql_cmd = ("SELECT UserId FROM UserTasks WHERE UserId = :user_id "
+                       "AND TaskNr = :task_nr AND FirstSuccessful IS NOT NULL")
+            curs.execute(sql_cmd, data)
+            res = curs.fetchone()
+            task_already_solved = (res != None)
+
+            # last task solved!
+            if numtasks+1 == int(task_nr):
                 msg['Subject'] = "Congratulations!"
                 message_text = self.read_specialmessage('CONGRATS')
 
-                if int(task_nr)-1 == int(cur_task_nr):
-                    # statistics shall only be udated on the first
-                    # successful submission
+                #update statistics (only if first successful submission), advance user
+                if not task_already_solved:
                     c.user_set_current_task(self.semesterdb, task_nr, user_id, \
                                            self.logger_queue, self.name)
                     self.increment_db_taskcounter('NrSuccessful', \
@@ -387,10 +401,13 @@ class MailSender(threading.Thread):
 
                 msg = self.assemble_email(msg, message_text, '')
                 self.send_out_email(recipient, msg.as_string(), message_type)
-            else: # at least one more task to do: send out the description
-                # only send the task description, after the first
-                # successful submission
-                if int(task_nr)-1 <= int(cur_task_nr) or int(cur_task_nr) == 1:
+                self.backup_message(messageid)
+            # at least one more task to do: send out the description
+            else:
+
+                # only send the task description, when the user just now got
+                # to this task or it is the first task
+                if int(task_nr)-1 == int(cur_task_nr) or int(cur_task_nr) == 1:
                     msg['Subject'] = "Description Task" + str(task_nr)
 
                     dl_text = "\nDeadline for this Task: {0}\n".format(c.get_task_deadline(self.coursedb, task_nr, self.logger_queue, self.name))
@@ -409,6 +426,7 @@ class MailSender(threading.Thread):
                         msg = self.assemble_email(msg, message_text, '')
                         self.send_out_email(recipient, msg.as_string(), \
                                             message_type)
+                        self.backup_message(messageid)
                     else:
                         path_to_task = str(paths[0])
                         path_to_msg = path_to_task + "/description.txt"
@@ -426,27 +444,37 @@ class MailSender(threading.Thread):
                         if res:
                             attachments = str(res[0]).split()
 
-                        # statistics shall only be udated on the first
-                        # succesful submission
-                        c.user_set_current_task(self.semesterdb, task_nr, user_id, \
-                                               self.logger_queue, self.name)
-                        self.increment_db_taskcounter('NrSuccessful', \
-                                                      str(int(task_nr)-1))
-                        self.increment_db_taskcounter('NrSubmissions', \
-                                                      str(int(task_nr)-1))
+                        #update statistics (only if first successful submission), advance user
+                        if not task_already_solved:
+                            c.user_set_current_task(self.semesterdb, task_nr, user_id, \
+                                                    self.logger_queue, self.name)
+                            self.increment_db_taskcounter('NrSuccessful', \
+                                                          str(int(task_nr)-1))
+                            self.increment_db_taskcounter('NrSubmissions', \
+                                                          str(int(task_nr)-1))
 
                         msg = self.assemble_email(msg, message_text, \
                                                   attachments)
                         self.send_out_email(recipient, msg.as_string(), \
                                             message_type)
-
-            self.backup_message(messageid)
+                        self.backup_message(messageid)
 
         elif message_type == "Failed":
         #################
         #    FAILED     #
         #################
-            self.increment_db_taskcounter('NrSubmissions', task_nr)
+            # did user already solve this task?
+            data = {"user_id":user_id, "task_nr":task_nr}
+            sql_cmd = ("SELECT UserId FROM UserTasks WHERE UserId = :user_id "
+                       "AND TaskNr = :task_nr AND FirstSuccessful IS NOT NULL")
+            curs.execute(sql_cmd, data)
+            res = curs.fetchone()
+            task_already_solved = (res != None)
+
+            #only update stat if user did not solve this task
+            if not task_already_solved:
+                self.increment_db_taskcounter('NrSubmissions', task_nr)
+
             path_to_msg = "users/{0}/Task{1}".format(user_id, task_nr)
             error_msg = self.read_text_file("{0}/error_msg".format(path_to_msg))
             msg['Subject'] = "Task" + task_nr + ": submission rejected"
@@ -507,6 +535,7 @@ class MailSender(threading.Thread):
             message_text = "Congratulations!"
             msg = self.assemble_email(msg, message_text, '')
             self.send_out_email(recipient, msg.as_string(), message_type)
+            self.backup_message(messageid)
             #set first done if not set yet
             self.check_and_set_first_successful(user_id, task_nr)
 
@@ -534,11 +563,11 @@ class MailSender(threading.Thread):
                     attachments = str(res[0]).split()
                 msg = self.assemble_email(msg, message_text, attachments)
                 self.send_out_email(recipient, msg.as_string(), message_type)
+                self.backup_message(messageid)
             else:
                 msg = self.assemble_email(msg, message_text, attachments)
                 self.send_out_email(recipient, msg.as_string(), message_type)
-
-            self.backup_message(messageid)
+                self.backup_message(messageid)
 
         elif message_type == "InvalidTask":
         #################
@@ -546,9 +575,9 @@ class MailSender(threading.Thread):
         #################
             msg['Subject'] = "Invalid Task Number"
             message_text = self.read_specialmessage('INVALID')
-            self.backup_message(messageid)
             msg = self.assemble_email(msg, message_text, '')
             self.send_out_email(recipient, msg.as_string(), message_type)
+            self.backup_message(messageid)
 
         elif message_type == "SkipNotPossible":
         ######################
@@ -556,9 +585,9 @@ class MailSender(threading.Thread):
         ######################
             msg['Subject'] = "Requested Skip not possible"
             message_text = self.read_specialmessage('SKIPNOTPOSSIBLE')
-            self.backup_message(messageid)
             msg = self.assemble_email(msg, message_text, '')
             self.send_out_email(recipient, msg.as_string(), message_type)
+            self.backup_message(messageid)
 
         elif message_type == "TaskNotSubmittable":
         #########################
@@ -566,9 +595,9 @@ class MailSender(threading.Thread):
         #########################
             msg['Subject'] = "Submission for this task not possible"
             message_text = self.read_specialmessage('TASKNOTSUBMITTABLE')
-            self.backup_message(messageid)
             msg = self.assemble_email(msg, message_text, '')
             self.send_out_email(recipient, msg.as_string(), message_type)
+            self.backup_message(messageid)
 
         elif message_type == "CurLast":
         #################
@@ -582,9 +611,9 @@ class MailSender(threading.Thread):
             message_text = "{0}\n\nThe Task is currently scheduled for: {1}".format(message_text, \
                    c.get_task_starttime(self.coursedb, str(task_nr), \
                    self.logger_queue, self.name))
-            self.backup_message(messageid)
             msg = self.assemble_email(msg, message_text, '')
             self.send_out_email(recipient, msg.as_string(), message_type)
+            self.backup_message(messageid)
 
         elif message_type == "DeadTask":
         #################
@@ -592,9 +621,9 @@ class MailSender(threading.Thread):
         #################
             msg['Subject'] = "Deadline for Task{0} has passed.".format(str(task_nr))
             message_text = self.read_specialmessage('DEADTASK')
-            self.backup_message(messageid)
             msg = self.assemble_email(msg, message_text, '')
             self.send_out_email(recipient, msg.as_string(), message_type)
+            self.backup_message(messageid)
 
         elif message_type == "Usage":
         #################
@@ -602,9 +631,9 @@ class MailSender(threading.Thread):
         #################
             msg['Subject'] = "Usage"
             message_text = self.read_specialmessage('USAGE')
-            self.backup_message(messageid)
             msg = self.assemble_email(msg, message_text, '')
             self.send_out_email(recipient, msg.as_string(), message_type)
+            self.backup_message(messageid)
 
         elif message_type == "Question":
         #################
@@ -612,9 +641,9 @@ class MailSender(threading.Thread):
         #################
             msg['Subject'] = "Question received"
             message_text = self.read_specialmessage('QUESTION')
-            self.backup_message(messageid)
             msg = self.assemble_email(msg, message_text, '')
             self.send_out_email(recipient, msg.as_string(), message_type)
+            self.backup_message(messageid)
 
         elif message_type == "QFwd":
         #################
@@ -633,9 +662,9 @@ class MailSender(threading.Thread):
                 message_text = "Original subject: " + orig_mail['subject'] + \
                        "\n\nOriginal body:\n" + str(mbody)
 
-            self.backup_message(messageid)
             msg = self.assemble_email(msg, message_text, '')
             self.send_out_email(recipient, msg.as_string(), message_type)
+            self.backup_message(messageid)
 
         elif message_type == "Welcome":
         #################
@@ -644,9 +673,9 @@ class MailSender(threading.Thread):
 
             msg['Subject'] = "Welcome!"
             message_text = self.read_specialmessage('WELCOME')
-            self.backup_message(messageid)
             msg = self.assemble_email(msg, message_text, '')
             self.send_out_email(recipient, msg.as_string(), message_type)
+            self.backup_message(messageid)
 
         elif message_type == "RegOver":
         #################
@@ -654,9 +683,9 @@ class MailSender(threading.Thread):
         #################
             msg['Subject'] = "Registration Deadline has passed"
             message_text = self.read_specialmessage('REGOVER')
-            self.backup_message(messageid)
             msg = self.assemble_email(msg, message_text, '')
             self.send_out_email(recipient, msg.as_string(), message_type)
+            self.backup_message(messageid)
 
         elif message_type == "NotAllowed":
         #################
@@ -667,6 +696,7 @@ class MailSender(threading.Thread):
             msg = self.assemble_email(msg, message_text, '')
             self.send_out_email(recipient, msg.as_string(), message_type)
             self.backup_message(messageid)
+
         else:
         #################
         #   UNKNOWN    #

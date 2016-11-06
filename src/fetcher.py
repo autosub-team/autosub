@@ -238,7 +238,7 @@ class mailFetcher(threading.Thread):
         cmd = "rm " + detach_dir + "/*" + " 2> /dev/null"
         os.system(cmd)
 
-        cmd = "cp -R " +  current_dir + "/* " + detach_dir + " > /dev/null"
+        cmd = "cp -R " +  current_dir + "/* " + detach_dir + " 2> /dev/null"
         os.system(cmd)
 
         cons.close()
