@@ -407,7 +407,7 @@ class MailSender(threading.Thread):
 
                 # only send the task description, when the user just now got
                 # to this task or it is the first task
-                if int(task_nr)-1 == int(cur_task_nr) or int(cur_task_nr) == 1:
+                if int(task_nr)-1 <= int(cur_task_nr) or int(cur_task_nr) == 1:
                     msg['Subject'] = "Description Task" + str(task_nr)
 
                     dl_text = "\nDeadline for this Task: {0}\n".format(c.get_task_deadline(self.coursedb, task_nr, self.logger_queue, self.name))
