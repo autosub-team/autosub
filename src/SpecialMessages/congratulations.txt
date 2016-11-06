@@ -1,11 +1,9 @@
 Hi,
 
-You just solved the currently last Task! Congratulations!
+You just solved all the tasks for this course. Congratulations!
 
 For now, no more new problems to solve for you. But you still can resend
 solutions to all the tasks. So if you find solutions that are different from
 the ones you already submitted, feel free to submit them.
-
-As soon as new tasks are available you will receive a notification.
 
 So long, and thanks for all the fish!

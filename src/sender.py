@@ -581,10 +581,18 @@ class MailSender(threading.Thread):
 
             # last done had to be set now? --> Send Congrats
             if self.check_and_set_last_done(user_id):
+                #new message, prepare it
+                msg = MIMEMultipart()
+                msg['From'] = self.smtp_mail
+                msg['To'] = recipient
+                logmsg = "RECIPIENT: " + recipient
+                c.log_a_msg(self.logger_queue, self.name, logmsg, "DEBUG")
+                msg['Date'] = formatdate(localtime=True)
+
                 message_text = self.read_specialmessage('CONGRATS')
                 msg['Subject'] = "Congratulations on solving all Tasks!"
                 msg = self.assemble_email(msg, message_text, '')
-                self.send_out_email(recipient, msg.as_string(), message_type)
+                self.send_out_email(recipient, msg.as_string(), "LastSolved")
 
             self.backup_message(messageid)
 
