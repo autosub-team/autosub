@@ -479,7 +479,7 @@ class MailSender(threading.Thread):
                 msg['To'] = admin_mail
                 path_to_msg = "users/"+ user_id + "/Task" + task_nr + "/error_msg"
                 error_msg = self.read_text_file(path_to_msg)
-                msg['Subject'] = "Autosub Security Alert User:" + recipient
+                msg['Subject'] = "Security Alert User:" + recipient
                 message_text = "Error report:\n\n""" + error_msg
                 msg = self.assemble_email(msg, message_text, '')
                 self.send_out_email(admin_mail, msg.as_string(), message_type)
@@ -492,7 +492,7 @@ class MailSender(threading.Thread):
             admin_mails = self.get_admin_emails()
             for admin_mail in admin_mails:
                 msg['To'] = admin_mail
-                msg['Subject'] = "Autosub Task Error Alert Task " \
+                msg['Subject'] = "Task Error Alert Task " \
                                  + task_nr + " User " + user_id
                 message_text = "Something went wrong with task/testbench analyzation for Task " + task_nr +" and User " + user_id + " . Either the entity or testbench analyzation threw an error."
                 msg = self.assemble_email(msg, message_text, '')
@@ -600,7 +600,7 @@ class MailSender(threading.Thread):
         #################
         #     USAGE     #
         #################
-            msg['Subject'] = "Autosub Usage"
+            msg['Subject'] = "Usage"
             message_text = self.read_specialmessage('USAGE')
             self.backup_message(messageid)
             msg = self.assemble_email(msg, message_text, '')
