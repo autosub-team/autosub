@@ -5,10 +5,10 @@
 #TEXFILES contains usually only the header file
 #The pdf file will be called header_docu.pdf, so you better give
 #a suitable name for your header file
-TEXFILES = tasks2015-spec.tex
-PROJECTNAME = tasks2015-spec
+TEXFILES = tasks-spec.tex
+PROJECTNAME = tasks-spec
 
-DEPS = tasks2015-spec.tex doc-ctrl.tex sections/tasks.tex sections/intro.tex
+DEPS = tasks-spec.tex doc-ctrl.tex sections/tasks.tex sections/intro.tex
 
 DIRS=. sections images
 
