@@ -40,7 +40,6 @@ userTaskPath="$autosubPath/users/$1/Task$2"
 ##########################
 zero=0
 userfile="pwm_beh.vhdl"
-simulationTimeout="50s"
 
 TaskNr=$2
 logPrefix()
@@ -171,46 +170,34 @@ fi
 ####### SIMULATION #######
 ##########################
 
-# set location of licence file here
-# export LM_LICENSE_FILE=
-
-touch test
 #Simulation reports "Success" or an error message
-timeout $simulationTimeout ./x.exe -tclbatch isim.cmd > test
-RETghdl=$?
+./x.exe -tclbatch isim.cmd
+egrep -oq "INFO: Simulator is stopped." isim.log # returns 0 if simulator is stopped from within the tb. Not 0 on exit due to simulation timeout.
+RETtimeout=$?
 egrep -oq "Success" isim.log
 RETegrep=$?
 
 
-# filesize=$(stat -c%s "signals.vcd") #in Bytes
-# #compression factor is approx 10, so we dont wont anything above 20MB
-# if [ "$filesize" -gt 20000000 ]; then
-#    head --bytes=20000K signals.vcd >signals_tmp.vcd; #first x K Bytes
-#    rm signals.vcd
-#    mv signals_tmp.vcd signals.vcd
-# fi
-
 #zip isim.wdb and move it
 zip wavefile.zip isim.wdb
-# for TESTING: dont send until we know the max size:
-# mv wavefile.zip $userTaskPath/error_attachments
+mv wavefile.zip $userTaskPath/error_attachments
 
 if [ "$RETegrep" -eq "$zero" ]
 then
     logPrefix && echo "${logPre}Functionally correct for Task$2 for user with ID $1!"
     exit 0
-elif [ "$RETghdl" -eq 124 ] #; timeout returns 124 if it had to kill process
+elif [ "$RETtimeout" -eq "$zero" ] #; RETtimeout equals 0 if the simulator was stopped from within the tb.
 then
-    cd $autosubPath
-    logPrefix && echo "${logPre}Wrong behavior for Task$2 for user with ID $1!"
-    echo "Your submitted behavior file does not behave like specified in the task description:" >$userTaskPath/error_msg
-    echo "No continuous signal detected. Please look at the attached wave file to see what signal your entity produces." >> $userTaskPath/error_msg
-    exit 1
-else
     cd $autosubPath
     logPrefix && echo "${logPre}Wrong behavior for Task$2 for user with ID $1!"
     echo "Your submitted behavior file does not behave like specified in the task description:" >$userTaskPath/error_msg
     cat $userTaskPath/isim.log | grep Failure >> $userTaskPath/error_msg
     echo "Please look at the attached wave file to see what signal your entity produces." >> $userTaskPath/error_msg
+    exit 1
+else
+    cd $autosubPath
+    logPrefix && echo "${logPre}Wrong behavior for Task$2 for user with ID $1!"
+    echo "Your submitted behavior file does not behave like specified in the task description:" >$userTaskPath/error_msg
+    echo "No continuous signal detected. Please look at the attached wave file to see what signal your entity produces." >> $userTaskPath/error_msg
     exit 1
 fi
