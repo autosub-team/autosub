@@ -137,7 +137,7 @@ else
    logPrefix && echo "${logPre}Task$2 elaboration FAILED for user with ID $1!"
    cd $autosubPath
    echo "Elaboration with your submitted behavior file failed:" >$userTaskPath/error_msg
-   cat fuse.log | grep ERROR >> $userTaskPath/error_msg
+   cat $userTaskPath/fuse.log | grep ERROR >> $userTaskPath/error_msg
    exit 1 
 fi
 
