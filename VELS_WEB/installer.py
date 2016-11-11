@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 # Usage:
-# python3 installer.py [path to autosub/src/] [path to used config file]
+# python3 installer.py [path to autosub] [path to used autosub-config file]
 
 import argparse
 import configparser
@@ -26,6 +26,7 @@ if(os.path.isdir(autosub_path) == False):
     print("Install Failed")
     sys.exit(1)
 
+#check if config file exists
 if(os.path.isfile(configfile) == False):
     print("Your config file does not exist: " + configfile)
     print("Install Failed")
