@@ -297,7 +297,7 @@ def init_ressources(semesterdb, coursedb, num_tasks, subsmission_email, challeng
     if ret:
         set_general_config_param(coursedb, 'num_tasks', str(num_tasks))
         set_general_config_param(coursedb, 'registration_deadline', 'NULL')
-        set_general_config_param(coursedb, 'archive_dir', 'archive/')
+        set_general_config_param(coursedb, 'archive_dir', 'archive)
         set_general_config_param(coursedb, 'admin_email', '')
         set_general_config_param(coursedb, 'challenge_mode', challenge_mode)
         set_general_config_param(coursedb, 'course_name', course_name)

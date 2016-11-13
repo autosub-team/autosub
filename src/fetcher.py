@@ -244,10 +244,33 @@ class mailFetcher(threading.Thread):
         cons.close()
 
     ####
+    # get_archive_dir
+    ###
+    def get_archive_dir(self):
+        """
+        Get the  name of the directory processed mails shall be moved to
+        on the IMAP server
+        """
+
+        curc, conc = c.connect_to_db(self.coursedb, self.logger_queue, self.name)
+
+        data = {'config_item':'archive_dir'}
+        sql_cmd = ("SELECT Content FROM GeneralConfig "
+                   "WHERE ConfigItem= :config_item")
+        curc.execute(sql_cmd, data)
+        res = curc.fetchone()
+
+        archive_dir = str(res[0])
+
+        conc.close()
+
+        return archive_dir
+
+    ####
     # a_question_was_asked
     ###
     def a_question_was_asked(self, user_id, user_email, mail, messageid):
-        """"
+        """
         Process a question that was asked by a user.
         """
 
@@ -714,6 +737,7 @@ class mailFetcher(threading.Thread):
                 c.log_a_msg(self.logger_queue, self.name, "moving a message!!!!!!!", \
                             "INFO")
                 m = self.connect_to_imapserver()
+                archive_dir = self.get_archive_dir()
 
                 for next_msg in next_send_msg:
                     email_ids = self.fetch_all_emails(m)
@@ -731,12 +755,18 @@ class mailFetcher(threading.Thread):
                             match = pattern_uid.match(str(data[0]).split("'")[1])
                             msg_uid = match.group('uid')
 
-                            result = m.uid('COPY', msg_uid, 'archive_vels')
+                            result = m.uid('COPY', msg_uid, archive_dir)
 
                             if result[0] == 'OK':
                                 mov, data = m.uid('STORE', msg_uid, '+FLAGS', \
                                                   '(\Deleted)')
                                 m.expunge()
+                            else:
+                                log_msg = ("Error moving a message. Is the "
+                                    "configured archive_dir '{0}' existing "
+                                    "on the IMAP server?!").format(archive_dir)
+                                c.log_a_msg(self.logger_queue, self.name, \
+                                    log_msg, "ERROR")
                             break
 
                 # m==0 is only possible in test-code (e.g. load_test.py)
