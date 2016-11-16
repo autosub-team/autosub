@@ -131,6 +131,6 @@ class TaskActivator(threading.Thread):
 
         while True:
             self.activator_loop()
-            time.sleep(60) # it's more than enough to check every hour!
+            time.sleep(1800) # it's more than enough to check every half hour
 
 
