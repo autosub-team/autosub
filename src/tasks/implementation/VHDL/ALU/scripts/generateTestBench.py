@@ -84,9 +84,13 @@ for i in range(0,4):
                         if (A<B): flag[ind]='1'           # carry
                         else: flag[ind]='0'
                     
-                elif flag_name[taskParameters[4]]=='Carry':                
-                    if c=='1': flag[ind]='1'           # carry
-                    else: flag[ind]='0'
+                elif flag_name[taskParameters[4]]=='Carry':  
+                    if inst_name[taskParameters[i]]=='ADD':
+                        if c=='1': flag[ind]='1'           # carry
+                        else: flag[ind]='0'
+                    elif inst_name[taskParameters[i]]=='SUB':
+                        if (A<B): flag[ind]='1'           # carry
+                        else: flag[ind]='0'
 
                 elif flag_name[taskParameters[4]]=='Zero':
                     if z[ind]=='0000': flag[ind]='1'     # zero
