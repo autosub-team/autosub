@@ -130,7 +130,7 @@ class mailFetcher(threading.Thread):
         curs.execute(sql_cmd, data)
         res = curs.fetchone()
         if res == None:
-            logmsg = ("Creating new user with "
+            logmsg = ("Created new user with "
                       "name= {0} , email={1} failed").format(user_name, user_email)
             c.log_a_msg(self.logger_queue, self.name, logmsg, "DEBUG")
 
@@ -140,13 +140,37 @@ class mailFetcher(threading.Thread):
 
         cons.close()
 
-        # generate task 1 for user
-        logmsg = ("Calling Generator to create"
-                  "TaskNr:{0} for UserId:{1}").format(1, user_id)
-        c.log_a_msg(self.logger_queue, self.name, logmsg, "DEBUG")
+        # Give the user the task which is starttime <= now < deadline AND
+        # min(TaskNr)
+        curc, conc =  c.connect_to_db(self.coursedb, self.logger_queue, self.name)
 
-        self.gen_queue.put(dict({"user_id": user_id, "user_email": user_email, \
-                           "task_nr": "1", "messageid": ""}))
+        data = {'TimeNow': str(int(time.time()))}
+        sql_cmd = ("SELECT MIN(TaskNr) FROM TaskConfiguration "
+                   "WHERE TaskStart <= datetime(:TimeNow, 'unixepoch','localtime') AND "
+                   "TaskDeadline > datetime(:TimeNow, 'unixepoch', 'localtime')" )
+        curc.execute(sql_cmd, data)
+        res = curc.fetchone()
+
+        conc.close()
+
+        if res == None:
+            logmsg = ("Error generating first Task for UserId = {0}. Could not "
+                      "find first task for this user").format(user_id)
+            c.log_a_msg(self.logger_queue, self.name, logmsg, "ERROR")
+        else:
+            task_nr = int(res[0])
+
+            #adjust users CurrentTask if he does not get Task with task_nr=1
+            if task_nr != 1:
+                c.user_set_current_task(self.semesterdb, task_nr, user_id, \
+                                        self.logger_queue, self.name)
+
+            logmsg = ("Calling Generator to create"
+                      "TaskNr:{0} for UserId:{1}").format(task_nr, user_id)
+            c.log_a_msg(self.logger_queue, self.name, logmsg, "DEBUG")
+
+            self.gen_queue.put(dict({"user_id": user_id, "user_email": user_email, \
+                           "task_nr": task_nr, "messageid": ""}))
 
     ###
     # increment_submission_nr

@@ -65,7 +65,7 @@ class TaskActivator(threading.Thread):
                         users_list.append(str(row[0]))
                     users_comma_list = ','.join(users_list)
 
-                    # TODO: Why does this not work, it's basically the same!
+                   # TODO: Why does this not work, it's basically the same!
                    # data = {'tasknr': tasknr, 'users_comma_list': users_comma_list}
                    # sqlcmd = ("UPDATE Users SET CurrentTask = :tasknr WHERE "
                    #           "UserId IN (:users_comma_list);")
@@ -78,15 +78,19 @@ class TaskActivator(threading.Thread):
                     logmsg = "Advanced users with ids: " + users_comma_list
                     c.log_a_msg(self.logger_queue, self.name, logmsg, "INFO")
 
-                # next, check if any users are waiting for that task
+                # next, check if any users are waiting for that task, meaning:
+                # 1) his CurrentTask = tasknr AND 2) No UserTask exists for it
+                #TODO: Find a better solution with a join
                 data = {'tasknr': tasknr}
-                sqlcmd = "SELECT * FROM Users WHERE CurrentTask == :tasknr;"
+                sqlcmd = ("SELECT UserId, Email FROM Users "
+                    "WHERE CurrentTask = :tasknr AND UserId NOT IN "
+                    "(SELECT UserId FROM UserTasks WHERE TaskNr = :tasknr)" )
                 curs.execute(sqlcmd, data)
 
                 rows = curs.fetchall()
                 for row in rows:
                     uid = row[0]
-                    user_email = row[2]
+                    user_email = row[1]
 
                     logmsg = "The next task({0}) is sent to User {1} now." \
                         .format(tasknr, uid)
