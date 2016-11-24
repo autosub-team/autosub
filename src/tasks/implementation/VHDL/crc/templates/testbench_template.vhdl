@@ -94,7 +94,7 @@ begin
             cnt_reset <= '0';
  
             -- wait msgwidth 
-            wait until (clk_cnt = %%MSGLEN+1);
+            wait until (clk_cnt = %%MSGLEN+2);
 
             -- check the CRC_VALID
             if(CRC_VALID_UUT /= '1') then
