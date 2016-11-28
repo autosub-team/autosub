@@ -40,6 +40,7 @@ userTaskPath="$autosubPath/users/$1/Task$2"
 ##########################
 zero=0
 userfile="ROM_beh.vhdl"
+simulationTimeout="100s"
 
 TaskNr=$2
 logPrefix()
