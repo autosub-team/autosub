@@ -4,7 +4,7 @@
 # tester.sh for VHDL task ROM
 # Tests the task submission, creates the error messages
 #
-# Copyright (C) 2015 Martin  Mosbeck   <martin.mosbeck@gmx.at>
+# Copyright (C) 2016 Hedyeh Kholerdi
 # License GPL V2 or later (see http://www.gnu.org/licenses/gpl2.txt)
 ########################################################################
 
@@ -27,7 +27,7 @@
 ########## PATHS #########
 ##########################
 # src path of autosub system
-autosubPath=$(pwd) 
+autosubPath=$(pwd)
 # root path of the task itself
 taskPath=$(readlink -f $0|xargs dirname)
 # path for all the files that describe the created path
@@ -54,7 +54,7 @@ logPrefix()
 cd $taskPath
 
 #generate the testbench and move testbench to user's folder
-python3 scripts/generateTestBench.py $3 > $userTaskPath/ROM_tb_$1_Task$2.vhdl 
+python3 scripts/generateTestBench.py $3 > $userTaskPath/ROM_tb_$1_Task$2.vhdl
 
 #copy the entity vhdl file for testing to user's folder
 cp $descPath/ROM.vhdl $userTaskPath
@@ -72,7 +72,7 @@ then
     logPrefix && echo "${logPre}Error with Task $2. User $1 did not attach the right file"
     cd $autosubPath
     echo "You did not attach your solution. Please attach the file $userfile" >$userTaskPath/error_msg
-    exit 1 
+    exit 1
 fi
 
 # create tmp directory
@@ -82,7 +82,7 @@ then
 fi
 
 #make sure the error_attachments folder is empty
-if [ ! -d "$userTaskPath/error_attachments" ]; 
+if [ ! -d "$userTaskPath/error_attachments" ];
 then
    mkdir $userTaskPath/error_attachments
 else
@@ -105,17 +105,17 @@ if [ "$RET" -ne "$zero" ]
 then
    logPrefix && echo "${logPre}Error with Task $2 entity for user with ID $1";
    echo "Something went wrong with the task $2 test generation. This is not your fault. We are working on a solution" > $userTaskPath/error_msg
-   exit 3 
+   exit 3
 fi
 
 #testbench, not from user, should have no errors
 vhpcomp ROM_tb_$1_Task$2.vhdl
-RET=$? 
+RET=$?
 if [ "$RET" -ne "$zero" ]
 then
    logPrefix && echo "${logPre}Error with Task $2 testbench for user with ID $1";
    echo "Something went wrong with the task $2 test generation. This is not your fault. We are working on a solution" > $userTaskPath/error_msg
-   exit 3 
+   exit 3
 fi
 
 #this is the file from the user
@@ -133,7 +133,7 @@ else
    cd $autosubPath
    echo "Analyzation of your submitted behavior file failed:" >$userTaskPath/error_msg
    cat /tmp/$USER/tmp_Task$2_User$1 >> $userTaskPath/error_msg
-   exit 1 
+   exit 1
 fi
 
 ##########################
@@ -159,7 +159,7 @@ else
    logPrefix && echo "${logPre}Task$2 constraint check FAILED for user with ID $1!"
    cd $autosubPath
    echo "You did not specify on which edge of the signal the ROM is working; rising edge or falling edge.">$userTaskPath/error_msg
-   exit 1 
+   exit 1
 fi
 
 
@@ -182,48 +182,52 @@ incompatibility=$(egrep -o "Expression has incompatible type" fuse.log | wc -l)
 
 if [ "$RET" -eq "$zero" ]
 then
-  if [ "$incompatibility" -ne "$zero" ] 
+  if [ "$incompatibility" -ne "$zero" ]
   then
     sed -i -e 's/WARNING/ERROR/g' fuse.log
     echo "Elaboration with your submitted behavior file failed:" >$userTaskPath/error_msg
     cat $userTaskPath/fuse.log | grep "Expression has incompatible type" >> $userTaskPath/error_msg
-    exit 1 
+    exit 1
   else
    logPrefix && echo "${logPre}Task$2 elaboration success for user with ID $1!"
    fi
    elif [ "$wrongEntity" -ne "$zero" ]
 then
    echo "Elaboration with your submitted behavior file failed because you have changed the entity file." >$userTaskPath/error_msg
-   exit 1 
-else 
+   exit 1
+else
    echo "Task$2 elaboration FAILED for user with ID $1!"
    cd $autosubPath
    echo "Elaboration with your submitted behavior file failed:" >$userTaskPath/error_msg
    cat $userTaskPath/fuse.log | grep ERROR >> $userTaskPath/error_msg
-   exit 1 
+   exit 1
 fi
 
 ##########################
 ####### SIMULATION #######
 ##########################
-#Simulation reports "Success" or an error message
 touch test
 #Simulation reports "Success" or an error message
 timeout $simulationTimeout ./x.exe -tclbatch isim.cmd > test
-RETghdl=$?
+RETTimeout=$?
 egrep -oq "Success" isim.log
 RETegrep=$?
 
 
 if [ "$RETegrep" -eq "$zero" ]
 then
-    logPrefix && echo "${logPre}Functionally correct for Task$2 for user with ID $1!"
+	logPrefix && echo "${logPre}Functionally correct for Task$2 for user with ID $1!"
     exit 0
-else 
+elif [ "$RETTimeout" -eq 124 ] #; timeout returns 124 if it had to kill process
+	logPrefix && echo "${logPre}Simulation timeout Task$2 for user with ID $1!"
+    echo "Your submitted behavior file does not behave like specified in the task description:" >$userTaskPath/error_msg
+    echo "Simulation of your entity did not terminate." >> $userTaskPath/error_msg
+    exit 1
+else
     cd $autosubPath
     logPrefix && echo "${logPre}Wrong behavior for Task$2 for user with ID $1!"
     echo "Your submitted behavior file does not behave like specified in the task description:" >$userTaskPath/error_msg
     cat $userTaskPath/isim.log | grep "ERROR: " >> $userTaskPath/error_msg
     cat $userTaskPath/isim.log | grep Failure >> $userTaskPath/error_msg
-    exit 1  
+    exit 1
 fi
