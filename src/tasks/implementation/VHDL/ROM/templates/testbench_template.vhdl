@@ -75,7 +75,7 @@ begin
 	      report " ROM is not properly filled with the data specified in the description file: " &
                      "In address " & to_string(std_logic_vector(to_unsigned(random(i),%%ADDRESSLENGTH))) & 
                      ", the expected content is " & to_string(content(random(i)-%%START)) &
-                     ". But the received output is " & to_string(output)  
+                     ". But the received output is " & to_string(output) & "." 
                      severity failure;
              elsif (output/=content(random(i)-%%START) and output=U_out) then
                      report " Output is '" &  to_string(std_logic_vector(U_out)) & 
@@ -89,7 +89,7 @@ begin
          if (output/=zero_out) then
  	      report " ROM is not properly filled with the data specified in the description file: " &
                      "In address " & to_string(std_logic_vector(to_unsigned(i,%%ADDRESSLENGTH))) & 
-                     ", the expected content is zero. But the received output is " & to_string(output) 
+                     ", the expected content is zero. But the received output is " & to_string(output) & "." 
                      severity failure;
          end if;
       end loop;
@@ -101,7 +101,7 @@ begin
          if (output/=zero_out) then
 	      report " ROM is not properly filled with the data specified in the description file: " &
                      "In address " & to_string(std_logic_vector(to_unsigned(i,%%ADDRESSLENGTH))) & 
-                     ", the expected content is zero. But the received output is " & to_string(output) 
+                     ", the expected content is zero. But the received output is " & to_string(output) & "."  
                      severity failure;
          end if;
      end loop;

@@ -40,7 +40,7 @@ userTaskPath="$autosubPath/users/$1/Task$2"
 ##########################
 zero=0
 userfile="ROM_beh.vhdl"
-simulationTimeout="100s"
+simulationTimeout="50s"
 
 TaskNr=$2
 logPrefix()
@@ -207,12 +207,15 @@ fi
 ####### SIMULATION #######
 ##########################
 #Simulation reports "Success" or an error message
-./x.exe -tclbatch isim.cmd 
+touch test
+#Simulation reports "Success" or an error message
+timeout $simulationTimeout ./x.exe -tclbatch isim.cmd > test
+RETghdl=$?
 egrep -oq "Success" isim.log
-RET=$?
+RETegrep=$?
 
 
-if [ "$RET" -eq "$zero" ]
+if [ "$RETegrep" -eq "$zero" ]
 then
     logPrefix && echo "${logPre}Functionally correct for Task$2 for user with ID $1!"
     exit 0
