@@ -216,10 +216,11 @@ RETegrep=$?
 
 if [ "$RETegrep" -eq "$zero" ]
 then
-	logPrefix && echo "${logPre}Functionally correct for Task$2 for user with ID $1!"
+    logPrefix && echo "${logPre}Functionally correct for Task$2 for user with ID $1!"
     exit 0
 elif [ "$RETTimeout" -eq 124 ] #; timeout returns 124 if it had to kill process
-	logPrefix && echo "${logPre}Simulation timeout Task$2 for user with ID $1!"
+then
+    logPrefix && echo "${logPre}Simulation timeout Task$2 for user with ID $1!"
     echo "Your submitted behavior file does not behave like specified in the task description:" >$userTaskPath/error_msg
     echo "Simulation of your entity did not terminate." >> $userTaskPath/error_msg
     exit 1
