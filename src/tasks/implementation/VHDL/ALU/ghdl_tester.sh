@@ -126,29 +126,6 @@ fi
 
 
 ##########################
-## TASK CONSTRAINT CHECK #
-##########################
-cd $userTaskPath
-touch file
-
-sed -i 's:--.*$::g' ALU_beh.vhdl
-cat ALU_beh.vhdl | tr '[:upper:]' '[:lower:]' >> file
-cat file | tr -d " \t\n\r" >> file
-rising=$(egrep -o "rising_edge" file | wc -l)
-rising_event=$(egrep -o "clk'eventandclk='1'" file | wc -l)
-
-#check the occurrence of phrases concerning rising edge
-if ( [ "$rising" -ne "$zero" ] || [ "$rising_event" -ne "$zero" ] )
-then
-  logPrefix && echo "${logPre}Task$2 using clock cycle for user with ID $1!"
-else
-   logPrefix && echo "${logPre}Task$2 constraint check FAILED for user with ID $1!"
-   cd $autosubPath
-   echo "You are not using rising edge of the clock signal.">$userTaskPath/error_msg
-   exit 1 
-fi
-
-##########################
 ######## ELABORATE #######
 ##########################
 ghdl -e ALU_tb 2>/tmp/$USER/tmp_Task$2_User$1
