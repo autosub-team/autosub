@@ -103,7 +103,11 @@ architecture behavior of arithmetic_tb is
         if (operation="ADD") then
            CF := CARIES(1); --COUT
         elsif (operation="SUB") then
-            CF:= not CARIES(1); -- last borrow = not last carry
+            if( (unsigned(std_logic_vector(I2_EXT))) < (unsigned(std_logic_vector(I1_EXT))) ) then
+                CF := '1';
+            else
+                CF := '0';
+            end if;
         end if;
 
         VF := CARIES(1) xor CARIES(0);--last two caries not same -> overflow
@@ -163,7 +167,11 @@ architecture behavior of arithmetic_tb is
         if (operation="ADD") then
             CF := CARIES(1); --COUT
         elsif (operation="SUB") then
-            CF:= not CARIES(1); -- last borrow = not last carry
+             if( (unsigned(std_logic_vector(I2_EXT))) < (unsigned(std_logic_vector(I1_EXT))) ) then
+                CF := '1';
+            else
+                CF := '0';
+            end if;
         end if;
 
         --to decide overflow we have to consider the possibly new output sign
@@ -223,7 +231,11 @@ architecture behavior of arithmetic_tb is
         if (operation="ADD") then
            CF := CARIES(1); --COUT
         elsif (operation="SUB") then
-           CF := not CARIES(1); -- last borrow = not last carry
+            if( (unsigned(std_logic_vector(I2_EXT))) < (unsigned(std_logic_vector(I1_EXT))) ) then
+                CF := '1';
+            else
+                CF := '0';
+            end if;
         end if;
 
         VF := CARIES(1) xor CARIES(0);--last two caries not same -> overflow
