@@ -16,9 +16,9 @@ use IEEE.std_logic_textio.all;
 architecture behavior of arithmetic_tb is
     subtype I1_TYPE is std_logic_vector(%%I1-1 downto 0);
     subtype I2_TYPE is std_logic_vector(%%I2-1 downto 0);
-    subtype O_TYPE  is std_logic_vector(%%O-1 downto 0); 
+    subtype O_TYPE  is std_logic_vector(%%O-1 downto 0);
     constant operation :string(1 to 3) := "%%OPERATION"; -- ADD or SUB
-    constant N : integer :=%%O; --Nubmer of bits for operarion 
+    constant N : integer :=%%O; --Nubmer of bits for operarion
 
     component arithmetic
         port(  I1     :in    I1_TYPE;    -- Operand 1
@@ -38,7 +38,7 @@ architecture behavior of arithmetic_tb is
 
 
     type pattern_type is record
-        --The inputs 
+        --The inputs
         I1  :I1_TYPE;
         I2  :I2_TYPE;
     end record;
@@ -51,10 +51,10 @@ architecture behavior of arithmetic_tb is
         VALID: std_logic;
     end record;
 
-    
+
     function Image(In_Image : Std_Logic_Vector) return String is
         variable L : Line;  -- access type
-        variable W : String(1 to In_Image'length) := (others => ' ');  
+        variable W : String(1 to In_Image'length) := (others => ' ');
     begin
          WRITE(L, In_Image);
          W(L.all'range) := L.all;
@@ -66,7 +66,7 @@ architecture behavior of arithmetic_tb is
     impure function do_operation_comp2(dummy:std_logic) return solution is
         variable sol: solution;
         subtype EXT_TYPE is signed(N-1 downto 0);
-        variable I1_EXT :EXT_TYPE:= RESIZE(signed(I1_UUT),N); 
+        variable I1_EXT :EXT_TYPE:= RESIZE(signed(I1_UUT),N);
         variable I2_EXT :EXT_TYPE := RESIZE(signed(I2_UUT),N);
         variable O_EXT  :EXT_TYPE;
         variable SIGNS : std_logic_vector(2 downto 0);
@@ -82,8 +82,8 @@ architecture behavior of arithmetic_tb is
             I2_EXT := not(I2_EXT)+ one;
         end if;
 
-        
-        O_EXT := I1_EXT+I2_EXT; 
+
+        O_EXT := I1_EXT+I2_EXT;
 
         I1_SIGN := I1_EXT(N-1);
         I2_SIGN := I2_EXT(N-1);
@@ -103,7 +103,7 @@ architecture behavior of arithmetic_tb is
         if (operation="ADD") then
            CF := CARIES(1); --COUT
         elsif (operation="SUB") then
-            if( (unsigned(std_logic_vector(I2_EXT))) < (unsigned(std_logic_vector(I1_EXT))) ) then
+            if( (unsigned(std_logic_vector(I2_EXT))) > (unsigned(std_logic_vector(I1_EXT))) ) then
                 CF := '1';
             else
                 CF := '0';
@@ -111,21 +111,21 @@ architecture behavior of arithmetic_tb is
         end if;
 
         VF := CARIES(1) xor CARIES(0);--last two caries not same -> overflow
-       
+
 
         sol.O := std_logic_vector(O_EXT);
         sol.C := CF;
         sol.V := VF;
-        sol.VALID := not VF; 
+        sol.VALID := not VF;
 
         return sol;
-    
+
     end do_operation_comp2;
 
     impure function do_operation_comp1(dummy:std_logic) return solution is
         variable sol: solution;
         subtype EXT_TYPE is signed(N-1 downto 0);
-        variable I1_EXT :EXT_TYPE:= RESIZE(signed(I1_UUT),N); 
+        variable I1_EXT :EXT_TYPE:= RESIZE(signed(I1_UUT),N);
         variable I2_EXT :EXT_TYPE := RESIZE(signed(I2_UUT),N);
         variable O_EXT  :EXT_TYPE;
         variable SIGNS : std_logic_vector(2 downto 0);
@@ -141,8 +141,8 @@ architecture behavior of arithmetic_tb is
             I2_EXT := not(I2_EXT);
         end if;
 
-        
-        O_EXT := I1_EXT+I2_EXT; 
+
+        O_EXT := I1_EXT+I2_EXT;
 
         I1_SIGN := I1_EXT(N-1);
         I2_SIGN := I2_EXT(N-1);
@@ -167,7 +167,7 @@ architecture behavior of arithmetic_tb is
         if (operation="ADD") then
             CF := CARIES(1); --COUT
         elsif (operation="SUB") then
-             if( (unsigned(std_logic_vector(I2_EXT))) < (unsigned(std_logic_vector(I1_EXT))) ) then
+             if( (unsigned(std_logic_vector(I2_EXT))) > (unsigned(std_logic_vector(I1_EXT))) ) then
                 CF := '1';
             else
                 CF := '0';
@@ -187,15 +187,15 @@ architecture behavior of arithmetic_tb is
         sol.O := std_logic_vector(O_EXT);
         sol.C := CF;
         sol.V := VF;
-        sol.VALID := not VF; 
+        sol.VALID := not VF;
 
         return sol;
-     end do_operation_comp1;    
+     end do_operation_comp1;
 
     impure function do_operation_unsigned(dummy:std_logic) return solution is
         variable sol: solution;
         subtype EXT_TYPE is unsigned(N-1 downto 0);
-        variable I1_EXT :EXT_TYPE := RESIZE(unsigned(I1_UUT),N); 
+        variable I1_EXT :EXT_TYPE := RESIZE(unsigned(I1_UUT),N);
         variable I2_EXT :EXT_TYPE := RESIZE(unsigned(I2_UUT),N);
         variable O_EXT  :EXT_TYPE;
         variable SIGNS : std_logic_vector(2 downto 0);
@@ -212,7 +212,7 @@ architecture behavior of arithmetic_tb is
         end if;
 
 
-        O_EXT := I1_EXT+I2_EXT; 
+        O_EXT := I1_EXT+I2_EXT;
 
         I1_SIGN := I1_EXT(N-1);
         I2_SIGN := I2_EXT(N-1);
@@ -231,7 +231,7 @@ architecture behavior of arithmetic_tb is
         if (operation="ADD") then
            CF := CARIES(1); --COUT
         elsif (operation="SUB") then
-            if( (unsigned(std_logic_vector(I2_EXT))) < (unsigned(std_logic_vector(I1_EXT))) ) then
+            if( (unsigned(std_logic_vector(I2_EXT))) > (unsigned(std_logic_vector(I1_EXT))) ) then
                 CF := '1';
             else
                 CF := '0';
@@ -252,7 +252,7 @@ architecture behavior of arithmetic_tb is
 
 
 begin
-    UUT:arithmetic 
+    UUT:arithmetic
         port map
         (
             I1=>I1_UUT,
@@ -261,7 +261,7 @@ begin
             C=>C_UUT,
             V=>V_UUT,
             VALID=>VALID_UUT
-        ); 
+        );
     process
         type pattern_array is array (natural range <>) of pattern_type;
 
@@ -269,7 +269,7 @@ begin
         variable sol_cal:solution;
     begin
         for i in patterns'range loop
-            -- Set the inputs   
+            -- Set the inputs
             I1_UUT <= patterns(i).I1;
             I2_UUT <= patterns(i).I2;
             --Wait for the results.
@@ -281,12 +281,12 @@ begin
                 write(OUTPUT,string'("Error for:"));
                 write(OUTPUT,string'("\n"));
                 write(OUTPUT,string'("   %%OPSTYLE,%%OPERATION")); --for debug!!
-                write(OUTPUT,string'("\n")); 
+                write(OUTPUT,string'("\n"));
                 write(OUTPUT,string'("   I1= ")&Image(patterns(i).I1));
                 write(OUTPUT,string'("\n"));
-                write(OUTPUT,string'("   I2= ")&Image(patterns(i).I2)); 
+                write(OUTPUT,string'("   I2= ")&Image(patterns(i).I2));
                 write(OUTPUT,string'("\n"));
-                
+
 
                 write(OUTPUT,string'("Expected:"));
                 write(OUTPUT,string'("\n"));
