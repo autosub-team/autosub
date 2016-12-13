@@ -78,6 +78,15 @@ architecture behavior of arithmetic_tb is
         variable VF :std_logic;
         variable one :EXT_TYPE := (0=>'1',others=>'0');
     begin
+
+        if (operation="SUB") then
+            if( (unsigned(std_logic_vector(I2_EXT))) > (unsigned(std_logic_vector(I1_EXT))) ) then
+                CF := '1';
+            else
+                CF := '0';
+            end if;
+        end if;
+
         if(operation="SUB") then
             I2_EXT := not(I2_EXT)+ one;
         end if;
@@ -102,12 +111,6 @@ architecture behavior of arithmetic_tb is
 
         if (operation="ADD") then
            CF := CARIES(1); --COUT
-        elsif (operation="SUB") then
-            if( (unsigned(std_logic_vector(I2_EXT))) > (unsigned(std_logic_vector(I1_EXT))) ) then
-                CF := '1';
-            else
-                CF := '0';
-            end if;
         end if;
 
         VF := CARIES(1) xor CARIES(0);--last two caries not same -> overflow
@@ -137,6 +140,15 @@ architecture behavior of arithmetic_tb is
         variable VF :std_logic;
         variable one :EXT_TYPE := (0=>'1',others=>'0');
     begin
+
+        if (operation="SUB") then
+            if( (unsigned(std_logic_vector(I2_EXT))) > (unsigned(std_logic_vector(I1_EXT))) ) then
+                CF := '1';
+            else
+                CF := '0';
+            end if;
+        end if;
+
         if(operation="SUB") then
             I2_EXT := not(I2_EXT);
         end if;
@@ -166,12 +178,6 @@ architecture behavior of arithmetic_tb is
 
         if (operation="ADD") then
             CF := CARIES(1); --COUT
-        elsif (operation="SUB") then
-             if( (unsigned(std_logic_vector(I2_EXT))) > (unsigned(std_logic_vector(I1_EXT))) ) then
-                CF := '1';
-            else
-                CF := '0';
-            end if;
         end if;
 
         --to decide overflow we have to consider the possibly new output sign
@@ -207,6 +213,15 @@ architecture behavior of arithmetic_tb is
         variable VF :std_logic;
         variable one :EXT_TYPE := (0=>'1',others=>'0');
     begin
+
+        if (operation="SUB") then
+            if( (unsigned(std_logic_vector(I2_EXT))) > (unsigned(std_logic_vector(I1_EXT))) ) then
+                CF := '1';
+            else
+                CF := '0';
+            end if;
+        end if;
+
         if(operation="SUB") then
             I2_EXT := not(I2_EXT)+ one;
         end if;
@@ -230,12 +245,6 @@ architecture behavior of arithmetic_tb is
 
         if (operation="ADD") then
            CF := CARIES(1); --COUT
-        elsif (operation="SUB") then
-            if( (unsigned(std_logic_vector(I2_EXT))) > (unsigned(std_logic_vector(I1_EXT))) ) then
-                CF := '1';
-            else
-                CF := '0';
-            end if;
         end if;
 
         VF := CARIES(1) xor CARIES(0);--last two caries not same -> overflow
