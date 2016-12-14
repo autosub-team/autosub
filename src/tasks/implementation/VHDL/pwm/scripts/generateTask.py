@@ -32,7 +32,7 @@ paramsDesc={}
 exp=random.randrange(2,5)
 digit_possibles={0:1,1:2,2:5,3:25}
 digit=digit_possibles[random.randrange(0,4)]
-periodClks= 20000
+periodClks= digit*10**exp
 
 #duty between 10 and 90%
 duty=random.randrange(10,91)
