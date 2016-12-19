@@ -27,7 +27,7 @@
 ########## PATHS #########
 ##########################
 # src path of autosub system
-autosubPath=$(pwd) 
+autosubPath=$(pwd)
 # root path of the task itself
 taskPath=$(readlink -f $0|xargs dirname)
 # path for all the files that describe the created path
@@ -53,7 +53,24 @@ logPrefix()
 cd $taskPath
 
 #generate the testbench and move testbench to user's folder
-python3 scripts/generateTestBench.py $3 > $userTaskPath/arithmetic_tb_$1_Task$2.vhdl 
+python3 scripts/generateTestBench.py $3 > $userTaskPath/arithmetic_tb_$1_Task$2.vhdl
+
+#------ SAVE USED TESTBENCH FOR DEBUGGING ------ #
+
+#  create used_tbs directory
+if [ ! -d "$userTaskPath/used_tbs" ]
+then
+   mkdir $userTaskPath/used_tbs
+fi
+
+#find last submission number
+submissionNrs=($(ls $userTaskPath | grep -oP '(?<=Submission)[0-9]+' | sort -nr))
+submissionNrLast=${submissionNrs[0]}
+
+#copy used testbench
+cp $userTaskPath/arithmetic_tb_$1_Task$2.vhdl $userTaskPath/used_tbs/arithmetic_tb_$1_Task$2_Submission${submissionNrLast}.vhdl
+
+#--------------------------------------------------#
 
 #copy the entity vhdl file for testing
 cp $descPath/arithmetic.vhdl $userTaskPath
@@ -77,7 +94,7 @@ then
     logPrefix && echo "${logPre}Error with Task $2. User $1 did not attach the right file"
     cd $autosubPath
     echo "You did not attach your solution. Please attach the file $userfile" >$userTaskPath/error_msg
-    exit 1 
+    exit 1
 fi
 
 #delete all comments from the file
@@ -92,22 +109,22 @@ sed -i 's:--.*$::g' $userfile
 
 #entity, not from user, should have no errors
 vhpcomp arithmetic.vhdl
-RET=$? 
+RET=$?
 if [ "$RET" -ne "$zero" ]
 then
    logPrefix && echo "${logPre}Error with Task $2 entity for user with ID $1";
    echo "Something went wrong with the task $2 test generation. This is not your fault. We are working on a solution" > $userTaskPath/error_msg
-   exit 3 
+   exit 3
 fi
 
 #testbench, not from user, should have no errors
 vhpcomp arithmetic_tb_$1_Task$2.vhdl
-RET=$? 
+RET=$?
 if [ "$RET" -ne "$zero" ]
 then
    logPrefix && echo "${logPre}Error with Task $2 testbench for user with ID $1";
    echo "Something went wrong with the task $2 test generation. This is not your fault. We are working on a solution" > $userTaskPath/error_msg
-   exit 3 
+   exit 3
 fi
 
 #this is the file from the user
@@ -122,7 +139,7 @@ else
    cd $autosubPath
    echo "Analyzation of your submitted behavior file failed:" >$userTaskPath/error_msg
    cat /tmp/$USER/tmp_Task$2_User$1 | grep ERROR >> $userTaskPath/error_msg
-   exit 1 
+   exit 1
 fi
 
 ##########################
@@ -139,7 +156,7 @@ else
    cd $autosubPath
    echo "Elaboration with your submitted behavior file failed:" >$userTaskPath/error_msg
    cat $userTaskPath/fuse.log | grep ERROR >> $userTaskPath/error_msg
-   exit 1 
+   exit 1
 fi
 
 ##########################
@@ -168,5 +185,5 @@ else
    cat $userTaskPath/isim.log | grep Error | sed 's/\\n/\n/g' >>$userTaskPath/error_msg
    # also attach the stderr
 #    cat /tmp/$USER/tmp_Task$2_User$1 >>$userTaskPath/error_msg
-   exit 1 
+   exit 1
 fi

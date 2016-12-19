@@ -27,7 +27,7 @@
 ########## PATHS #########
 ##########################
 # src path of autosub system
-autosubPath=$(pwd) 
+autosubPath=$(pwd)
 # root path of the task itself
 taskPath=$(readlink -f $0|xargs dirname)
 # path for all the files that describe the created path
@@ -53,7 +53,24 @@ logPrefix()
 cd $taskPath
 
 #generate the testbench and move testbench to user's folder
-python3 scripts/generateTestBench.py "$3" > $userTaskPath/register_file_tb_$1_Task$2.vhdl 
+python3 scripts/generateTestBench.py "$3" > $userTaskPath/register_file_tb_$1_Task$2.vhdl
+
+#------ SAVE USED TESTBENCH FOR DEBUGGING ------ #
+
+#  create used_tbs directory
+if [ ! -d "$userTaskPath/used_tbs" ]
+then
+   mkdir $userTaskPath/used_tbs
+fi
+
+#find last submission number
+submissionNrs=($(ls $userTaskPath | grep -oP '(?<=Submission)[0-9]+' | sort -nr))
+submissionNrLast=${submissionNrs[0]}
+
+#copy used testbench
+cp $userTaskPath/register_file_tb_$1_Task$2.vhdl $userTaskPath/used_tbs/register_file_tb_$1_Task$2_Submission${submissionNrLast}.vhdl
+
+#--------------------------------------------------#
 
 #copy the entity vhdl file for testing to user's folder
 cp $descPath/register_file.vhdl $userTaskPath
@@ -71,7 +88,7 @@ then
     logPrefix && echo "${logPre}Error with Task $2. User $1 did not attach the right file"
     cd $autosubPath
     echo "You did not attach your solution. Please attach the file $userfile" >$userTaskPath/error_msg
-    exit 1 
+    exit 1
 fi
 
 # create tmp directory
@@ -81,7 +98,7 @@ then
 fi
 
 #make sure the error_attachments folder is empty
-if [ ! -d "$userTaskPath/error_attachments" ]; 
+if [ ! -d "$userTaskPath/error_attachments" ];
 then
    mkdir $userTaskPath/error_attachments
 else
@@ -90,7 +107,7 @@ else
 fi
 
 #first strip the file of all comments for constraint check
-sed -i '/^--/ d' register_file_beh.vhdl 
+sed -i '/^--/ d' register_file_beh.vhdl
 
 ##########################
 ######### ANALYZE ########
@@ -101,22 +118,22 @@ sed -i '/^--/ d' register_file_beh.vhdl
 
 #entity, not from user, should have no errors
 vhpcomp register_file.vhdl
-RET=$? 
+RET=$?
 if [ "$RET" -ne "$zero" ]
 then
    logPrefix && echo "${logPre}Error with Task $2 entity for user with ID $1";
    echo "Something went wrong with the task $2 test generation. This is not your fault. We are working on a solution" > $userTaskPath/error_msg
-   exit 3 
+   exit 3
 fi
 
 #testbench, not from user, should have no errors
 vhpcomp register_file_tb_$1_Task$2.vhdl
-RET=$? 
+RET=$?
 if [ "$RET" -ne "$zero" ]
 then
    logPrefix && echo "${logPre}Error with Task $2 testbench for user with ID $1";
    echo "Something went wrong with the task $2 test generation. This is not your fault. We are working on a solution" > $userTaskPath/error_msg
-   exit 3 
+   exit 3
 fi
 
 #this is the file from the user
@@ -132,7 +149,7 @@ else
    cd $autosubPath
    echo "Analyzation of your submitted behavior file failed:" >$userTaskPath/error_msg
    cat /tmp/$USER/tmp_Task$2_User$1 | grep ERROR >> $userTaskPath/error_msg
-   exit 1 
+   exit 1
 fi
 
 ##########################
@@ -149,7 +166,7 @@ else
    cd $autosubPath
    echo "Elaboration with your submitted behavior file failed:" >$userTaskPath/error_msg
    cat $userTaskPath/fuse.log | grep ERROR >> $userTaskPath/error_msg
-   exit 1 
+   exit 1
 fi
 
 ##########################
@@ -176,5 +193,5 @@ else
     echo "Your submitted behavior file does not behave like specified in the task description:" >$userTaskPath/error_msg
     cat $userTaskPath/isim.log | grep Failure >> $userTaskPath/error_msg
     cat $userTaskPath/isim.log | grep ERROR | grep -v Security >> $userTaskPath/error_msg # Security Errors are License Errors
-    exit 1 
+    exit 1
 fi

@@ -55,6 +55,23 @@ cd $taskPath
 #generate the testbench and move testbench to user's folder
 python3 scripts/generateTestBench.py $3 > $userTaskPath/gates_tb_$1_Task$2.vhdl
 
+#------ SAVE USED TESTBENCH FOR DEBUGGING ------ #
+
+#  create used_tbs directory
+if [ ! -d "$userTaskPath/used_tbs" ]
+then
+   mkdir $userTaskPath/used_tbs
+fi
+
+#find last submission number
+submissionNrs=($(ls $userTaskPath | grep -oP '(?<=Submission)[0-9]+' | sort -nr))
+submissionNrLast=${submissionNrs[0]}
+
+#copy used testbench
+cp $userTaskPath/gates_tb_$1_Task$2.vhdl $userTaskPath/used_tbs/gates_tb_$1_Task$2_Submission${submissionNrLast}.vhdl
+
+#--------------------------------------------------#
+
 #copy the entity vhdl file for testing to user's folder
 cp $descPath/gates.vhdl $userTaskPath
 

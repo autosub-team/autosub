@@ -27,7 +27,7 @@
 ########## PATHS #########
 ##########################
 # src path of autosub system
-autosubPath=$(pwd) 
+autosubPath=$(pwd)
 # root path of the task itself
 taskPath=$(readlink -f $0|xargs dirname)
 # path for all the files that describe the created path
@@ -53,7 +53,24 @@ logPrefix()
 cd $taskPath
 
 #generate the testbench and move testbench to user's folder
-python3 scripts/generateTestBench.py $3 > $userTaskPath/RAM_tb_$1_Task$2.vhdl 
+python3 scripts/generateTestBench.py $3 > $userTaskPath/RAM_tb_$1_Task$2.vhdl
+
+#------ SAVE USED TESTBENCH FOR DEBUGGING ------ #
+
+#  create used_tbs directory
+if [ ! -d "$userTaskPath/used_tbs" ]
+then
+   mkdir $userTaskPath/used_tbs
+fi
+
+#find last submission number
+submissionNrs=($(ls $userTaskPath | grep -oP '(?<=Submission)[0-9]+' | sort -nr))
+submissionNrLast=${submissionNrs[0]}
+
+#copy used testbench
+cp $userTaskPath/RAM_tb_$1_Task$2.vhdl $userTaskPath/used_tbs/RAM_tb_$1_Task$2_Submission${submissionNrLast}.vhdl
+
+#--------------------------------------------------#
 
 #copy the entity vhdl file for testing to user's folder
 cp $descPath/RAM.vhdl $userTaskPath
@@ -71,7 +88,7 @@ then
     logPrefix && echo "${logPre}Error with Task $2. User $1 did not attach the right file"
     cd $autosubPath
     echo "You did not attach your solution. Please attach the file $userfile" >$userTaskPath/error_msg
-    exit 1 
+    exit 1
 fi
 
 # create tmp directory
@@ -81,7 +98,7 @@ then
 fi
 
 #make sure the error_attachments folder is empty
-if [ ! -d "$userTaskPath/error_attachments" ]; 
+if [ ! -d "$userTaskPath/error_attachments" ];
 then
    mkdir $userTaskPath/error_attachments
 else
@@ -104,17 +121,17 @@ if [ "$RET" -ne "$zero" ]
 then
    logPrefix && echo "${logPre}Error with Task $2 entity for user with ID $1";
    echo "Something went wrong with the task $2 test generation. This is not your fault. We are working on a solution" > $userTaskPath/error_msg
-   exit 3 
+   exit 3
 fi
 
 #testbench, not from user, should have no errors
 vhpcomp RAM_tb_$1_Task$2.vhdl
-RET=$? 
+RET=$?
 if [ "$RET" -ne "$zero" ]
 then
    logPrefix && echo "${logPre}Error with Task $2 testbench for user with ID $1";
    echo "Something went wrong with the task $2 test generation. This is not your fault. We are working on a solution" > $userTaskPath/error_msg
-   exit 3 
+   exit 3
 fi
 
 #this is the file from the user
@@ -132,7 +149,7 @@ else
    cd $autosubPath
    echo "Analyzation of your submitted behavior file failed:" >$userTaskPath/error_msg
    cat /tmp/$USER/tmp_Task$2_User$1 | grep ERROR >> $userTaskPath/error_msg
-   exit 1 
+   exit 1
 fi
 
 ##########################
@@ -158,7 +175,7 @@ else
    logPrefix && echo "${logPre}Task$2 constraint check FAILED for user with ID $1!"
    cd $autosubPath
    echo "You are not using the rising edge of clock signal.">$userTaskPath/error_msg
-   exit 1 
+   exit 1
 fi
 
 ##########################
@@ -185,32 +202,32 @@ outOfRange=$(egrep -o "slice is out of range" fuse.log | wc -l)
 
 if [ "$RET" -eq "$zero" ]
 then
-  if [ "$incompatibility" -ne "$zero" ] 
+  if [ "$incompatibility" -ne "$zero" ]
   then
     sed -i -e 's/WARNING/ERROR/g' fuse.log
     echo "Elaboration with your submitted behavior file failed:" >$userTaskPath/error_msg
     cat $userTaskPath/fuse.log | grep "Expression has incompatible type" >> $userTaskPath/error_msg
-    exit 1 
-    
-    elif [ "$outOfRange" -ne "$zero" ] 
+    exit 1
+
+    elif [ "$outOfRange" -ne "$zero" ]
   then
     sed -i -e 's/WARNING/ERROR/g' fuse.log
     echo "Elaboration with your submitted behavior file failed:" >$userTaskPath/error_msg
     cat $userTaskPath/fuse.log | grep "slice is out of range" >> $userTaskPath/error_msg
-    exit 1     
+    exit 1
   else
    logPrefix && echo "${logPre}Task$2 elaboration success for user with ID $1!"
    fi
 elif [ "$wrongEntity" -ne "$zero" ]
 then
    echo "Elaboration with your submitted behavior file failed because you have changed the entity file. Please check the expressions have the correct number of elements." >$userTaskPath/error_msg
-   exit 1 
+   exit 1
    else
    echo "Task$2 elaboration FAILED for user with ID $1!"
    cd $autosubPath
    echo "Elaboration with your submitted behavior file failed:" >$userTaskPath/error_msg
    cat $userTaskPath/fuse.log | grep ERROR >> $userTaskPath/error_msg
-   exit 1 
+   exit 1
 fi
 
 
@@ -219,7 +236,7 @@ fi
 ##########################
 
 #Simulation reports "Success" or an error message
-./x.exe -tclbatch isim.cmd 
+./x.exe -tclbatch isim.cmd
 egrep -oq "Success" isim.log
 RET=$?
 
@@ -229,12 +246,12 @@ if [ "$RET" -eq "$zero" ]
 then
     logPrefix && echo "${logPre}Functionally correct for Task$2 for user with ID $1!"
     exit 0
-else #; timeout returns 124 if it had to kill process  
+else #; timeout returns 124 if it had to kill process
     cd $autosubPath
     logPrefix && echo "${logPre}Wrong behavior for Task$2 for user with ID $1!"
     echo "Your submitted behavior file does not behave like specified in the task description:" >$userTaskPath/error_msg
     cat $userTaskPath/isim.log | grep "ERROR: " >> $userTaskPath/error_msg
     cat $userTaskPath/isim.log | grep Failure >> $userTaskPath/error_msg
     #echo "Please see which signal your entity produces:" >> $userTaskPath/error_msg
-    exit 1  
+    exit 1
 fi
