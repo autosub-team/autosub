@@ -153,32 +153,6 @@ else
    exit 1
 fi
 
-##########################
-## TASK CONSTRAINT CHECK #
-##########################
-cd $userTaskPath
-touch file
-
-sed -i 's:--.*$::g' ROM_beh.vhdl
-cat ROM_beh.vhdl | tr '[:upper:]' '[:lower:]' >> file
-cat file | tr -d " \t\n\r" >> file
-rising=$(egrep -o "rising_edge" file | wc -l)
-falling=$(egrep -o "falling_edge" file | wc -l)
-rising_event=$(egrep -o "clk'eventandclk='1'" file | wc -l)
-falling_event=$(egrep -o "clk'eventandclk='0'" file | wc -l)
-
-#check the occurrence of phrases concerning rising/falling edge
-if ( [ "$rising" -ne "$zero" ] || [ "$rising_event" -ne "$zero" ] \
- || [ "$falling" -ne "$zero" ] || [ "$falling_event" -ne "$zero" ] )
-then
-  logPrefix && echo "${logPre}Task$2 using clock signal for user with ID $1!"
-else
-   logPrefix && echo "${logPre}Task$2 constraint check FAILED for user with ID $1!"
-   cd $autosubPath
-   echo "You did not specify on which edge of the signal the ROM is working; rising edge or falling edge.">$userTaskPath/error_msg
-   exit 1
-fi
-
 
 ##########################
 ######## ELABORATE #######

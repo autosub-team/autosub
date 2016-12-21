@@ -152,31 +152,6 @@ else
    exit 1
 fi
 
-##########################
-## TASK CONSTRAINT CHECK #
-##########################
-cd $userTaskPath
-touch file
-
-sed -i 's:--.*$::g' RAM_beh.vhdl
-cat RAM_beh.vhdl | tr '[:upper:]' '[:lower:]' >> file
-cat file | tr -d " \t\n\r" >> file
-rising=$(egrep -o "rising_edge" file | wc -l)
-falling=$(egrep -o "falling_edge" file | wc -l)
-rising_event=$(egrep -o "clk'eventandclk='1'" file | wc -l)
-falling_event=$(egrep -o "clk'eventandclk='0'" file | wc -l)
-
-#check the occurrence of phrases concerning rising/falling edge
-if ( [ "$rising" -ne "$zero" ] || [ "$rising_event" -ne "$zero" ] )\
- && [ "$falling" -eq "$zero" ] && [ "$falling_event" -eq "$zero" ]
-then
-  logPrefix && echo "${logPre}Task$2 using clock signal for user with ID $1!"
-else
-   logPrefix && echo "${logPre}Task$2 constraint check FAILED for user with ID $1!"
-   cd $autosubPath
-   echo "You are not using the rising edge of clock signal.">$userTaskPath/error_msg
-   exit 1
-fi
 
 ##########################
 ######## ELABORATE #######
