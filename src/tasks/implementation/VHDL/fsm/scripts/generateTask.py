@@ -101,9 +101,9 @@ while not genSuccess:
    num_cycle= 0
    num_trans=0
    lastnode = 0
-   while (not is_done(nodematrix, num_nodes) or num_trans<10):
+   while (not is_done(nodematrix, num_nodes) or num_trans < (num_nodes -1) * 2):
       nextnode=randrange(1,num_nodes)
-      if nodematrix[lastnode][nextnode] == 0 and (num_outgoing(nodematrix[lastnode], num_nodes) < 4):
+      if nodematrix[lastnode][nextnode] == 0 and (num_outgoing(nodematrix[lastnode], num_nodes) < (num_nodes-1)):
          nodematrix[lastnode][nextnode] = 1
          lastnode=nextnode
          num_trans=num_trans+1;
