@@ -326,6 +326,24 @@ begin
 	end if;      
       end loop;
  
+     ---to have a proper data in the RAM
+   en_read1 <= '0';
+   en_read2 <= '0';
+   en_write <= '1';
+   for i in random_addr'range loop
+      addr1 <= random_addr(i);
+      input <= (others => '0');
+      wait for Clk_period; 
+      addr1 <= std_logic_vector(to_unsigned(to_integer(unsigned(random_addr(i)))+1, %%ADDRLENGTH+1)); 
+      wait for Clk_period;
+   end loop;
+   for i in random_addr'range loop 
+      addr1 <= random_addr(i);
+      input <= content_in(i);
+      wait for Clk_period;  
+   end loop;
+   --------
+ 
  
       for i in 0 to 5 loop
          en_read2 <= '1';
@@ -353,7 +371,7 @@ begin
     end loop;  
 
     ---to have a proper data in the RAM
-   en_read2 <= '0';
+   en_read1 <= '0';
    en_read2 <= '0';
    en_write <= '1';
    for i in random_addr'range loop

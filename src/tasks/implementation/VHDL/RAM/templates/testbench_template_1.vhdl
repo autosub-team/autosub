@@ -480,8 +480,24 @@ begin
         end if;
       end loop;
       
+   ---to have a proper data in the RAM 
+   en_read <= '0';
+   en_write2 <= '0';
+   en_write1 <= '1';
+   for i in random_addr'range loop
+      addr1 <= random_addr(i);
+      input1 <= (others => '0');
+      wait for Clk_period; 
+      addr1 <= std_logic_vector(to_unsigned(to_integer(unsigned(random_addr(i)))+1, %%ADDRLENGTH+1)); 
+      wait for Clk_period;
+   end loop;
+   for i in random_addr'range loop
+      input1 <= content_in(i);
+      addr1 <= random_addr(i);
+      wait for Clk_period;
+   end loop; 
      ------------------
-      
+      en_write1 <= '0';
       for i in 8 to 15 loop
      	 en_write2 <= '1';
          en_read <= '1';
