@@ -137,9 +137,17 @@ then
 fi
 
 #this is the file from the user
-
 vhpcomp register_file_beh.vhdl 2> /tmp/$USER/tmp_Task$2_User$1
 RET=$?
+egrep -oq "Possible infinite loop" /tmp/$USER/tmp_Task$2_User$1
+RETloop=$?
+
+if [ "$RETloop" -eq "$zero" ]
+then
+    logPrefix && echo "${logPre}Task$2 possible infinite loop for user with ID $1!"
+    echo "Your submitted behavior file seems to contain an infinite loop. Do all your processes have a sensitivity list?" >$userTaskPath/error_msg
+    exit 1
+fi
 
 if [ "$RET" -eq "$zero" ]
 then
