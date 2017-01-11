@@ -182,6 +182,9 @@ fi
 ####### SIMULATION #######
 ##########################
 
+# set virtual memory limit to 500 MiB
+ulimit -v $((500*1024))
+
 #Simulation reports "Success", an error message or times out
 timeout $simulationSafetyTimeout ./x.exe -tclbatch isim.cmd
 RETsafetyTimeout=$?

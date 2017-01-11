@@ -205,6 +205,10 @@ fi
 ##########################
 ####### SIMULATION #######
 ##########################
+
+# set virtual memory limit to 500 MiB
+ulimit -v $((500*1024))
+
 touch test
 #Simulation reports "Success" or an error message
 timeout $simulationTimeout ./x.exe -tclbatch isim.cmd > test
