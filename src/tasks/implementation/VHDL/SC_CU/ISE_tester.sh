@@ -40,7 +40,7 @@ userTaskPath="$autosubPath/users/$1/Task$2"
 ##########################
 zero=0
 userfile="SC_CU_beh.vhdl"
-simulationTimeout="15s"
+simulationSafetyTimeout="30s"  # if simulation takes 30 s long then something is wrong
 
 TaskNr=$2
 logPrefix()
@@ -165,29 +165,18 @@ fi
 ####### SIMULATION #######
 ##########################
 
-# set location of licence file here
-# export LM_LICENSE_FILE=
+#Simulation reports "Success", an error message or times out
+timeout $simulationSafetyTimeout ./x.exe -tclbatch isim.cmd > test
+RETsafetyTimeout=$?
+if [ "$RETsafetyTimeout" -eq 124 ] #; timeout returns 124 if it had to kill process. Probably the simulation has crashed.
+then
+    logPrefix && echo "${logPre}Task$2 simulation timeout for user with ID $1!"
+    echo "The simulation of your design timed out. This is not supposed to happen. Check your design." >$userTaskPath/error_msg
+    exit 1
+fi
 
-touch test
-#Simulation reports "Success" or an error message
-timeout $simulationTimeout ./x.exe -tclbatch isim.cmd > test
-RETghdl=$?
 egrep -oq "Success" isim.log
 RETegrep=$?
-
-
-# filesize=$(stat -c%s "signals.vcd") #in Bytes
-# #compression factor is approx 10, so we dont wont anything above 20MB 
-# if [ "$filesize" -gt 20000000 ]; then 
-#    head --bytes=20000K signals.vcd >signals_tmp.vcd; #first x K Bytes
-#    rm signals.vcd
-#    mv signals_tmp.vcd signals.vcd  
-# fi
-
-# #zip isim.wdb and move it
-# zip wavefile.zip isim.wdb
-# # for TESTING: dont send until we know the max size:
-# # mv wavefile.zip $userTaskPath/error_attachments
 
 if [ "$RETegrep" -eq "$zero" ]
 then

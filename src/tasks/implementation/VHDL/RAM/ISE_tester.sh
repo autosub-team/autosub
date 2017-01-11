@@ -40,6 +40,7 @@ userTaskPath="$autosubPath/users/$1/Task$2"
 ##########################
 zero=0
 userfile="RAM_beh.vhdl"
+simulationSafetyTimeout="30s"  # if simulation takes 30 s long then something is wrong
 
 TaskNr=$2
 logPrefix()
@@ -218,8 +219,16 @@ fi
 ####### SIMULATION #######
 ##########################
 
-#Simulation reports "Success" or an error message
-./x.exe -tclbatch isim.cmd
+#Simulation reports "Success", an error message or times out
+timeout $simulationSafetyTimeout ./x.exe -tclbatch isim.cmd
+RETsafetyTimeout=$?
+if [ "$RETsafetyTimeout" -eq 124 ] #; timeout returns 124 if it had to kill process. Probably the simulation has crashed.
+then
+    logPrefix && echo "${logPre}Task$2 simulation timeout for user with ID $1!"
+    echo "The simulation of your design timed out. This is not supposed to happen. Check your design." >$userTaskPath/error_msg
+    exit 1
+fi
+
 egrep -oq "Success" isim.log
 RET=$?
 
