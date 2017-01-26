@@ -56,7 +56,7 @@ The "crc" entity shall generate a crc for a message with the following constrain
 The process of calculation follows the following scheme:
 \begin{enumerate}
     \item A rising edge at port NEW\_MSG indicates a new CRC calculation for the message at port MSG has to be performed.
-    \item After a maximum of %%CLOCKCYCLES clock cycles of the clock at port CLK the calculated CRC has to be set at port CRC and the port CRC\_VALID has to be set to 1 to indicate a valid calculation result.
+    \item After %%CLOCKCYCLES clock cycles of the clock at port CLK the calculated CRC has to be set at port CRC and the port CRC\_VALID has to be set to 1 to indicate a valid calculation result.
 \end{enumerate}
 
 \newpage
