@@ -376,3 +376,58 @@
     \end{tabular}
 
 \newpage
+
+\section{Single Cycle Control Unit} \label{SC_CU}
+    \begin{tabular}{|p{2cm}|p{11cm}|}
+        \hline
+        Overview & The student has to program the behavior of an entity which shall function as a control unit for a single cycle CPU. The student learns how the inner parts of a single cycle CPU work together.
+        \\
+        \hline
+        Description & The student receives a pdf file with the datapath visualization for the given single cycle CPU. In the pdf file the student is informed which instructions shall be implemented and if necessary how the ALU is controlled. The student receives a vhdl file with the entity declaration, which should not be changed and a vhdl file for the behavioral implementation.
+        \\
+        \hline
+        Creation & Four instructions are chosen from a pool of 12 instructions (12 choose 4 = 495). The instructions consist of:
+        \begin{itemize}
+            \item Seven R-type instructions: add, sub, AND, OR, XOR, NOR, slt.
+            \item Four I-type instructions: lw, sw, beq, bne.
+            \item One J-type instruction: j - jump to an address.
+        \end{itemize}
+        \\
+        \hline
+        Submission & The student has to submit his behavioral implementation vhdl file.
+        \\
+        \hline
+        Testing & A test bench tests the student's entity with the chosen instructions. Conditional instructions (beq, bne) are tested for all conditions.
+        \\
+        \hline
+        Feedback & If the syntax analysis returned errors, they are sent to the student. If the student's control signals for an instruction do not achieve what is asked for, then the name of the instruction is sent to the student. The student is informed if his solution was proper or not.
+        \\
+        \hline 
+    \end{tabular}
+
+\newpage
+
+    \section{Register File} \label{register_file}
+    \begin{tabular}{|p{2cm}|p{11cm}|}
+        \hline
+        Overview & The student has to program the behavior of an entity which acts as a register file with one special register. The special register acts as a status register and therefore bits can be accessed separately. The student learns how to use arrays of std\verb!_!logic\verb!_!vectors and he has to understand signal delay to handle simultaneous read and write situations.
+        \\
+        \hline
+        Description & The student receives a pdf with a memory map diagram of the register file he should implement. The bit length and number of the registers is specified in the pdf and whether in a simultaneous read and write situation the input data shall be passed through immediately or at the next rising edge of the input CLK signal. The student receives a vhdl file with the entity declaration, which should not be changed and a vhdl file for the behavioral implementation.
+        \\
+        \hline
+        Creation & The width of the registers is chosen from 8, 16 and 32 bit. The number of registers is chosen within the range of 4 to 8 registers. The size of the special register is selected from within 4 to 8 bits. The handling of simultaneous read and write situations in the special register and the remaining registers is chosen separately between immediately bypassing the input value or at the next rising edge of the input CLK signal.
+        \\
+        \hline
+        Submission & The student has to submit his behavioral implementation vhdl file.
+        \\
+        \hline
+        Testing & A test bench writes unique bit strings to the register file while write access is enabled and while write access is disabled and while performing a simultaneous read from the same register and another final read from all registers to check if the data is persistent.
+        \\
+        \hline
+        Feedback & If the syntax analysis returned errors, they are sent to the student. If the solution is not proper, the student is informed whether data did not match, was written although write was not enabled, simultaneous read and write was not handled correctly or the data was not persistent. The student is informed if his solution is proper or not.
+        \\
+        \hline 
+    \end{tabular}
+
+\newpage
