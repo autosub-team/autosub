@@ -1,32 +1,34 @@
-val={ 'Email':[IS_NOT_EMPTY(),IS_EMAIL()] ,
-      'EmailMass':[IS_NOT_EMPTY(),IS_EMAIL_MASS()]}
+val={ 'Email':[IS_NOT_EMPTY(), IS_EMAIL()] ,
+      'EmailMass':[IS_NOT_EMPTY(), IS_EMAIL_MASS()]}
 
 def __entries():
-    rows=semester().select(Whitelist.ALL)
-    array=[]
+    rows= semester().select(Whitelist.ALL)
+    array= []
     for row in rows:
-        entry={'UniqueId'    :row.UniqueId,
-               'Email'       :row.Email}
+        entry= {'UniqueId'    :row.UniqueId,
+                'Email'       :row.Email,
+                'Name'        :row.Name}
         array.append(entry)
     return dict(entries=array)
 
 def index():
-    returnDict={}
+    returnDict= {}
     returnDict.update(__entries())
     return returnDict
 
 def newEmail():
-    returnDict={}
+    returnDict= {}
 
-    inputs=TD(INPUT(_name='Email',_size="30",_placeholder=" Student Email", requires= val['Email'] )),\
-           TD(INPUT(_type='submit',_label='Save'))
-    form=FORM(inputs)
+    inputs= TD( INPUT(_name='Email', _size="30", _placeholder=" User Email", requires= val['Email']) ),\
+            TD( INPUT(_name='Name', _size="30", _placeholder=" User Name") ),\
+            TD( INPUT(_type='submit', _label='Save') )
+    form= FORM(inputs)
 
     if(form.process().accepted):
         #strip all whitespaces from begin and end
         for var in form.vars:
-            var=var.strip().strip('\r')
-        Whitelist.insert(Email=form.vars.Email)
+            var= var.strip().strip('\r')
+        Whitelist.insert(Email= form.vars.Email, Name=form.vars.Name)
         redirect(URL('index'))
 
     returnDict.update({'form':form})
@@ -37,25 +39,30 @@ def newEmail():
 def deleteEmail():
     UniqueId= request.vars['UniqueId']
     if semester(Whitelist.UniqueId==UniqueId).delete() :
-        msg='Email deleted'
+        msg= 'Email deleted'
     else:
-        msg='User delete failed'
+        msg= 'Email delete failed'
     redirect(URL('index'))
     
 def massEmail():
-    returnDict={}
+    returnDict= {}
 
-    inputs=TR(TD(TEXTAREA(_name='EmailMass',_requires=val['EmailMass'],_cols="60",_rows="30"))),\
-           TR(TD(INPUT(_type='submit',_label='Save')))
-    form=FORM(inputs)
+    inputs= TR(TD(TEXTAREA(_name='EmailMass', requires=val['EmailMass'],_cols="60",_rows="30"))),\
+            TR(TD(INPUT(_type='submit',_label='Save')))
+    form= FORM(inputs)
     if form.process().accepted:
-        Emails=form.vars.EmailMass.split('\n')
-        for Email in Emails:
-            #delete whitespaces from begin and end and returns
-            Email=Email.strip('\r')
-            Email=Email.strip()
+        lines = form.vars.EmailMass.split('\n')
+        for line in lines:
+            line= line.strip("\r ")
+            elements = line.split(';')
+            email= elements[0].strip()
 
-            Whitelist.insert(Email=Email)
+            #the name is optional
+            if len(elements) > 1:
+                name= elements[1].strip()
+            else:
+                name= ""
+            Whitelist.insert(Email=email, Name=name)
 
         redirect(URL('index'))
 

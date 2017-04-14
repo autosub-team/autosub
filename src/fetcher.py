@@ -719,6 +719,17 @@ class mailFetcher(threading.Thread):
 
                         if reg_deadline > datetime.datetime.now():
                         # Before Registraton deadline
+
+                            #Name for user specified in Whitelist? -> take it
+                            data = {'Email': user_email}
+                            sql_cmd = ("SELECT Name FROM Whitelist "
+                                       "WHERE Email = :Email")
+                            curs.execute(sql_cmd, data)
+                            res = curs.fetchone()
+                            if res[0] and res[0].strip():
+                                user_name = res[0]
+
+                            # Create user and send Welcome message
                             self.add_new_user(user_name, user_email)
                             c.send_email(self.sender_queue, user_email, "", "Welcome", \
                                          "", "", messageid)

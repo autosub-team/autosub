@@ -4,12 +4,14 @@
        <thead>
           <tr>
              <th>Email</th>
+             <th>Name</th>
              <th>Delete?</th>
           </tr>
         </thead>
     {{for entry in entries:}}
        <tr>
            <td>{{=entry['Email']}}</td>
+           <td>{{=entry['Name']}}</td>
            <td>{{=A('Delete', callback=URL('deleteEmail?UniqueId='+str(entry['UniqueId'])))}}</td>
        </tr>
     {{pass}}

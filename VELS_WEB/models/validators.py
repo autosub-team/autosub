@@ -17,17 +17,16 @@ class IS_EMAIL_LIST(object):
             return (value, None)
         
 class IS_EMAIL_MASS(object):
-    def __init__(self, error_message="Email %s is invalid", sep="\n"):
-        self.error_message = error_message
-        self.sep = sep
-
     def __call__(self, value):
-            emails = value.strip().split(self.sep)
-            for email in emails:
-                emial = email.strip('\r')
-                email = email.strip()
+            lines = value.strip().split('\n')
+            for num in range(len(lines)):
+                line= lines[num].strip("\r ")
+                elements = line.split(';')
+                email= elements[0]
+
                 if IS_EMAIL()(email)[1] != None:
-                    return (email, self.error_message % email)
+                    error_message= "Invalid email '" + str(email) + "' in line " + str(num+1)
+                    return (value, error_message )
             return (value, None)
 
 class FILE_EXISTS(object):

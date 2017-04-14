@@ -200,7 +200,7 @@ def init_ressources(semesterdb, coursedb, num_tasks, subsmission_email, challeng
     ####################
     #### Whitelist #####
     ####################
-    fields = "UniqueId INTEGER PRIMARY KEY AUTOINCREMENT, Email TEXT"
+    fields = "UniqueId INTEGER PRIMARY KEY AUTOINCREMENT, Email TEXT, Name TEXT"
     ret = check_and_init_db_table(semesterdb, "Whitelist", fields)
 
     ####################
