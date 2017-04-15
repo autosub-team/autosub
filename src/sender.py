@@ -55,7 +55,7 @@ class MailSender(threading.Thread):
         sql_cmd = "SELECT Content FROM GeneralConfig WHERE ConfigItem == 'admin_email'"
         curc.execute(sql_cmd)
         result = str(curc.fetchone()[0])
-         #split and put it in list
+        #split and put it in list
         admin_emails = [email.strip() for email in result.split(',')]
         conc.close()
 
@@ -79,6 +79,7 @@ class MailSender(threading.Thread):
         curs.execute(sql_cmd, data)
         cons.commit()
         cons.close()
+
 ####
 # has_last_done
 ####
@@ -95,12 +96,10 @@ class MailSender(threading.Thread):
                    "WHERE UserId == :user_id AND LastDone IS NOT NULL")
         curs.execute(sql_cmd, data)
         res = curs.fetchone()
-        last_done = res != None
-
+        last_done = (res != None)
         cons.close()
 
         return last_done
-
 
 ####
 # check_and_set_last_done
@@ -142,6 +141,7 @@ class MailSender(threading.Thread):
         cons.close()
 
         return last_done_set
+
 ####
 # check_and_set_first_successful
 #
@@ -152,6 +152,7 @@ class MailSender(threading.Thread):
         the FirstSuccessful field is used to keep track on how many attempts
         were needed to solve a task.
         """
+
         curs, cons = c.connect_to_db(self.semesterdb, self.logger_queue, \
                                      self.name)
 
@@ -160,7 +161,7 @@ class MailSender(threading.Thread):
         sql_cmd = "SELECT FirstSuccessful FROM UserTasks WHERE UserId = :user_id AND TaskNr = :task_nr;"
         curs.execute(sql_cmd, data)
         res = curs.fetchone()
-        if res[0] == None:
+        if res[0] is None:
             # get last submission number
             sql_cmd = "SELECT NrSubmissions FROM UserTasks WHERE UserId = :user_id AND TaskNr = :task_nr;"
             curs.execute(sql_cmd, data)
@@ -188,6 +189,7 @@ class MailSender(threading.Thread):
         """
         read a special message from the DB
         """
+
         curc, conc = c.connect_to_db(self.coursedb, \
                                      self.logger_queue, \
                                      self.name)
@@ -282,6 +284,7 @@ class MailSender(threading.Thread):
         """
         trigger  archivation of an e-mail
         """
+
         logmsg = "request backup of message with messageid: {0}".format(messageid)
         c.log_a_msg(self.logger_queue, self.name, logmsg, "DEBUG")
 
@@ -294,6 +297,7 @@ class MailSender(threading.Thread):
         """
         connect to the smtp server and send out an e-mail
         """
+
         try:
             # connecting to smtp server
             if self.smtp_security == 'ssl':
@@ -315,7 +319,9 @@ class MailSender(threading.Thread):
         except smtplib.SMTPAuthenticationError:
             logmsg = ("Authentication error")
             c.log_a_msg(self.logger_queue, self.name, logmsg, "ERROR")
-        except:
+        except Exception as e:
+            logmsg = str(e)
+            c.log_a_msg(self.logger_queue, self.name, logmsg, "ERROR")
             logmsg = "Error with server connection with security= " + \
                      self.smtp_security + " , port= " + str(self.smtp_port)
             c.log_a_msg(self.logger_queue, self.name, logmsg, "ERROR")
@@ -338,6 +344,7 @@ class MailSender(threading.Thread):
         """
         read a text file
         """
+
         try:
             fpin = open(path_to_msg, 'r')
             message_text = fpin.read()
@@ -356,6 +363,7 @@ class MailSender(threading.Thread):
         """
         assemble e-mail content
         """
+
         msg.attach(MIMEText(message_text, 'plain', 'utf-8'))
 
         # If the message is a task description, we might want to
@@ -390,6 +398,7 @@ class MailSender(threading.Thread):
         """
         parse the subject/content of a mail and take appropriate action.
         """
+
         #blocking wait on sender_queue
         next_send_msg = self.sender_queue.get(True)
 
@@ -771,7 +780,7 @@ class MailSender(threading.Thread):
     def run(self):
         """
         the thread code is just a tight loop that waits on the sender_queue
-	for some work.
+	    for some work.
         """
         c.log_a_msg(self.logger_queue, self.name, \
                     "Starting Mail Sender Thread!", "INFO")

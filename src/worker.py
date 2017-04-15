@@ -156,7 +156,6 @@ class Worker(threading.Thread):
                                      "", str(message_id))
 
                 else: # 0 returned
-
                     logmsg = "Test succeeded! User: {0} Task: {1}".format(user_id, task_nr)
                     c.log_a_msg(self.logger_queue, self.name, logmsg, "INFO")
 

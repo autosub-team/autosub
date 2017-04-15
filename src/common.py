@@ -40,7 +40,7 @@ def log_task_error(lqueue, lname, msg, loglevel):
     Put a task error message with a loglevel in a logqueue.
     """
 
-    lqueue.put(dict({"msg": msg, "type": loglevel, "log_src": lname, "log_dst": "task_error" }))
+    lqueue.put(dict({"msg": msg, "type": loglevel, "log_src": lname, "log_dst": "task_error"}))
 
 ####
 # check_dir_mkdir

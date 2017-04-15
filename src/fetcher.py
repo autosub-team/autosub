@@ -65,7 +65,7 @@ class mailFetcher(threading.Thread):
             result = str(result[0])
             admin_emails = [email.strip() for email in result.split(',')]
         else:
-            admin_emails = ""
+            admin_emails = []
 
         conc.close()
 
@@ -91,7 +91,7 @@ class mailFetcher(threading.Thread):
             result = str(result[0])
             taskoperator_emails = [email.strip() for email in result.split(',')]
         else:
-            taskoperator_emails = ""
+            taskoperator_emails = []
 
         conc.close()
 
@@ -211,6 +211,7 @@ class mailFetcher(threading.Thread):
         """
         Store a new submisson in the user's directory structure.
         """
+
         curs, cons = c.connect_to_db(self.semesterdb, self.logger_queue, self.name)
 
         data = {'Email': user_email}
@@ -311,7 +312,7 @@ class mailFetcher(threading.Thread):
                                             self.logger_queue, self.name):
             tasknr = search_obj.group()
             fwd_mails = self.get_taskoperator_emails(tasknr)
-            if fwd_mails == "":
+            if not fwd_mails:
                 logmsg = ("Error getting the taskoperator email for task {0}. "
                           "Question from user with email={1} "
                           "dropped.").format(tasknr, user_email)
@@ -319,7 +320,7 @@ class mailFetcher(threading.Thread):
                 return
         else:
             fwd_mails = self.get_admin_emails()
-            if fwd_mails == "":
+            if not fwd_mails:
                 logmsg = ("Error getting the admin email for task {0}. "
                           "Question from user with email={1} "
                           "dropped.").format(tasknr, user_email)
@@ -340,10 +341,10 @@ class mailFetcher(threading.Thread):
         """
         Tell sender to send out a status email.
         """
+
         logmsg = ("STATUS requested: User with UserId:{0}, Email: {1}").format(\
                  user_id, user_email)
         c.log_a_msg(self.logger_queue, self.name, logmsg, "DEBUG")
-
 
         curs, cons = c.connect_to_db(self.semesterdb, self.logger_queue, self.name)
 
@@ -365,6 +366,11 @@ class mailFetcher(threading.Thread):
     ####
     def a_result_was_submitted(self, user_id, user_email, task_nr, messageid, \
                                mail):
+        """
+        Check if the user is allowed ot submit a result to the task
+        with given task nr and if yes add to worker queue.
+        """
+
         logmsg = "Processing a Result, UserId:{0} TaskNr:{1}"\
                 .format(user_id, task_nr)
         c.log_a_msg(self.logger_queue, self.name, logmsg, "DEBUG")
@@ -418,7 +424,12 @@ class mailFetcher(threading.Thread):
     # skip_was_requested
     ####
     def skip_was_requested(self, user_id, user_email, messageid):
-         # at which task_nr is the user
+        """
+        Process a requested skip, check if skip is possible, if yes
+        put job in generator queue.
+        """
+
+        # at which task_nr is the user?
         cur_task = c.user_get_current_task(self.semesterdb, user_id, self.logger_queue, \
                                            self.name)
         next_task = cur_task + 1
@@ -439,6 +450,7 @@ class mailFetcher(threading.Thread):
                 #set new current task
                 c.user_set_current_task(self.semesterdb, next_task, user_id, \
                                         self.logger_queue, self.name)
+
                 #tell generator thread to create new task
                 logmsg = ("Calling Generator to create "
                           "TaskNr:{0} for UserId:{1}").format(next_task, user_id)
@@ -490,7 +502,9 @@ class mailFetcher(threading.Thread):
                      " security= " + self.imap_security + " , port= " + str(self.imap_port)
             c.log_a_msg(self.logger_queue, self.name, logmsg, "ERROR")
             return 0
-        except:
+        except Exception as e:
+            logmsg = str(e)
+            c.log_a_msg(self.logger_queue, self.name, logmsg, "ERROR")
             logmsg = "Got an unknown exception when trying to connect to the imap " + \
                      "server with security= " + self.imap_security + " , port= " + str(self.imap_port)
             c.log_a_msg(self.logger_queue, self.name, logmsg, "ERROR")
@@ -603,6 +617,9 @@ class mailFetcher(threading.Thread):
     # action_by_subject
     ####
     def action_by_subject(self, user_id, user_email, messageid, mail, mail_subject):
+        """
+        Examine the subject of the users email and initiate appropiate action
+        """
 
         if re.search('[Rr][Ee][Ss][Uu][Ll][Tt]', mail_subject):
         ###############
