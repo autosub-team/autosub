@@ -7,7 +7,7 @@
 ########################################################################
 
 import threading
-import os
+from subprocess import Popen, PIPE
 
 import common as c
 
@@ -100,15 +100,25 @@ class taskGenerator(threading.Thread):
 
         challenge_mode = self.get_challenge_mode()
 
-        command = scriptpath + " " + str(user_id) + " " + str(task_nr) + " " + \
-                  self.submission_email + " " + str(challenge_mode) + " " + \
-                  self.semesterdb + " >> autosub.stdout 2>>autosub.stderr"
+        command = [scriptpath, str(user_id), str(task_nr), self.submission_email,\
+                   str(challenge_mode), self.semesterdb]
 
-        logmsg = "generator command: {0}".format(command)
+        logmsg = "generator command with arguments: {0} ".format(command)
         c.log_a_msg(self.logger_queue, self.name, logmsg, "DEBUG")
-        generator_res = os.system(command)
 
-        if generator_res:
+        process = Popen(command, stdout=PIPE, stderr=PIPE)
+        generator_msg, generator_error = process.communicate()
+        generator_msg = generator_msg.decode('UTF-8')
+        generator_error = generator_error.decode('UTF-8')
+        generator_res = process.returncode
+        log_src = "Generator{0}({1})".format(str(task_nr), str(user_id))
+
+        if generator_msg:
+            c.log_task_msg(self.logger_queue, log_src, generator_msg, "INFO")
+        if generator_error:
+            c.log_task_error(self.logger_queue, log_src, generator_error, "ERROR")
+
+        if generator_res: # not 0 returned
             logmsg = "Failed to call generator script, return value: " + \
                      str(generator_res)
             c.log_a_msg(self.logger_queue, self.name, logmsg, "DEBUG")

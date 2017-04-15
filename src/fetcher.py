@@ -2,7 +2,7 @@
 # fetcher.py -- fetch e-mails from the mailbox
 #
 # Copyright (C) 2015 Andreas Platschek <andi.platschek@gmail.com>
-#                    Martin  Mosbeck    <martin.mosbeck@gmx.at>
+#                    Martin  Mosbeck   <martin.mosbeck@gmx.at>
 # License GPL V2 or later (see http://www.gnu.org/licenses/gpl2.txt)
 ########################################################################
 
@@ -129,7 +129,7 @@ class mailFetcher(threading.Thread):
         sql_cmd = "SELECT UserId FROM Users WHERE Email = :Email"
         curs.execute(sql_cmd, data)
         res = curs.fetchone()
-        if res == None:
+        if res is None:
             logmsg = ("Created new user with "
                       "name= {0} , email={1} failed").format(user_name, user_email)
             c.log_a_msg(self.logger_queue, self.name, logmsg, "DEBUG")
@@ -142,18 +142,18 @@ class mailFetcher(threading.Thread):
 
         # Give the user the task which is starttime <= now < deadline AND
         # min(TaskNr)
-        curc, conc =  c.connect_to_db(self.coursedb, self.logger_queue, self.name)
+        curc, conc = c.connect_to_db(self.coursedb, self.logger_queue, self.name)
 
         data = {'TimeNow': str(int(time.time()))}
         sql_cmd = ("SELECT MIN(TaskNr) FROM TaskConfiguration "
                    "WHERE TaskStart <= datetime(:TimeNow, 'unixepoch','localtime') AND "
-                   "TaskDeadline > datetime(:TimeNow, 'unixepoch', 'localtime')" )
+                   "TaskDeadline > datetime(:TimeNow, 'unixepoch', 'localtime')")
         curc.execute(sql_cmd, data)
         res = curc.fetchone()
 
         conc.close()
 
-        if res == None:
+        if res is None:
             logmsg = ("Error generating first Task for UserId = {0}. Could not "
                       "find first task for this user").format(user_id)
             c.log_a_msg(self.logger_queue, self.name, logmsg, "ERROR")
@@ -377,7 +377,7 @@ class mailFetcher(threading.Thread):
         is_task = c.is_valid_task_nr(self.coursedb, task_nr, self.logger_queue,\
                                      self.name)
 
-        if is_task == False:
+        if not is_task:
         # task_nr is not valid
             c.send_email(self.sender_queue, user_email, "", "InvalidTask", str(task_nr), \
                          "", messageid)
@@ -430,12 +430,12 @@ class mailFetcher(threading.Thread):
         #task with this tasknr exists?
         is_task = c.is_valid_task_nr(self.coursedb, next_task, self.logger_queue,\
                                      self.name)
-        if is_task == True:
+        if is_task:
             task_starttime = c.get_task_starttime(self.coursedb, next_task,
                                                   self.logger_queue, self.name)
             task_has_started = task_starttime < datetime.datetime.now()
 
-            if task_has_started == True:
+            if task_has_started:
                 #set new current task
                 c.user_set_current_task(self.semesterdb, next_task, user_id, \
                                         self.logger_queue, self.name)
@@ -560,14 +560,14 @@ class mailFetcher(threading.Thread):
         cons.close()
 
         if res != None:
-            return 1
+            return True
         else:
             logmsg = "Got Mail from a User not on the WhiteList: " + user_email
             c.log_a_msg(self.logger_queue, self.name, logmsg, "Warning")
             c.increment_db_statcounter(self.semesterdb, 'nr_non_registered', \
                                        self.logger_queue, self.name)
 
-            return 0
+            return False
 
     ####
     # get_registration_deadline
@@ -609,7 +609,7 @@ class mailFetcher(threading.Thread):
         #   RESULT    #
         ###############
             searchObj = re.search('[0-9]+', mail_subject)
-            if searchObj == None:
+            if searchObj is None:
             # Result + no number
                 logmsg = ("Got a kind of message I do not understand. "
                           "Sending a usage mail...")
@@ -636,7 +636,7 @@ class mailFetcher(threading.Thread):
         ###############
             self.a_status_is_requested(user_id, user_email, messageid)
 
-        elif (self.allow_skipping == True) and re.search('[Ss][Kk][Ii][Pp]', mail_subject):
+        elif self.allow_skipping and re.search('[Ss][Kk][Ii][Pp]', mail_subject):
         ####################
         # SKIP, IF ALLOWED #
         ####################
@@ -832,4 +832,3 @@ class mailFetcher(threading.Thread):
 
         logmsg = "Exiting fetcher - this should NEVER happen!"
         c.log_a_msg(self.logger_queue, self.name, logmsg, "ERROR")
-

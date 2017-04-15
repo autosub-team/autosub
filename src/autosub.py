@@ -36,8 +36,7 @@ def sig_handler(signum, frame):
     Signal Handler to manage shutdown of autosub.
     """
 
-    logger_queue.put(dict({"msg": "Shutting down autosub...", "type": "INFO", \
-                           "loggername": "Main"}))
+    #log "Shutting down autosub..." here?
     ret_exit = 1
 
     return ret_exit
@@ -221,32 +220,32 @@ def init_ressources(semesterdb, coursedb, num_tasks, subsmission_email, challeng
     if ret:
 
         if allow_skipping == True:
-            filename = '{0}SpecialMessages/welcome_withskip.txt'.format(special_path)
+            filename = '{0}/SpecialMessages/welcome_withskip.txt'.format(special_path)
             load_specialmessage_to_db(coursedb, 'WELCOME', filename, subsmission_email, \
                                       course_name)
 
-            filename = '{0}SpecialMessages/usage_withskip.txt'.format(special_path)
+            filename = '{0}/SpecialMessages/usage_withskip.txt'.format(special_path)
             load_specialmessage_to_db(coursedb, 'USAGE', filename, subsmission_email, \
                                       course_name)
         else:
-            filename = '{0}SpecialMessages/welcome.txt'.format(special_path)
+            filename = '{0}/SpecialMessages/welcome.txt'.format(special_path)
             load_specialmessage_to_db(coursedb, 'WELCOME', filename, subsmission_email, \
                                       course_name)
 
-            filename = '{0}SpecialMessages/usage.txt'.format(special_path)
+            filename = '{0}/SpecialMessages/usage.txt'.format(special_path)
             load_specialmessage_to_db(coursedb, 'USAGE', filename, subsmission_email, \
                                       course_name)
 
-        filename = '{0}SpecialMessages/question.txt'.format(special_path)
+        filename = '{0}/SpecialMessages/question.txt'.format(special_path)
 
         load_specialmessage_to_db(coursedb, 'QUESTION', filename, subsmission_email, \
                                   course_name)
 
-        filename = '{0}SpecialMessages/invalidtask.txt'.format(special_path)
+        filename = '{0}/SpecialMessages/invalidtask.txt'.format(special_path)
         load_specialmessage_to_db(coursedb, 'INVALID', filename, subsmission_email, \
                                   course_name)
 
-        filename = '{0}SpecialMessages/congratulations.txt'.format(special_path)
+        filename = '{0}/SpecialMessages/congratulations.txt'.format(special_path)
         load_specialmessage_to_db(coursedb, 'CONGRATS', filename, subsmission_email, \
                                   course_name)
 
@@ -254,23 +253,23 @@ def init_ressources(semesterdb, coursedb, num_tasks, subsmission_email, challeng
         load_specialmessage_to_db(coursedb, 'REGOVER', filename, subsmission_email, \
                                   course_name)
 
-        filename = '{0}SpecialMessages/notallowed.txt'.format(special_path)
+        filename = '{0}/SpecialMessages/notallowed.txt'.format(special_path)
         load_specialmessage_to_db(coursedb, 'NOTALLOWED', filename, subsmission_email, \
                                   course_name)
 
-        filename = '{0}SpecialMessages/curlast.txt'.format(special_path)
+        filename = '{0}/SpecialMessages/curlast.txt'.format(special_path)
         load_specialmessage_to_db(coursedb, 'CURLAST', filename, subsmission_email, \
                                   course_name)
 
-        filename = '{0}SpecialMessages/deadtask.txt'.format(special_path)
+        filename = '{0}/SpecialMessages/deadtask.txt'.format(special_path)
         load_specialmessage_to_db(coursedb, 'DEADTASK', filename, subsmission_email, \
                                   course_name)
 
-        filename = '{0}SpecialMessages/skipnotpossible.txt'.format(special_path)
+        filename = '{0}/SpecialMessages/skipnotpossible.txt'.format(special_path)
         load_specialmessage_to_db(coursedb, 'SKIPNOTPOSSIBLE', filename, subsmission_email, \
                                   course_name)
 
-        filename = '{0}SpecialMessages/tasknotsubmittable.txt'.format(special_path)
+        filename = '{0}/SpecialMessages/tasknotsubmittable.txt'.format(special_path)
         load_specialmessage_to_db(coursedb, 'TASKNOTSUBMITTABLE', filename, subsmission_email, \
                                   course_name)
 
@@ -376,7 +375,6 @@ if __name__ == '__main__':
             smtpport = 25
 
 
-
     numThreads = config.getint('general', 'num_workers')
     queue_size = config.getint('general', 'queue_size')
 
@@ -401,7 +399,7 @@ if __name__ == '__main__':
         coursedb = 'course.db'
 
     try:
-        specialpath = config.get('general', 'specialpath')
+        specialpath = config.get('general', 'specialpath').rstrip('/')
     except:
         specialpath = ''
 
@@ -411,9 +409,9 @@ if __name__ == '__main__':
         course_name = 'No name set'
 
     try:
-        logfile = config.get('general', 'logfile')
+        logdir = config.get('general', 'logdir').rstrip('/')
     except:
-        logfile = '/tmp/autosub.log'
+        logdir = '/var/log/autosub'
 
     try:
         auto_advance = config.get('general', 'auto_advance')
@@ -450,7 +448,7 @@ if __name__ == '__main__':
     ####################
 
     #Before we do anything else: start the logger thread, so we can log whats going on
-    logger_t = logger.autosubLogger(thread_id, "logger", logger_queue, logfile)
+    logger_t = logger.autosubLogger(thread_id, "logger", logger_queue, logdir)
 
     # make the logger thread a daemon, this way the main will clean it up before
     # terminating!
@@ -511,7 +509,7 @@ if __name__ == '__main__':
     thread_id += 1
 
     msg_config = "Used config-file: " + opts.configfile
-    logger_queue.put(dict({"msg": msg_config, "type": "INFO", "loggername": "Main"}))
+    c.log_a_msg(logger_queue, "Main", msg_config, "INFO")
 
     #Next start a couple of worker threads
     while thread_id <= numThreads + 5:
@@ -523,8 +521,7 @@ if __name__ == '__main__':
         worker_t.append(t)
         thread_id += 1
 
-        logger_queue.put(dict({"msg": "All threads started successfully", \
-                               "type": "INFO", "loggername": "Main"}))
+        c.log_a_msg(logger_queue, "Main", "All threads started successfully", "INFO")
 
 
     dailystats_t = dailystats.DailystatsTask("dailystats", logger_queue, \

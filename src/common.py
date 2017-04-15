@@ -20,7 +20,27 @@ def log_a_msg(lqueue, lname, msg, loglevel):
     Put a message with a loglevel in a logqueue.
     """
 
-    lqueue.put(dict({"msg": msg, "type": loglevel, "loggername": lname}))
+    lqueue.put(dict({"msg": msg, "type": loglevel, "log_src": lname, "log_dst": "autosub"}))
+
+####
+# log_task_msg
+####
+def log_task_msg(lqueue, lname, msg, loglevel):
+    """
+    Put a task message with a loglevel in a logqueue.
+    """
+
+    lqueue.put(dict({"msg": msg, "type": loglevel, "log_src": lname, "log_dst": "task_msg"}))
+
+####
+# log_task_error
+####
+def log_task_error(lqueue, lname, msg, loglevel):
+    """
+    Put a task error message with a loglevel in a logqueue.
+    """
+
+    lqueue.put(dict({"msg": msg, "type": loglevel, "log_src": lname, "log_dst": "task_error" }))
 
 ####
 # check_dir_mkdir

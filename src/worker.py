@@ -7,10 +7,10 @@
 ########################################################################
 
 import threading
-import os
-import common as c
 import datetime
+from subprocess import Popen, PIPE
 
+import common as c
 
 class Worker(threading.Thread):
     """
@@ -38,15 +38,15 @@ class Worker(threading.Thread):
 ####
 # get_task_parameters
 ####
-    def get_task_parameters(self, uid, tasknr):
+    def get_task_parameters(self, uid, task_nr):
         """
         Look up the taskParmeters, that were generated from the generator for
         a indididual task.
         """
 
         curs, cons = c.connect_to_db(self.semesterdb, self.logger_queue, self.name)
-        data = {'tasknr': tasknr, 'uid': uid}
-        sql_cmd = "SELECT TaskParameters FROM UserTasks WHERE TaskNr == :tasknr AND UserId == :uid"
+        data = {'task_nr': task_nr, 'uid': uid}
+        sql_cmd = "SELECT TaskParameters FROM UserTasks WHERE TaskNr == :task_nr AND UserId == :uid"
         curs.execute(sql_cmd, data)
         params = curs.fetchone()[0]
         cons.close()
@@ -68,12 +68,12 @@ class Worker(threading.Thread):
             c.log_a_msg(self.logger_queue, self.name, logmsg, "INFO")
             nextjob = self.job_queue.get(True)
             if nextjob:
-                tasknr = nextjob.get('taskNr')
+                task_nr = nextjob.get('taskNr')
                 user_id = nextjob.get('UserId')
                 user_email = nextjob.get('UserEmail')
                 message_id = nextjob.get('MessageId')
 
-                logmsg = self.name + " got a new job: {0} from the user with id: {1}".format(str(tasknr), str(user_id))
+                logmsg = self.name + " got a new job: {0} from the user with id: {1}".format(str(task_nr), str(user_id))
                 c.log_a_msg(self.logger_queue, self.name, logmsg, "INFO")
 
                 # check if there is a test executable configured in the
@@ -81,78 +81,88 @@ class Worker(threading.Thread):
                 curc, conc = c.connect_to_db(self.coursedb, \
                                              self.logger_queue, self.name)
                 try:
-                    data = {'tasknr': tasknr}
-                    sql_cmd = "SELECT TestExecutable FROM TaskConfiguration WHERE TaskNr == :tasknr"
+                    data = {'task_nr': task_nr}
+                    sql_cmd = "SELECT TestExecutable FROM TaskConfiguration WHERE TaskNr == :task_nr"
                     curc.execute(sql_cmd, data)
                     testname = curc.fetchone()
                 except:
-                    logmsg = "Failed to fetch TestExecutable for TaskNr: {0}".format(tasknr)
+                    logmsg = "Failed to fetch TestExecutable for TaskNr: {0}".format(task_nr)
                     logmsg = logmsg + " from the Database! Table TaskConfiguration corrupted?"
                     c.log_a_msg(self.logger_queue, self.name, logmsg, "ERROR")
 
                 if testname != None:
                     try:
-                        data = {'tasknr': tasknr}
-                        sql_cmd = "SELECT PathToTask FROM TaskConfiguration WHERE TaskNr == :tasknr"
+                        data = {'task_nr': task_nr}
+                        sql_cmd = "SELECT PathToTask FROM TaskConfiguration WHERE TaskNr == :task_nr"
                         curc.execute(sql_cmd, data)
                         path = curc.fetchone()
                         scriptpath = str(path[0]) + "/" + str(testname[0])
                     except: # if a testname was given, then a Path should be
                             # there as well!
-                        logmsg = "Failed to fetch Path to Tasknr: {0}".format(tasknr)
+                        logmsg = "Failed to fetch Path to Tasknr: {0}".format(task_nr)
                         logmsg = "{0} from the Database! Table TaskConfiguration corrupted?".format(logmsg)
                         c.log_a_msg(self.logger_queue, self.name, logmsg, "ERROR")
 
                 else: # in case no testname was given, we fall back to the
                       # static directory structure
-                    scriptpath = "tasks/task" + str(tasknr) + "/./tests.sh"
+                    scriptpath = "tasks/task" + str(task_nr) + "/./tests.sh"
                 conc.close()
 
                 # get the task parameters
-                task_params = self.get_task_parameters(user_id, tasknr)
+                task_params = self.get_task_parameters(user_id, task_nr)
 
-                # run the test script
-                logmsg = "Running test script: " + scriptpath
+                # run the test script and log the stderr and stdout
+                command = [scriptpath, str(user_id), str(task_nr), str(task_params)]
+                logmsg = "Running test script with arguments: {0}".format(command)
                 c.log_a_msg(self.logger_queue, self.name, logmsg, "INFO")
-                command = "{0} {1} {2} \"{3}\" >> autosub.stdout 2>>autosub.stderr".format(scriptpath, user_id, tasknr, task_params)
-                test_res = os.system(command)
+
+                process = Popen(command, stdout=PIPE, stderr=PIPE)
+                test_msg, test_error = process.communicate()
+                test_msg = test_msg.decode('UTF-8')
+                test_error = test_error.decode('UTF-8')
+                test_res = process.returncode
+                log_src = "Tester{0}({1})".format(str(task_nr), str(user_id))
+
+                if test_msg:
+                    c.log_task_msg(self.logger_queue, log_src, test_msg, "INFO")
+                if test_error:
+                    c.log_task_error(self.logger_queue, log_src, test_error, "ERROR")
 
                 if test_res: # not 0 returned
 
                     logmsg = "Test failed! User: {0} Task: {1}".format(user_id, \
-                                                                       tasknr)
+                                                                       task_nr)
                     logmsg = logmsg + " return value:" + str(test_res)
                     c.log_a_msg(self.logger_queue, self.name, logmsg, "INFO")
 
                     c.send_email(self.sender_queue, str(user_email), \
-                                 str(user_id), "Failed", str(tasknr), "", \
+                                 str(user_id), "Failed", str(task_nr), "", \
                                  str(message_id))
 
-                    if test_res == 512: # Need to read up on this but os.system() returns
-                                       # 256 when the script returns 1 and 512 when the script returns 2, 768 when 3!
+                    if test_res == 2:
                         logmsg = "SecAlert: This test failed due to probable attack by user!"
                         c.log_a_msg(self.logger_queue, self.name, logmsg, "INFO")
 
                         c.send_email(self.sender_queue, str(user_email), \
-                                     str(user_id), "SecAlert", str(tasknr), "", \
+                                     str(user_id), "SecAlert", str(task_nr), "", \
                                      str(message_id))
 
-                    elif test_res == 768:
-                        logmsg = "TaskAlert: This test for TaskNr {0} and User {1} failed due an error with task/testbench analyzation!".format(tasknr, user_id)
+                    elif test_res == 3:
+                        logmsg = "TaskAlert: This test for TaskNr {0} and User {1} failed due an error with task/testbench analyzation!".format(task_nr, user_id)
                         c.log_a_msg(self.logger_queue, self.name, logmsg, "INFO")
 
                         c.send_email(self.sender_queue, str(user_email), \
-                                     str(user_id), "TaskAlert", str(tasknr), \
+                                     str(user_id), "TaskAlert", str(task_nr), \
                                      "", str(message_id))
 
                 else: # 0 returned
 
-                    logmsg = "Test succeeded! User: {0} Task: {1}".format(user_id, tasknr)
+                    logmsg = "Test succeeded! User: {0} Task: {1}".format(user_id, task_nr)
                     c.log_a_msg(self.logger_queue, self.name, logmsg, "INFO")
 
                     # Notify, the user that the submission was successful
                     c.send_email(self.sender_queue, str(user_email), \
-                                 str(user_id), "Success", str(tasknr), "", \
+                                 str(user_id), "Success", str(task_nr), "", \
                                  str(message_id))
 
                     curc, conc = c.connect_to_db(self.coursedb, \
@@ -170,14 +180,14 @@ class Worker(threading.Thread):
                     # task < the task that shall be generated (no Task has yet
                     # been generated for this user yet).
 
-                    if currenttask < int(tasknr)+1:
+                    if currenttask < int(task_nr)+1:
                         try:
-                            data = {'tasknr': str(int(tasknr)+1)}
-                            sql_cmd = "SELECT GeneratorExecutable FROM TaskConfiguration WHERE TaskNr == :tasknr"
+                            data = {'task_nr': str(int(task_nr)+1)}
+                            sql_cmd = "SELECT GeneratorExecutable FROM TaskConfiguration WHERE TaskNr == :task_nr"
                             curc.execute(sql_cmd, data)
                             res = curc.fetchone()
                         except:
-                            logmsg = "Failed to fetch Generator Script for Tasknr: {0}".format(tasknr)
+                            logmsg = "Failed to fetch Generator Script for Tasknr: {0}".format(task_nr)
                             logmsg = logmsg + "from the Database! Table TaskConfiguration corrupted?"
                             c.log_a_msg(self.logger_queue, self.name, \
                                         logmsg, "ERROR")
@@ -185,7 +195,7 @@ class Worker(threading.Thread):
                             conc.close()
 
                         task_start = c.get_task_starttime(self.coursedb, \
-                                                          int(tasknr)+1, \
+                                                          int(task_nr)+1, \
                                                           self.logger_queue, \
                                                           self.name)
 
@@ -200,16 +210,16 @@ class Worker(threading.Thread):
 
                                 self.gen_queue.put(dict({"user_id": str(user_id), \
                                          "user_email": str(user_email), \
-                                         "task_nr": str(int(tasknr)+1), \
+                                         "task_nr": str(int(task_nr)+1), \
                                          "messageid": ""}))
                             else:
                                 c.send_email(self.sender_queue, \
                                              str(user_email), str(user_id), \
-                                             "Task", str(int(tasknr)+1), "", \
+                                             "Task", str(int(task_nr)+1), "", \
                                              str(message_id))
 
                         else:
                             c.send_email(self.sender_queue, str(user_email), \
                                          str(user_id), "CurLast", \
-                                         str(int(tasknr)+1), "", \
+                                         str(int(task_nr)+1), "", \
                                          str(message_id))
