@@ -249,7 +249,7 @@ def init_ressources(semesterdb, coursedb, num_tasks, subsmission_email, challeng
         load_specialmessage_to_db(coursedb, 'CONGRATS', filename, subsmission_email, \
                                   course_name)
 
-        filename = '{0}SpecialMessages/registrationover.txt'.format(special_path)
+        filename = '{0}/SpecialMessages/registrationover.txt'.format(special_path)
         load_specialmessage_to_db(coursedb, 'REGOVER', filename, subsmission_email, \
                                   course_name)
 
