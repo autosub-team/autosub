@@ -574,7 +574,6 @@ class MailSender(threading.Thread):
                 message_text = "Something went wrong with task/testbench analyzation for Task " + task_nr +" and User " + user_id + " . Either the entity or testbench analyzation threw an error."
                 msg = self.assemble_email(msg, message_text, '')
                 self.send_out_email(admin_mail, msg.as_string(), message_type)
-                self.backup_message(messageid)
 
         elif message_type == "Success":
         #################

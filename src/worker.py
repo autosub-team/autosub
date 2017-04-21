@@ -143,7 +143,7 @@ class Worker(threading.Thread):
                         logmsg = "SecAlert: This test failed due to probable attack by user!"
                         c.log_a_msg(self.logger_queue, self.name, logmsg, "INFO")
 
-                        c.send_email(self.sender_queue, str(user_email), \
+                        c.send_email(self.sender_queue,"", \
                                      str(user_id), "SecAlert", str(task_nr), "", \
                                      str(message_id))
 
@@ -151,7 +151,7 @@ class Worker(threading.Thread):
                         logmsg = "TaskAlert: This test for TaskNr {0} and User {1} failed due an error with task/testbench analyzation!".format(task_nr, user_id)
                         c.log_a_msg(self.logger_queue, self.name, logmsg, "INFO")
 
-                        c.send_email(self.sender_queue, str(user_email), \
+                        c.send_email(self.sender_queue,"", \
                                      str(user_id), "TaskAlert", str(task_nr), \
                                      "", str(message_id))
 
