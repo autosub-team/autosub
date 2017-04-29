@@ -116,6 +116,7 @@ class Worker(threading.Thread):
                 logmsg = "Running test script with arguments: {0}".format(command)
                 c.log_a_msg(self.logger_queue, self.name, logmsg, "INFO")
 
+                # Popen in asynch, but communicate waits
                 process = Popen(command, stdout=PIPE, stderr=PIPE)
                 test_msg, test_error = process.communicate()
                 test_msg = test_msg.decode('UTF-8')

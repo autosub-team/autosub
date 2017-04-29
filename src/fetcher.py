@@ -6,6 +6,23 @@
 # License GPL V2 or later (see http://www.gnu.org/licenses/gpl2.txt)
 ########################################################################
 
+########################################################################
+# Implementation Note:
+#    The fetcher needs to be able to store data to uniquely identify
+#    emails to remember backlogged messages and move processed messages.
+#    IMAP offers different values to do so: 1) message number: the
+#    position of the mail in the mailbox, this changs when a mail is
+#    moved; 2) UID: unique id per mailbox, can change between sessions,
+#    changes are shown by change of uidvalidity status; 3) Message Id:
+#    number given by the sending SMTP server; A email can only be
+#    selectively fetched via uid or message number. It was chosen to
+#    store and pass Message Ids. This has the disadvantage, that for an
+#    action all the emails in the inbox have to be fetched and then each
+#    compared to the stored Message Id. This should not be a big
+#    problem for performance, as processed emails are moved to the
+#    archive folder (which should exist!!!!)
+########################################################################
+
 import threading
 import email
 import imaplib
@@ -14,6 +31,7 @@ import time
 import re #regex
 import datetime
 import common as c
+import queue
 
 class mailFetcher(threading.Thread):
     """
@@ -31,17 +49,25 @@ class mailFetcher(threading.Thread):
         threading.Thread.__init__(self)
         self.threadID = threadID
         self.name = name
+
+        self.backlog = dict() # backlogged result emails
         self.job_queue = job_queue
         self.sender_queue = sender_queue
         self.gen_queue = gen_queue
+        self.logger_queue = logger_queue
+        self.arch_queue = arch_queue
+
         self.imap_user = imapuser
         self.imap_pwd = imappasswd
         self.imap_server = imapserver
         self.imap_port = imapport
         self.imap_security = imapsecurity
-        self.logger_queue = logger_queue
-        self.arch_queue = arch_queue
         self.poll_period = poll_period
+
+        self.mid_to_job_tuple = {}
+        self.jobs_backlog = {}
+        self.jobs_active = {}
+
         self.coursedb = coursedb
         self.semesterdb = semesterdb
         self.allow_skipping = allow_skipping
@@ -207,18 +233,10 @@ class mailFetcher(threading.Thread):
     ####
     # save_submission_user_dir
     ####
-    def save_submission_user_dir(self, user_email, task_nr, mail, messageid):
+    def save_submission_user_dir(self, user_id, task_nr, mail):
         """
         Store a new submisson in the user's directory structure.
         """
-
-        curs, cons = c.connect_to_db(self.semesterdb, self.logger_queue, self.name)
-
-        data = {'Email': user_email}
-        sql_cmd = "SELECT UserId FROM Users WHERE Email = :Email"
-        curs.execute(sql_cmd, data)
-        res = curs.fetchone()
-        user_id = res[0]
 
         # increment the submission_nr for the user
         submission_nr = self.increment_submission_nr(int(user_id), int(task_nr))
@@ -265,8 +283,6 @@ class mailFetcher(threading.Thread):
 
         cmd = "cp -R " +  current_dir + "/* " + detach_dir + " 2> /dev/null"
         os.system(cmd)
-
-        cons.close()
 
     ####
     # get_archive_dir
@@ -412,13 +428,32 @@ class mailFetcher(threading.Thread):
         else:
         # okay, let's work with the submission
 
-            #save the attached files to user task directory
-            self.save_submission_user_dir(user_email, task_nr, mail, messageid)
+            job_tuple = (user_id, task_nr)
+            dispatchable = not job_tuple in self.jobs_active
 
-            # send job request to worker
-            self.job_queue.put(dict({"UserId": user_id, "UserEmail": user_email, \
-                               "message_type": "Task", "taskNr": task_nr, \
-                               "MessageId": messageid}))
+            if not dispatchable:
+                if job_tuple in self.jobs_backlog:
+                    self.jobs_backlog[job_tuple].append(messageid)
+                else:
+                    self.jobs_backlog[job_tuple] = [messageid]
+
+                logmsg = ("Backlogged {0},{1},{2}").format(user_id, task_nr,messageid)
+                c.log_a_msg(self.logger_queue, self.name, logmsg, "DEBUG")
+
+
+            else:
+                # save the attached files to user task directory
+                self.save_submission_user_dir(user_id, task_nr, mail)
+
+                # dispatch job
+                self.job_queue.put(dict({"UserId": user_id, "UserEmail": user_email, \
+                                         "message_type": "Task", "taskNr": task_nr, \
+                                         "MessageId": messageid}))
+                dispatch_time = time.time()
+
+                self.jobs_active[job_tuple] = {"dispatch": dispatch_time, \
+                                               "messageid": messageid}
+                self.mid_to_job_tuple[messageid] = job_tuple
 
     ####
     # skip_was_requested
@@ -517,13 +552,32 @@ class mailFetcher(threading.Thread):
         return server
 
     ####
-    # fetch_new_emails
+    # disconnect_from_imapserver
     ####
-    def fetch_new_emails(self, m):
+    def disconnect_from_imapserver(self, m):
         """
-        Fetch new (unseen e-mails from the Inbox.
+        Disconnect from existing imap connection
+        """
 
-        Return list of mailids
+        # m==0 is only possible in test-code (e.g. load_test.py)
+        if m != 0:
+            try:
+                m.close()
+                m.logout()
+                logmsg = "closed connection to imapserver"
+                c.log_a_msg(self.logger_queue, self.name, logmsg, "INFO")
+            except:
+                logmsg = "Got an error when trying to disconnect from the imap server."
+                c.log_a_msg(self.logger_queue, self.name, logmsg, "ERROR")
+
+    ####
+    # idmap_new_emails(self, m):
+    ####
+    def idmap_new_emails(self, m):
+        """
+        Search for new (unseen) e-mails from the Inbox.
+
+        Return a mapping as dict that assigns each Message-Id its UID.
         """
 
         try:
@@ -531,30 +585,66 @@ class mailFetcher(threading.Thread):
             # use m.list() to get all the mailboxes
         except:
             logmsg = "Failed to select inbox"
-            c.log_a_msg(self.logger_queue, self.name, logmsg, "INFO")
-            return []
+            c.log_a_msg(self.logger_queue, self.name, logmsg, "ERROR")
+            return {}
+
+        idmap = dict()
 
         # you could filter using the IMAP rules here
         # (check http://www.example-code.com/csharp/imap-search-critera.asp)
-        resp, items = m.search(None, "UNSEEN")
-        return items[0].split()
 
-    def fetch_all_emails(self, m):
+        #resp, data = m.search(None, "UNSEEN")
+        resp, data = m.uid('search', None, "UNSEEN")
+
+        if resp == 'OK':
+            for uid in data[0].split():
+                typ, msg_data = m.uid('fetch', uid, "(BODY[HEADER])")
+                mail = email.message_from_bytes(msg_data[0][1])
+                idmap[mail['Message-ID']] = uid
+
+            return idmap
+
+        else:
+            logmsg = "Failed to get messages from inbox"
+            c.log_a_msg(self.logger_queue, self.name, logmsg, "ERROR")
+            return {}
+
+
+    ####
+    # idmap_all_emails(self, m):
+    ####
+    def idmap_all_emails(self, m):
         """
-        Fetch all emails.
+        Search for all emails.
 
-        Return list of mailids.
+        Return a mapping as dict that assigns each Message-Id its UID.
         """
 
         try:
             m.select(mailbox='Inbox', readonly=False)
         except:
             logmsg = "Failed to select inbox"
-            c.log_a_msg(self.logger_queue, self.name, logmsg, "INFO")
-            return []
+            c.log_a_msg(self.logger_queue, self.name, logmsg, "ERROR")
+            return {}
 
-        resp, items = m.search(None, 'All')
-        return items[0].split()
+        idmap = dict()
+
+        # you could filter using the IMAP rules here
+        # (check http://www.example-code.com/csharp/imap-search-critera.asp)
+        resp, items = m.uid('search', None, "ALL")
+
+
+        if resp == 'OK':
+            for uid in items[0].split():
+                typ, msg_data = m.uid('fetch', uid, "(BODY[HEADER])")
+                mail = email.message_from_bytes(msg_data[0][1])
+                idmap[mail['Message-ID']] = uid
+
+            return idmap
+        else:
+            logmsg = "Failed to get messages from inbox"
+            c.log_a_msg(self.logger_queue, self.name, logmsg, "ERROR")
+            return {}
 
     ####
     # check_if_whitelisted
@@ -668,6 +758,231 @@ class mailFetcher(threading.Thread):
             c.log_a_msg(self.logger_queue, self.name, logmsg, "DEBUG")
             c.send_email(self.sender_queue, user_email, "", "Usage", "", \
                          "", messageid)
+
+    ####
+    # handle_backlogged
+    ####
+    def handle_backlogged(self, m):
+        """
+        Handle backlogged result emails. Only one (user_id, task_nr) job
+        tuple can be dispatched at the same time.
+        """
+
+        if len(self.jobs_backlog) == 0:
+            return
+
+        uid_of_mid = self.idmap_all_emails(m)
+
+        # if there is a active_job, that should be force removed when
+        # (dispatch - now) > 5min
+        time_now = time.time()
+        to_delete = []
+
+        for job_tuple, job_info in self.jobs_active.items():
+            dispatch = job_info["dispatch"]
+            if (dispatch - time_now) > 300:
+                to_delete.append(job_tuple)
+
+        for job_tuple in to_delete:
+            del self.jobs_active[job_tuple]
+            #TODO: log this?
+
+        # can a backlogged job be dispatched?
+        dispatch_time = time.time()
+        to_delete = []
+
+        for job_tuple, messageids in self.jobs_backlog.items():
+
+            # job_tuple job not already active
+            if not job_tuple in self.jobs_active:
+                # first backlogged messageid
+                messageid = messageids[0]
+
+                try:
+                    # get the message from server
+                    uid = uid_of_mid[messageid]
+                    resp, data = m.uid('fetch', uid, "(RFC822)")
+                    mail = email.message_from_bytes(data[0][1])
+
+                    user_id = job_tuple[0]
+                    task_nr = job_tuple[1]
+
+                    from_header = str(mail['From'])
+                    split_header = str(from_header).split("<")
+
+                    try:
+                        user_email = str(split_header[1].split(">")[0])
+                    except:
+                        user_email = str(mail['From'])
+                    # save the attached files to user task directory
+                    self.save_submission_user_dir(user_id, task_nr, mail)
+
+                    # dispatch job
+                    self.job_queue.put(dict({"UserId": user_id, "UserEmail": user_email, \
+                                             "message_type": "Task", "taskNr": task_nr, \
+                                             "MessageId": messageid}))
+                    self.jobs_active[job_tuple] = {"dispatch": dispatch_time, \
+                                                   "messageid": messageid}
+                    self.mid_to_job_tuple[messageid] = job_tuple
+
+                    logmsg = ("Dispatched backlogged {0},{1},{2}").format(user_id, task_nr, messageid)
+                    c.log_a_msg(self.logger_queue, self.name, logmsg, "DEBUG")
+
+                except:
+                    logmsg = ("Error while dispatching backlogged task UserId = {0} "
+                              "TaskNr = {1} MessageId = {2}").format(user_id, task_nr, \
+                                                                     messageid)
+                    c.log_a_msg(self.logger_queue, self.name, logmsg, "ERROR")
+
+                # delete the messageid from backlog, if no more backlog for this
+                # job_tuple then mark for deletion of whole entry
+                del messageids[0]
+                if len(self.jobs_backlog[job_tuple]) == 0:
+                    to_delete.append(job_tuple)
+
+        for job_tuple in to_delete:
+            del self.jobs_backlog[job_tuple]
+
+    ####
+    # archive_processed
+    ####
+    def archive_processed(self, m):
+        """
+        Archive mails which are in the archive queue and therefore have been
+        fully processed (copy & delete = move).
+        """
+
+        archive_dir = self.get_archive_dir()
+        uid_of_mid = self.idmap_all_emails(m)
+
+        # process queue, as soon as no next item available immediately return
+        while True:
+            try:
+                next_archive_msg = self.arch_queue.get_nowait()
+            except queue.Empty:
+                return
+
+            messageid = next_archive_msg.get('mid')
+            is_finished_job = next_archive_msg.get('isfinishedjob')
+
+            # find uid for the mid
+            logmsg = "Moving Message with ID: {0}".format(messageid)
+            c.log_a_msg(self.logger_queue, self.name, logmsg, "DEBUG")
+            try:
+                uid = uid_of_mid[messageid]
+            except KeyError:
+                logmsg = ("Error moving message: could not find uid for Message"
+                          "with ID: {0}").format(messageid)
+                continue
+
+            if is_finished_job:
+                job_tuple = self.mid_to_job_tuple[messageid]
+                del self.jobs_active[job_tuple]
+                del self.mid_to_job_tuple[messageid]
+
+            # copy
+            result = m.uid('COPY', uid, archive_dir)
+
+            # delete
+            if result[0] == 'OK':
+                m.uid('STORE', uid, '+FLAGS', '(\Deleted)')
+                m.expunge()
+            else:
+                log_msg = ("Error moving a message. Is the "
+                           "configured archive_dir '{0}' existing "
+                            "on the IMAP server?!").format(archive_dir)
+                c.log_a_msg(self.logger_queue, self.name, \
+                            log_msg, "ERROR")
+
+    ####
+    # handle_new
+    ####
+    def handle_new(self, m):
+        """
+        Fetch new emails and initiate appropriate action
+        """
+
+        uid_of_mid = self.idmap_new_emails(m)
+
+        if uid_of_mid is None:
+            return
+
+        curs, cons = c.connect_to_db(self.semesterdb, self.logger_queue, self.name)
+
+        # iterate over all new e-mails and take action according to the structure
+        # of the subject line
+        for messageid, uid in uid_of_mid.items():
+            c.increment_db_statcounter(self.semesterdb, 'nr_mails_fetched', \
+                                       self.logger_queue, self.name)
+
+            # fetching the mail, "`(RFC822)`" means "get the whole stuff", but you
+            # can ask for headers only, etc
+            resp, data = m.uid('fetch', uid, "(RFC822)")
+
+            # parsing the mail content to get a mail object
+            mail = email.message_from_bytes(data[0][1])
+
+            mail_subject = str(mail['subject'])
+            from_header = str(mail['From'])
+            split_header = str(from_header).split("<")
+            user_name = split_header[0]
+
+            try:
+                user_email = str(split_header[1].split(">")[0])
+            except:
+                user_email = str(mail['From'])
+
+            # Now let's decide what actions to take with the received email
+            whitelisted = self.check_if_whitelisted(user_email)
+            if whitelisted:
+            # On Whitelist
+                data = {'Email': user_email}
+                sql_cmd = "SELECT UserId FROM Users WHERE Email = :Email"
+                curs.execute(sql_cmd, data)
+                res = curs.fetchone()
+
+                if res != None:
+                # Already registered
+                    user_id = res[0]
+                    logmsg = ("Got mail from an already known user! "
+                              "(UserId:{0}, Email:{1}").format(user_id,
+                              user_email)
+                    c.log_a_msg(self.logger_queue, self.name, logmsg, "INFO")
+
+                    # Take action based on the subject
+                    self.action_by_subject(user_id, user_email, messageid, mail, \
+                                      mail_subject)
+
+                else:
+                # Not yet registered
+                    reg_deadline = self.get_registration_deadline()
+
+                    if reg_deadline > datetime.datetime.now():
+                    # Before Registraton deadline?
+                        #Name for user specified in Whitelist? -> take it
+                        data = {'Email': user_email}
+                        sql_cmd = ("SELECT Name FROM Whitelist "
+                                   "WHERE Email = :Email")
+                        curs.execute(sql_cmd, data)
+                        res = curs.fetchone()
+                        if res[0] and res[0].strip():
+                            user_name = res[0]
+
+                        # Create user and send Welcome message
+                        self.add_new_user(user_name, user_email)
+                        c.send_email(self.sender_queue, user_email, "", "Welcome", \
+                                     "", "", messageid)
+                    else:
+                    # After Registration deadline
+                        c.send_email(self.sender_queue, user_email, "", "RegOver", \
+                                     "", "", messageid)
+            else:
+            # Not on Whitelist
+                c.send_email(self.sender_queue, user_email, "", "NotAllowed", \
+                             "", "", messageid)
+
+        cons.close()
+
     ####
     # loop_code
     ####
@@ -679,153 +994,10 @@ class mailFetcher(threading.Thread):
         m = self.connect_to_imapserver()
 
         if m != 0:
-            curs, cons = c.connect_to_db(self.semesterdb, self.logger_queue, self.name)
-            items = self.fetch_new_emails(m)
-
-            # iterate over all new e-mails and take action according to the structure
-            # of the subject line
-            for emailid in items:
-
-                c.increment_db_statcounter(self.semesterdb, 'nr_mails_fetched', \
-                                           self.logger_queue, self.name)
-
-                # fetching the mail, "`(RFC822)`" means "get the whole stuff", but you
-                # can ask for headers only, etc
-                resp, data = m.fetch(emailid, "(RFC822)")
-
-                # parsing the mail content to get a mail object
-                mail = email.message_from_bytes(data[0][1])
-
-                mail_subject = str(mail['subject'])
-                from_header = str(mail['From'])
-                split_header = str(from_header).split("<")
-                user_name = split_header[0]
-
-                try:
-                    user_email = str(split_header[1].split(">")[0])
-                except:
-                    user_email = str(mail['From'])
-
-                messageid = mail.get('Message-ID')
-
-                # Now let's decide what actions to take with the received email
-
-                whitelisted = self.check_if_whitelisted(user_email)
-                if whitelisted:
-                # On Whitelist
-                    data = {'Email': user_email}
-                    sql_cmd = "SELECT UserId FROM Users WHERE Email = :Email"
-                    curs.execute(sql_cmd, data)
-                    res = curs.fetchone()
-
-                    if res != None:
-                    # Already registered
-                        user_id = res[0]
-                        logmsg = ("Got mail from an already known user! "
-                                  "(UserId:{0}, Email:{1}").format(user_id,
-                                  user_email)
-                        c.log_a_msg(self.logger_queue, self.name, logmsg, "INFO")
-
-                        # Take action based on the subject
-                        self.action_by_subject(user_id, user_email, messageid, mail, \
-                                          mail_subject)
-
-                    else:
-                    # Not yet registered
-                        reg_deadline = self.get_registration_deadline()
-
-                        if reg_deadline > datetime.datetime.now():
-                        # Before Registraton deadline
-
-                            #Name for user specified in Whitelist? -> take it
-                            data = {'Email': user_email}
-                            sql_cmd = ("SELECT Name FROM Whitelist "
-                                       "WHERE Email = :Email")
-                            curs.execute(sql_cmd, data)
-                            res = curs.fetchone()
-                            if res[0] and res[0].strip():
-                                user_name = res[0]
-
-                            # Create user and send Welcome message
-                            self.add_new_user(user_name, user_email)
-                            c.send_email(self.sender_queue, user_email, "", "Welcome", \
-                                         "", "", messageid)
-                        else:
-                        # After Registration deadline
-                            c.send_email(self.sender_queue, user_email, "", "RegOver", \
-                                         "", "", messageid)
-                else:
-                # Not on Whitelist
-                    c.send_email(self.sender_queue, user_email, "", "NotAllowed", \
-                                 "", "", messageid)
-
-            try:
-                m.close()
-            except imaplib.IMAP4.abort:
-                logmsg = ("Closing connection to server was aborted "
-                          "(probably a server-side problem). Trying to connect again ...")
-                c.log_a_msg(self.logger_queue, self.name, logmsg, "ERROR")
-                #m.close()
-            except imaplib.IMAP4.error:
-                logmsg = ("Got an error when trying to connect to the imap server."
-                          "Trying to connect again ...")
-                c.log_a_msg(self.logger_queue, self.name, logmsg, "ERROR")
-            except:
-                logmsg = ("Got an unknown exception when trying to connect to the "
-                          "imap server. Trying to connect again ...")
-                c.log_a_msg(self.logger_queue, self.name, logmsg, "ERROR")
-            finally:
-                logmsg = "closed connection to imapserver"
-                c.log_a_msg(self.logger_queue, self.name, logmsg, "INFO")
-
-
-            # check if messages have been handled and need to be archived now
-            try:
-                next_send_msg = self.arch_queue.get(False)
-            except:
-                next_send_msg = 'NONE'
-
-            if next_send_msg != 'NONE':
-                c.log_a_msg(self.logger_queue, self.name, "moving a message!!!!!!!", \
-                            "INFO")
-                m = self.connect_to_imapserver()
-                archive_dir = self.get_archive_dir()
-
-                for next_msg in next_send_msg:
-                    email_ids = self.fetch_all_emails(m)
-
-                    for emailid in email_ids:
-                        typ, msg_data = m.fetch(str(int(emailid)), "(BODY[HEADER])")
-                        mail = email.message_from_bytes(msg_data[0][1])
-                        if mail['Message-ID'] == next_send_msg.get('mid'):
-                            logmsg = "Moving Message with ID: {0}"\
-                                     .format(mail['Message-ID'])
-                            c.log_a_msg(self.logger_queue, self.name, logmsg, "DEBUG")
-
-                            resp, data = m.fetch(emailid, "(UID)")
-                            pattern_uid = re.compile('\d+ \(UID (?P<uid>\d+)\)')
-                            match = pattern_uid.match(str(data[0]).split("'")[1])
-                            msg_uid = match.group('uid')
-
-                            result = m.uid('COPY', msg_uid, archive_dir)
-
-                            if result[0] == 'OK':
-                                mov, data = m.uid('STORE', msg_uid, '+FLAGS', \
-                                                  '(\Deleted)')
-                                m.expunge()
-                            else:
-                                log_msg = ("Error moving a message. Is the "
-                                    "configured archive_dir '{0}' existing "
-                                    "on the IMAP server?!").format(archive_dir)
-                                c.log_a_msg(self.logger_queue, self.name, \
-                                    log_msg, "ERROR")
-                            break
-
-                # m==0 is only possible in test-code (e.g. load_test.py)
-                if m != 0:
-                    m.logout()
-
-            cons.close()
+            self.handle_backlogged(m)
+            self.handle_new(m)
+            self.archive_processed(m)
+            self.disconnect_from_imapserver(m)
 
         time.sleep(self.poll_period)
 
@@ -849,3 +1021,5 @@ class mailFetcher(threading.Thread):
 
         logmsg = "Exiting fetcher - this should NEVER happen!"
         c.log_a_msg(self.logger_queue, self.name, logmsg, "ERROR")
+
+

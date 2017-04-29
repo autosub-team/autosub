@@ -278,17 +278,17 @@ class MailSender(threading.Thread):
         return msg
 
 ####
-# backup_message
+# archive_message
 ####
-    def backup_message(self, messageid):
+    def archive_message(self, messageid, is_finished_job=False):
         """
         trigger  archivation of an e-mail
         """
 
-        logmsg = "request backup of message with messageid: {0}".format(messageid)
+        logmsg = "request archiving of message with messageid: {0}".format(messageid)
         c.log_a_msg(self.logger_queue, self.name, logmsg, "DEBUG")
 
-        self.arch_queue.put(dict({"mid": messageid}))
+        self.arch_queue.put(dict({"mid": messageid, "isfinishedjob": is_finished_job}))
 
 ####
 # send_out_email
@@ -477,7 +477,7 @@ class MailSender(threading.Thread):
                         msg = self.assemble_email(msg, message_text, '')
                         self.send_out_email(recipient, msg.as_string(), \
                                             message_type)
-                        self.backup_message(messageid)
+                        self.archive_message(messageid)
                     else:
                         path_to_task = str(paths[0])
                         path_to_msg = path_to_task + "/description.txt"
@@ -499,7 +499,7 @@ class MailSender(threading.Thread):
                                                   attachments)
                         self.send_out_email(recipient, msg.as_string(), \
                                             message_type)
-                        self.backup_message(messageid)
+                        self.archive_message(messageid)
 
             #advance user's current TaskNr to the Task task_nr if he is not
             # at a higher task yet
@@ -545,35 +545,9 @@ class MailSender(threading.Thread):
 
             msg = self.assemble_email(msg, message_text, reply_attachments)
             self.send_out_email(recipient, msg.as_string(), message_type)
-            self.backup_message(messageid)
 
-        elif message_type == "SecAlert":
-        #################
-        #  SEC ALERT    #
-        #################
-            admin_mails = self.get_admin_emails()
-            for admin_mail in admin_mails:
-                msg['To'] = admin_mail
-                path_to_msg = "users/"+ user_id + "/Task" + task_nr + "/error_msg"
-                error_msg = self.read_text_file(path_to_msg)
-                msg['Subject'] = "Security Alert User:" + recipient
-                message_text = "Error report:\n\n""" + error_msg
-                msg = self.assemble_email(msg, message_text, '')
-                self.send_out_email(admin_mail, msg.as_string(), message_type)
-                self.backup_message(messageid)
-
-        elif message_type == "TaskAlert":
-        #################
-        #   TASK ALERT  #
-        #################
-            admin_mails = self.get_admin_emails()
-            for admin_mail in admin_mails:
-                msg['To'] = admin_mail
-                msg['Subject'] = "Task Error Alert Task " \
-                                 + task_nr + " User " + user_id
-                message_text = "Something went wrong with task/testbench analyzation for Task " + task_nr +" and User " + user_id + " . Either the entity or testbench analyzation threw an error."
-                msg = self.assemble_email(msg, message_text, '')
-                self.send_out_email(admin_mail, msg.as_string(), message_type)
+            # archive and notify that worker finished
+            self.archive_message(messageid, is_finished_job=True)
 
         elif message_type == "Success":
         #################
@@ -602,7 +576,39 @@ class MailSender(threading.Thread):
                 msg = self.assemble_email(msg, message_text, '')
                 self.send_out_email(recipient, msg.as_string(), "LastSolved")
 
-            self.backup_message(messageid)
+            # archive and notify that worker finished
+            self.archive_message(messageid, is_finished_job=True)
+
+        elif message_type == "SecAlert":
+        #################
+        #  SEC ALERT    #
+        #################
+            admin_mails = self.get_admin_emails()
+            for admin_mail in admin_mails:
+                msg['To'] = admin_mail
+                path_to_msg = "users/"+ user_id + "/Task" + task_nr + "/error_msg"
+                error_msg = self.read_text_file(path_to_msg)
+                msg['Subject'] = "Security Alert User:" + recipient
+                message_text = "Error report:\n\n""" + error_msg
+                msg = self.assemble_email(msg, message_text, '')
+                self.send_out_email(admin_mail, msg.as_string(), message_type)
+                self.archive_message(messageid)
+
+        elif message_type == "TaskAlert":
+        #################
+        #   TASK ALERT  #
+        #################
+            admin_mails = self.get_admin_emails()
+            for admin_mail in admin_mails:
+                msg['To'] = admin_mail
+                msg['Subject'] = "Task Error Alert Task " \
+                                 + task_nr + " User " + user_id
+                message_text = ("There was an error with the task files analyzation for Task {0} " \
+                                "and User {1}. Check the tasks.stderr and tasks.stdout to "
+                                "find what caused it.").format(task_nr, user_id)
+                msg = self.assemble_email(msg, message_text, '')
+                self.send_out_email(admin_mail, msg.as_string(), message_type)
+
 
 
         elif message_type == "Status":
@@ -626,11 +632,11 @@ class MailSender(threading.Thread):
                     attachments = str(res[0]).split()
                 msg = self.assemble_email(msg, message_text, attachments)
                 self.send_out_email(recipient, msg.as_string(), message_type)
-                self.backup_message(messageid)
+                self.archive_message(messageid)
             else:
                 msg = self.assemble_email(msg, message_text, attachments)
                 self.send_out_email(recipient, msg.as_string(), message_type)
-                self.backup_message(messageid)
+                self.archive_message(messageid)
 
         elif message_type == "InvalidTask":
         #################
@@ -640,7 +646,7 @@ class MailSender(threading.Thread):
             message_text = self.read_specialmessage('INVALID')
             msg = self.assemble_email(msg, message_text, '')
             self.send_out_email(recipient, msg.as_string(), message_type)
-            self.backup_message(messageid)
+            self.archive_message(messageid)
 
         elif message_type == "SkipNotPossible":
         ######################
@@ -650,7 +656,7 @@ class MailSender(threading.Thread):
             message_text = self.read_specialmessage('SKIPNOTPOSSIBLE')
             msg = self.assemble_email(msg, message_text, '')
             self.send_out_email(recipient, msg.as_string(), message_type)
-            self.backup_message(messageid)
+            self.archive_message(messageid)
 
         elif message_type == "TaskNotSubmittable":
         #########################
@@ -660,7 +666,7 @@ class MailSender(threading.Thread):
             message_text = self.read_specialmessage('TASKNOTSUBMITTABLE')
             msg = self.assemble_email(msg, message_text, '')
             self.send_out_email(recipient, msg.as_string(), message_type)
-            self.backup_message(messageid)
+            self.archive_message(messageid)
 
         elif message_type == "CurLast":
         #################
@@ -676,7 +682,7 @@ class MailSender(threading.Thread):
                    self.logger_queue, self.name))
             msg = self.assemble_email(msg, message_text, '')
             self.send_out_email(recipient, msg.as_string(), message_type)
-            self.backup_message(messageid)
+            self.archive_message(messageid)
 
         elif message_type == "DeadTask":
         #################
@@ -686,7 +692,7 @@ class MailSender(threading.Thread):
             message_text = self.read_specialmessage('DEADTASK')
             msg = self.assemble_email(msg, message_text, '')
             self.send_out_email(recipient, msg.as_string(), message_type)
-            self.backup_message(messageid)
+            self.archive_message(messageid)
 
         elif message_type == "Usage":
         #################
@@ -696,7 +702,7 @@ class MailSender(threading.Thread):
             message_text = self.read_specialmessage('USAGE')
             msg = self.assemble_email(msg, message_text, '')
             self.send_out_email(recipient, msg.as_string(), message_type)
-            self.backup_message(messageid)
+            self.archive_message(messageid)
 
         elif message_type == "Question":
         #################
@@ -706,7 +712,7 @@ class MailSender(threading.Thread):
             message_text = self.read_specialmessage('QUESTION')
             msg = self.assemble_email(msg, message_text, '')
             self.send_out_email(recipient, msg.as_string(), message_type)
-            self.backup_message(messageid)
+            self.archive_message(messageid)
 
         elif message_type == "QFwd":
         #################
@@ -727,7 +733,7 @@ class MailSender(threading.Thread):
 
             msg = self.assemble_email(msg, message_text, '')
             self.send_out_email(recipient, msg.as_string(), message_type)
-            self.backup_message(messageid)
+            self.archive_message(messageid)
 
         elif message_type == "Welcome":
         #################
@@ -738,7 +744,7 @@ class MailSender(threading.Thread):
             message_text = self.read_specialmessage('WELCOME')
             msg = self.assemble_email(msg, message_text, '')
             self.send_out_email(recipient, msg.as_string(), message_type)
-            self.backup_message(messageid)
+            self.archive_message(messageid)
 
         elif message_type == "RegOver":
         #################
@@ -748,7 +754,7 @@ class MailSender(threading.Thread):
             message_text = self.read_specialmessage('REGOVER')
             msg = self.assemble_email(msg, message_text, '')
             self.send_out_email(recipient, msg.as_string(), message_type)
-            self.backup_message(messageid)
+            self.archive_message(messageid)
 
         elif message_type == "NotAllowed":
         #################
@@ -758,7 +764,7 @@ class MailSender(threading.Thread):
             message_text = self.read_specialmessage('NOTALLOWED')
             msg = self.assemble_email(msg, message_text, '')
             self.send_out_email(recipient, msg.as_string(), message_type)
-            self.backup_message(messageid)
+            self.archive_message(messageid)
 
         else:
         #################
@@ -768,7 +774,7 @@ class MailSender(threading.Thread):
                         "Unkown Message Type in the sender_queue!", "ERROR")
             msg = self.assemble_email(msg, message_text, '')
             self.send_out_email(recipient, msg.as_string(), message_type)
-            self.backup_message(messageid)
+            self.archive_message(messageid)
 
         cons.close()
         conc.close()
