@@ -130,13 +130,13 @@ begin
             if Output /= data_n_test_array(i) then  -- there should be no senseful data in register 0 for now
                report "good";
             else
-               report "Data was written to register 0 using IN1 as input. This should not be possible." severity failure;
+               report "§{Data was written to register 0 using IN1 as input. This should not be possible.}§" severity failure;
             end if;
          else
             if Output = data_n_test_array(i) then
                report "good";
             else
-               report "The data written to the registers did not match the read data." severity failure;
+               report "§{The data written to the registers did not match the read data.}§" severity failure;
             end if;
          end if;
          
@@ -165,7 +165,7 @@ begin
          if Output /= data_n_test_array(i + N_n) then  -- there should be no new data
             report "good";
          else
-            report "Data was written although the WE1 bit was not set." severity failure;
+            report "§{Data was written although the WE1 bit was not set.}§" severity failure;
          end if;
          
       end loop;
@@ -185,13 +185,13 @@ begin
                if Output /= data_n_test_array(i + N_n) then  -- there should be no senseful data in register 0 for now
                   report "good";
                else
-                  report "Data was written to register 0 using IN1 as input. This should not be possible." severity failure;
+                  report "§{Data was written to register 0 using IN1 as input. This should not be possible.}§" severity failure;
                end if;
             else
                if Output = data_n_test_array(i + N_n) then
                   report "good";
                else
-                  report "On a simultaneous read and write from the same register, the input IN1 was not bypassed immediately to the Output." severity failure;
+                  report "§{On a simultaneous read and write from the same register, the input IN1 was not bypassed immediately to the Output.}§" severity failure;
                end if;
             end if;
          elsif n_bypass_or_read_priority = '1' then    -- read priority check
@@ -199,13 +199,13 @@ begin
                if Output /= data_n_test_array(i) then  -- there should be no senseful data in register 0 for now
                   report "good";
                else
-                  report "Data was written to register 0 using IN1 as input. This should not be possible." severity failure;
+                  report "§{Data was written to register 0 using IN1 as input. This should not be possible.}§" severity failure;
                end if;
             else
                if Output = data_n_test_array(i) then
                   report "good";
                else
-                  report "On a simultaneous read and write from the same register, the input IN1 was not passed through at the next rising edge of the CLK signal to the Output." severity failure;
+                  report "§{On a simultaneous read and write from the same register, the input IN1 was not passed through at the next rising edge of the CLK signal to the Output.}§" severity failure;
                end if;
             end if;
          end if;
@@ -225,13 +225,13 @@ begin
             if Output /= data_n_test_array(i + N_n) then  -- there should be no senseful data in register 0 for now
                report "good";
             else
-               report "Data was written to register 0 using IN1 as input. This should not be possible." severity failure;
+               report "§{Data was written to register 0 using IN1 as input. This should not be possible.}§" severity failure;
             end if;
          else
             if Output = data_n_test_array(i + N_n) then
                report "good";
             else
-               report "After a simultaneous read and write from the same register, the written data could not be read out." severity failure;
+               report "§{After a simultaneous read and write from the same register, the written data could not be read out.}§" severity failure;
             end if;
          end if;
          
@@ -263,7 +263,7 @@ begin
       if Output((special_reg0_size - 1) downto 0) = reg0_test_vector_1 then
          report "good";
       else
-         report "The data written to the special register 0 did not match the read out data." severity failure;
+         report "§{The data written to the special register 0 did not match the read out data.}§" severity failure;
       end if;
       
       
@@ -292,7 +292,7 @@ begin
       if Output((special_reg0_size - 1) downto 0) /= reg0_test_vector_2 then  -- there should be no new data
          report "good";
       else
-         report "Data was written to register 0 although the WE2 bit was not set." severity failure;
+         report "§{Data was written to register 0 although the WE2 bit was not set.}§" severity failure;
       end if;  
       
       
@@ -309,13 +309,13 @@ begin
             if Output(i) = reg0_test_vector_2(i) then
                report "good";
             else
-               report "On a simultaneous read and write from the special register 0, the input IN2 was not bypassed immediately to the Output." severity failure;
+               report "§{On a simultaneous read and write from the special register 0, the input IN2 was not bypassed immediately to the Output.}§" severity failure;
             end if;
          elsif reg0_bypass_or_read_priority= '1' then    -- read priority check
             if Output(i) = reg0_test_vector_1(i) then
                report "good";
             else
-               report "On a simultaneous read and write from the special register 0, the input IN2 was not passed through at the next rising edge of the CLK signal to the Output." severity failure;
+               report "§{On a simultaneous read and write from the special register 0, the input IN2 was not passed through at the next rising edge of the CLK signal to the Output.}§" severity failure;
             end if;
          end if;
       
@@ -331,7 +331,7 @@ begin
       if Output((special_reg0_size - 1) downto 0) = reg0_test_vector_2 then
          report "good";
       else
-         report "After a simultaneous read and write from special register 0, the written data could not be read out again." severity failure;
+         report "§{After a simultaneous read and write from special register 0, the written data could not be read out again.}§" severity failure;
       end if;
       
       

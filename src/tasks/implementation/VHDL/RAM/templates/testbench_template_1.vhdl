@@ -88,9 +88,9 @@ begin
     en_read <= '0';
     wait for Clk_period;
      if (output/=Z_out and output/=U_out) then
-        report " The ouput is '" & to_string(std_logic_vector(output)) & "'. However, the output should be high impedance (Z) when nothing is read from the memory." severity failure;
+        report "§{The ouput is '" & to_string(std_logic_vector(output)) & "'. However, the output should be high impedance (Z) when nothing is read from the memory.}§" severity failure;
      elsif (output/=Z_out and output=U_out) then
-        report " The output should be high impedance (Z) when nothing is read from the memory." severity failure;
+        report "§{The output should be high impedance (Z) when nothing is read from the memory.}§" severity failure;
      end if; 
     
     --check the size of RAM
@@ -117,7 +117,7 @@ begin
         input2 <= content_test_in(i);
         wait for Clk_period;
         if (output/=Z_out) then
-            report " In your code, the output is not high impedance (Z) when only en_write1 is enabled." severity failure;
+            report "§{In your code, the output is not high impedance (Z) when only en_write1 is enabled.}§" severity failure;
         end if;   
       
         -- check if the data has been written in the memory
@@ -128,13 +128,13 @@ begin
         addr1 <= random_addr(15-i);   
          wait for Clk_period;
          if (output=content_test_out(i) and content_test_out(i)/=content_out(15-i) and content_test_out(i)/=zero_out) then
-            report " In your code, input2 is written to the RAM when only en_write1 is enabled." severity failure;
+            report "§{In your code, input2 is written to the RAM when only en_write1 is enabled.}§" severity failure;
          end if;  
          
         addr1 <= random_addr(i);   
         wait for Clk_period;      
         if (output/=content_out(i)) then
-            report " The data cannot be written to the memory correctly when en_write1 is enabled, or the content of memory cannot be read when en_read is enabled." severity failure;
+            report "§{The data cannot be written to the memory correctly when en_write1 is enabled, or the content of memory cannot be read when en_read is enabled.}§" severity failure;
         end if;  
         -- check if higher significant half of input is not written to the memory correctly                 
         if (%%WRITELENGTH+1)/(%%DATASIZE)=2 then
@@ -143,7 +143,7 @@ begin
              addr1 <= std_logic_vector(to_unsigned(to_integer(unsigned(random_addr(i)))+1, %%ADDRLENGTH+1));
              wait for Clk_period; 
              if (output(%%DATASIZE-1 downto 0)/=content_in(i)(%%WRITELENGTH downto %%DATASIZE)) then
-                 report " The upper half of input1 is not written to the memory correctly when en_write1 is only enabled. Note that the length of input is twice the length of each memory cell." severity failure;
+                 report "§{The upper half of input1 is not written to the memory correctly when en_write1 is only enabled. Note that the length of input is twice the length of each memory cell.}§" severity failure;
              end if;              
          end if;
          
@@ -151,7 +151,7 @@ begin
             addr1 <= std_logic_vector(to_unsigned(to_integer(unsigned(random_addr(i)))+1, %%ADDRLENGTH+1));		     
             wait for Clk_period;   
             if (output/=content_in(i)(%%WRITELENGTH downto %%READLENGTH+1)) then
-                report " The upper half of input1 is not written to the memory correctly when en_write1 is only enabled or when only en_read is enabled." severity failure;
+                report "§{The upper half of input1 is not written to the memory correctly when en_write1 is only enabled or when only en_read is enabled.}§" severity failure;
             end if;
         end if;
         end if;
@@ -166,7 +166,7 @@ begin
         input1 <= content_in(i);
         wait for Clk_period;
         if (output/=Z_out) then
-            report " In your code, the output is not high impedance (Z) when only en_write1 is enabled." severity failure;
+            report "§{In your code, the output is not high impedance (Z) when only en_write1 is enabled.}§" severity failure;
         end if;                   
      end loop;
      
@@ -188,13 +188,13 @@ begin
         addr1 <= random_addr(i); 
         wait for Clk_period; 
         if (output/=content_out(i)) then
-            report " In your code, input1 is written to the RAM when only en_read is enabled." severity failure;
+            report "§{In your code, input1 is written to the RAM when only en_read is enabled.}§" severity failure;
         end if;  
 
         addr1 <= random_addr(15-i);
          wait for Clk_period;  
         if (output/=content_out(15-i)) then
-            report " In your code, input2 is written to the RAM when only en_read is enabled." severity failure;
+            report "§{In your code, input2 is written to the RAM when only en_read is enabled.}§" severity failure;
         end if;  
      end loop;
      
@@ -210,7 +210,7 @@ begin
         input1 <= content_test_in(15-i); 
         wait for Clk_period; 
         if (output/=Z_out) then
-            report " In your code, the output is not high impedance (Z) when only en_write2 is enabled." severity failure;
+            report "§{In your code, the output is not high impedance (Z) when only en_write2 is enabled." severity failure;
         end if;            
         -- check if the data has been written in the memory
         en_read <= '1';
@@ -218,7 +218,7 @@ begin
         addr1 <= random_addr(i);   
         wait for Clk_period; 
         if (output/=content_test_out(i)) then
-            report " input2 cannot be written to the memory correctly when en_write2 is enabled, or the content of memory cannot be read when en_read is enabled." severity failure;
+            report "§{input2 cannot be written to the memory correctly when en_write2 is enabled, or the content of memory cannot be read when en_read is enabled.}§" severity failure;
         end if;  
         -- check if higher significant half of input is not written in the memory correctly                 
         if (%%WRITELENGTH+1)/(%%DATASIZE)=2 then
@@ -226,7 +226,7 @@ begin
             addr1 <= std_logic_vector(to_unsigned(to_integer(unsigned(random_addr(i)))+1, %%ADDRLENGTH+1));
             wait for Clk_period;   
             if (output/=content_test_in(i)(%%WRITELENGTH downto %%READLENGTH+1)) then
-                report " The upper half of input2 is not written to the memory correctly when en_write2 is enabled." severity failure;
+                report "§{The upper half of input2 is not written to the memory correctly when en_write2 is enabled.}§" severity failure;
             end if;
         end if; 
       end if;
@@ -238,7 +238,7 @@ begin
         addr1 <= random_addr(15-i);
         wait for Clk_period;      
         if (output=content_test_out(15-i) and content_test_out(15-i)/=content_out(15-i)) then
-            report " In your code, input1 is written to the RAM when only en_write2 is enabled." severity failure;
+            report "§{In your code, input1 is written to the RAM when only en_write2 is enabled.}§" severity failure;
         end if; 
         end if;
      end loop;
@@ -255,21 +255,21 @@ begin
          input2 <= content_in(15-i);
          wait for Clk_period;
          if (output/=Z_out) then
-            report " In your code, the output is not high impedance (Z) when en_write1 and en_read signals are both enabled." severity failure;
+            report "§{In your code, the output is not high impedance (Z) when en_write1 and en_read signals are both enabled.}§" severity failure;
          end if;  
          -- check that the data which is read is the previous one
          en_write1 <= '0';
          addr1 <= random_addr(i); 
          wait for Clk_period;
          if (output/=content_test_out(i)) then
-            report " In your code, input1 is written to the RAM when en_write1 and en_read signals are both enabled." severity failure;
+            report "§{In your code, input1 is written to the RAM when en_write1 and en_read signals are both enabled.}§" severity failure;
          end if;        
          
          en_write1 <= '0';
          addr1 <= random_addr(15-i); 
          wait for Clk_period;
          if (output/=content_test_out(15-i)) then
-            report " In your code, input2 is written to the RAM when en_write1 and en_read signals are both enabled." severity failure;
+            report "§{In your code, input2 is written to the RAM when en_write1 and en_read signals are both enabled.}§" severity failure;
          end if;        
          
      end loop;
@@ -287,7 +287,7 @@ begin
          input2 <= content_in(i);
          wait for Clk_period;
          if (output/=Z_out) then
-            report " In your code, the output is not high impedance (Z) when en_read is not enabled and both writing operations have the same address." severity failure;
+            report "§{In your code, the output is not high impedance (Z) when en_read is not enabled and both writing operations have the same address.}§" severity failure;
          end if;             
          -- check that the data which is read is the previous one
          en_read <= '1';
@@ -295,7 +295,7 @@ begin
      	    en_write2 <= '0';
          wait for Clk_period;
          if (output/=content_test_out(i)) then
-            report " In your code, the content of RAM changes when both writing operations have the same address." severity failure;
+            report "§{In your code, the content of RAM changes when both writing operations have the same address.}§" severity failure;
          end if;        
      end loop;
      
@@ -311,7 +311,7 @@ begin
      input2 <= content_in(i);
      wait for Clk_period;
      if (output/=Z_out) then
-        report " In your code, the output is not high impedance (Z) when only both en_write signals are enabled and addr1 is equal to the next higher address of addr2 (addr1=addr2+1)." severity failure;
+        report "§{In your code, the output is not high impedance (Z) when only both en_write signals are enabled and addr1 is equal to the next higher address of addr2 (addr1=addr2+1).}§" severity failure;
      end if;             
      -- check that the data which is read is the previous one
      en_read <= '1';
@@ -321,12 +321,12 @@ begin
      wait for Clk_period;
      if  (%%WRITELENGTH+1)/(%%DATASIZE)=2 then   
       if (output/=content_test_out(i)) then
-        report " In your code, the content of RAM changes when both en_write signals are enabled and addr1 is equal to the next higher address of addr2 (addr1=addr2+1)." severity failure;
+        report "§{In your code, the content of RAM changes when both en_write signals are enabled and addr1 is equal to the next higher address of addr2 (addr1=addr2+1).}§" severity failure;
       end if;
       
      elsif  (%%WRITELENGTH+1)/(%%DATASIZE)=1 then
          if (output(%%DATASIZE-1 downto 0)/=content_out(i)(%%DATASIZE-1 downto 0)) then
-            report " In your code, input2 is not written to the RAM correctly when both en_write signals are enabled and addr1 is equal to the next higher address of addr2 (addr1=addr2+1)." severity failure;
+            report "§{In your code, input2 is not written to the RAM correctly when both en_write signals are enabled and addr1 is equal to the next higher address of addr2 (addr1=addr2+1).}§" severity failure;
          end if;
      end if;
    end loop;
@@ -341,7 +341,7 @@ begin
      input2 <= content_in(i);
      wait for Clk_period;
      if (output/=Z_out) then
-        report " In your code, the output is not high impedance (Z) when only both en_write signals are enabled and addr2 is equal to the next higher address of addr1 (addr2=addr1+1)." severity failure;
+        report "§{In your code, the output is not high impedance (Z) when only both en_write signals are enabled and addr2 is equal to the next higher address of addr1 (addr2=addr1+1).}§" severity failure;
      end if;             
      -- check that the data which is read is the previous one
      en_read <= '1';
@@ -351,11 +351,11 @@ begin
      wait for Clk_period;
      if  (%%WRITELENGTH+1)/(%%DATASIZE)=2 then   
      if (output/=content_test_out(i)) then
-        report " In your code, the content of RAM changes when only both en_write signals are enabled and addr2 is equal to the next higher address of addr1 (addr2=addr1+1)." severity failure;
+        report "§{In your code, the content of RAM changes when only both en_write signals are enabled and addr2 is equal to the next higher address of addr1 (addr2=addr1+1).}§" severity failure;
      end if;              
      elsif  (%%WRITELENGTH+1)/(%%DATASIZE)=1 then
          if (output(%%DATASIZE-1 downto 0)/=content_out(i)(%%DATASIZE-1 downto 0)) then
-            report " In your code, input1 is not written to the RAM correctly when both en_write signals are enabled and addr2 is equal to the next higher address of addr1 (addr2=addr1+1)." severity failure;
+            report "§{In your code, input1 is not written to the RAM correctly when both en_write signals are enabled and addr2 is equal to the next higher address of addr1 (addr2=addr1+1).}§" severity failure;
          end if;
      end if;
   end loop;     
@@ -389,7 +389,7 @@ begin
          input2 <= content_in(15-i); 
          wait for Clk_period;
          if (output/=Z_out) then
-            report " In your code, the output is not high impedance (Z) when en_read is not enabled and both writing operations have different addresses." severity failure;
+            report "§{In your code, the output is not high impedance (Z) when en_read is not enabled and both writing operations have different addresses.}§" severity failure;
          end if;             
          -- check that the data which is read is the previous one
          en_read <= '1';
@@ -398,7 +398,7 @@ begin
          addr1 <= random_addr(i); 
          wait for Clk_period;
          if (output/=content_out(i)) then
-            report " In your code, input1 is not written to the RAM correctly when both en_write signals are enabled and operating on two different addresses." severity failure;
+            report "§{In your code, input1 is not written to the RAM correctly when both en_write signals are enabled and operating on two different addresses.}§" severity failure;
          end if;
         -- check if higher significant half of input is not written in the memory correctly                 
          
@@ -408,7 +408,7 @@ begin
             addr1 <= std_logic_vector(to_unsigned(to_integer(unsigned(random_addr(i)))+1, %%ADDRLENGTH+1));
             wait for Clk_period;   
             if (output/=content_in(i)(%%WRITELENGTH downto %%READLENGTH+1)) then
-                report " The upper half of input1 is not written in the memory correctly when both en_write signals are enabled." severity failure;
+                report "§{The upper half of input1 is not written in the memory correctly when both en_write signals are enabled.}§" severity failure;
             end if;
         end if;
         end if;
@@ -416,7 +416,7 @@ begin
          addr1 <= random_addr(15-i); 
          wait for Clk_period;
          if (output/=content_out(15-i)) then
-            report " In your code, the input2 is not written to the RAM correctly when both en_write signals are enabled and operating on two different addresses." severity failure;
+            report "§{In your code, the input2 is not written to the RAM correctly when both en_write signals are enabled and operating on two different addresses.}§" severity failure;
          end if;  
         -- check if higher significant half of input is not written in the memory correctly                 
         if (%%WRITELENGTH+1)/(%%DATASIZE)=2 then
@@ -424,7 +424,7 @@ begin
             addr1 <= std_logic_vector(to_unsigned(to_integer(unsigned(random_addr(15-i)))+1, %%ADDRLENGTH+1));
             wait for Clk_period;   
             if (output/=content_in(15-i)(%%WRITELENGTH downto %%READLENGTH+1)) then
-                report " The upper half of input2 is not written in the memory correctly when both en_write signals are enabled." severity failure;
+                report "§{The upper half of input2 is not written in the memory correctly when both en_write signals are enabled.}§" severity failure;
             end if;
         end if; 
       end if; 
@@ -442,14 +442,14 @@ begin
          wait for Clk_period;
          -- check that the data which is read is the previous one
          if (output/=Z_out) then
-            report " In your code, output is not high impedance (Z) when en_read and en_write2 are both enabled at the same time." severity failure;
+            report "§{In your code, output is not high impedance (Z) when en_read and en_write2 are both enabled at the same time.}§" severity failure;
          end if;
          
          en_read <= '1';
          en_write2 <= '0';
          wait for Clk_period;
          if (output/=content_out(i)) then
-            report " In your code, input2 is written to the RAM when en_read and en_write2 are both enabled and operating on the same address. But, it is not possible to read from and write to the same address at the same time." severity failure;
+            report "§{In your code, input2 is written to the RAM when en_read and en_write2 are both enabled and operating on the same address. But, it is not possible to read from and write to the same address at the same time.}§" severity failure;
          end if;           
          
      end loop;
@@ -469,13 +469,13 @@ begin
 	wait for Clk_period;
 	if  (%%READLENGTH+1)/(%%DATASIZE)=2 then 
 	  if (output/=content_out(i)) then
-	    report " In your code, the content of RAM changes when en_read and en_write2 are both enabled and addr2 is equal to the next higher address of addr1 (addr2=addr1+1)." severity failure;
+	    report "§{In your code, the content of RAM changes when en_read and en_write2 are both enabled and addr2 is equal to the next higher address of addr1 (addr2=addr1+1).}§" severity failure;
 	  end if; 
 	elsif  (%%READLENGTH+1)/(%%DATASIZE)=1 then
 	  addr1 <= std_logic_vector(to_unsigned(to_integer(unsigned(random_addr(i)))+1, %%ADDRLENGTH+1)); 
 	  wait for Clk_period;
 	  if (output/=content_test_in(i)(%%DATASIZE-1 downto 0)) then
-            report " In your code, input2 is not written to the RAM correctly when only en_write2 and en_read are both enabled and addr2 is equal to the next higher address of addr1 (addr2=addr1+1)." severity failure;
+            report "§{In your code, input2 is not written to the RAM correctly when only en_write2 and en_read are both enabled and addr2 is equal to the next higher address of addr1 (addr2=addr1+1).}§" severity failure;
 	  end if; 
         end if;
       end loop;
@@ -513,11 +513,11 @@ begin
 	wait for Clk_period;
 	if (%%WRITELENGTH+1)/(%%DATASIZE)=2 then 
 	  if (output/=content_out(i)) then
-	      report " In your code, the content of RAM changes when en_read and en_write2 are both enabled and addr1 is equal to the next higher address of addr2 (addr1=addr2+1)." severity failure;
+	      report "§{In your code, the content of RAM changes when en_read and en_write2 are both enabled and addr1 is equal to the next higher address of addr2 (addr1=addr2+1).}§" severity failure;
 	  end if;  
 	elsif (%%WRITELENGTH+1)/(%%DATASIZE)=1 then 
 	  if (output/=content_test_out(i)) then
-            report " In your code, input2 is not written to the RAM correctly when only en_write2 and en_read are both enabled and addr1 is equal to the next higher address of addr2 (addr1=addr2+1)." severity failure;
+            report "§{In your code, input2 is not written to the RAM correctly when only en_write2 and en_read are both enabled and addr1 is equal to the next higher address of addr2 (addr1=addr2+1).}§" severity failure;
 	  end if; 
         end if;
       end loop; 
@@ -551,7 +551,7 @@ begin
         input2 <= content_test_in(i);
         wait for Clk_period;
         if (output/=content_out(15-i)) then
-            report " In your code, the content of memory cannot be read correctly when only en_write2 and en_read are both enabled." severity failure;
+            report "§{In your code, the content of memory cannot be read correctly when only en_write2 and en_read are both enabled.}§" severity failure;
         end if;   
      end loop;       
         -- check if the data has been written in the memory
@@ -563,13 +563,13 @@ begin
         addr1 <= random_addr(15-i);   
          wait for Clk_period;
          if (output=content_out(i) and content_out(i)/=content_out(15-i)) then
-            report " In your code, input1 is written to the RAM when only en_write2 and en_read are both enabled." severity failure;
+            report "§{In your code, input1 is written to the RAM when only en_write2 and en_read are both enabled.}§" severity failure;
          end if; 
          
         addr1 <= random_addr(i);   
         wait for Clk_period;      
         if (output/=content_test_out(i)) then
-            report " In your code, input2 is not written to the RAM correctly when only en_write2 and en_read are both enabled." severity failure;
+            report "§{In your code, input2 is not written to the RAM correctly when only en_write2 and en_read are both enabled.}$" severity failure;
         end if;                
         
         -- check if higher significant half of input is not written in the memory correctly                 
@@ -579,7 +579,7 @@ begin
             addr1 <= std_logic_vector(to_unsigned(to_integer(unsigned(random_addr(i)))+1, %%ADDRLENGTH+1));
             wait for Clk_period;   
             if (output/=content_test_in(i)(%%WRITELENGTH downto %%READLENGTH+1)) then
-                report " The upper half of input1 is not written to the memory correctly when en_write2 and en_read are both enabled." severity failure;
+                report "§{The upper half of input1 is not written to the memory correctly when en_write2 and en_read are both enabled.}§" severity failure;
             end if;
 	  end if;   
         end if; 
@@ -610,7 +610,7 @@ begin
          input2 <= content_in(15-i); 
          wait for Clk_period;
          if (output/=Z_out) then
-            report " In your code, the output is not high impedance (Z) when all enable signals are enabled at the same time." severity failure;
+            report "§{In your code, the output is not high impedance (Z) when all enable signals are enabled at the same time.}§" severity failure;
          end if;           
          
          en_read <= '1';
@@ -619,7 +619,7 @@ begin
          addr1 <= random_addr(i); 
          wait for Clk_period;
          if (output/=content_test_out(i)) then
-            report " In your code, input1 is written to the RAM when all enable signals are enabled. But, the content of the RAM must not be changed and the outputs shall be high impedance (Z) in this case." severity failure;
+            report "§{In your code, input1 is written to the RAM when all enable signals are enabled. But, the content of the RAM must not be changed and the outputs shall be high impedance (Z) in this case.}§" severity failure;
          end if;
          
          en_read <= '1';
@@ -628,7 +628,7 @@ begin
          addr1 <= random_addr(15-i);
          wait for Clk_period;
          if (output/=content_test_out(15-i)) then
-            report " In your code, input2 is written to the RAM when all enable signals are enabled. But, the content of the RAM must not be changed and the outputs shall be high impedance (Z) in this case." severity failure;
+            report "§{In your code, input2 is written to the RAM when all enable signals are enabled. But, the content of the RAM must not be changed and the outputs shall be high impedance (Z) in this case.}§" severity failure;
          end if;             
      end loop;          
      

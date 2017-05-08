@@ -98,17 +98,17 @@ begin
 
             -- check the CRC_VALID
             if(CRC_VALID_UUT /= '1') then
-                write(OUTPUT,string'("Error:\n"));
+                write(OUTPUT,string'("§{Error:\n"));
                 write(OUTPUT,string'("   CRC_VALID is not '1'. Your design does not fullfill the calculation duration constraint or you do not set the CRC_VALID to '1'!\n"));
-                write(OUTPUT,string'("\n\n"));
+                write(OUTPUT,string'("\n\n§}"));
                 report "Simulation error" severity failure;
 
             elsif(patterns(i).CRC /= CRC_UUT) then
-                write(OUTPUT,string'("Error:\n"));
+                write(OUTPUT,string'("§{Error:\n"));
                 write(OUTPUT,string'("   For MSG = ") & image(patterns(i).MSG)&string'("\n"));
                 write(OUTPUT,string'("   Expected CRC = ") & image(patterns(i).CRC) & string'("\n"));
                 write(OUTPUT,string'("   Received CRC = ") & image(CRC_UUT) & string'("\n"));
-                write(OUTPUT,string'("\n\n"));
+                write(OUTPUT,string'("\n\n}§"));
 
                 report "Simulation error" severity failure;
             end if;

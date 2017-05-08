@@ -67,12 +67,12 @@ architecture behavior of pwm_tb is
             if( ( (desired_period_clks-1)<=period_clks(i) ) and (desired_period_clks+1)>=period_clks(i) ) then
                 next;
             else
-            report  "Period not right (Should be " & natural'image(desired_period/(1 ns)) & "ns);First 5 measured Periods:" &
+            report  "§{Period not right (Should be " & natural'image(desired_period/(1 ns)) & "ns);First 5 measured Periods:" &
                     natural'image(periods(0)/(1 ns)) & "ns, " & 
                     natural'image(periods(1)/(1 ns)) & "ns, " & 
                     natural'image(periods(2)/(1 ns)) & "ns, " & 
                     natural'image(periods(3)/(1 ns)) & "ns, " & 
-                    natural'image(periods(4)/(1 ns)) & "ns"
+                    natural'image(periods(4)/(1 ns)) & "ns}§"
                 severity failure;
             end if;
         end loop;
@@ -83,12 +83,12 @@ architecture behavior of pwm_tb is
             if( ( (desired_duty_cycle_clks-1)<=duty_cycle_clks(i) ) and ( (desired_duty_cycle_clks+1)>=duty_cycle_clks(i) ) ) then
                 next;
             else
-            report  "Duty cycle not right (Should be " & natural'image(desired_duty_cycle) & "%); First 5 measured duties:" & 
+            report  "§{Duty cycle not right (Should be " & natural'image(desired_duty_cycle) & "%); First 5 measured duties:" & 
                     natural'image(duty_cycles(0)) & "%, " & 
                     natural'image(duty_cycles(1)) & "%, " & 
                     natural'image(duty_cycles(2)) & "%, " & 
                     natural'image(duty_cycles(3)) & "%, " & 
-                    natural'image(duty_cycles(4)) & "%"
+                    natural'image(duty_cycles(4)) & "%}§"
                 severity failure;
             end if;
         end loop;

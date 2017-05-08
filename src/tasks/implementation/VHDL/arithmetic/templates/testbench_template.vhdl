@@ -287,7 +287,7 @@ begin
             sol_cal :=do_operation_%%OPSTYLE('1');
             -- Compare UUT output with proper output
             if((O_UUT/= sol_cal.O) or (C_UUT /= sol_cal.C) or (V_UUT /= sol_cal.V) or (VALID_UUT /= sol_cal.VALID)) then
-                write(OUTPUT,string'("Error for:"));
+                write(OUTPUT,string'("§{Error for:"));
                 write(OUTPUT,string'("\n"));
                 write(OUTPUT,string'("   %%OPSTYLE,%%OPERATION")); --for debug!!
                 write(OUTPUT,string'("\n"));
@@ -319,7 +319,7 @@ begin
                 write(OUTPUT,string'("   VALID= ")&std_logic'image(VALID_UUT));
                 write(OUTPUT,string'("\n"));
                 write(OUTPUT,string'("\n"));
-                write(OUTPUT,string'("\n"));
+                write(OUTPUT,string'("\n}§"));
 
                 report "Simulation error" severity failure;
             end if;

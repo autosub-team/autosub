@@ -67,13 +67,13 @@ begin
             O_calculated := calcFromFormula(patterns(i));
             -- Compare UUT output with proper output
             if O_UUT /= O_calculated then
-                report  "Error for" & 
+                report  "§{Error for" & 
                         " D=" & std_logic'image(patterns(i).D) &
                         " C=" & std_logic'image(patterns(i).C) & 
                         " B=" & std_logic'image(patterns(i).B) &
                         " A=" & std_logic'image(patterns(i).A) & 
                         "; expected O=" & std_logic'image(O_calculated) &
-                        ", received O=" & std_logic'image(O_UUT) 
+                        ", received O=" & std_logic'image(O_UUT) & "}§"
                 severity failure;
                 exit;
             end if;

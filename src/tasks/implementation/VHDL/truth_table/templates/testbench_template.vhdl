@@ -43,17 +43,16 @@ begin
             wait for 1 ns;
             --Check the outputs.
             if O /= patterns(i).O then
-                report  "Error for" & 
+                report  "§{Error for" & 
                         " D=" & std_logic'image(patterns(i).D) &
                         " C=" & std_logic'image(patterns(i).C) & 
                         " B=" & std_logic'image(patterns(i).B) &
                         " A=" & std_logic'image(patterns(i).A) & 
                         "; expected O=" & std_logic'image(patterns(i).O) &
-                        ", received O=" & std_logic'image(O); 
-                wait;
+                        ", received O=" & std_logic'image(O) & "}§" severity failure; 
             end if;
         end loop;
-        report "Simulation Success";
+        report "Success" severity failure;
         wait;
     end process;
 end behavior;

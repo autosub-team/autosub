@@ -98,16 +98,16 @@ begin
             if(falling_edge(CLK)) then
                   if i < array_size  then
                         if(std_match(Controls, Controls_test_array(i))) then
-                              report " Instruction "
+                              report "Instruction "
                               & String_array(i)
                               & " ...done";
                               if(i = (array_size-1)) then    -- if all testet control signals match:
                                     report "Success" severity failure;
                               end if;
                         else
-                              report " Instruction '"
+                              report "§{Instruction '"
                               & String_array(i)
-                              & "' failed"
+                              & "' failed}§"
                               severity failure;
                         end if;
                         i := i + 1;

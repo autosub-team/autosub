@@ -106,7 +106,7 @@ begin
                 wait for 1 ps;
 
                 if(STATE_UUT /= START or OUTPUT_UUT /= "00") then
-                    write(OUTPUT,string'("\n"));
+                    write(OUTPUT,string'("§{\n"));
 
                     write(OUTPUT,string'("Error for synchronous reset") & string'("\n"));
                     write(OUTPUT,string'("\n"));
@@ -120,7 +120,7 @@ begin
                     write(OUTPUT,string'("   STATE=  ")&Image(STATE_UUT) & string'("\n"));
                     write(OUTPUT,string'("   OUTPUT= ")&Image(OUTPUT_UUT) & string'("\n"));
                     write(OUTPUT,string'("\n"));
-                    write(OUTPUT,string'("\n"));
+                    write(OUTPUT,string'("\n}§"));
                     report "Simulation error" severity failure;
                 end if;--endif check
 
@@ -133,7 +133,7 @@ begin
                 wait for 1 ps;
 
                 if(STATE_UUT /= patterns(i).STATE or OUTPUT_UUT /= patterns(i).OUTPUT) then
-                    write(OUTPUT,string'("\n"));
+                    write(OUTPUT,string'("§{\n"));
 
                     write(OUTPUT,string'("Error:") & string'("\n"));
                     write(OUTPUT,string'("   From STATE = ")&Image(last_state)& string'("\n"));
@@ -146,7 +146,7 @@ begin
                     write(OUTPUT,string'("Received: ") & string'("\n"));
                     write(OUTPUT,string'("   STATE=  ")&Image(STATE_UUT)& string'("\n"));
                     write(OUTPUT,string'("   OUTPUT= ")&Image(OUTPUT_UUT)& string'("\n"));
-                    write(OUTPUT,string'("\n"));
+                    write(OUTPUT,string'("\n}§"));
                     report "Simulation error" severity failure;
                 end if;--endif check
 

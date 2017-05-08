@@ -102,13 +102,13 @@ BEGIN
           if count = '0' then           
             --first instruction
              if (R = "UUUU" or flag ='U') then
-                report " The output is 'UUUU'. Probably, you have not correctly assigned output signal 'R' or 'flag' or enable signal." severity failure;
+                report "§{The output is 'UUUU'. Probably, you have not correctly assigned output signal 'R' or 'flag' or enable signal.}§" severity failure;
                       
 	         elsif (((R /= out_add(16*i+j).O1) or (flag /=out_flag(16*i+j).F1))) then
-	            report " Error for %%INST1 instruction: " &
+	            report "§{Error for %%INST1 instruction: " &
                 "A=" & to_string(input(i)) & ", B=" & to_string(input(j)) &                                 
                 "; expected R=" & to_string(out_add(16*i+j).O1) &  ", expected flag=" & std_logic'image(out_flag(16*i+j).F1) &
-                ", received R=" & to_string(R) & ", received flag=" & std_logic'image(flag) 
+                ", received R=" & to_string(R) & ", received flag=" & std_logic'image(flag) & "}§"
               severity error;
               fail :='1';
               count := '1';
@@ -130,13 +130,13 @@ BEGIN
           wait for Clk_period/10;
           if count = '0' then 
               if (R = "UUUU" or flag ='U') then
-                 report " Probably, you have not correctly assigned output signal 'R' or 'flag' or other variables." severity failure;
+                 report "§{Probably, you have not correctly assigned output signal 'R' or 'flag' or other variables.}§" severity failure;
                                                 
               elsif (((R /= out_add(16*i+j).O2) or (flag /=out_flag(16*i+j).F2))) then
-                 report " Error for %%INST2 instruction: " &
+                 report "§{Error for %%INST2 instruction: " &
                  "A=" & to_string(input(i)) & ", B=" & to_string(input(j)) &                                 
                  "; expected R=" & to_string(out_add(16*i+j).O2) &  ", expected flag=" & std_logic'image(out_flag(16*i+j).F2) &
-                 ", received R=" & to_string(R) & ", received flag=" & std_logic'image(flag) 
+                 ", received R=" & to_string(R) & ", received flag=" & std_logic'image(flag) & "}§"
               severity error;
               fail :='1';
               count := '1';
@@ -158,13 +158,13 @@ BEGIN
           wait for Clk_period/10;
           if count = '0' then  
               if (R = "UUUU" or flag ='U') then
-                  report " Probably, you have not correctly assigned output signal 'R' or 'flag' or other variables." severity failure;
+                  report "§{Probably, you have not correctly assigned output signal 'R' or 'flag' or other variables.}§" severity failure;
                
               elsif ((R /= out_add(16*i+j).O3) or (flag /=out_flag(16*i+j).F3))  then
-                  report " Error for %%INST3 instruction: " &
+                  report "§{Error for %%INST3 instruction: " &
                   "A=" & to_string(input(i)) & ", B=" & to_string(input(j)) &                                                           
                   "; expected R=" & to_string(out_add(16*i+j).O3) &  ", expected flag=" & std_logic'image(out_flag(16*i+j).F3) &
-                  ", received R=" & to_string(R) & ", received flag=" & std_logic'image(flag) 
+                  ", received R=" & to_string(R) & ", received flag=" & std_logic'image(flag) & "}§"
               severity error;
               fail :='1';
               count := '1';
@@ -183,12 +183,12 @@ BEGIN
           wait for Clk_period/10;
           if count = '0' then 
               if (R = "UUUU" or flag ='U') then
-                    report " Probably, you have not correctly assigned output signal 'R' or 'flag' or other variables." severity failure;
+                    report "§{Probably, you have not correctly assigned output signal 'R' or 'flag' or other variables.}§" severity failure;
      
               elsif ((R /= out_shift(i)) or (flag /=out_carry(i))) then
-                    report " Error for %%INST4 instruction: " & "A=" & to_string(input(i)) &
+                    report "§{Error for %%INST4 instruction: " & "A=" & to_string(input(i)) &
                     "; expected R=" & to_string(out_shift(i)) &  ", expected flag=" & std_logic'image(out_carry(i)) &
-                    ", received R=" & to_string(R) & ", received flag=" & std_logic'image(flag) 
+                    ", received R=" & to_string(R) & ", received flag=" & std_logic'image(flag) & "}§"
               severity error;
               fail :='1';
               count := '1';
@@ -224,7 +224,7 @@ BEGIN
    out_2 :=R;
    
    if (out_1/=out_2) then
-          report " ALU is operating on falling edge of the clock signal, but it should not." severity failure;
+          report "§{ALU is operating on falling edge of the clock signal, but it should not.}§" severity failure;
    end if;
    
    wait until rising_edge(Clk);
@@ -238,7 +238,7 @@ BEGIN
        out_2 :=R;
        
        if (out_3/=out_2) then
-          report " ALU is operating on falling edge of the clock signal, but it should not." severity failure;
+          report "§{ALU is operating on falling edge of the clock signal, but it should not.}§" severity failure;
        end if;
        
        wait until rising_edge(Clk);
@@ -246,7 +246,7 @@ BEGIN
        out_3 :=R;
        
        if (out_3=out_2) then  
-           report " ALU is not operating on rising edge of the clock signal." severity failure;
+           report "§{ALU is not operating on rising edge of the clock signal.}§" severity failure;
        end if;
    end if;
    
@@ -273,13 +273,13 @@ BEGIN
       if fail='1' then 
              
 	if (R /= "0000" and flag ='0') then       
-	  report " The output 'R' is not zero when the enable signal is zero." severity failure;
+	  report "§{The output 'R' is not zero when the enable signal is zero.}§" severity failure;
                
         elsif (R = "0000" and flag /='0') then       
-          report " The output 'flag' is not zero when the enable signal is zero." severity failure;
+          report "§{The output 'flag' is not zero when the enable signal is zero.}§" severity failure;
 
          else    
-          report " The outputs are not zero when the enable signal is zero." severity failure;
+          report "§{The outputs are not zero when the enable signal is zero.}§" severity failure;
                    
          end if;
        end if;

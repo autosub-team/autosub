@@ -72,14 +72,14 @@ begin
          addr <= std_logic_vector(to_unsigned(random(i),%%ADDRESSLENGTH));     
          wait for Clk_period*2;
              if (output/=content(random(i)-%%START) and output/=U_out) then
-	      report " ROM is not properly filled with the data specified in the description file: " &
+	      report "§{ROM is not properly filled with the data specified in the description file: " &
                      "In address " & to_string(std_logic_vector(to_unsigned(random(i),%%ADDRESSLENGTH))) & 
                      ", the expected content is " & to_string(content(random(i)-%%START)) &
-                     ". But the received output is " & to_string(output) & "." 
+                     ". But the received output is " & to_string(output) & ".}§" 
                      severity failure;
              elsif (output/=content(random(i)-%%START) and output=U_out) then
-                     report " Output is '" &  to_string(std_logic_vector(U_out)) & 
-                    "'. Probably, you have not correctly assigned or used the output signal 'output' or other variables." severity failure;
+                     report "§{Output is '" &  to_string(std_logic_vector(U_out)) & 
+                    "'. Probably, you have not correctly assigned or used the output signal 'output' or other variables.}§" severity failure;
              end if;
      end loop;
      
@@ -87,9 +87,9 @@ begin
          addr <= std_logic_vector(to_unsigned(i,%%ADDRESSLENGTH));
         wait for Clk_period*2;
          if (output/=zero_out) then
- 	      report " ROM is not properly filled with the data specified in the description file: " &
+ 	      report "§{ROM is not properly filled with the data specified in the description file: " &
                      "In address " & to_string(std_logic_vector(to_unsigned(i,%%ADDRESSLENGTH))) & 
-                     ", the expected content is zero. But the received output is " & to_string(output) & "." 
+                     ", the expected content is zero. But the received output is " & to_string(output) & ".}§" 
                      severity failure;
          end if;
       end loop;
@@ -99,9 +99,9 @@ begin
          addr <= std_logic_vector(to_unsigned(i,%%ADDRESSLENGTH));
         wait for Clk_period*2;
          if (output/=zero_out) then
-	      report " ROM is not properly filled with the data specified in the description file: " &
+	      report "§{ROM is not properly filled with the data specified in the description file: " &
                      "In address " & to_string(std_logic_vector(to_unsigned(i,%%ADDRESSLENGTH))) & 
-                     ", the expected content is zero. But the received output is " & to_string(output) & "."  
+                     ", the expected content is zero. But the received output is " & to_string(output) & ".}§"  
                      severity failure;
          end if;
      end loop;
@@ -143,7 +143,7 @@ begin
     out_2 := output;
     
     if (out_1 /= out_2) then 
-        report " The output is changing on %%oppositeClk of the clock signal, but it should not." severity failure;
+        report "§{The output is changing on %%oppositeClk of the clock signal, but it should not.}§" severity failure;
     end if;
     
     --Check the right edge is used
@@ -157,7 +157,7 @@ begin
     wait for Clk_period/10;
     out_3 := output;  
     if (out_1 = content_clk_check(1) or out_3 /= content_clk_check(1)) then 
-        report " Your output does not change on the first %%mainClk after a new address was set on the input 'addr'." severity failure;
+        report "§{Your output does not change on the first %%mainClk after a new address was set on the input 'addr'.}§" severity failure;
     end if; 
     
     ----------------- enable check-----------------------
@@ -168,10 +168,10 @@ begin
              addr <= std_logic_vector(to_unsigned(random(i),%%ADDRESSLENGTH)); 
              wait for Clk_period/0.9;
 	    if (output = content(random(i)-%%START)) then
-		report " The output is not zero when the enable signal is not active." severity failure;
+		report "§{The output is not zero when the enable signal is not active.}§" severity failure;
 	    elsif (output = U_out) then
-		report " Output is '" &  to_string(std_logic_vector(U_out)) & 
-		"'. Probably, you have not correctly assigned the output signal 'output' or enable signal." severity failure;
+		report "§{Output is '" &  to_string(std_logic_vector(U_out)) & 
+		"'. Probably, you have not correctly assigned the output signal 'output' or enable signal.}§" severity failure;
 	    end if;             
 	end loop;
      

@@ -85,9 +85,9 @@ begin
     en_read <= '0';
     wait for Clk_period;
      if (output/=Z_out and output/=U_out) then
-        report " The ouput is '" & to_string(std_logic_vector(output)) & "'. However, the output should be high impedance (Z) when nothing is read from the memory." severity failure;
+        report "§{The ouput is '" & to_string(std_logic_vector(output)) & "'. However, the output should be high impedance (Z) when nothing is read from the memory.}§" severity failure;
      elsif (output/=Z_out and output=U_out) then
-        report "'" & to_string(std_logic_vector(Z_out)) & "' should be on the output when nothing is read from the memory." severity failure;
+        report "'" & to_string(std_logic_vector(Z_out)) & "' should be on the output when nothing is read from the memory.}§" severity failure;
      end if; 
     --check the size of RAM
      en_write <= '1';
@@ -110,7 +110,7 @@ begin
          input <= content_in(i); 
          wait for Clk_period;
           if (output/=Z_out) then
-             report " In your code, the output is not high impedance (Z) when en_read is not enabled." severity failure;
+             report "§{In your code, the output is not high impedance (Z) when en_read is not enabled.}§" severity failure;
          end if;  
      -- check if the data has been written in the memory
          en_write <= '0';
@@ -119,7 +119,7 @@ begin
          wait for Clk_period;
          
          if (output/=content_out(i)) then
-             report " The data cannot be written to the memory correctly when only en_write is enabled, or the content of memory cannot be read." severity failure;
+             report "§{The data cannot be written to the memory correctly when only en_write is enabled, or the content of memory cannot be read.}§" severity failure;
          end if;
          
         if (%%WRITELENGTH+1)/(%%DATASIZE)=2 then
@@ -128,7 +128,7 @@ begin
              addr2 <= std_logic_vector(to_unsigned(to_integer(unsigned(random_addr(i)))+1, %%ADDRLENGTH+1));
              wait for Clk_period; 
              if (output(%%DATASIZE-1 downto 0)/=content_in(i)(%%WRITELENGTH downto %%DATASIZE)) then
-                 report " The upper half of input is not written to the memory correctly when en_write is only enabled. Note that the length of input is twice the length of each memory cell." severity failure;
+                 report "§{The upper half of input is not written to the memory correctly when en_write is only enabled. Note that the length of input is twice the length of each memory cell.}§" severity failure;
              end if;              
          end if;
          
@@ -136,7 +136,7 @@ begin
              addr2 <= std_logic_vector(to_unsigned(to_integer(unsigned(random_addr(i)))+1, %%ADDRLENGTH+1));
              wait for Clk_period;   
              if (output/=content_in(i)(%%WRITELENGTH downto %%READLENGTH+1)) then
-                 report " The upper half of input is not written to the memory correctly when en_write is only enabled." severity failure;
+                 report "§{The upper half of input is not written to the memory correctly when en_write is only enabled.}§" severity failure;
              end if;        
          end if;
          
@@ -163,7 +163,7 @@ begin
          addr2 <= random_addr(i);  
          wait for Clk_period;   
          if (output=content_test_out(i)) then
-             report " The input is written to the memory when only en_read is enabled." severity failure;
+             report "§{The input is written to the memory when only en_read is enabled.}§" severity failure;
          end if;
      end loop;
      -- check if read and write can happen at the same time to the same address
@@ -179,10 +179,10 @@ begin
          -- check that the data which is read is the previous one
          
          if (output/=content_out(i)) then
-            report " In your code, the output is not the previous content of the RAM when both en_read and en_write are enabled." severity failure;
+            report "§{In your code, the output is not the previous content of the RAM when both en_read and en_write are enabled.}§" severity failure;
          end if;  
          if (output=content_test_out(i)) then
-            report " In your code, the writing operation is done before the reading operation when both en_read and en_write are enabled." severity failure;
+            report "§{In your code, the writing operation is done before the reading operation when both en_read and en_write are enabled.}§" severity failure;
          end if;       	 
          
      end loop;
@@ -195,7 +195,7 @@ begin
          wait for Clk_period;
          
          if (output/=content_test_out(i)) then
-            report " In your code, the input is not written to the RAM correctly when both en_read and en_write are enabled." severity failure;
+            report "§{In your code, the input is not written to the RAM correctly when both en_read and en_write are enabled.}§" severity failure;
          end if;
          
         if (%%WRITELENGTH+1)/(%%DATASIZE)=2 then
@@ -204,7 +204,7 @@ begin
              addr2 <= std_logic_vector(to_unsigned(to_integer(unsigned(random_addr(i)))+1, %%ADDRLENGTH+1));
              wait for Clk_period; 
              if (output(%%DATASIZE-1 downto 0)/=content_test_in(i)(%%WRITELENGTH downto %%DATASIZE)) then
-                 report " The upper half of input is not written to the memory correctly when both en_read and en_write are enabled." severity failure;
+                 report "§{The upper half of input is not written to the memory correctly when both en_read and en_write are enabled.}§" severity failure;
              end if;              
          end if;         
          
@@ -212,7 +212,7 @@ begin
              addr2 <= std_logic_vector(to_unsigned(to_integer(unsigned(random_addr(i)))+1, %%ADDRLENGTH+1));
              wait for Clk_period;   
              if (output/=content_test_in(i)(%%WRITELENGTH downto %%READLENGTH+1)) then
-                 report " The upper half of input is not written to the memory correctly when both en_read and en_write are enabled." severity failure;
+                 report "§{The upper half of input is not written to the memory correctly when both en_read and en_write are enabled.}§" severity failure;
              end if;        
          end if;  
          
@@ -239,7 +239,7 @@ begin
         wait for Clk_period;
         -- check that the data which is read is the previous one
         if (output/=content_test_out(i)) then
-           report " In your code, the content of RAM is not the value before the writing operation or cannot be read correctly when both en_read and en_write are enabled." severity failure;
+           report "§{In your code, the content of RAM is not the value before the writing operation or cannot be read correctly when both en_read and en_write are enabled.}§" severity failure;
         end if; 
 
     end loop;
@@ -259,7 +259,7 @@ begin
         wait for Clk_period;
         -- check that the data which is read is the previous one
         if (output/=content_out(i)) then
-           report " In your code, the input is not written to the RAM correctly when both en_read and en_write are enabled and operating on two different addresses at the same time." severity failure;
+           report "§{In your code, the input is not written to the RAM correctly when both en_read and en_write are enabled and operating on two different addresses at the same time.}§" severity failure;
         end if;  
      
         if (%%WRITELENGTH+1)/(%%DATASIZE)=2 then
@@ -268,7 +268,7 @@ begin
             addr2 <= std_logic_vector(to_unsigned(to_integer(unsigned(random_addr(i)))+1, %%ADDRLENGTH+1));
             wait for Clk_period; 
             if (output(%%DATASIZE-1 downto 0)/=content_in(i)(%%WRITELENGTH downto %%DATASIZE)) then
-                report " The upper half of input is not written to the memory correctly when both en_read and en_write are enabled. " severity failure;
+                report "§{The upper half of input is not written to the memory correctly when both en_read and en_write are enabled. " severity failure;
             end if;              
         end if;
     
@@ -276,7 +276,7 @@ begin
             addr2 <= std_logic_vector(to_unsigned(to_integer(unsigned(random_addr(i)))+1, %%ADDRLENGTH+1));
             wait for Clk_period;   
             if (output/=content_in(i)(%%WRITELENGTH downto %%READLENGTH+1)) then
-                report " The upper half of input is not written to the memory correctly when both en_read and en_write are enabled." severity failure;
+                report "§{The upper half of input is not written to the memory correctly when both en_read and en_write are enabled.}§" severity failure;
             end if;        
         end if;
       end if;
