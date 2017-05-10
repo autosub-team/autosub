@@ -82,7 +82,7 @@ class TaskGenerator(threading.Thread):
         task_nr = next_gen_msg.get('task_nr')
         user_id = next_gen_msg.get('user_id')
         user_email = next_gen_msg.get('user_email')
-        message_id = next_gen_msg.get('messageid')
+        message_id = next_gen_msg.get('message_id')
 
         # generate the directory for the task in the space of the user
         usertask_dir = 'users/' + str(user_id) + "/Task"+str(task_nr)

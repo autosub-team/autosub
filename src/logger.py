@@ -70,10 +70,10 @@ class AutosubLogger(threading.Thread):
 
         while True:
             next_log_msg = self.logger_queue.get(True)
-            log_dst = str(next_log_msg.get("log_dst"))
-            log_src = str(next_log_msg.get('log_src'))
-            log_msg = str(next_log_msg.get('msg'))
-            log_level = str(next_log_msg.get('type'))
+            log_dst = str(next_log_msg.get("dst"))
+            log_src = str(next_log_msg.get('src'))
+            log_msg = str(next_log_msg.get('message'))
+            log_level = str(next_log_msg.get('level'))
 
             d = dict({"log_src": log_src, "log_msg": log_msg})
 

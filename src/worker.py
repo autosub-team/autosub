@@ -193,10 +193,10 @@ class Worker(threading.Thread):
         Run the test script for the given submission and act on the test result
         """
 
-        task_nr = str(nextjob.get('taskNr'))
-        user_id = str(nextjob.get('UserId'))
-        user_email = str(nextjob.get('UserEmail'))
-        message_id = str(nextjob.get('MessageId'))
+        task_nr = str(nextjob.get('task_nr'))
+        user_id = str(nextjob.get('user_id'))
+        user_email = str(nextjob.get('user_email'))
+        message_id = str(nextjob.get('message_id'))
 
         logmsg = "{0} got a new job: {1} from the user with id {2}".format(self.name, task_nr, \
                                                                            user_id)

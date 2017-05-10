@@ -850,8 +850,8 @@ class MailFetcher(threading.Thread):
             except queue.Empty:
                 return
 
-            message_id = next_archive_msg.get('mid')
-            is_finished_job = next_archive_msg.get('isfinishedjob')
+            message_id = next_archive_msg.get('message_id')
+            is_finished_job = next_archive_msg.get('is_finished_job')
 
             # find uid for the mid
             logmsg = "Moving Message with ID: {0}".format(message_id)

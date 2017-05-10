@@ -410,9 +410,9 @@ class MailSender(threading.Thread):
         #blocking wait on sender_queue
         next_send_msg = self.queues["sender"].get(True)
 
-        task_nr = str(next_send_msg.get('Task'))
-        message_id = str(next_send_msg.get('MessageId'))
-        user_id = str(next_send_msg.get('UserId'))
+        task_nr = str(next_send_msg.get('task_nr'))
+        message_id = str(next_send_msg.get('message_id'))
+        user_id = str(next_send_msg.get('user_id'))
         recipient = str(next_send_msg.get('recipient'))
         message_type = str(next_send_msg.get('message_type'))
 
@@ -750,7 +750,7 @@ class MailSender(threading.Thread):
         #################
         #      QFWD     #
         #################
-            orig_mail = next_send_msg.get('Body')
+            orig_mail = next_send_msg.get('body')
             orig_from = orig_mail['from']
 
             orig_mail.replace_header("From", self.smtp_info["mail"])

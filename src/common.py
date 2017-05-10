@@ -15,35 +15,35 @@ format_string = '%Y-%m-%d %H:%M:%S'
 ####
 # log_a_msg
 ####
-def log_a_msg(lqueue, lname, msg, loglevel):
+def log_a_msg(lqueue, lname, message, level):
     """
     Put a message with a loglevel in a logqueue.
     """
 
-    lqueue.put(dict({"msg": msg, "type": loglevel,\
-                     "log_src": lname, "log_dst": "autosub"}))
+    lqueue.put(dict({"message": message, "level": level,\
+                     "src": lname, "dst": "autosub"}))
 
 ####
 # log_task_msg
 ####
-def log_task_msg(lqueue, lname, msg, loglevel):
+def log_task_msg(lqueue, lname, message, level):
     """
     Put a task message with a loglevel in a logqueue.
     """
 
-    lqueue.put(dict({"msg": msg, "type": loglevel, "log_src": lname,\
-                     "log_dst": "task_msg"}))
+    lqueue.put(dict({"message": message, "level": level,\
+                     "src": lname, "dst": "task_msg"}))
 
 ####
 # log_task_error
 ####
-def log_task_error(lqueue, lname, msg, loglevel):
+def log_task_error(lqueue, lname, message, level):
     """
     Put a task error message with a loglevel in a logqueue.
     """
 
-    lqueue.put(dict({"msg": msg, "type": loglevel, "log_src": lname,
-                     "log_dst": "task_error"}))
+    lqueue.put(dict({"message": message, "level": level,\
+                     "src": lname, "dst": "task_error"}))
 
 ####
 # archive_message
@@ -53,19 +53,19 @@ def archive_message(archive_queue, message_id, is_finished_job=False):
     trigger archivation of an e-mail
     """
 
-    archive_queue.put(dict({"mid": message_id, "isfinishedjob": is_finished_job}))
+    archive_queue.put(dict({"message_id": message_id, "is_finished_job": is_finished_job}))
 
 ####
 # send_email
 ####
-def send_email(sender_queue, recipient, user_id, messagetype, task_nr, body, message_id):
+def send_email(sender_queue, recipient, user_id, message_type, task_nr, body, message_id):
     """
     Put a message in the sender queue.
     """
 
-    sender_queue.put(dict({"recipient": recipient, "UserId": str(user_id), \
-                    "message_type": messagetype, "Task": str(task_nr), \
-                    "Body": body, "MessageId": message_id}))
+    sender_queue.put(dict({"recipient": recipient, "user_id": str(user_id), \
+                    "message_type": message_type, "task_nr": str(task_nr), \
+                    "body": body, "message_id": message_id}))
 
 ####
 # generate_task
@@ -78,7 +78,7 @@ def generate_task(gen_queue, user_id, task_nr, user_email, message_id):
     gen_queue.put(dict({"user_id": str(user_id), \
                         "user_email": str(user_email), \
                         "task_nr": str(task_nr), \
-                        "messageid": message_id}))
+                        "message_id": message_id}))
 ####
 # dispatch_job
 ###
@@ -87,11 +87,10 @@ def dispatch_job(job_queue, user_id, task_nr, user_email, message_id):
     Put a job in the job queue for the workers.
     """
 
-    job_queue.put(dict({"UserId": str(user_id), \
-                        "UserEmail": user_email, \
-                        "message_type": "Task",  \
-                        "taskNr": task_nr, \
-                        "MessageId": message_id}))
+    job_queue.put(dict({"user_id": str(user_id), \
+                        "user_email": user_email, \
+                        "task_nr": task_nr, \
+                        "message_id": message_id}))
 
 ####
 # check_dir_mkdir
