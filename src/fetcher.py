@@ -125,7 +125,7 @@ class MailFetcher(threading.Thread):
         curs, cons = c.connect_to_db(self.dbs["semester"], self.queues["logger"], self.name)
 
         logmsg = 'Creating new Account: User: %s' % user_name
-        c.log_a_msg(self.queues["logger"], self.name, logmsg, "DEBUG")
+        c.log_a_msg(self.queues["logger"], self.name, logmsg, "INFO")
 
         data = {'Name': user_name, 'Email': user_email, 'TimeNow': str(int(time.time()))}
         sql_cmd = ("INSERT INTO Users "
@@ -320,7 +320,7 @@ class MailFetcher(threading.Thread):
                 logmsg = ("Error getting the taskoperator email for task {0}. "
                           "Question from user with email={1} "
                           "dropped.").format(tasknr, user_email)
-                c.log_a_msg(self.queues["logger"], self.name, logmsg, "DEBUG")
+                c.log_a_msg(self.queues["logger"], self.name, logmsg, "ERROR")
                 return
         else:
             fwd_mails = self.get_admin_emails()
@@ -328,7 +328,7 @@ class MailFetcher(threading.Thread):
                 logmsg = ("Error getting the admin email for task {0}. "
                           "Question from user with email={1} "
                           "dropped.").format(tasknr, user_email)
-                c.log_a_msg(self.queues["logger"], self.name, logmsg, "DEBUG")
+                c.log_a_msg(self.queues["logger"], self.name, logmsg, "ERROR")
                 return
 
         for mail_address in fwd_mails:
@@ -377,7 +377,7 @@ class MailFetcher(threading.Thread):
 
         logmsg = "Processing a Result, UserId:{0} TaskNr:{1}"\
                 .format(user_id, task_nr)
-        c.log_a_msg(self.queues["logger"], self.name, logmsg, "DEBUG")
+        c.log_a_msg(self.queues["logger"], self.name, logmsg, "INFO")
 
         # at which task_nr is the user
         cur_task = c.user_get_current_task(self.dbs["semester"], user_id, self.queues["logger"], \
@@ -426,7 +426,7 @@ class MailFetcher(threading.Thread):
                     self.jobs_backlog[job_tuple] = [message_id]
 
                 logmsg = ("Backlogged {0},{1},{2}").format(user_id, task_nr, message_id)
-                c.log_a_msg(self.queues["logger"], self.name, logmsg, "DEBUG")
+                c.log_a_msg(self.queues["logger"], self.name, logmsg, "INFO")
 
 
             else:
@@ -709,7 +709,7 @@ class MailFetcher(threading.Thread):
             # Result + no number
                 logmsg = ("Got a kind of message I do not understand. "
                           "Sending a usage mail...")
-                c.log_a_msg(self.queues["logger"], self.name, logmsg, "DEBUG")
+                c.log_a_msg(self.queues["logger"], self.name, logmsg, "INFO")
                 c.send_email(self.queues["sender"], user_email, "", "Usage", "", \
                              "", message_id)
                 return
@@ -744,7 +744,7 @@ class MailFetcher(threading.Thread):
         #####################
             logmsg = ("Got a kind of message I do not understand. "
                       "Sending a usage mail...")
-            c.log_a_msg(self.queues["logger"], self.name, logmsg, "DEBUG")
+            c.log_a_msg(self.queues["logger"], self.name, logmsg, "INFO")
             c.send_email(self.queues["sender"], user_email, "", "Usage", "", \
                          "", message_id)
 
@@ -814,7 +814,7 @@ class MailFetcher(threading.Thread):
                     self.mid_to_job_tuple[message_id] = job_tuple
 
                     logmsg = ("Dispatched backlogged {0},{1},{2}").format(user_id, task_nr, message_id)
-                    c.log_a_msg(self.queues["logger"], self.name, logmsg, "DEBUG")
+                    c.log_a_msg(self.queues["logger"], self.name, logmsg, "INF")
 
                 except:
                     logmsg = ("Error while dispatching backlogged task UserId = {0} "

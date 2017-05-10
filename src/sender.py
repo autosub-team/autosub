@@ -336,7 +336,8 @@ class MailSender(threading.Thread):
         try:
             server.sendmail(self.smtp_info["mail"], recipient, message)
             server.close()
-            c.log_a_msg(self.queues["logger"], self.name, "Successfully sent an e-mail of type '{0}'!".format(msg_type), "DEBUG")
+            c.log_a_msg(self.queues["logger"], self.name,\
+            "Successfully sent an e-mail of type '{0}'!".format(msg_type), "INFO")
             c.increment_db_statcounter(self.dbs["semester"], 'nr_mails_sent', \
                                        self.queues["logger"], self.name)
         except Exception as exc:

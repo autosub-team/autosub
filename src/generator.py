@@ -121,11 +121,11 @@ class TaskGenerator(threading.Thread):
         if generator_res: # not 0 returned
             logmsg = "Failed executing the generator script, return value: " + \
                      str(generator_res)
-            c.log_a_msg(self.queues["logger"], self.name, logmsg, "DEBUG")
+            c.log_a_msg(self.queues["logger"], self.name, logmsg, "ERROR")
 
         logmsg = "Generated individual task for user/tasknr:" + str(user_id) + "/" + \
                  str(task_nr)
-        c.log_a_msg(self.queues["logger"], self.name, logmsg, "DEBUG")
+        c.log_a_msg(self.queues["logger"], self.name, logmsg, "INFO")
 
         c.send_email(self.queues["sender"], str(user_email), str(user_id), \
                      "Task", str(task_nr), "Your personal example", str(message_id))

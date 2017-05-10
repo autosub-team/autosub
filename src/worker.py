@@ -219,7 +219,7 @@ class Worker(threading.Thread):
         # run the test script and log the stderr and stdout
         command = [scriptpath, user_id, task_nr, task_params, configured_common]
         logmsg = "Running test script with arguments: {0}".format(command)
-        c.log_a_msg(self.queues["logger"], self.name, logmsg, "INFO")
+        c.log_a_msg(self.queues["logger"], self.name, logmsg, "DEBUG")
 
         # Popen in asynch, but communicate waits
         process = Popen(command, stdout=PIPE, stderr=PIPE)
