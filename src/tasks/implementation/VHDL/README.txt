@@ -1,6 +1,8 @@
-A task consists of multiple elements.The folders and common files are:
+Each task has its own directory. 
 
+The folder "_common" is for scripts, that can be passed to testers (definition of common functionality)
 
+A task consists of multiple elements. The folders and common files are:
 
 tmp/ --Folder to temporarily store generated files
 
@@ -18,8 +20,8 @@ exam/ --files for the exam mode
 
 generator.sh --> executable that gets called from the generator thread
 
-...tester.sh --> executable that gets called from the worker thread
-                 the testers should have a prefix corresponding to the simulator they are using 
-                 e.g ghdl_tester.sh
+tester.sh --> executable that gets called from the worker thread
+              tester.sh without prefix should be compatible to using the CommonFile API
+			  other testers should have a prefix
 
 description.txt -->message that will be sent in the task description email
