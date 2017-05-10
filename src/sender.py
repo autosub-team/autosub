@@ -388,7 +388,7 @@ class MailSender(threading.Thread):
                     part.add_header('Content-Disposition', 'attachment; filename="{0}"'.format(os.path.basename(next_attachment)))
                     msg.attach(part)
                 except:
-                    logmsg = "Faild to add an attachement: {0}".format(next_attachment)
+                    logmsg = "Failed to add an attachement: {0}".format(next_attachment)
                     c.log_a_msg(self.queues["logger"], self.name, logmsg, "DEBUG")
 
         # The following message my be helpful during debugging - but
@@ -750,21 +750,13 @@ class MailSender(threading.Thread):
         #      QFWD     #
         #################
             orig_mail = next_send_msg.get('Body')
-            msg['Subject'] = "Question from " + orig_mail['from']
+            orig_from = orig_mail['from']
 
-            if orig_mail.get_content_maintype() == 'multipart':
-                part = orig_mail.get_payload(0)
-                mbody = part.get_payload()
-                message_text = "Original subject: " + orig_mail['subject'] + "\n\nNote: This e-mail contained attachments which have been removed!\n"
-                message_text = "{0}\n\nOriginal body:\n{1}".format(message_text, mbody)
-            else:
-                mbody = orig_mail.get_payload()
-                message_text = "Original subject: " + orig_mail['subject'] + \
-                       "\n\nOriginal body:\n" + str(mbody)
+            orig_mail.replace_header("From", self.smtp_info["mail"])
+            orig_mail.replace_header("To", recipient)
+            orig_mail.replace_header("Subject", "Question from " + orig_from)
 
-            msg = self.assemble_email(msg, message_text, '')
-            self.send_out_email(recipient, msg.as_string(), message_type)
-            self.archive_message(message_id)
+            self.send_out_email(recipient,orig_mail.as_string(), message_type)
 
         elif message_type == "Welcome":
         #################

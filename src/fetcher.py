@@ -168,7 +168,7 @@ class MailFetcher(threading.Thread):
 
         conc.close()
 
-        if not res:
+        if not res or not res[0]:
             logmsg = ("Error generating first Task for UserId = {0}. Could not "
                       "find first task for this user").format(user_id)
             c.log_a_msg(self.queues["logger"], self.name, logmsg, "ERROR")
@@ -534,7 +534,7 @@ class MailFetcher(threading.Thread):
 
         logmsg = "Successfully logged into imap server with security= " + self.imap_info["security"] + \
                  " , port= " + str(self.imap_info["port"])
-        c.log_a_msg(self.queues["logger"], self.name, logmsg, "DEBUG")
+        c.log_a_msg(self.queues["logger"], self.name, logmsg, "INFO")
 
         return server
 
