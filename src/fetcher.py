@@ -30,47 +30,34 @@ import os
 import time
 import re #regex
 import datetime
-import common as c
 import queue
 
-class mailFetcher(threading.Thread):
+import common as c
+
+class MailFetcher(threading.Thread):
     """
     Thread in charge of fetching emails from IMAP and based on these emails
     assigns work to other threads.
     """
 
-    def __init__(self, threadID, name, job_queue, sender_queue, gen_queue, imapuser, \
-                 imappasswd, imapserver, imapport, imapsecurity, logger_queue, arch_queue, \
-                 poll_period, coursedb, semesterdb, allow_skipping):
+    def __init__(self, name, queues, dbs, imap_info, poll_period, \
+                 allow_skipping):
         """
         Constructor for fetcher thread
         """
 
         threading.Thread.__init__(self)
-        self.threadID = threadID
         self.name = name
-
-        self.backlog = dict() # backlogged result emails
-        self.job_queue = job_queue
-        self.sender_queue = sender_queue
-        self.gen_queue = gen_queue
-        self.logger_queue = logger_queue
-        self.arch_queue = arch_queue
-
-        self.imap_user = imapuser
-        self.imap_pwd = imappasswd
-        self.imap_server = imapserver
-        self.imap_port = imapport
-        self.imap_security = imapsecurity
+        self.queues = queues
+        self.dbs = dbs
+        self.imap_info = imap_info
         self.poll_period = poll_period
+        self.allow_skipping = allow_skipping
 
+        # for backlog handling
         self.mid_to_job_tuple = {}
         self.jobs_backlog = {}
         self.jobs_active = {}
-
-        self.coursedb = coursedb
-        self.semesterdb = semesterdb
-        self.allow_skipping = allow_skipping
 
     ####
     # get_admin_emails
@@ -82,9 +69,10 @@ class mailFetcher(threading.Thread):
         Return a list.
         """
 
-        curc, conc = c.connect_to_db(self.coursedb, self.logger_queue, self.name)
+        curc, conc = c.connect_to_db(self.dbs["course"], self.queues["logger"], self.name)
 
-        sql_cmd = "SELECT Content FROM GeneralConfig WHERE ConfigItem == 'admin_email'"
+        sql_cmd = ("SELECT Content FROM GeneralConfig "
+                  "WHERE ConfigItem == 'admin_email'")
         curc.execute(sql_cmd)
         result = curc.fetchone()
         if result != None:
@@ -107,10 +95,11 @@ class mailFetcher(threading.Thread):
         Return a list.
         """
 
-        curc, conc = c.connect_to_db(self.coursedb, self.logger_queue, self.name)
+        curc, conc = c.connect_to_db(self.dbs["course"], self.queues["logger"], self.name)
 
         data = {'TaskNr': task_nr}
-        sql_cmd = "SELECT TaskOperator FROM TaskConfiguration WHERE TaskNr = :TaskNr"
+        sql_cmd = ("SELECT TaskOperator FROM TaskConfiguration "
+                   "WHERE TaskNr = :TaskNr")
         curc.execute(sql_cmd, data)
         result = curc.fetchone()
         if result != None:
@@ -133,10 +122,10 @@ class mailFetcher(threading.Thread):
         Call generator thread to create the first task.
         """
 
-        curs, cons = c.connect_to_db(self.semesterdb, self.logger_queue, self.name)
+        curs, cons = c.connect_to_db(self.dbs["semester"], self.queues["logger"], self.name)
 
         logmsg = 'Creating new Account: User: %s' % user_name
-        c.log_a_msg(self.logger_queue, self.name, logmsg, "DEBUG")
+        c.log_a_msg(self.queues["logger"], self.name, logmsg, "DEBUG")
 
         data = {'Name': user_name, 'Email': user_email, 'TimeNow': str(int(time.time()))}
         sql_cmd = ("INSERT INTO Users "
@@ -158,17 +147,17 @@ class mailFetcher(threading.Thread):
         if res is None:
             logmsg = ("Created new user with "
                       "name= {0} , email={1} failed").format(user_name, user_email)
-            c.log_a_msg(self.logger_queue, self.name, logmsg, "DEBUG")
+            c.log_a_msg(self.queues["logger"], self.name, logmsg, "DEBUG")
 
         user_id = str(res[0])
         dir_name = 'users/'+ user_id
-        c.check_dir_mkdir(dir_name, self.logger_queue, self.name)
+        c.check_dir_mkdir(dir_name, self.queues["logger"], self.name)
 
         cons.close()
 
         # Give the user the task which is starttime <= now < deadline AND
         # min(TaskNr)
-        curc, conc = c.connect_to_db(self.coursedb, self.logger_queue, self.name)
+        curc, conc = c.connect_to_db(self.dbs["course"], self.queues["logger"], self.name)
 
         data = {'TimeNow': str(int(time.time()))}
         sql_cmd = ("SELECT MIN(TaskNr) FROM TaskConfiguration "
@@ -179,24 +168,23 @@ class mailFetcher(threading.Thread):
 
         conc.close()
 
-        if res is None:
+        if not res:
             logmsg = ("Error generating first Task for UserId = {0}. Could not "
                       "find first task for this user").format(user_id)
-            c.log_a_msg(self.logger_queue, self.name, logmsg, "ERROR")
+            c.log_a_msg(self.queues["logger"], self.name, logmsg, "ERROR")
         else:
             task_nr = int(res[0])
 
             #adjust users CurrentTask if he does not get Task with task_nr=1
             if task_nr != 1:
-                c.user_set_current_task(self.semesterdb, task_nr, user_id, \
-                                        self.logger_queue, self.name)
+                c.user_set_current_task(self.dbs["semester"], task_nr, user_id, \
+                                        self.queues["logger"], self.name)
 
             logmsg = ("Calling Generator to create"
                       "TaskNr:{0} for UserId:{1}").format(task_nr, user_id)
-            c.log_a_msg(self.logger_queue, self.name, logmsg, "DEBUG")
+            c.log_a_msg(self.queues["logger"], self.name, logmsg, "DEBUG")
 
-            self.gen_queue.put(dict({"user_id": user_id, "user_email": user_email, \
-                           "task_nr": task_nr, "messageid": ""}))
+            c.generate_task(self.queues["generator"], user_id, task_nr, user_email, "")
 
     ###
     # increment_submission_nr
@@ -208,7 +196,7 @@ class mailFetcher(threading.Thread):
         Return new number or 0 if no previous submission for this task exists.
         """
 
-        curs, cons = c.connect_to_db(self.semesterdb, self.logger_queue, self.name)
+        curs, cons = c.connect_to_db(self.dbs["semester"], self.queues["logger"], self.name)
 
         try:
             data = {'UserId':user_id, 'TaskNr': task_nr}
@@ -248,7 +236,7 @@ class mailFetcher(threading.Thread):
             submission_nr, ts.year, ts.month, ts.day, ts.hour, ts.minute, \
             ts.second, ts.microsecond)
         current_dir = detach_dir + submission_dir
-        c.check_dir_mkdir(current_dir, self.logger_queue, self.name)
+        c.check_dir_mkdir(current_dir, self.queues["logger"], self.name)
 
         # use walk to create a generator, iterate on the parts and forget
         # about the recursive headache
@@ -264,7 +252,7 @@ class mailFetcher(threading.Thread):
             filename = part.get_filename()
             counter = 1
 
-            # if there is no filename, create one with a counter to avoid duplicates
+            # no filename? -> create one with a counter to avoid duplicates
             if not filename:
                 filename = 'part-%03d%s' % (counter, 'bin')
                 counter += 1
@@ -293,7 +281,7 @@ class mailFetcher(threading.Thread):
         on the IMAP server
         """
 
-        curc, conc = c.connect_to_db(self.coursedb, self.logger_queue, self.name)
+        curc, conc = c.connect_to_db(self.dbs["course"], self.queues["logger"], self.name)
 
         data = {'config_item':'archive_dir'}
         sql_cmd = ("SELECT Content FROM GeneralConfig "
@@ -310,7 +298,7 @@ class mailFetcher(threading.Thread):
     ####
     # a_question_was_asked
     ###
-    def a_question_was_asked(self, user_id, user_email, mail, messageid):
+    def a_question_was_asked(self, user_id, user_email, mail, message_id):
         """
         Process a question that was asked by a user.
         """
@@ -318,21 +306,21 @@ class mailFetcher(threading.Thread):
         mail_subject = str(mail['subject'])
 
         logmsg = 'The user has a question, please take care of that!'
-        c.log_a_msg(self.logger_queue, self.name, logmsg, "DEBUG")
-        c.send_email(self.sender_queue, user_email, "", "Question", "", "", "")
+        c.log_a_msg(self.queues["logger"], self.name, logmsg, "DEBUG")
+        c.send_email(self.queues["sender"], user_email, "", "Question", "", "", "")
 
         # was the question asked to a specific task_nr that is valid?
         search_obj = re.search('[0-9]+', mail_subject, )
 
-        if (search_obj != None) and int(search_obj.group()) <= c.get_num_tasks(self.coursedb, \
-                                            self.logger_queue, self.name):
+        if (search_obj != None) and int(search_obj.group()) <= c.get_num_tasks(self.dbs["course"], \
+                                            self.queues["logger"], self.name):
             tasknr = search_obj.group()
             fwd_mails = self.get_taskoperator_emails(tasknr)
             if not fwd_mails:
                 logmsg = ("Error getting the taskoperator email for task {0}. "
                           "Question from user with email={1} "
                           "dropped.").format(tasknr, user_email)
-                c.log_a_msg(self.logger_queue, self.name, logmsg, "DEBUG")
+                c.log_a_msg(self.queues["logger"], self.name, logmsg, "DEBUG")
                 return
         else:
             fwd_mails = self.get_admin_emails()
@@ -340,29 +328,29 @@ class mailFetcher(threading.Thread):
                 logmsg = ("Error getting the admin email for task {0}. "
                           "Question from user with email={1} "
                           "dropped.").format(tasknr, user_email)
-                c.log_a_msg(self.logger_queue, self.name, logmsg, "DEBUG")
+                c.log_a_msg(self.queues["logger"], self.name, logmsg, "DEBUG")
                 return
 
         for mail_address in fwd_mails:
-            c.send_email(self.sender_queue, mail_address, user_id, "QFwd", "", mail, messageid)
+            c.send_email(self.queues["sender"], mail_address, user_id, "QFwd", "", mail, message_id)
 
-        c.increment_db_statcounter(self.semesterdb, 'nr_questions_received', \
-                                   self.logger_queue, self.name)
+        c.increment_db_statcounter(self.dbs["semester"], 'nr_questions_received', \
+                                   self.queues["logger"], self.name)
 
 
     ####
     # a_status_is_requested
     ####
-    def a_status_is_requested(self, user_id, user_email, messageid):
+    def a_status_is_requested(self, user_id, user_email, message_id):
         """
         Tell sender to send out a status email.
         """
 
         logmsg = ("STATUS requested: User with UserId:{0}, Email: {1}").format(\
                  user_id, user_email)
-        c.log_a_msg(self.logger_queue, self.name, logmsg, "DEBUG")
+        c.log_a_msg(self.queues["logger"], self.name, logmsg, "DEBUG")
 
-        curs, cons = c.connect_to_db(self.semesterdb, self.logger_queue, self.name)
+        curs, cons = c.connect_to_db(self.dbs["semester"], self.queues["logger"], self.name)
 
         data = {'user_id':user_id}
         sql_cmd = "SELECT CurrentTask FROM Users WHERE UserId == :user_id"
@@ -372,15 +360,15 @@ class mailFetcher(threading.Thread):
 
         cons.close()
 
-        c.send_email(self.sender_queue, user_email, user_id, "Status", current_task, \
-                     "", messageid)
-        c.increment_db_statcounter(self.semesterdb, 'nr_status_requests', \
-                                   self.logger_queue, self.name)
+        c.send_email(self.queues["sender"], user_email, user_id, "Status", current_task, \
+                     "", message_id)
+        c.increment_db_statcounter(self.dbs["semester"], 'nr_status_requests', \
+                                   self.queues["logger"], self.name)
 
     ####
     # a_result_was_submitted
     ####
-    def a_result_was_submitted(self, user_id, user_email, task_nr, messageid, \
+    def a_result_was_submitted(self, user_id, user_email, task_nr, message_id, \
                                mail):
         """
         Check if the user is allowed ot submit a result to the task
@@ -389,123 +377,122 @@ class mailFetcher(threading.Thread):
 
         logmsg = "Processing a Result, UserId:{0} TaskNr:{1}"\
                 .format(user_id, task_nr)
-        c.log_a_msg(self.logger_queue, self.name, logmsg, "DEBUG")
+        c.log_a_msg(self.queues["logger"], self.name, logmsg, "DEBUG")
 
         # at which task_nr is the user
-        cur_task = c.user_get_current_task(self.semesterdb, user_id, self.logger_queue, \
+        cur_task = c.user_get_current_task(self.dbs["semester"], user_id, self.queues["logger"], \
                                       self.name)
 
         #task with this tasknr exists?
-        is_task = c.is_valid_task_nr(self.coursedb, task_nr, self.logger_queue,\
+        is_task = c.is_valid_task_nr(self.dbs["course"], task_nr, self.queues["logger"],\
                                      self.name)
 
         if not is_task:
         # task_nr is not valid
-            c.send_email(self.sender_queue, user_email, "", "InvalidTask", str(task_nr), \
-                         "", messageid)
+            c.send_email(self.queues["sender"], user_email, "", "InvalidTask", str(task_nr), \
+                         "", message_id)
             return
 
         # task_nr is valid, get deadline
-        deadline = c.get_task_deadline(self.coursedb, task_nr, self.logger_queue, \
+        deadline = c.get_task_deadline(self.dbs["course"], task_nr, self.queues["logger"], \
                                            self.name)
 
         if is_task and cur_task < int(task_nr):
         #task_nr valid, but user has not reached that tasknr yet
             logmsg = ("User can not submit for this task yet.")
-            c.log_a_msg(self.logger_queue, self.name, logmsg, "DEBUG")
+            c.log_a_msg(self.queues["logger"], self.name, logmsg, "DEBUG")
 
-            c.send_email(self.sender_queue, user_email, "", "TaskNotSubmittable", str(task_nr), \
-                         "", messageid)
+            c.send_email(self.queues["sender"], user_email, "", "TaskNotSubmittable", str(task_nr), \
+                         "", message_id)
 
         elif deadline < datetime.datetime.now():
         # deadline passed for that task_nr!
             logmsg = ("Deadline passed")
-            c.log_a_msg(self.logger_queue, self.name, logmsg, "DEBUG")
+            c.log_a_msg(self.queues["logger"], self.name, logmsg, "DEBUG")
 
-            c.send_email(self.sender_queue, user_email, "", "DeadTask", str(task_nr), \
-                         "", messageid)
+            c.send_email(self.queues["sender"], user_email, "", "DeadTask", str(task_nr), \
+                         "", message_id)
 
         else:
         # okay, let's work with the submission
 
             job_tuple = (user_id, task_nr)
-            dispatchable = not job_tuple in self.jobs_active
+            dispatchable = job_tuple not in self.jobs_active
 
             if not dispatchable:
                 if job_tuple in self.jobs_backlog:
-                    self.jobs_backlog[job_tuple].append(messageid)
+                    self.jobs_backlog[job_tuple].append(message_id)
                 else:
-                    self.jobs_backlog[job_tuple] = [messageid]
+                    self.jobs_backlog[job_tuple] = [message_id]
 
-                logmsg = ("Backlogged {0},{1},{2}").format(user_id, task_nr,messageid)
-                c.log_a_msg(self.logger_queue, self.name, logmsg, "DEBUG")
+                logmsg = ("Backlogged {0},{1},{2}").format(user_id, task_nr, message_id)
+                c.log_a_msg(self.queues["logger"], self.name, logmsg, "DEBUG")
 
 
             else:
                 # save the attached files to user task directory
                 self.save_submission_user_dir(user_id, task_nr, mail)
 
-                # dispatch job
-                self.job_queue.put(dict({"UserId": user_id, "UserEmail": user_email, \
-                                         "message_type": "Task", "taskNr": task_nr, \
-                                         "MessageId": messageid}))
+                c.dispatch_job(self.queues["job"], user_id, task_nr, \
+                                   user_email, message_id)
+
                 dispatch_time = time.time()
 
                 self.jobs_active[job_tuple] = {"dispatch": dispatch_time, \
-                                               "messageid": messageid}
-                self.mid_to_job_tuple[messageid] = job_tuple
+                                               "message_id": message_id}
+                self.mid_to_job_tuple[message_id] = job_tuple
 
     ####
     # skip_was_requested
     ####
-    def skip_was_requested(self, user_id, user_email, messageid):
+    def skip_was_requested(self, user_id, user_email, message_id):
         """
         Process a requested skip, check if skip is possible, if yes
         put job in generator queue.
         """
 
         # at which task_nr is the user?
-        cur_task = c.user_get_current_task(self.semesterdb, user_id, self.logger_queue, \
+        cur_task = c.user_get_current_task(self.dbs["semester"], user_id, self.queues["logger"], \
                                            self.name)
         next_task = cur_task + 1
 
         logmsg = ("Skip requested: User with UserId:{0}, from "
                   "TaskNr= {1} to {2}").format(user_id, cur_task, next_task)
-        c.log_a_msg(self.logger_queue, self.name, logmsg, "DEBUG")
+        c.log_a_msg(self.queues["logger"], self.name, logmsg, "DEBUG")
 
         #task with this tasknr exists?
-        is_task = c.is_valid_task_nr(self.coursedb, next_task, self.logger_queue,\
+        is_task = c.is_valid_task_nr(self.dbs["course"], next_task, self.queues["logger"],\
                                      self.name)
         if is_task:
-            task_starttime = c.get_task_starttime(self.coursedb, next_task,
-                                                  self.logger_queue, self.name)
+            task_starttime = c.get_task_starttime(self.dbs["course"], next_task,
+                                                  self.queues["logger"], self.name)
             task_has_started = task_starttime < datetime.datetime.now()
 
             if task_has_started:
                 #set new current task
-                c.user_set_current_task(self.semesterdb, next_task, user_id, \
-                                        self.logger_queue, self.name)
+                c.user_set_current_task(self.dbs["semester"], next_task, user_id, \
+                                        self.queues["logger"], self.name)
 
                 #tell generator thread to create new task
                 logmsg = ("Calling Generator to create "
                           "TaskNr:{0} for UserId:{1}").format(next_task, user_id)
-                c.log_a_msg(self.logger_queue, self.name, logmsg, "DEBUG")
-                self.gen_queue.put(dict({"user_id": user_id, "user_email": user_email, \
-                           "task_nr": next_task, "messageid": messageid}))
+                c.log_a_msg(self.queues["logger"], self.name, logmsg, "DEBUG")
+
+                c.generate_task(self.queues["generator"], user_id, next_task, user_email, message_id)
 
                 logmsg = ("Skip done: User with UserId:{0}, from "
                           "TaskNr= {1} to {2}").format(user_id, cur_task, next_task)
-                c.log_a_msg(self.logger_queue, self.name, logmsg, "DEBUG")
+                c.log_a_msg(self.queues["logger"], self.name, logmsg, "DEBUG")
 
                 return
 
         #Skip not possible
         logmsg = ("Skip NOT POSSIBLE: User with UserId:{0}, from "
                   "TaskNr= {1} to {2}").format(user_id, cur_task, next_task)
-        c.log_a_msg(self.logger_queue, self.name, logmsg, "DEBUG")
+        c.log_a_msg(self.queues["logger"], self.name, logmsg, "DEBUG")
 
-        c.send_email(self.sender_queue, user_email, "", "SkipNotPossible", \
-                     "", "", messageid)
+        c.send_email(self.queues["sender"], user_email, "", "SkipNotPossible", \
+                     "", "", message_id)
 
     ####
     # connect_to_imapserver
@@ -517,37 +504,37 @@ class mailFetcher(threading.Thread):
 
         try:
             # connecting to the imap server
-            if self.imap_security == 'ssl':
-                server = imaplib.IMAP4_SSL(self.imap_server, int(self.imap_port))
+            if self.imap_info["security"] == 'ssl':
+                server = imaplib.IMAP4_SSL(self.imap_info["server"], int(self.imap_info["port"]))
             else:
-                server = imaplib.IMAP4(self.imap_server, int(self.imap_port))
+                server = imaplib.IMAP4(self.imap_info["server"], int(self.imap_info["port"]))
 
-            if self.imap_security == 'starttls':
+            if self.imap_info["security"] == 'starttls':
                 server.starttls()
 
-            server.login(self.imap_user, self.imap_pwd)
+            server.login(self.imap_info["user"], self.imap_info["passwd"])
         except imaplib.IMAP4.abort:
-            logmsg = "Login to server was aborted with security= " + self.imap_security + \
-                     " , port= " + str(self.imap_port)
-            c.log_a_msg(self.logger_queue, self.name, logmsg, "ERROR")
+            logmsg = "Login to server was aborted with security= " + self.imap_info["security"] + \
+                     " , port= " + str(self.imap_info["port"])
+            c.log_a_msg(self.queues["logger"], self.name, logmsg, "ERROR")
             #m.close()
             return 0
         except imaplib.IMAP4.error:
             logmsg = "Got an error when trying to connect to the imap server with" + \
-                     " security= " + self.imap_security + " , port= " + str(self.imap_port)
-            c.log_a_msg(self.logger_queue, self.name, logmsg, "ERROR")
+                     " security= " + self.imap_info["security"] + " , port= " + str(self.imap_info["port"])
+            c.log_a_msg(self.queues["logger"], self.name, logmsg, "ERROR")
             return 0
         except Exception as e:
             logmsg = str(e)
-            c.log_a_msg(self.logger_queue, self.name, logmsg, "ERROR")
+            c.log_a_msg(self.queues["logger"], self.name, logmsg, "ERROR")
             logmsg = "Got an unknown exception when trying to connect to the imap " + \
-                     "server with security= " + self.imap_security + " , port= " + str(self.imap_port)
-            c.log_a_msg(self.logger_queue, self.name, logmsg, "ERROR")
+                     "server with security= " + self.imap_info["security"] + " , port= " + str(self.imap_info["port"])
+            c.log_a_msg(self.queues["logger"], self.name, logmsg, "ERROR")
             return 0
 
-        logmsg = "Successfully logged into imap server with security= " + self.imap_security + \
-                 " , port= " + str(self.imap_port)
-        c.log_a_msg(self.logger_queue, self.name, logmsg, "DEBUG")
+        logmsg = "Successfully logged into imap server with security= " + self.imap_info["security"] + \
+                 " , port= " + str(self.imap_info["port"])
+        c.log_a_msg(self.queues["logger"], self.name, logmsg, "DEBUG")
 
         return server
 
@@ -565,10 +552,10 @@ class mailFetcher(threading.Thread):
                 m.close()
                 m.logout()
                 logmsg = "closed connection to imapserver"
-                c.log_a_msg(self.logger_queue, self.name, logmsg, "INFO")
+                c.log_a_msg(self.queues["logger"], self.name, logmsg, "INFO")
             except:
                 logmsg = "Got an error when trying to disconnect from the imap server."
-                c.log_a_msg(self.logger_queue, self.name, logmsg, "ERROR")
+                c.log_a_msg(self.queues["logger"], self.name, logmsg, "ERROR")
 
     ####
     # idmap_new_emails(self, m):
@@ -585,7 +572,7 @@ class mailFetcher(threading.Thread):
             # use m.list() to get all the mailboxes
         except:
             logmsg = "Failed to select inbox"
-            c.log_a_msg(self.logger_queue, self.name, logmsg, "ERROR")
+            c.log_a_msg(self.queues["logger"], self.name, logmsg, "ERROR")
             return {}
 
         idmap = dict()
@@ -606,7 +593,7 @@ class mailFetcher(threading.Thread):
 
         else:
             logmsg = "Failed to get messages from inbox"
-            c.log_a_msg(self.logger_queue, self.name, logmsg, "ERROR")
+            c.log_a_msg(self.queues["logger"], self.name, logmsg, "ERROR")
             return {}
 
 
@@ -624,7 +611,7 @@ class mailFetcher(threading.Thread):
             m.select(mailbox='Inbox', readonly=False)
         except:
             logmsg = "Failed to select inbox"
-            c.log_a_msg(self.logger_queue, self.name, logmsg, "ERROR")
+            c.log_a_msg(self.queues["logger"], self.name, logmsg, "ERROR")
             return {}
 
         idmap = dict()
@@ -643,7 +630,7 @@ class mailFetcher(threading.Thread):
             return idmap
         else:
             logmsg = "Failed to get messages from inbox"
-            c.log_a_msg(self.logger_queue, self.name, logmsg, "ERROR")
+            c.log_a_msg(self.queues["logger"], self.name, logmsg, "ERROR")
             return {}
 
     ####
@@ -654,7 +641,7 @@ class mailFetcher(threading.Thread):
         Check if the given e-mail address is in the whitelist.
         """
 
-        curs, cons = c.connect_to_db(self.semesterdb, self.logger_queue, self.name)
+        curs, cons = c.connect_to_db(self.dbs["semester"], self.queues["logger"], self.name)
 
         data = {'Email': user_email}
         sql_cmd = "SELECT * FROM WhiteList WHERE Email == :Email"
@@ -665,11 +652,12 @@ class mailFetcher(threading.Thread):
 
         if res != None:
             return True
+
         else:
             logmsg = "Got Mail from a User not on the WhiteList: " + user_email
-            c.log_a_msg(self.logger_queue, self.name, logmsg, "Warning")
-            c.increment_db_statcounter(self.semesterdb, 'nr_non_registered', \
-                                       self.logger_queue, self.name)
+            c.log_a_msg(self.queues["logger"], self.name, logmsg, "Warning")
+            c.increment_db_statcounter(self.dbs["semester"], 'nr_non_registered', \
+                                       self.queues["logger"], self.name)
 
             return False
 
@@ -683,7 +671,7 @@ class mailFetcher(threading.Thread):
         Return datetime, if not found return 1 hour from now.
         """
 
-        curc, conc = c.connect_to_db(self.coursedb, self.logger_queue, self.name)
+        curc, conc = c.connect_to_db(self.dbs["course"], self.queues["logger"], self.name)
         sql_cmd = ("SELECT Content FROM GeneralConfig " \
                    "WHERE ConfigItem == 'registration_deadline'")
         curc.execute(sql_cmd)
@@ -694,19 +682,20 @@ class mailFetcher(threading.Thread):
         format_string = '%Y-%m-%d %H:%M:%S'
         if deadline_string != 'NULL':
             return datetime.datetime.strptime(deadline_string, format_string)
+
         else:
              # there is no deadline set, just assume it is in 1h from now.
             date = datetime.datetime.now() + datetime.timedelta(0, 3600)
 
             logmsg = "No Registration Deadline found, assuming: " + str(date)
-            c.log_a_msg(self.logger_queue, self.name, logmsg, "ERROR")
+            c.log_a_msg(self.queues["logger"], self.name, logmsg, "ERROR")
 
             return date
 
     ####
     # action_by_subject
     ####
-    def action_by_subject(self, user_id, user_email, messageid, mail, mail_subject):
+    def action_by_subject(self, user_id, user_email, message_id, mail, mail_subject):
         """
         Examine the subject of the users email and initiate appropiate action
         """
@@ -715,39 +704,39 @@ class mailFetcher(threading.Thread):
         ###############
         #   RESULT    #
         ###############
-            searchObj = re.search('[0-9]+', mail_subject)
-            if searchObj is None:
+            search_obj = re.search('[0-9]+', mail_subject)
+            if search_obj is None:
             # Result + no number
                 logmsg = ("Got a kind of message I do not understand. "
                           "Sending a usage mail...")
-                c.log_a_msg(self.logger_queue, self.name, logmsg, "DEBUG")
-                c.send_email(self.sender_queue, user_email, "", "Usage", "", \
-                             "", messageid)
+                c.log_a_msg(self.queues["logger"], self.name, logmsg, "DEBUG")
+                c.send_email(self.queues["sender"], user_email, "", "Usage", "", \
+                             "", message_id)
                 return
 
             #Result + number
-            task_nr = searchObj.group()
+            task_nr = search_obj.group()
 
-            self.a_result_was_submitted(user_id, user_email, task_nr, messageid, \
+            self.a_result_was_submitted(user_id, user_email, task_nr, message_id, \
                                         mail)
 
         elif re.search('[Qq][Uu][Ee][Ss][Tt][Ii][Oo][Nn]', mail_subject):
         ###############
         #   QUESTION  #
         ###############
-            self.a_question_was_asked(user_id, user_email, mail, messageid)
+            self.a_question_was_asked(user_id, user_email, mail, message_id)
 
         elif re.search('[Ss][Tt][Aa][Tt][Uu][Ss]', mail_subject):
         ###############
         #   STATUS    #
         ###############
-            self.a_status_is_requested(user_id, user_email, messageid)
+            self.a_status_is_requested(user_id, user_email, message_id)
 
         elif self.allow_skipping and re.search('[Ss][Kk][Ii][Pp]', mail_subject):
         ####################
         # SKIP, IF ALLOWED #
         ####################
-            self.skip_was_requested(user_id, user_email, messageid)
+            self.skip_was_requested(user_id, user_email, message_id)
 
         else:
         #####################
@@ -755,9 +744,9 @@ class mailFetcher(threading.Thread):
         #####################
             logmsg = ("Got a kind of message I do not understand. "
                       "Sending a usage mail...")
-            c.log_a_msg(self.logger_queue, self.name, logmsg, "DEBUG")
-            c.send_email(self.sender_queue, user_email, "", "Usage", "", \
-                         "", messageid)
+            c.log_a_msg(self.queues["logger"], self.name, logmsg, "DEBUG")
+            c.send_email(self.queues["sender"], user_email, "", "Usage", "", \
+                         "", message_id)
 
     ####
     # handle_backlogged
@@ -791,16 +780,16 @@ class mailFetcher(threading.Thread):
         dispatch_time = time.time()
         to_delete = []
 
-        for job_tuple, messageids in self.jobs_backlog.items():
+        for job_tuple, message_ids in self.jobs_backlog.items():
 
             # job_tuple job not already active
             if not job_tuple in self.jobs_active:
-                # first backlogged messageid
-                messageid = messageids[0]
+                # first backlogged message_id
+                message_id = message_ids[0]
 
                 try:
                     # get the message from server
-                    uid = uid_of_mid[messageid]
+                    uid = uid_of_mid[message_id]
                     resp, data = m.uid('fetch', uid, "(RFC822)")
                     mail = email.message_from_bytes(data[0][1])
 
@@ -817,26 +806,25 @@ class mailFetcher(threading.Thread):
                     # save the attached files to user task directory
                     self.save_submission_user_dir(user_id, task_nr, mail)
 
-                    # dispatch job
-                    self.job_queue.put(dict({"UserId": user_id, "UserEmail": user_email, \
-                                             "message_type": "Task", "taskNr": task_nr, \
-                                             "MessageId": messageid}))
-                    self.jobs_active[job_tuple] = {"dispatch": dispatch_time, \
-                                                   "messageid": messageid}
-                    self.mid_to_job_tuple[messageid] = job_tuple
+                    c.dispatch_job(self.queues["job"], user_id, task_nr, \
+                                   user_email, message_id)
 
-                    logmsg = ("Dispatched backlogged {0},{1},{2}").format(user_id, task_nr, messageid)
-                    c.log_a_msg(self.logger_queue, self.name, logmsg, "DEBUG")
+                    self.jobs_active[job_tuple] = {"dispatch": dispatch_time, \
+                                                   "message_id": message_id}
+                    self.mid_to_job_tuple[message_id] = job_tuple
+
+                    logmsg = ("Dispatched backlogged {0},{1},{2}").format(user_id, task_nr, message_id)
+                    c.log_a_msg(self.queues["logger"], self.name, logmsg, "DEBUG")
 
                 except:
                     logmsg = ("Error while dispatching backlogged task UserId = {0} "
                               "TaskNr = {1} MessageId = {2}").format(user_id, task_nr, \
-                                                                     messageid)
-                    c.log_a_msg(self.logger_queue, self.name, logmsg, "ERROR")
+                                                                     message_id)
+                    c.log_a_msg(self.queues["logger"], self.name, logmsg, "ERROR")
 
-                # delete the messageid from backlog, if no more backlog for this
+                # delete the message_id from backlog, if no more backlog for this
                 # job_tuple then mark for deletion of whole entry
-                del messageids[0]
+                del message_ids[0]
                 if len(self.jobs_backlog[job_tuple]) == 0:
                     to_delete.append(job_tuple)
 
@@ -858,27 +846,27 @@ class mailFetcher(threading.Thread):
         # process queue, as soon as no next item available immediately return
         while True:
             try:
-                next_archive_msg = self.arch_queue.get_nowait()
+                next_archive_msg = self.queues["archive"].get_nowait()
             except queue.Empty:
                 return
 
-            messageid = next_archive_msg.get('mid')
+            message_id = next_archive_msg.get('mid')
             is_finished_job = next_archive_msg.get('isfinishedjob')
 
             # find uid for the mid
-            logmsg = "Moving Message with ID: {0}".format(messageid)
-            c.log_a_msg(self.logger_queue, self.name, logmsg, "DEBUG")
+            logmsg = "Moving Message with ID: {0}".format(message_id)
+            c.log_a_msg(self.queues["logger"], self.name, logmsg, "DEBUG")
             try:
-                uid = uid_of_mid[messageid]
+                uid = uid_of_mid[message_id]
             except KeyError:
                 logmsg = ("Error moving message: could not find uid for Message"
-                          "with ID: {0}").format(messageid)
+                          "with ID: {0}").format(message_id)
                 continue
 
             if is_finished_job:
-                job_tuple = self.mid_to_job_tuple[messageid]
+                job_tuple = self.mid_to_job_tuple[message_id]
                 del self.jobs_active[job_tuple]
-                del self.mid_to_job_tuple[messageid]
+                del self.mid_to_job_tuple[message_id]
 
             # copy
             result = m.uid('COPY', uid, archive_dir)
@@ -890,8 +878,8 @@ class mailFetcher(threading.Thread):
             else:
                 log_msg = ("Error moving a message. Is the "
                            "configured archive_dir '{0}' existing "
-                            "on the IMAP server?!").format(archive_dir)
-                c.log_a_msg(self.logger_queue, self.name, \
+                           "on the IMAP server?!").format(archive_dir)
+                c.log_a_msg(self.queues["logger"], self.name, \
                             log_msg, "ERROR")
 
     ####
@@ -907,13 +895,13 @@ class mailFetcher(threading.Thread):
         if uid_of_mid is None:
             return
 
-        curs, cons = c.connect_to_db(self.semesterdb, self.logger_queue, self.name)
+        curs, cons = c.connect_to_db(self.dbs["semester"], self.queues["logger"], self.name)
 
         # iterate over all new e-mails and take action according to the structure
         # of the subject line
-        for messageid, uid in uid_of_mid.items():
-            c.increment_db_statcounter(self.semesterdb, 'nr_mails_fetched', \
-                                       self.logger_queue, self.name)
+        for message_id, uid in uid_of_mid.items():
+            c.increment_db_statcounter(self.dbs["semester"], 'nr_mails_fetched', \
+                                       self.queues["logger"], self.name)
 
             # fetching the mail, "`(RFC822)`" means "get the whole stuff", but you
             # can ask for headers only, etc
@@ -945,12 +933,11 @@ class mailFetcher(threading.Thread):
                 # Already registered
                     user_id = res[0]
                     logmsg = ("Got mail from an already known user! "
-                              "(UserId:{0}, Email:{1}").format(user_id,
-                              user_email)
-                    c.log_a_msg(self.logger_queue, self.name, logmsg, "INFO")
+                              "(UserId:{0}, Email:{1}").format(user_id, user_email)
+                    c.log_a_msg(self.queues["logger"], self.name, logmsg, "INFO")
 
                     # Take action based on the subject
-                    self.action_by_subject(user_id, user_email, messageid, mail, \
+                    self.action_by_subject(user_id, user_email, message_id, mail, \
                                       mail_subject)
 
                 else:
@@ -970,16 +957,16 @@ class mailFetcher(threading.Thread):
 
                         # Create user and send Welcome message
                         self.add_new_user(user_name, user_email)
-                        c.send_email(self.sender_queue, user_email, "", "Welcome", \
-                                     "", "", messageid)
+                        c.send_email(self.queues["sender"], user_email, "", "Welcome", \
+                                     "", "", message_id)
                     else:
                     # After Registration deadline
-                        c.send_email(self.sender_queue, user_email, "", "RegOver", \
-                                     "", "", messageid)
+                        c.send_email(self.queues["sender"], user_email, "", "RegOver", \
+                                     "", "", message_id)
             else:
             # Not on Whitelist
-                c.send_email(self.sender_queue, user_email, "", "NotAllowed", \
-                             "", "", messageid)
+                c.send_email(self.queues["sender"], user_email, "", "NotAllowed", \
+                             "", "", message_id)
 
         cons.close()
 
@@ -1009,10 +996,10 @@ class mailFetcher(threading.Thread):
         Thread code for the fetcher thread.
         """
 
-        c.log_a_msg(self.logger_queue, self.name, "Starting Mail Fetcher Thread!", "INFO")
+        c.log_a_msg(self.queues["logger"], self.name, "Starting Mail Fetcher Thread!", "INFO")
 
-        logmsg = "Imapserver: '" + self.imap_server + "'"
-        c.log_a_msg(self.logger_queue, self.name, logmsg, "DEBUG")
+        logmsg = "Imapserver: '" + self.imap_info["server"] + "'"
+        c.log_a_msg(self.queues["logger"], self.name, logmsg, "DEBUG")
 
         # This thread is running as a daemon thread, this is the while(1) loop that is
         # running until the thread is stopped by the main thread
@@ -1020,6 +1007,4 @@ class mailFetcher(threading.Thread):
             self.loop_code()
 
         logmsg = "Exiting fetcher - this should NEVER happen!"
-        c.log_a_msg(self.logger_queue, self.name, logmsg, "ERROR")
-
-
+        c.log_a_msg(self.queues["logger"], self.name, logmsg, "ERROR")

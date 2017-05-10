@@ -10,31 +10,36 @@ import threading
 import logging
 import os
 
-class autosubLogger(threading.Thread):
+class AutosubLogger(threading.Thread):
     """
     Logger thread for autosub.
     """
 
-    def __init__(self, thread_id, name, logger_queue, log_dir):
+    def __init__(self, name, logger_queue, log_dir, log_threshhold):
         """
         Constructor for logger thread.
         """
 
         threading.Thread.__init__(self)
         self.name = name
-        self.thread_id = thread_id
         self.logger_queue = logger_queue
         self.log_dir = log_dir
         self.format_autosub = "%(asctime)-15s [%(log_src)-12s] %(levelname)s: %(log_msg)s"
-        self.format_tasks = 80 * '-' + "\n%(asctime)-15s [%(log_src)-12s] %(levelname)s:\n" + 80 * '-' + "\n%(log_msg)s"
+        self.format_tasks = 80 * '-' + "\n%(asctime)-15s [%(log_src)-12s]%(levelname)s:\n" \
+                            + 80 * '-' + "\n%(log_msg)s"
         self.loggers_info = {"autosub":    ["autosub.log", self.format_autosub],\
                              "task_msg":   ["tasks.stdout", self.format_tasks],\
                              "task_error": ["tasks.stderr", self.format_tasks]}
         self.loggers = dict()
 
-        #Change log threshhold here #
-        self.log_threshhold = logging.DEBUG
-        #############################
+        if log_threshhold == 'DEBUG':
+            self.log_threshhold = logging.DEBUG
+        elif log_threshhold == 'INFO':
+            self.log_threshhold = logging.INFO
+        elif log_threshhold == 'WARNING':
+            self.log_threshhold = logging.WARNING
+        elif log_threshhold == 'ERROR':
+            self.log_threshhold = logging.ERROR
 
     def setup_logger(self, logger_name, logger_info):
         """

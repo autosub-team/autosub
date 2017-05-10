@@ -20,7 +20,8 @@ def log_a_msg(lqueue, lname, msg, loglevel):
     Put a message with a loglevel in a logqueue.
     """
 
-    lqueue.put(dict({"msg": msg, "type": loglevel, "log_src": lname, "log_dst": "autosub"}))
+    lqueue.put(dict({"msg": msg, "type": loglevel,\
+                     "log_src": lname, "log_dst": "autosub"}))
 
 ####
 # log_task_msg
@@ -30,7 +31,8 @@ def log_task_msg(lqueue, lname, msg, loglevel):
     Put a task message with a loglevel in a logqueue.
     """
 
-    lqueue.put(dict({"msg": msg, "type": loglevel, "log_src": lname, "log_dst": "task_msg"}))
+    lqueue.put(dict({"msg": msg, "type": loglevel, "log_src": lname,\
+                     "log_dst": "task_msg"}))
 
 ####
 # log_task_error
@@ -40,7 +42,56 @@ def log_task_error(lqueue, lname, msg, loglevel):
     Put a task error message with a loglevel in a logqueue.
     """
 
-    lqueue.put(dict({"msg": msg, "type": loglevel, "log_src": lname, "log_dst": "task_error"}))
+    lqueue.put(dict({"msg": msg, "type": loglevel, "log_src": lname,
+                     "log_dst": "task_error"}))
+
+####
+# archive_message
+####
+def archive_message(archive_queue, message_id, is_finished_job=False):
+    """
+    trigger archivation of an e-mail
+    """
+
+    archive_queue.put(dict({"mid": message_id, "isfinishedjob": is_finished_job}))
+
+####
+# send_email
+####
+def send_email(sender_queue, recipient, user_id, messagetype, task_nr, body, message_id):
+    """
+    Put a message in the sender queue.
+    """
+
+    sender_queue.put(dict({"recipient": recipient, "UserId": str(user_id), \
+                    "message_type": messagetype, "Task": str(task_nr), \
+                    "Body": body, "MessageId": message_id}))
+
+####
+# generate_task
+####
+def generate_task(gen_queue, user_id, task_nr, user_email, message_id):
+    """
+    Put a job in the generator queue
+    """
+
+    gen_queue.put(dict({"user_id": str(user_id), \
+                        "user_email": str(user_email), \
+                        "task_nr": str(task_nr), \
+                        "messageid": message_id}))
+####
+# dispatch_job
+###
+def dispatch_job(job_queue, user_id, task_nr, user_email, message_id):
+    """
+    Put a job in the job queue for the workers.
+    """
+
+    job_queue.put(dict({"UserId": str(user_id), \
+                        "UserEmail": user_email, \
+                        "message_type": "Task",  \
+                        "taskNr": task_nr, \
+                        "MessageId": message_id}))
 
 ####
 # check_dir_mkdir
@@ -57,22 +108,11 @@ def check_dir_mkdir(directory, lqueue, lname):
         logmsg = "Created directory: " + directory
         log_a_msg(lqueue, lname, logmsg, "DEBUG")
         return 1
+
     else:
         logmsg = "Directory already exists: " + directory
-        log_a_msg(lqueue, lname, logmsg, "WARNING")
+        log_a_msg(lqueue, lname, logmsg, "INFO")
         return 0
-
-####
-# send_email
-####
-def send_email(queue, recipient, user_id, messagetype, tasknr, body, messageid):
-    """
-    Send Email to a user.
-    """
-
-    queue.put(dict({"recipient": recipient, "UserId": str(user_id), \
-                    "message_type": messagetype, "Task": str(tasknr), \
-                    "Body": body, "MessageId": messageid}))
 
 ####
 # connect_to_db
@@ -127,7 +167,8 @@ def get_task_starttime(coursedb, tasknr, lqueue, lname):
 
     try:
         data = {'TaskNr': tasknr}
-        sql_cmd = "SELECT TaskStart FROM TaskConfiguration WHERE TaskNr == :TaskNr"
+        sql_cmd = ("SELECT TaskStart FROM TaskConfiguration "
+                   "WHERE TaskNr == :TaskNr")
         curc.execute(sql_cmd, data)
         tstart_string = str(curc.fetchone()[0])
         ret = datetime.datetime.strptime(tstart_string, format_string)
@@ -151,7 +192,8 @@ def get_task_deadline(coursedb, tasknr, lqueue, lname):
     curc, conc = connect_to_db(coursedb, lqueue, lname)
     try:
         data = {'TaskNr': tasknr}
-        sql_cmd = "SELECT TaskDeadline FROM TaskConfiguration WHERE TaskNr == :TaskNr"
+        sql_cmd = ("SELECT TaskDeadline FROM TaskConfiguration "
+                   "WHERE TaskNr == :TaskNr")
         curc.execute(sql_cmd, data)
         deadline_string = str(curc.fetchone()[0])
         ret = datetime.datetime.strptime(deadline_string, format_string)
@@ -228,7 +270,7 @@ def get_num_tasks(coursedb, lqueue, lname):
 
     curc, conc = connect_to_db(coursedb, lqueue, lname)
 
-    sql_cmd = "SELECT Content FROM GeneralConfig WHERE ConfigItem == 'num_tasks'"
+    sql_cmd = "SELECT COUNT(*) FROM TaskConfiguration"
     curc.execute(sql_cmd)
     num_tasks = int(curc.fetchone()[0])
 
