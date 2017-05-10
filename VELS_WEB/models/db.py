@@ -48,12 +48,10 @@ semester.define_table('Whitelist',
                       migrate=False, primarykey=['UniqueId'])
 Whitelist= semester.Whitelist
 
-
 ###################################################
 ##################### COURSE ######################
 ###################################################
 course= DAL('sqlite://course.db')
-course._uri
 
 course.define_table('SpecialMessages',
     Field('EventName', 'string',unique=True),
@@ -65,9 +63,10 @@ course.define_table('TaskConfiguration',
     Field('TaskNr', 'integer'),
     Field('TaskStart', 'datetime'),
     Field('TaskDeadline', 'datetime'),
-    Field('PathToTask', 'string'),
+    Field('TaskName', 'string'),
     Field('GeneratorExecutable', 'string'),
     Field('TestExecutable', 'string'),
+    Field('CommonFile','string'),
     Field('Score', 'integer'),
     Field('TaskOperator', 'string'),
     Field('TaskActive', 'integer'),

@@ -10,7 +10,6 @@ import sys
 import urllib.request
 import zipfile
 
-
 arg_parser = argparse.ArgumentParser()
 arg_parser.add_argument("autosub_path", help="absoulute path to autosub")
 arg_parser.add_argument("configfile", help="absoulute path to used autosub config file")
@@ -43,18 +42,18 @@ config = configparser.ConfigParser()
 config.readfp(open(configfile))
 
 try:
-    semesterdb_file = config.get('general', 'semesterdb')
+    semesterdb_file = config.get('system', 'semesterdb')
 except:
     print("Your configfile has no semesterdb specified")
     print("Assuming:" + autosub_path +"/src/semester.db")
-    semesterdb = autosub_path + "/" +"src/semester.db"
+    semesterdb_file = autosub_path + "/" +"src/semester.db"
 
 try:
-    coursedb_file = config.get('general', 'coursedb')
+    coursedb_file = config.get('system', 'coursedb')
 except:
     print("Your configfile has no coursedb specified")
     print("Assuming:" + autosub_path +"/src/course.db")
-    semesterdb = autosub_path + "/src/course.db"
+    coursedb_file = autosub_path + "/src/course.db"
 
 
 #download and place web2py
