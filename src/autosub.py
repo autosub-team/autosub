@@ -669,6 +669,6 @@ if __name__ == '__main__':
     c.log_a_msg(logger_queue, "autosub.py", logmsg, "INFO")
 
     while not exit_flag:
-        pass
+        time.sleep(100)
 
     sys.exit(0)
