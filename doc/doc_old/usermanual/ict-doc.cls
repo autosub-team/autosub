@@ -59,10 +59,10 @@
 %\renewcommand{\contentsname}{Inhalt}
 %\renewcommand{\refname}{Referenzen}
 
-\usepackage[acronym]{glossaries}
-\makeglossaries
-\input{glossar.tex}
-\renewcommand\glsgroupskip{}
+%\usepackage[acronym]{glossaries}
+%\makeglossaries
+%\input{glossar.tex}
+%\renewcommand\glsgroupskip{}
 % Title and table of contents at start of document
 
 \AtBeginDocument{

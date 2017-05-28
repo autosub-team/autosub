@@ -25,8 +25,8 @@ psbzip2: $(PSBZIP2FILES)
 
 %.pdf: %.tex $(DEPS)
 	$(PDFLATEX) $*.tex
-	makeglossaries $(PROJECTNAME)
-	$(BIBTEX) $(PROJECTNAME) 
+#	makeglossaries $(PROJECTNAME)
+#	$(BIBTEX) $(PROJECTNAME) 
 #	$(BIBTEX) weblink
 	$(PDFLATEX) $*.tex
 	$(PDFLATEX) $*.tex
@@ -42,7 +42,7 @@ psbzip2: $(PSBZIP2FILES)
 
 bib: $(PDFFILES) $(DEPS)
 	$(PDFLATEX) $(TEXFILES)
-	$(BIBTEX) $(BIBFILE)
+#	$(BIBTEX) $(BIBFILE)
 	$(PDFLATEX) $(TEXFILES)
 	$(PDFLATEX) $(TEXFILES)
 

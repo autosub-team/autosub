@@ -1,14 +1,14 @@
-Autosub is an email based system for submitting and automatically
-testing student assignments in courses.
+Autosub is an email based system for generating, submitting and automatically
+testing student assignments in courses. 
 
 It includes VELS (VHDL E-Learning System) for supporting VHDL
-training courses. The students submit VHDL models by Email, which are
-automatically simulated and tested by a testbench on the server. The
-student receives an email response about the success or failure of the
-test within seconds or minutes.
-The system comes with a set of VHDL assignments for VHDL beginners.
+training courses. Students receive individual tasks and submit VHDL 
+models by email, which are in succession automatically simulated 
+and tested by testbenches on the server. Students receive email responses 
+about the success or failure of the test within seconds or minutes.
+VELS comes with a set of VHDL assignments for VHDL beginners.
 
-For documenation, please refer to our user manual (https://github.com/andipla/autosub/blob/master/doc/doc_pdf/usermanual.pdf) ,the autosub specification (https://github.com/andipla/autosub/blob/master/doc/doc_pdf/specification.pdf) and the specification of the existing VHDL tasks(https://github.com/andipla/autosub/blob/master/doc/doc_pdf/tasks-specification.pdf)
+For documenation, please refer to our user manual (https://github.com/autosub-team/autosub/blob/master/doc/doc_pdf/usermanual.pdf) and the specification of the existing VHDL tasks(https://github.com/autosub-team/autosub/blob/master/doc/doc_pdf/tasks-specification.pdf)
 
 --
 

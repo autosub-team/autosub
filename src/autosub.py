@@ -295,7 +295,7 @@ def parse_config(config):
     try:
         log_dir = str(config.get('system', 'log_dir')).rstrip('/')
     except:
-        log_dir = os.path.abspath('./')
+        log_dir = os.path.abspath('./logs')
 
     if not os.path.exists(log_dir):
         os.makedirs(log_dir)
