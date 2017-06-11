@@ -13,6 +13,7 @@
 user_id=$1
 task_nr=$2
 task_params=$3
+commonfile=$4
 
 # return values of a tester
 SUCCESS=0
@@ -31,14 +32,17 @@ desc_path="$autosub_path/users/$1/Task$2/desc"
 #path where the testing takes place
 user_task_path="$autosub_path/users/$1/Task$2"
 
+# change to the taskpath
+cd $task_path
+
 # include external config
-source $task_path/task.cfg
+source task.cfg
 
 # name for the testbench
 testbench=${task_name}_tb_${user_id}_Task${task_nr}.vhdl
 
 #include simulator specific common file
-source $commonfile
+source ../_common/$commonfile
 
 #----------------- TEST ----------------
 generate_testbench
@@ -51,7 +55,7 @@ userfiles_analyze
 
 if [ -n "$constraintfile" ]
 then
-	source $task_path/$constraintfile
+	source $constraintfile
 fi
 
 elaborate
