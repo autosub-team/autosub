@@ -5,7 +5,7 @@
 # Generates the individual tasks, enters in databases and moves
 # description files to user folder
 #
-# Copyright (C)
+# Copyright (C) ADD AUTHOR HERE
 # License GPL V2 or later (see http://www.gnu.org/licenses/gpl2.txt)
 ########################################################################
 
@@ -78,4 +78,4 @@ task_attachments=""
 ## ADD TASK TO DATABASE ##
 ##########################
 cd ${autosub_path}/tools
-python3 add_to_usertasks.py u ${user_id} -t ${task_nr} -p "${task_parameters}" -a "${task_attachments}" -d ${semester_db}
+python3 add_to_usertasks.py -u ${user_id} -t ${task_nr} -p "${task_parameters}" -a "${task_attachments}" -d ${semester_db}
