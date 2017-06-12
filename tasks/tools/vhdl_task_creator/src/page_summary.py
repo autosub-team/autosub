@@ -68,8 +68,8 @@ class PageSummary(QtWidgets.QWizardPage):
 
         self.create_task_cfg()
         self.create_placeholder_files()
-        self.create_description_template()
         self.create_entities()
+        self.create_description_template()
 
         return True
 
