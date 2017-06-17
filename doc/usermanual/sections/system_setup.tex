@@ -88,6 +88,13 @@ Use the same configfile you used for starting the autosub daemon! This step will
 also download web2py to the user's home folder and set needed symbolic links to 
 connect VELS\_WEB to the autosub system.
 
+If you change parameters in the category $[$system$]$ in your autosub config file or need to switch to 
+another config file run the installer with the reinstall flag:
+
+\begin{verbatim}
+python3 installer.py --reinstall <pathtoautosub> <pathtoconfigfile>
+\end{verbatim}
+
 To use https you have to use a SSL key. The system expects the keyfiles
 (server.crt , server.csr , server.key) to be in the web2py directory. To
 generate keys and place them run the following (this can be skipped if you 
