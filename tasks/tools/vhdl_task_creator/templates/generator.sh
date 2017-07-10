@@ -47,7 +47,7 @@ fi
 ##########################
 cd ${task_path}
 
-task_parameters=${python3 scripts/generateTask.py "${user_id}" "${task_nr}" "${submission_email}"}
+task_parameters=$(python3 scripts/generateTask.py "${user_id}" "${task_nr}" "${submission_email}")
 
 #generate the description pdf and move it to user's description folder
 cd ${task_path}/tmp
