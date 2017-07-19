@@ -150,8 +150,9 @@ Existing tasks can be assembled into a task queue. This configuration is done in
 Each task in the queue has to be created with the following properties:
 \begin{itemize}
 \item {\bf TaskStart:} The start datetime for the task. The task will automatically
-    be set to active if this datetime is reached. Users waiting for a task to become
-    active will automatically receive an e-mail with the task description for that task.
+    be set to active if this datetime is reached. If auto\_advance is active (configured 
+    via config file) users waiting for a task to become active will automatically 
+    receive an e-mail with the task description for that task.
 \item {\bf TaskDeadline:} The end datetime for the task. Submissions for a tasks after
     this datetime will be rejected.
 \item {\bf TaskName:} The name of the folder with the implementation of the task in respect
@@ -166,7 +167,8 @@ Each task in the queue has to be created with the following properties:
 \item {\bf TaskOperator:} The E-mail(s) of the operator of the task seperated by commas. 
 	These task operators are recipient of task specific questions ("Question Task N").
 \item {\bf TaskActive:} The state of the task, for inactive tasks the generator won't
-    be called.
+    be called. A Task is considered active when the current time is greater than the 
+    TaskStart
 \end{itemize}
 
 \subsection{Notes on multiple VELS instances on the same machine}

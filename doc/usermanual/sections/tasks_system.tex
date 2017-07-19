@@ -5,7 +5,7 @@
 Every task is located in an individual folder in the tasks directory (configurable via 
 the autosub config file). Certain structures with minimum behavior are needed in order 
 to use the task with the autosub system. In detail instructions how to create a taks can 
-be found in Section xy \todo{reference}.
+be found in Section \ref{create_new_task}.
 
 \begin{tabular}{|p{3cm}|p{10cm}|}
 \hline
@@ -92,7 +92,7 @@ files (default {\tt "autosub/src"}) can be configured using the log file. Messag
 files are logged in the format:
 \begin{verbatim}
 --------------------------------------------------------------------
-<date> <time> [Task<task_nr>] <ERROR/INFO>:
+<date> <time> [Task<task_nr>(<worker_nr)] <ERROR/INFO>:
 --------------------------------------------------------------------
 <logmessage>
 \end{verbatim}

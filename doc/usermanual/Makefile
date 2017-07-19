@@ -10,8 +10,10 @@ PROJECTNAME = usermanual
 
 DEPS = usermanual.tex sections/appendix.tex sections/system_interaction.tex \
        sections/tasks_system.tex sections/autosub_system.tex \
-	   sections/system_prerequisites.tex sections/webinterface.tex \
+       sections/system_prerequisites.tex sections/webinterface.tex \
        sections/overview.tex sections/system_setup.tex \
+       sections/create_new_task.tex
+       
 
 DIRS=. sections images
 
