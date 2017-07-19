@@ -10,12 +10,12 @@ VELS_WEB_PATH=$HOME/web2py/applications/VELS_WEB
 server_ip=$(ip addr | grep 'state UP' -A2 | tail -n1 | awk '{print $2}' | cut -f1  -d'/')
 if [ -n $2 ]; #port given
 then
-	port=$2         
+	port=$2
 fi
 
 if [ -n $3 ]; #password given
 then
-	password=$3         
+	password=$3
 fi
 
 if [ $1 = "start" ];
@@ -27,5 +27,6 @@ then
 	kill -SIGTERM $PID
 else
 	echo "Usage: ./daemon.sh [start|stop] [port] [password]"
+	echo "After starting attach VELS_WEB to the given url to reach VELS_WEB"
 fi
 

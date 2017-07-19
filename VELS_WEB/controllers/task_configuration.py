@@ -70,7 +70,21 @@ def __entries():
         array.append(entry)
 
     tasks_dir = course(GeneralConfig.ConfigItem=='tasks_dir').select(GeneralConfig.Content)[0].Content
-    return dict(entries=array, tasks_dir = tasks_dir)
+
+    if not os.path.isdir(tasks_dir):
+        num_found_tasks = "Invalid Path."
+    else:
+        # only take subfolders not files of tasks_dir
+        available_tasks = sorted([d for d in os.listdir(tasks_dir) 
+                          if os.path.isdir(os.path.join(tasks_dir, d))])
+
+        # delete _common out of it 
+        if '_common' in available_tasks:
+            available_tasks.remove('_common')
+        num_found_tasks = str(len(available_tasks)) + " task(s) found."
+
+    return dict(entries=array, tasks_dir = tasks_dir,
+                num_found_tasks = num_found_tasks)
 
 
 def index():
@@ -93,13 +107,18 @@ def newTask():
     # get the configured tasks directory
     tasks_dir = course(GeneralConfig.ConfigItem=='tasks_dir').select(GeneralConfig.Content)[0].Content
 
-    available_tasks = sorted(next(os.walk(tasks_dir))[1])
-    if '_common' in available_tasks:
-        available_tasks.remove('_common')
-
+    available_tasks = [""]
     available_commons = [""]
-    if isdir(tasks_dir + "/_common"):
-        available_commons.extend(sorted(next(os.walk(tasks_dir + "/_common"))[2]))
+
+    if os.path.isdir(tasks_dir):
+        # only take subfolders not files of tasks_dir
+        available_tasks = sorted([d for d in os.listdir(tasks_dir) 
+                          if os.path.isdir(os.path.join(tasks_dir, d))])
+ 
+        if '_common' in available_tasks:
+            # delete _common out of it
+            available_tasks.remove('_common')
+            available_commons.extend(sorted(os.listdir(tasks_dir + "/_common")))
 
     inputs = TD(newTaskNr,INPUT(_type='hidden',_name='TaskNr',_value=newTaskNr)),\
              TD(INPUT(_name='TaskStart', requires=val['TaskStart'],\
