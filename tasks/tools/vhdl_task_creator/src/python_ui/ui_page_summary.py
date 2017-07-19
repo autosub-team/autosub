@@ -2,7 +2,8 @@
 
 # Form implementation generated from reading ui file '../qt5_ui/page_summary.ui'
 #
-# Created by: PyQt5 UI code generator 5.7
+# Created: Tue Jul 18 11:35:58 2017
+#      by: PyQt5 UI code generator 5.3.2
 #
 # WARNING! All changes made in this file will be lost!
 

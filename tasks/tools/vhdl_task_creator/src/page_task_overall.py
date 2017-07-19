@@ -42,8 +42,6 @@ class PageTaskOverall(QtWidgets.QWizardPage):
         for i in range(0, self.ui.list_extra_files.count()):
             self.base_object.extra_files.append(self.ui.list_extra_files.item(i).text())
 
-        QtCore.qDebug(str(self.base_object.extra_files))
-
         # get the in the gui specified entity names
         entity_names = []
         for i in range(0, self.ui.list_user_entities.count()):

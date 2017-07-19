@@ -16,7 +16,6 @@ class PageSummary(QtWidgets.QWizardPage):
         self.page_id = None
         self.base_object = base_object
         self.entity_configs = base_object.entity_configs
-        self.extra_files = base_object.extra_files
 
         self.ui = Ui_PageSummary()
         self.ui.setupUi(self)
@@ -32,17 +31,16 @@ class PageSummary(QtWidgets.QWizardPage):
         return -1
 
     def initializePage(self):
-        self.directory = self.field("directory")
+        self.directory = os.path.join(self.field("directory"), self.field("task_name"))
 
         text = '<h2>Task "' + self.field("task_name") + '"</h2>' + \
                '<b>Output directory:</b> <br> ' + self.directory + '<br>'
 
         text += '<br>'
 
-        text += '<b>Extra files:</b><br>' + '<br>'
-        for filename in self.extra_files:
+        text += '<b>Extra files:</b><br>'
+        for filename in self.base_object.extra_files:
             text += filename + '<br>'
-        text += str(len(self.extra_files))
 
         for key, entity_config in self.entity_configs.items():
             text += '<h3>Entity "' + entity_config.entity_name + '"</h3>'
@@ -61,10 +59,15 @@ class PageSummary(QtWidgets.QWizardPage):
 
     # called when Finish pressed
     def validatePage(self):
+        os.makedirs(self.directory)
 
         os.makedirs(os.path.join(self.directory, "scripts"), exist_ok=True)
         os.makedirs(os.path.join(self.directory, "templates"), exist_ok=True)
         os.makedirs(os.path.join(self.directory, "static"), exist_ok=True)
+
+        # copy the description.txt file to task folder
+        copyfile("templates/description.txt", os.path.join(self.directory, "description.txt"))
+
 
         self.create_task_cfg()
         self.create_placeholder_files()
@@ -83,7 +86,7 @@ class PageSummary(QtWidgets.QWizardPage):
 
         if signal_info["length_type"] != "single":
             result += "(" + signal_info["length_placeholder"] + "-1 downto 0)"
- 
+
         return result
 
     def create_description_template(self):
@@ -258,7 +261,7 @@ class PageSummary(QtWidgets.QWizardPage):
         task_name = self.field("task_name")
         userfiles = " ".join([name + "_beh.vhdl" for name, config in self.entity_configs.items()])
         entityfiles = " ".join([name + ".vhdl" for name, config in self.entity_configs.items()])
-        extrafiles = " ".join([name for name in self.extra_files])
+        extrafiles = " ".join([name for name in self.base_object.extra_files])
 
         if self.field("checkbox_constraint_script"):
             constraintfile = "scripts/check.sh"

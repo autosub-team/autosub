@@ -2,7 +2,8 @@
 
 # Form implementation generated from reading ui file '../qt5_ui/page_task_overall.ui'
 #
-# Created by: PyQt5 UI code generator 5.7
+# Created: Tue Jul 18 11:35:58 2017
+#      by: PyQt5 UI code generator 5.3.2
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -157,7 +158,7 @@ class Ui_PageTaskOverall(object):
         self.label_extra_files.setText(_translate("PageTaskOverall", "Extra files"))
         self.button_extra_files_plus.setText(_translate("PageTaskOverall", "+"))
         self.button_extra_files_minus.setText(_translate("PageTaskOverall", "-"))
-        self.label.setText(_translate("PageTaskOverall", "Timeout(s)"))
+        self.label.setText(_translate("PageTaskOverall", "Simulation Timeout (in s)"))
         self.checkbox_attach_wavefile.setText(_translate("PageTaskOverall", "Attach wavefile"))
         self.checkbox_constraint_script.setText(_translate("PageTaskOverall", "Use task constraint script"))
 
