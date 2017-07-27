@@ -37,7 +37,7 @@ function generate_testbench {
 
 	#find last submission number
 	submission_nrs=($(ls $user_task_path | grep -oP '(?<=Submission)[0-9]+' | sort -nr))
-	submission_nr_last=${submissionNrs[0]}
+	submission_nr_last=${submission_nrs[0]}
 
 	#copy used testbench
 	src=$user_task_path/$testbench
@@ -64,7 +64,7 @@ function prepare_test {
 
 	# create file for error messages, which will be sent to user
 	touch error_msg
-	
+
 	#make sure the error_attachments folder is empty
 	if [ ! -d "error_attachments" ];
 	then
@@ -157,7 +157,7 @@ function userfiles_analyze {
 		#this is the file from the user
 		vhpcomp $filename 2> /tmp/$USER/tmp_Task${task_nr}_User${user_id}
 		RET=$?
-		
+
 		# check for possible infinite loop warning message which crashes the simulation
 		egrep -oq "Possible infinite loop" /tmp/$USER/tmp_Task${task_nr}_User${user_id}
 		RET_loop=$?
@@ -180,7 +180,7 @@ function userfiles_analyze {
 		   exit $FAILURE
 		fi
 	done
-	
+
 }
 
 function elaborate {
@@ -189,7 +189,7 @@ function elaborate {
 	#------ ELABORATE testbench ------#
 	fuse -top ${task_name}_tb
 	RET=$?
-	
+
 	if [ "$RET" -eq "$zero" ]
 	then
 		echo "Task${task_nr} elaboration success for user ${user_id}!"
@@ -212,7 +212,7 @@ function simulate {
 	# start simulation:
 	timeout $simulation_timeout ./x.exe -tclbatch isim.cmd
 	RET_timeout=$?
-	
+
 	# check if simulation timed out:
 	if [ "$RET_timeout" -eq 124 ] # timeout exits 124 if it had to kill the process. Probably the simulation has crashed.
 	then
@@ -220,7 +220,7 @@ function simulate {
 		echo "The simulation of your design timed out. This is not supposed to happen. Check your design." > error_msg
 		exit $FAILURE
 	fi
-	
+
 	# check if simulation reported "Success":
 	egrep -q "Success" isim.log
 	RET_success=$?
@@ -229,14 +229,14 @@ function simulate {
 		echo "Functionally correct for task${task_nr} for user ${user_id}!"
 		exit $SUCCESS
 	fi
-	
+
 	# attach wave file:
 	if [ "$attach_wave_file" -eq "$one" ]
 	then
 		zip wavefile.zip isim.wdb
 		mv wavefile.zip error_attachments/
 	fi
-	
+
 	# check if simulation was stopped due to the "run X ms" restriction from the isim.cmd tcl script
 	egrep -q "INFO: Simulator is stopped." isim.log # returns not 0 on exit due to the "run X ms" restriction
 	RET_run_X_ms_restriction=$?
@@ -250,7 +250,7 @@ function simulate {
 		fi
 		exit $FAILURE
 	fi
-	
+
 	# check for simulation errors:
 	cat isim.log | grep -v Security | egrep -q ERROR # security error messages are license errors
 	RET_simulation_error=$?
@@ -263,7 +263,7 @@ function simulate {
 		cat isim.log | grep -v Security | grep -A 5 ERROR >> error_msg
 	exit $FAILURE
 	fi
-	
+
 	# check for the error message from the testbench:
 	egrep -q § isim.log
 	RET_tb_error_message=$?
@@ -280,7 +280,7 @@ function simulate {
 		fi
 		exit $FAILURE
 	fi
-	
+
 	# catch unhandled errors:
 	echo "Unhandled error for task ${task_nr} for user ${user_id}!"
 	echo "Your submitted behavior file does not behave like specified in the task description." > error_msg

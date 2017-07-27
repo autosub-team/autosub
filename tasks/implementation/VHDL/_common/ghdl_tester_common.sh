@@ -37,7 +37,7 @@ function generate_testbench {
 
 	#find last submission number
 	submission_nrs=($(ls $user_task_path | grep -oP '(?<=Submission)[0-9]+' | sort -nr))
-	submission_nr_last=${submissionNrs[0]}
+	submission_nr_last=${submission_nrs[0]}
 
 	#copy used testbench
 	src=$user_task_path/$testbench
@@ -61,7 +61,7 @@ function prepare_test {
 
 	# create file for error messages, which will be sent to user
 	touch error_msg
-	
+
 	#make sure the error_attachments folder is empty
 	if [ ! -d "error_attachments" ];
 	then
@@ -161,7 +161,7 @@ function userfiles_analyze {
 		   exit $FAILURE
 		fi
 	done
-	
+
 }
 
 function elaborate {
@@ -170,7 +170,7 @@ function elaborate {
 	#------ ELABORATE testbench ------#
 	ghdl -e --ieee=synopsys ${task_name}_tb 2> /tmp/$USER/tmp_Task${task_nr}_User${user_id}_elaborate
 	RET=$?
-	
+
 	if [ "$RET" -eq "$zero" ]
 	then
 		echo "Task${task_nr} elaboration success for user ${user_id}!"
@@ -185,7 +185,7 @@ function elaborate {
 
 function simulate {
 	cd $user_task_path
-	
+
 	# add parameter for generating the wave file if the wave file shall be attached
 	if [ "$attach_wave_file" -eq "$one" ]
 	then
@@ -193,11 +193,11 @@ function simulate {
 	else
 		add_wave_file_parameter=""
 	fi
-	
+
 	# start simulation:
 	timeout $simulation_timeout ghdl -r ${task_name}_tb $add_wave_file_parameter 2> /tmp/$USER/tmp_Task${task_nr}_User${user_id}_simulate
 	RET_timeout=$?
-	
+
 	# check if simulation timed out:
 	if [ "$RET_timeout" -eq 124 ] # timeout exits 124 if it had to kill the process. Probably the simulation has crashed.
 	then
@@ -205,7 +205,7 @@ function simulate {
 		echo "The simulation of your design timed out. This is not supposed to happen. Check your design." > error_msg
 		exit $FAILURE
 	fi
-	
+
 	# check if simulation reported "Success":
 	egrep -q "Success" /tmp/$USER/tmp_Task${task_nr}_User${user_id}_simulate
 	RET_success=$?
@@ -214,7 +214,7 @@ function simulate {
 		echo "Functionally correct for task${task_nr} for user ${user_id}!"
 		exit $SUCCESS
 	fi
-	
+
 	# attach wave file:
 	if [ "$attach_wave_file" -eq "$one" ]
 	then
@@ -225,7 +225,7 @@ function simulate {
 		zip wavefile.zip signals.vcd
 		mv wavefile.zip error_attachments/
 	fi
-			
+
 	# check for the error message from the testbench:
 	egrep -q § /tmp/$USER/tmp_Task${task_nr}_User${user_id}_simulate
 	RET_tb_error_message=$?
@@ -242,7 +242,7 @@ function simulate {
 		fi
 		exit $FAILURE
 	fi
-	
+
 	# check for simulation errors:
 	cat /tmp/$USER/tmp_Task${task_nr}_User${user_id}_simulate | egrep -qi error
 	RET_simulation_error=$?
@@ -255,7 +255,7 @@ function simulate {
 		cat /tmp/$USER/tmp_Task${task_nr}_User${user_id}_simulate  | grep -i error >> error_msg
 		exit $FAILURE
 	fi
-	
+
 	# catch unhandled errors:
 	echo "Unhandled error in ghdl_tester_common for task ${task_nr} for user ${user_id}!"
 	echo "Your submitted behavior file does not behave like specified in the task description." > error_msg
