@@ -1,7 +1,8 @@
 Hi,
 
-You cannot submit a result for the tasknumber you mentioned in your email.
+you cannot submit a result for the tasknumber you mentioned in your email.
 
 You have not received a task description for that task yet.
+
 
 So long, and thanks for all the fish!

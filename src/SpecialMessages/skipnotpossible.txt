@@ -1,6 +1,7 @@
 Hi,
 
-The skip you requested is not possible, because either you are at the last task or the next task has not started yet.
+the skip you requested is not possible, because either you are at the last task 
+or the next task has not started yet.
 
 
 So long, and thanks for all the fish!
