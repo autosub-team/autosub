@@ -12,6 +12,7 @@
 '%s %%{shop}': '%s %%{shop}',
 '%s selected': '%s selected',
 '%Y-%m-%d': '%Y-%m-%d',
+'%Y-%m-%d %H:%M': '%Y-%m-%d %H:%M',
 '%Y-%m-%d %H:%M:%S': '%Y-%m-%d %H:%M:%S',
 '?': '?',
 '@markmin\x01**Hello World**': '**Hallo Welt**',

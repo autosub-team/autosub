@@ -1,0 +1,65 @@
+\documentclass[a4paper,12pt]{article}
+\usepackage{a4wide}
+\usepackage{tikz}
+\usetikzlibrary{calc}
+\usepackage{hyperref}
+
+\begin{document}
+\pagestyle{empty}
+\setlength{\parindent}{0em} 
+\section*{\noindent {{ task_name }} }
+{% for entity in entities%}
+Your task is to program the behavior of an entity called ``{{ entity.name }}". This entity is declared in the attached file ``{{ entity.name }}.vhdl" and has the following properties:
+
+\begin{itemize}
+{% for input in entity.inputs %}
+	\item Input: {{ input.name }} with type {{ input.type }}
+{% endfor %}
+{% for output in entity.outputs %}
+	\item Output: {{ output.name }} with type {{ output.type }}
+{% endfor %}
+
+\end{itemize}
+
+\begin{center}
+\begin{tikzpicture}
+\draw node [draw,rectangle, minimum height={{ entity.minimum_height }}mm, minimum width=35mm,rounded corners=2mm,thick](entity){};
+
+{% for input in entity.inputs %}
+\draw[->] ($ (entity.west)+(-10mm,{{ (entity.minimum_height / 2) - (loop.index * (entity.minimum_height / (loop.length + 1)))}}mm)$) -- ($ (entity.west) + (0mm,{{ (entity.minimum_height / 2) - (loop.index * (entity.minimum_height / (loop.length + 1)))}}mm)$);
+\draw[anchor=east] node at ($ (entity.west)+(-9mm,{{ (entity.minimum_height / 2) - (loop.index * (entity.minimum_height / (loop.length + 1)))}}mm)$){ {{input.name}} };
+
+{% endfor %}
+
+{% for output in entity.outputs %}
+\draw[->] ($ (entity.east) + (0mm,{{ (entity.minimum_height / 2) - (loop.index * (entity.minimum_height / (loop.length + 1)))}}mm)$) -- ($ (entity.east) + (10mm,{{ (entity.minimum_height / 2) - (loop.index * (entity.minimum_height / (loop.length + 1)))}}mm)$);
+\draw[anchor=west] node at ($ (entity.east) + (9mm,{{ (entity.minimum_height / 2) - (loop.index * (entity.minimum_height / (loop.length + 1)))}}mm)$){ {{ output.name }} };
+
+{% endfor %}
+
+\draw node at ($ (entity) - (0,0mm)$){ {{ entity.name }} };
+
+\end{tikzpicture}
+\end{center}
+
+Do not change the file ``{{ entity.name }}.vhdl".\\
+
+---
+insert your description of the task for the user here
+---\\
+
+This behavior has to be programmed in the attached file ``{{ entity.name }}\_beh.vhdl".\\
+
+{% endfor %}
+
+To turn in your solution write an email to %%SUBMISSIONEMAIL with Subject ``Result Task %%TASKNR" and attach your:
+
+{% for entity in entities%}
+``{{ entity.name }}\_beh.vhdl"
+{% endfor %}
+
+\vspace{0.7cm}
+Good Luck and May the Force be with you.
+
+
+\end{document}

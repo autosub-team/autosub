@@ -15,17 +15,18 @@ class IS_EMAIL_LIST(object):
                 if IS_EMAIL()(email)[1] != None:
                     return (email, self.error_message % email)
             return (value, None)
-        
+
 class IS_EMAIL_MASS(object):
     def __init__(self, error_message="Email %s is invalid", sep="\n"):
         self.error_message = error_message
         self.sep = sep
 
     def __call__(self, value):
-            emails = value.strip().split(self.sep)
-            for email in emails:
-                emial = email.strip('\r')
-                email = email.strip()
+            lines = value.strip().split(self.sep)
+            for line in lines:
+		line= line.strip("\r ")
+            	elements = line.split(';')
+            	email= elements[0].strip()
                 if IS_EMAIL()(email)[1] != None:
                     return (email, self.error_message % email)
             return (value, None)
@@ -46,12 +47,11 @@ class PATH_EXISTS(object):
         self.error_message = error_message
 
     def __call__(self, value):
-        pathname = value
+        pathname = predir + "/" + value
         if isdir(pathname) == False:
             return(pathname, self.error_message)
         else:
             return (pathname, None)
-
 
 class ANY(object):
     """

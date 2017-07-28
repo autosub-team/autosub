@@ -1,3 +1,6 @@
+import cStringIO
+import csv
+
 val={'Name'        :[IS_NOT_EMPTY()],
      'Email'       :[IS_NOT_EMPTY(),IS_EMAIL()],
      'LastDone'    :[IS_EMPTY_OR(IS_DATETIME(format=T('%Y-%m-%d %H:%M:%S'),error_message='must be YYYY-MM-DD HH:MM:SS!'))],
@@ -13,21 +16,23 @@ def __entries():
         rows_nrs = semester((UserTasks.UserId == row.UserId) & \
                             (UserTasks.FirstSuccessful <> None)).select(UserTasks.TaskNr)
         if(len(rows_nrs) == 0):
-            successfuls = "None"
+            numFinished = 0
+            finishedTasks = ""
         else:
             nrs = []
             for row_nrs in rows_nrs:
                 nrs.append(str(row_nrs.TaskNr))
-            successfuls = str(len(nrs)) + ': ' + ','.join(nrs)
+            numFinished = str(len(nrs))
+            finishedTasks = ','.join(nrs)
 
-        entry={'UserId'      :row.UserId,
-               'Name'        :row.Name,
-               'Email'       :row.Email,
-               'FinishedTasks': successfuls,
-               'LastDone'    :row.LastDone,
-               'UserId'      :row.UserId,
-               'FirstMail'   :row.FirstMail,
-               'CurrentTask' :row.CurrentTask}
+        entry={'UserId'      : row.UserId,
+               'Name'        : row.Name,
+               'Email'       : row.Email,
+               'NumFinished' : numFinished,
+               'FinishedTasks': finishedTasks,
+               'LastDone'    : row.LastDone,
+               'FirstMail'   : row.FirstMail,
+               'CurrentTask' : row.CurrentTask}
         array.append(entry)
 
     return dict(entries=array)
@@ -37,6 +42,23 @@ def index():
     returnDict={}
     returnDict.update(__entries())
     return returnDict
+
+def downloadAsCSV():
+    download_file = cStringIO.StringIO()
+
+    fields= ['UserId','Name','Email','NumFinished','FinishedTasks','CurrentTask','FirstMail','LastDone']
+    csv_file = csv.DictWriter(download_file, delimiter = ';', fieldnames=fields)
+
+    csv_file.writeheader()
+
+    entries = __entries()['entries']
+    for entry in entries:
+        csv_file.writerow(entry)
+
+    response.headers['Content-Type']='application/vnd.ms-excel'
+    response.headers['Content-Disposition']='attachment; filename=VELS_users.csv'
+    return download_file.getvalue()
+
 
 def newUser():
     returnDict={}

@@ -1,3 +1,4 @@
+
 %% -*-LaTeX-*- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -5,38 +6,61 @@
 \documentclass{ict-doc}
 \newcommand{\docproject}{E-Learning – VELS}
 \newcommand{\doctitle}{E-Learning -- VELS}
-\newcommand{\docsubtitle}{User Manual}
-\newcommand{\docauthors}{Andreas Platschek, Martin Mosbeck, Gilbert Markum}
+\newcommand{\docsubtitle}{Usermanual}
+\newcommand{\docauthors}{Martin Mosbeck, Andreas Platschek, Gilbert Markum}
 \newcommand{\docreviewers}{Axel Jantsch}
-\newcommand{\docversion}{0.4}
+\newcommand{\docversion}{0.5}
 \newcommand{\docdate}{\today}
 \newcommand{\doccopyrighta}{TU Wien,}
-\newcommand{\doccopyrightb}{Institute for Computer Technology}
+\newcommand{\doccopyrightb}{Institute of Computer Technology}
 
 % Setup of the hyperref package
 
 \hypersetup{, 
-	colorlinks=false,
-	bookmarks=true}
+    colorlinks=false,
+    bookmarks=true}
 
 \usepackage{listings}
 \usepackage{moreverb}
 \usepackage{pdflscape}
 \usepackage{todonotes}
+\usepackage{longtable}
+%\usepackage[T1]{fontenc} 
 % The document, please keep the structure defined here
 
 \begin{document}
+
+\listoftodos
 
 % Fill in the name of your docu-file.l
 
 \include{doc-ctrl}
 \pagenumbering{arabic} % document with arabic page numbers
-\include{sections/manualoverview} 
-\include{sections/velsoverview}
-\include{sections/libtools}
-\include{sections/logerror}
-\include{sections/installation}
-\include{sections/setup}
-\include{sections/bugs}
+
+\include{sections/overview}
+\include{sections/system_interaction}
+\include{sections/autosub_system}
+\include{sections/webinterface}
+\include{sections/tasks_system}
+\include{sections/system_prerequisites}
+\include{sections/system_setup}
+\include{sections/create_new_task}
+\include{sections/appendix} 
+
+%%Appendix
+%%	Message Queues
+%%	Configuration File
+%%	SemesterDB
+%%	CourseDB
+
+\cleardoublepage
+\phantomsection
+\addcontentsline{toc}{section}{Abbreviations}
+\printglossary[title=Abbreviations,type=\acronymtype]
+
+\phantomsection
+\addcontentsline{toc}{section}{Refereces}
+\bibliographystyle{alpha}
+\bibliography{references}
 
 \end{document}

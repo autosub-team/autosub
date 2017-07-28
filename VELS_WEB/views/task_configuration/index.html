@@ -1,18 +1,22 @@
 {{extend 'layout.html'}}
     <h1>Current Task Configuration</h1>
+    <b>Configured tasks directory:</b> {{=tasks_dir}} </br>
+    <b>{{=num_found_tasks}}<b>
+    </br>
+    </br>
     <table border="1">
        <thead>
           <tr>
              <th>TaskNr</th>
              <th>Task Start</th>
              <th>Task Deadline</th>
-             <th>Path To Task</th>
+             <th>Task Name</th>
              <th>Generator Executable</th>
              <th>Test Executable</th>
+             <th title="File to be passed to a generalized tester. This contains common functions">Common File</th>
              <th>Score</th>
-             <th>TaskOperator</th>
-             <th>TaskActive</th>
-             <th>Position</th>
+             <th>Task Operator</th>
+             <th>Task Active?</th>
              <th>Edit?</th>
              <th>Delete?</th>
           </tr>
@@ -22,16 +26,13 @@
            <td>{{=entry['TaskNr']}} </td>
            <td>{{=entry['TaskStart']}} </td>
            <td>{{=entry['TaskDeadline']}} </td>
-           <td>{{=entry['PathToTask']}} </td>
+           <td>{{=entry['TaskName']}} </td>
            <td>{{=entry['GeneratorExecutable']}} </td>
            <td>{{=entry['TestExecutable']}} </td>
+           <td>{{=entry['CommonFile']}} </td>
            <td>{{=entry['Score']}} </td>
            <td>{{=entry['TaskOperator']}} </td>
            <td>{{=entry['TaskActive']}} </td>
-           <td> {{=A( IMG(_src=URL('static','images/up.png'),_height="40em"),
-_href=URL('posSwitchUp?TaskNr='+str(entry['TaskNr'])))}}{{=A( IMG(_src=URL('static','images/down.png'),_height="40em"),
-_href=URL('posSwitchDown?TaskNr='+str(entry['TaskNr'])))}}
-           </td>
            <td>{{=A('Edit', _href=URL('editTask?editTaskNr='+str(entry['TaskNr'])))}}</td>
            <td>{{=A('Delete', _href=URL('deleteTask?TaskNr='+str(entry['TaskNr'])))}}</td>
        </tr>

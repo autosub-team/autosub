@@ -1,14 +1,17 @@
 {{extend 'layout.html'}}
  <h1>Whitelisted Emails</h1>
+    Entering a name is optional.
     <table border="1">
        <thead>
           <tr>
              <th>Email</th>
+             <th>Name</th>
           </tr>
         </thead>
     {{for entry in entries:}}
        <tr>
            <td>{{=entry['Email']}}</td>
+           <td>{{=entry['Name']}}</td>
            <td></td>
        </tr>
     {{pass}}
