@@ -1,7 +1,7 @@
 #!/bin/bash
 
 ########################################################################
-# generator.sh for VHDL task
+# generator.sh for VHDL task demux
 # Generates the individual tasks, enters in databases and moves
 # description files to user folder
 #
