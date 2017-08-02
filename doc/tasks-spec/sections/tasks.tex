@@ -434,7 +434,7 @@
 \newpage
 
     \section{Timing Demo} \label{timingDemo}
-    \begin{tabular}{|p{2cm}|p{11cm}|}
+    \begin{tabular}{|p{2cm}|p{13cm}|}
         \hline
         Overview & The student learns and analyses the timing behavior of signals in hardware programme. He or she has to implement the behavior of signals according to a provided waveform. Understanding difference from signals delay and variable assigned is the aim of this task.
         \\
@@ -444,11 +444,11 @@
         \hline
         Creation & The assigned values of variable and signal N are randomly chosen between 20 to 110 in integer so are the delay timing for signal O, E, and P. The coefficient numbers for O, E, and P signal assigned are generated randomly between 1 to 3. The signals and variable has the following relation.
         \begin{description}
-		\item A := A + value\_a  
+		\item A := A + value\_a
 		\item N \textless= N + value\_n
 		\item O \textless= c1 * A + c2 * N after delay\_o
 		\item P \textless= c3 * A - c4 * N after delay\_p
-		\item E \textless= c5 * O + c6 * E after delay\_e 
+		\item E \textless= c5 * O + c6 * E after delay\_e
 		\end{description}
         ,where A is the variable and c1~c6 are the coefficients.
         \\&
@@ -463,7 +463,5 @@
         \hline
         Feedback & If the syntax analysis returned errors, they are sent to the student. If the value of the simulated outputs is not correct at the specified timimg delay, the student receives an feedback with the expected values for 4 signals and the shown values from his/her behavioral vhdl file at the simulated time. The checker checks the design up to 400 ns. The student is informed if his/her solution is proper or not.
         \\
-        \hline 
+        \hline
     \end{tabular}
-
-

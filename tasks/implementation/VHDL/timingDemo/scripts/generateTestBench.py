@@ -23,21 +23,21 @@ class MyTemplate(string.Template):
 
 params={}
 
-taskParameter=ast.literal_eval(sys.argv[1]) 
+taskParameter=ast.literal_eval(sys.argv[1])
 #x=sys.argv[1]
-			
+
 
 
 
 #########################################
-### GENERATE TESTVECTORS for Checker##### 
+### GENERATE TESTVECTORS for Checker#####
 #########################################
 
- 
+
 #ONS1=taskParameter[32]
 #PNS1=taskParameter[33]
 
-#VALUE_A, VALUE_N, DELAY_O, DELAY_P, DELAY_E, C1, C2, C3, C4, C5, C6, ONS1, PNS1 = #x.split('|') 
+#VALUE_A, VALUE_N, DELAY_O, DELAY_P, DELAY_E, C1, C2, C3, C4, C5, C6, ONS1, PNS1 = #x.split('|')
 
 
 ONS1=taskParameter[40]
@@ -47,7 +47,7 @@ PNS1=taskParameter[41]
 
 
 
-v=[]          
+v=[]
 
 for i in range(0,40) :
     v.append(str(taskParameter[i]))
@@ -55,7 +55,7 @@ for i in range(0,40) :
 testPattern=(", ").join(v)
 
 #########################################
-# SET PARAMETERS FOR TESTBENCH TEMPLATE # 
+# SET PARAMETERS FOR TESTBENCH TEMPLATE #
 #########################################
 params.update({"TESTPATTERN":testPattern, "time_o1":(ONS1-1), "time_p1":(PNS1-ONS1-1), "time_e1":(130-PNS1-1)})
 #testbench wait for ns

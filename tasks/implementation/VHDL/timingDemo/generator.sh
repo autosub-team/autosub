@@ -23,7 +23,7 @@
 ########## PATHS #########
 ##########################
 # src path of autosub system
-autosubPath=$(pwd) 
+autosubPath=$(pwd)
 # root path of the task itself
 taskPath=$(readlink -f $0|xargs dirname)
 # path for all the files that describe the created path
@@ -73,7 +73,7 @@ mv $taskPath/tmp/desc_$1_Task$2.pdf $descPath
 #copy static files to user's description folder
 cp $taskPath/static/timingDemo.vhdl $descPath
 cp $taskPath/static/timingDemo_beh.vhdl $descPath
-cp $taskPath/static/timingDemo_example.vhdl $descPath 
+cp $taskPath/static/timingDemo_example.vhdl $descPath
 
 
 #for exam
@@ -101,8 +101,8 @@ taskAttachmentsBase="$descPath/desc_$1_Task$2.pdf $descPath/timingDemo_example.v
 #fi
 if [ -z "$4" ] || [ "$4" = "normal" ]; #default to normal
 then
-    taskAttachments="$taskAttachmentsBase" 
-fi 
+    taskAttachments="$taskAttachmentsBase"
+fi
 
 ##########################
 ## ADD TASK TO DATABASE ##

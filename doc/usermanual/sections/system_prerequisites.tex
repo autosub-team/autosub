@@ -106,7 +106,7 @@ For stretch the standard debian packages are available for installation by:
 
 \begin{verbatim}
 apt-get install python3 python3-mock zip flip graphviz python3-pip
-apt-get install python3-matplotlib python3-nose gnat-6 libgnat-6 
+apt-get install python3-matplotlib python3-nose gnat-6 libgnat-6
 apt-get install zlib1g-dev texlive-latex-extra pgf git python3-pygt5
 \end{verbatim}
 
@@ -128,7 +128,13 @@ pip3 install bitstring
 pip3 install graphviz
 \end{verbatim}
 
-Last, we install a vhdl simulator. The simulator of Xilinx's ISE installation is recommended since stretch is the new version and the ghdl for stretch version has been still developing. 
+Last, we install a vhdl simulator. The simulator of Xilinx's ISE installation is recommended since there is no dedicated
+version of vhdl for Debian stretch. 
+If you still want to use ghdl you can try the version described in Debian 8 (Jessie).
+
+\begin{verbatim}
+dpkg -i ghdl_0.33-1jessie1_amd64.deb
+\end{verbatim}
 
 To use the Simulator of Xilinx's ISE: ISim, see Section \ref{ISE-install}
 
@@ -138,7 +144,7 @@ E-Learning system has been installed successfully.
 
 \subsection{Instalation Notes for Xilinx ISE 14.7}\label{ISE-install}
 
-An additional option, to using the open-source software ghdl as the VHDL Simulation tool for VELS, is to use the Simulator of Xilinx's ISE: ISim. The ISE (``Full Installer for Linux'') can be downloaded from Xilinx's official download page. It requires registration and licensing agreement, but there is no charge. 
+An additional option, to using the open-source software ghdl as the VHDL Simulation tool for VELS, is to use the Simulator of Xilinx's ISE: ISim. The ISE (``Full Installer for Linux'') can be downloaded from Xilinx's official download page. It requires registration and licensing agreement, but there is no charge.
 
 For installing ISE to the default location /opt/Xilinx/ where the VELS system expects it to be, you need permission to write to this location. So we will use the user root to call the graphical installer. To do so we need to allow root to use the users X server. As a user run:
 

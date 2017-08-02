@@ -2,7 +2,7 @@
 
 ########################################################################
 # generateTask.py for VHDL task gates
-# Generates random tasks, generates TaskParameters, fill 
+# Generates random tasks, generates TaskParameters, fill
 # entity and description templates
 #
 # Copyright (C) 2015 Martin  Mosbeck   <martin.mosbeck@gmx.at>, LingYin Huang <lynn9c0021@gmail.com>
@@ -46,14 +46,14 @@ def first_center_tex(value):
 	return value
 
 def next_center_tex(value2,value1):
-	value = (value2+value1)/2 
+	value = (value2+value1)/2
 	return value
-	
+
 
 ###########################
 ######## Timing ###########
 ###########################
-  
+
 RANDOM_RANGE_LOW = 2
 RANDOM_RANGE_HIGH = 11
 #initialize the value and coefficients
@@ -136,7 +136,7 @@ taskParameters=[NV1,OV1,PV1,EV1,NV1,OV2,PV1,EV1,NV1,OV2,PV2,EV1,NV2,OV2,PV2,EV2,
 #taskParameters=str(VALUE_A)+"|"+str(VALUE_N)+"|"+str(DELAY_O)+"|"+str(DELAY_P)+"|"+str(DELAY_E)+"|"+str(C1)+"|"+str(C2)+"|"+str(C3)+"|"+str(C4)+"|"+str(C5)+"|"+str(C6)+"|"+str(ONS1)+"|"+str(PNS1)
 
 ###########################################
-# SET PARAMETERS FOR DESCRIPTION TEMPLATE # 
+# SET PARAMETERS FOR DESCRIPTION TEMPLATE #
 ###########################################
 
 #for testing and variable A
@@ -181,7 +181,7 @@ if DELAY_O < 40 :
 	paramsDesc["ox3_center"]=next_center_tex(OX2,OX3)
 	paramsDesc["ox31"]=next_timing_tex(OX2)-0.25
 	paramsDesc["ox32"]=next_timing_tex(OX2)+0.25
-	
+
 else:
 	paramsDesc["ox3_center"]=next_center_tex(OX2,16.5)
 	paramsDesc["ox31"]=OX2-0.25
@@ -198,7 +198,7 @@ if DELAY_P == 30 :
 	paramsDesc["px3_center"]=next_center_tex(PX2,PX3)
 	paramsDesc["px31"]=next_timing_tex(PX2)-0.25
 	paramsDesc["px32"]=next_timing_tex(PX2)+0.25
-	
+
 else:
 	paramsDesc["px3_center"]=next_center_tex(PX2,16.5)
 	paramsDesc["px31"]=PX2-0.25
@@ -215,7 +215,7 @@ paramsDesc.update({"TASKNR":str(taskNr),"SUBMISSIONEMAIL":submissionEmail})
 
 ############### ONLY FOR TESTING #######################
 
-#task results for checker 
+#task results for checker
 filename ="tmp/result_check_{0}_Task{1}.txt".format(userId,taskNr)
 with open (filename, "w") as solution:
     solution.write("For TaskParameters: " + str(taskParameters) + "\n")
