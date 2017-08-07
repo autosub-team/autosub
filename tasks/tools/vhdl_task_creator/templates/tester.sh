@@ -41,7 +41,7 @@ source task.cfg
 testbench=${task_name}_tb_${user_id}_Task${task_nr}.vhdl
 
 #include simulator specific common file
-source ../_common/$commonfile
+source ../_common/$common_file
 
 #----------------- TEST ----------------
 generate_testbench
