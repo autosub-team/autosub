@@ -52,11 +52,13 @@ This behavior has to be programmed in the attached file ``{{ entity.name }}\_beh
 
 {% endfor %}
 
-To turn in your solution write an email to %%SUBMISSIONEMAIL with Subject ``Result Task %%TASKNR" and attach your:
+To turn in your solution write an email to %%SUBMISSIONEMAIL with Subject ``Result Task %%TASKNR" and attach your behavior file(s):
 
+\begin{itemize}
 {% for entity in entities%}
-``{{ entity.name }}\_beh.vhdl"
+\item ``{{ entity.name }}\_beh.vhdl"
 {% endfor %}
+\end{itemize}
 
 \vspace{0.7cm}
 Good Luck and May the Force be with you.
