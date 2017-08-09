@@ -14,6 +14,8 @@ import string
 import numpy
 import itertools
 import sys
+from bitstring import Bits
+from random import randrange
 
 import parity_functions
 
@@ -81,9 +83,9 @@ parity_equations = parity_functions.create_parity_equations(chosen_parities)
 data_bits = list(Bits(uint=randrange(0,2**n),length=n).bin)
 data = [int(number) for number in data_bits]
 
-example_data = data_bits
-example_code = parity_functions.create_parity_check(parity_equations, data) + example_data
-
+example_data = ''.join(data_bits)
+example_parity = parity_functions.create_parity_check(parity_equations, data)
+example_code = str(example_parity) + example_data
 
 ###########################################
 # SET PARAMETERS FOR DESCRIPTION TEMPLATE #

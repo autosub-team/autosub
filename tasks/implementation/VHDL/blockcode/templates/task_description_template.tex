@@ -88,7 +88,7 @@ meaning the sink can indicate if it is ready to receive data. It takes place wit
 \item \textbf{sink\_ready:} indicates if the sink is ready to receive code. 
 \end{itemize}
 
-\textbf{Backpressure:} If the sink is not ready to receive it unsets the port \textit{sink\_ready}. 
+\textbf{Backpressure:} If the sink is not ready to receive it unsets the port \textit{sink\_ready} (\textit{sink\_ready} = 0). 
 The ``blockcode" entity sends the same code until the sink it is ready. The sink only captures code if both 
 \textit{code\_valid} and \textit{sink\_ready} are set.\\
 \\
@@ -111,7 +111,7 @@ identity matrix and the parity matrix separated by a vertical line:
 \]
 \end{center}
 
-\textbf{Parity:} Use XOR to calculate the parity. The parity bits are the most significant bits of the code element.\\
+\textbf{Parity:} Use XOR to calculate the parity. The parity bits are to be placed as the the most significant bits of the code element: (data) $\longrightarrow$ (parity,data) \\
 \\
 \textbf{Encoding example:} (%%EXAMPLEDATA) $\longrightarrow$ (%%EXAMPLECODE) \\
 
@@ -139,9 +139,10 @@ Figure 2 illustrates the desired behavior of the entity ``blockcode" by example 
 \vspace{2.5cm}
 The described  behavior has to be programmed in the attached file ``blockcode\_beh.vhdl".\\
 
-To turn in your solution write an email to %%SUBMISSIONEMAIL with Subject ``Result Task %%TASKNR" and attach your:
-
-``blockcode\_beh.vhdl"
+To turn in your solution write an email to %%SUBMISSIONEMAIL with Subject ``Result Task %%TASKNR" and attach your behavior file(s):
+\begin{itemize}
+\item ``blockcode\_beh.vhdl"
+\end{itemize}
 
 \vspace{0.7cm}
 Good Luck and May the Force be with you.
