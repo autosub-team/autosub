@@ -44,6 +44,11 @@ code_valid = [None] * num_vectors
 
 sink_ready = [None] * num_vectors
 
+#Possible strategy:
+#random sink_ready and data, when approach FIFO limit, empty it with:
+#    no new data and sink_ready
+#how to cover all corner cases, how to compute right cycle for code and
+#code_valid?
 
 # assemble the test_vectors
 for i in range(0,num_vectors):
