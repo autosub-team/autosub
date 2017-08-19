@@ -126,6 +126,30 @@ with open (filename, "w") as output_file:
     s = MyTemplate(data)
     output_file.write(s.substitute(params_entity))
 
+############### ONLY FOR TESTING #######################
+filename ="tmp/solution_{0}_Task{1}.txt".format(user_id,task_nr)
+with open (filename, "w") as solution:
+    solution.write("For TaskParameters: " + str(task_parameters) + "\n")
+    solution.write(str(n+k)+ "\n")
+    solution.write(str(n)+ "\n")
+
+    for i in range(0,n):
+        solution.write(4 * "\t" + "fifo.data(fifo.write_ptr)(" + str(i)+ ") := data(" + str(i) + ");\n")
+
+    for i in range(0,k):
+        chosen_databits= []
+        parity_vector = chosen_parities[i]
+        print(parity_vector)
+        
+        for j in range(0,n):
+            if parity_vector[j] == "1":
+                chosen_databits.append("data(" + str(j) + ")")
+
+        left_side =  "fifo.data(fifo.write_ptr)(" + str(n+i)+ ") := "
+        right_side = " xor ".join(chosen_databits)
+        solution.write(4 * "\t"+ left_side + right_side +";\n")
+#########################################################
+
 ###########################
 ### PRINT TASKPARAMETERS ##
 ###########################

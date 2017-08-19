@@ -83,6 +83,7 @@ begin
 		variable code_valid_edge : std_logic;
 		variable code_edge : std_logic_vector(code_len-1 downto 0);
 	begin
+		-- reset in first cycle
 		wait until rising_edge(clk_uut);
 		rst_uut <= '1';
 

@@ -3,7 +3,7 @@ use IEEE.std_logic_1164.all;
 use IEEE.numeric_std.all;
 
 architecture behavior of blockcode_source is
-	constant fifo_length : integer := 4;
+	constant fifo_length : integer := 3;
 	constant code_width : integer := 5;
 	constant data_width : integer := 3;
 
