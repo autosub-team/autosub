@@ -14,10 +14,10 @@ zero=0
 one=1
 
 # DEBUG OUTPUT
-echo "user_task_path= $user_task_path"
-echo "desc_path= $desc_path"
-echo "task_path= $task_path"
-echo "autosub_path= $autosub_path"
+# echo "user_task_path= $user_task_path"
+# echo "desc_path= $desc_path"
+# echo "task_path= $task_path"
+# echo "autosub_path= $autosub_path"
 
 ######################################
 #       FUNCTIONS FOR TESTING        #
