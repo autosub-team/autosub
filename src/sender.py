@@ -485,8 +485,9 @@ class MailSender(threading.Thread):
                         c.log_a_msg(self.queues["logger"], self.name, logmsg, "ERROR")
 
                         message_text = ("Sorry, but something went wrong... "
-                                       "probably misconfiguration or missing"
-                                       "configuration of Task {0}").format(task_nr)
+                                       "probably missconfiguration or missing"
+                                       "configuration of Task {0}."
+                                       "Please contact the course admin").format(task_nr)
                         msg = self.assemble_email(msg, message_text, '')
                         self.send_out_email(recipient, msg.as_string(), \
                                             message_type)
@@ -504,8 +505,9 @@ class MailSender(threading.Thread):
                                 logmsg, "ERROR")
 
                         message_text = ("Sorry, but something went wrong... "
-                                       "probably misconfiguration or missing"
-                                       "configuration of Task {0}").format(task_nr)
+                                       "probably missconfiguration or missing"
+                                       "configuration of Task {0}."
+                                       "Please contact the course admin").format(task_nr)
                         msg = self.assemble_email(msg, message_text, '')
                         self.send_out_email(recipient, msg.as_string(), \
                                         message_type)
