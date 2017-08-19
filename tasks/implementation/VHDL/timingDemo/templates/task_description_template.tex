@@ -1,0 +1,233 @@
+\documentclass[a4paper,12pt]{article}
+\usepackage[dvipsnames]{xcolor}
+\usepackage{a4wide}
+\usepackage{pst-circ}
+\usepackage{enumitem}
+\usepackage{tikz}
+\usetikzlibrary{calc}
+
+\definecolor{forestgreen}{rgb}{0.1, 0.7, 0.0}
+\newcommand\tab[1][1cm]{\hspace*{#1}}
+
+\begin{document}
+\pagestyle{empty}
+\setlength{\parindent}{0em}
+
+\section*{Timing Demo}
+
+Before program the behavior of an entity called "TimingDemo" as a submitted task, we have to understand the timing behavior of signals in hardware programme as following the instruction below.
+
+\begin{enumerate}
+\item %1
+Create a new project and add the source file “timingDemo\_example.vhdl” found in the attached file \textbf{"timingDemo\_example.vhdl"}. Compile the source and load the module for simulation.
+
+\item %2
+Add all signals in the design to the \textbf{Wave} window. This will however not add the variable \textbf{a}. In order to add \textbf{a} to the waveform window, make sure the \textbf{Sim} tab is chosen and expand the top module to show the processes \textbf{p1} and \textbf{p2}. Right-click on \textbf{p1}, and choose \textbf{Add Wave Ctrl+W} to add all items in the process to the Wave window. It is also possible to choose \textbf{Add to -\textgreater Wave -\textgreater} and one of the three menu items depending on what you want to observe.
+
+\item %3
+Run the simulation for 260 ns and examine the output waveforms.
+
+\item %4
+The first surprising thing is, why do \textbf{x} and \textbf{y}, when they update at 40 ns and 60 ns respectively, not update to their correct values of \textbf{a+w=180} and \textbf{a-w=20}? Both signal assignments seem to have treated the value of \textbf{w} as 0, rather than 80, even though w is clearly shown to have attained its value of 80 at 0 ns.
+
+In order to understand what’s happening, let’s look at how signal assignments are scheduled. When the simulation starts, the values of w, x, y and z are all initialised to zero. Each concurrent body in the architecture is run once, concurrently, but as execution has to be carried out within a uniprocessor computer model (i.e. instructions have to be carried out one at a time), the simulator assigns an arbitrary order to the selection of which body to execute first (see Section 3.2). We can verify this by stepping through the code and seeing that execution is assigned to one process at a time as described below.
+\\
+In this example all concurrent bodies are explicitly defined processes (i.e. there are no signal assignments outside a process body). At the beginning these process bodies run once (concurrently) from beginning to end, or until the first wait statement. Inside each process, execution is sequential. When p2 is run for the first time, as the initial values of x and y are both zero, the transaction scheduled as a result of executing the statement of
+\\
+\tab \textbf{z \textless= (x + y) AFTER 70 ns;}
+\\
+is to assign a value of 0 at time 70 ns, i.e. the new value is the same as the old value.
+\\
+When \textbf{p1} runs, the first statement to be executed is
+\\
+\tab \textbf{a := a + 100;}
+\\
+As variable assignments have no associated delay, the value of a is updated immediately, i.e. there is \textbf{no} delta delay.
+
+\item %5
+We can verify this by stepping through the code. Restart the simulation, and click on the \textbf{“Step Into”} button once . Execution will commence on the first line of process \textbf{p2} . Click \textbf{“Step Into”} thrice more, and process \textbf{p2} will suspend at the \textbf{WAIT} statement, and the execution thread will switch to process p1. When in p1, press \textbf{“Step Into”} once more, and the blue arrow will advance to the first line, which is the variable assignment:
+\\
+\tab \textbf{a := a + 100;}
+\\
+Point the cursor at a in this line, and the current value will show in a yellow pop-up window as 0. Press “Step Into” once more and execution will advance to the next line. Now point the cursor at a, and the current value will be shown as 100. Clearly, the variable a has updated without any delta delay. Hence the value of a in any consequent signal assignments where a is on the right-hand side is 100. \textbf{Remember, execution within a process is sequential, and the order does matter.}
+
+\item %6
+Execution now advances to the next line, which is a signal assignment.
+\\
+\tab \textbf{w \textless= w + 80;}
+\\
+As before, point with the cursor to \textbf{w} before executing this line, and the value will be shown as 0, i.e. the initial value. Now step once, and the assignment will execute. This time, when you point the cursor to \textbf{w}, the value will still be 0. We know the reason; this is a signal assignment, and signal assignments \textbf{always} incur some delay, in this case a delta delay.
+
+\item %7
+Execution advances to the next line, which is also a signal assignment that reads the value of \textbf{a} and \textbf{w}:
+\\
+\tab \textbf{x <= a + w AFTER 40 ns;}
+\\
+If you point your cursor to \textbf{a} and \textbf{w}, the pop-up values will confirm that it is the updated value of \textbf{a}, and the initial value of \textbf{w} that is being read in this assignment. Hence the value that is scheduled to be assigned to \textbf{x} after 40 ns is 100+0=100. Similarly, the value scheduled to be assigned to \textbf{y} after 60 ns is 100-0=100. If you now step through both signal assignments, the process suspends. Simulation time now advances to +1 delta, so that w can assign its value of 80. However, this does not trigger anything, as w is not on the sensitivity list of \textbf{p1} (or \textbf{p2} ). The simulator informs you that the next activity is 40 ns. Simulation time thus advances to 40 ns, and the value of \textbf{x} is updated to be 100. A similar argument explains why y is also updated with a value of 100 (rather than 20) at 60 ns.
+\\
+\\
+\fbox{\begin{minipage}{35em}
+\textbf{Note:} Please make sure you understand the above before proceeding. You should run the simulation and step through the code a sufficient number of times, and also enable expanded time, to ensure that you thoroughly grasp why the simulation waveforms are as shown.
+\end{minipage}}
+
+\clearpage
+
+\item %8
+The other puzzling thing in the waveforms is that the first update of z actually takes place at 130 ns, rather than 110 ns. Clearly, \textbf{x} updates at 40 ns, which triggers process \textbf{p2}, and a signal assignment is scheduled at 110 ns, to update \textbf{z} with the value of 100. However this transaction never appears to take place, and the first update on \textbf{z} is at 130 ns, with a value of 200.
+In the code, change the value of the signal assignment in process p2 from
+\\
+\tab \textbf{z \textless= (x + y) AFTER 70 ns;}
+\\
+to
+\\
+\tab \textbf{z \textless= x AFTER 70 ns;}
+\\
+Rerun the simulation and check the waveform. Now the first update of z takes place at 110 ns!
+\\
+\end{enumerate}
+
+
+
+\section*{TimingDemo Task}
+
+Now it is your turn to program a task which has the behavior of an entity called "timingDemo". This entity is declared in the attached file "timingDemo.vhdl" and has the following properties:
+
+\begin{itemize}
+\item Outputs: N,O,P,E with type integer
+\end{itemize}
+which is for the system checking the coding behavior with a testbench. Do not change the file "timingDemo.vhdl".
+\\
+\\
+The timing behavior has to be programmed in the attached file "timingDemo\_beh.vhdl".  Keep the existing code and add your programmed code.
+\\
+\\
+In the file "timingDemo\_beh.vhdl" there are two process, p1 and p2. One should includes the signal corresponded to E only and be triggered by signal O and P. For the other process, it should includes the rest of the signals with signal E as its sesitivity list. Your design should declare 4 signals and 1 variable (called "A" here but can be declared any name). All in all, the signals should be assigned to corresponding outputs, N, O, P, or E since the entity is used in this task. Only the behavior of variable A is given and the properties of all signals are demonstrated below:
+\begin{description}
+\item [The variable A]\textbf{:} \\
+The value of the signal is derived by adding %%value_a to itself without delays, as $A := A + %%value_a $. Do not need to assigned A to output signal.
+
+\item [The signal for N]\textbf{:} \\
+The value of the signal is derived by adding an integer to itself and the signal is assigned to signal N.
+
+\item [The signal for O]\textbf{:} \\
+The value of the signal is combined with the value of A and N which have coefficients placed before to multiply, as $c_{1} * A + c_{2} * N\_sig$, when $c_{1}$ and $c_{2}$ are integer.
+
+\item [The signal for P]\textbf{:} \\
+The value of the signal is combined with the value of A and N only which have coefficients placed before to multiply, as $c_{3} * A + c_{4} * N\_sig$, when $c_{3}$ and $c_{4}$ are integer. 
+
+\item [The signal for E]\textbf{:} \\
+The value of the signal is combined with the value of O and P only which have coefficients placed before, as $c_{5} * O\_sig + c_{6} * P\_sig$, when $c_{5}$ and $c_{6}$ are integer.
+\\
+\end{description}
+
+With process p1 triggered by signal for E and process p2 triggered by sigal O and E, you have to decide the delay of the signals, the value for the signals assigned and so on by observing and understanding the concept of output waveform.
+\\
+\\
+The figure below shows the waveform running to about 260 ns though the simulation is continued. The programmed task shall behave according to the following output signals.
+\\
+\\
+%\psset{unit=0.9}
+\begin{pspicture}(15,8.25)
+%\psgrid
+%\psset{dotsize=0.15}
+
+
+%SIGNAL LINES AND TEXT
+\psline{-}(0,0)(17,0)
+\psline{-}(0,0)(0,8.25)
+\psline{-}(0,8.25)(17,8.25)
+\psline{-}(17,0)(17,8.25)
+
+\rput(1,7){N}
+\psline{-}(1.5,7)(1.75,7.25)
+\psline{-}(1.5,7)(1.75,6.75)
+\psline{-}(1.75,7.25)(16.25,7.25)
+\psline{-}(1.75,6.75)(16.25,6.75)
+\rput(16.5,7){...}
+\rput(4.75,7){%%nv1} %value at 0 ns
+\rput(11.25,7){%%nv2}
+\psline{-,linecolor=red}(7.75,6.75)(8.25,7.25) %time at 130ns
+\psline{-,linecolor=red}(7.75,7.25)(8.25,6.75)
+\rput(15.5,7){%%nv3}
+\psline{-,linecolor=red}(14.25,6.75)(14.75,7.25) %time at 260ns
+\psline{-,linecolor=red}(14.25,7.25)(14.75,6.75)
+
+\rput(1,5.5){O}
+\psline{-}(1.5,5.5)(1.75,5.75)
+\psline{-}(1.5,5.5)(1.75,5.25)
+\psline{-}(1.75,5.75)(16.25,5.75)
+\psline{-}(1.75,5.25)(16.25,5.25)
+\rput(16.5,5.5){...}
+\rput(%%ox1_center,5.5){%%ov1} %first run after %%ons1 ns
+\psline{-,linecolor=blue}(%%ox11, 5.75)(%%ox12, 5.25)
+\psline{-,linecolor=blue}(%%ox11, 5.25)(%%ox12, 5.75)
+\rput(%%ox2_center,5.5){%%ov2} %second run after %%ons2 ns
+\psline{-,linecolor=blue}(%%ox21, 5.75)(%%ox22, 5.25)
+\psline{-,linecolor=blue}(%%ox21, 5.25)(%%ox22, 5.75)
+\rput(%%ox3_center,5.5){%%ov3} %third run
+\psline{-,linecolor=blue}(%%ox31, 5.75)(%%ox32, 5.25)
+\psline{-,linecolor=blue}(%%ox32, 5.75)(%%ox31, 5.25)
+
+
+
+\rput(1,4){P}
+\psline{-}(1.5,4)(1.75,4.25)
+\psline{-}(1.5,4)(1.75,3.75)
+\psline{-}(1.75,4.25)(16.25,4.25)
+\psline{-}(1.75,3.75)(16.25,3.75)
+\rput(16.5,4){...}
+\rput(%%px1_center,4){%%pv1} %first run after %%pns1 ns
+\psline{-,linecolor=forestgreen}(%%px11, 3.75)(%%px12, 4.25)
+\psline{-,linecolor=forestgreen}(%%px11, 4.25)(%%px12, 3.75)
+\rput(%%px2_center,4){%%pv2} %second run after %%pns2 ns
+\psline{-,linecolor=forestgreen}(%%px21, 3.75)(%%px22, 4.25)
+\psline{-,linecolor=forestgreen}(%%px21, 4.25)(%%px22, 3.75)
+\rput(%%px3_center,4){%%pv3} %third run
+\psline{-,linecolor=forestgreen}(%%px31, 3.75)(%%px32, 4.25)
+\psline{-,linecolor=forestgreen}(%%px32, 3.75)(%%px31, 4.25)
+
+
+\rput(1,2.5){E}
+\psline{-}(1.5,2.5)(1.75,2.75)
+\psline{-}(1.5,2.5)(1.75,2.25)
+\psline{-}(1.75,2.75)(16.25,2.75)
+\psline{-}(1.75,2.25)(16.25,2.25)
+\rput(16.5,2.5){...}
+\rput(4.75,2.5){0} %value at 0ns
+\rput(11.25,2.5){%%ev2}
+\psline{-,linecolor=red}(7.75,2.75)(8.25,2.25) %time at 130ns
+\psline{-,linecolor=red}(7.75,2.25)(8.25,2.75)
+\rput(15.5,2.5){%%ev3}
+\psline{-,linecolor=red}(14.25,2.75)(14.75,2.25) %time at 260ns
+\psline{-,linecolor=red}(14.25,2.25)(14.75,2.75)
+
+%timeline
+\rput(16.5,0.6){(ns)}
+\rput(1.5,0.6){0}
+\psline{-}(1.5,1)(16.75,1)
+\psline{-}(16.75,1)(16.5,1.10)
+\psline{-}(16.75,1)(16.5,0.90)
+\rput(%%ox1,0.6){\textcolor{blue}{%%ons1}} %time at %%ons1 ns
+\psline{-,linecolor=blue}(%%ox1,1)(%%ox1,0.8)
+\rput(%%px1,1.4){\textcolor{forestgreen}{%%pns1}} %time at %%pns1 ns
+\psline{-,linecolor=forestgreen}(%%px1,1.2)(%%px1,1)
+\rput(8,0.6){\textcolor{red}{130}} %time at 130ns
+\psline{-,linecolor=red}(8,1)(8,0.8)
+\rput(%%ox2,1.4){\textcolor{blue}{%%ons2}} %time at %%ons2 ns
+\psline{-,linecolor=blue}(%%ox2,1.2)(%%ox2,1)
+\rput(%%px2,0.6){\textcolor{forestgreen}{%%pns2}} %time at %%pns2 ns
+\psline{-,linecolor=forestgreen}(%%px2,1)(%%px2,0.8)
+\rput(14.5,1.4){\textcolor{red}{260}} %time at 260
+\psline{-,linecolor=red}(14.5,1.2)(14.5,1)
+
+\end{pspicture}
+
+Make sure that you understand everything in timingdemo example before starting to code the task. No need to add entity in "timingDemo\_beh.vhdl" when you submit as the entity will be added automatically by the system when simulation checking. 
+\\
+\\
+To turn in your solution write an email to %%SUBMISSIONEMAIL with Subject "Result Task %%TASKNR" and attach your file "timingDemo\_beh.vhdl".
+\\
+\\
+Good Luck and May the Force be with you.
+
+\end{document}

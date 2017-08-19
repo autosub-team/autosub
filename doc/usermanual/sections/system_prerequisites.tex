@@ -100,6 +100,48 @@ At this point you may run the test-suite, as explained in Section \ref{sub:testi
 If those tests run through without complications, everything you need to run the VELS
 E-Learning system has been installed successfully.
 
+\subsection{Debian 9 (Stretch)}
+
+For stretch the standard debian packages are available for installation by:
+
+\begin{verbatim}
+apt-get install python3 python3-mock zip flip graphviz python3-pip
+apt-get install python3-matplotlib python3-nose gnat-6 libgnat-6
+apt-get install zlib1g-dev texlive-latex-extra pgf git python3-pygt5
+\end{verbatim}
+
+Unfortunately there is a small bug in one of the latex packages that we use,
+therefore you need to apply a patch to that package:
+
+\begin{verbatim}
+cd /usr/share/texlive/texmf-dist/tex/generic/pst-circ
+patch < /path/to/autosub/doc/patch/pst-circ.tex.patch
+\end{verbatim}
+
+In case the pdfs you get are not beautiful as you are used to, it might have
+happended that an update was applied over that patch and you need to re-apply it (sorry for that little mess).
+
+So now, only two more packages that need to be installed using pip:
+
+\begin{verbatim}
+pip3 install bitstring
+pip3 install graphviz
+\end{verbatim}
+
+Last, we install a vhdl simulator. The simulator of Xilinx's ISE installation is recommended since there is no dedicated
+version of vhdl for Debian stretch. 
+If you still want to use ghdl you can try the version described in Debian 8 (Jessie).
+
+\begin{verbatim}
+dpkg -i ghdl_0.33-1jessie1_amd64.deb
+\end{verbatim}
+
+To use the Simulator of Xilinx's ISE: ISim, see Section \ref{ISE-install}
+
+At this point you may run the test-suite, as explained in Section \ref{sub:testingvels}.
+If those tests run through without complications, everything you need to run the VELS
+E-Learning system has been installed successfully.
+
 \subsection{Instalation Notes for Xilinx ISE 14.7}\label{ISE-install}
 
 An additional option, to using the open-source software ghdl as the VHDL Simulation tool for VELS, is to use the Simulator of Xilinx's ISE: ISim. The ISE (``Full Installer for Linux'') can be downloaded from Xilinx's official download page. It requires registration and licensing agreement, but there is no charge.

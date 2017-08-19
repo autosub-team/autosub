@@ -3,7 +3,8 @@
 ######################################################################################
 # Generalized tester for VHDL tasks
 #
-# Copyright (C)
+# Copyright (C) 2017 Martin  Mosbeck   <martin.mosbeck@gmx.at>
+#                    Gilbert Markum    < >
 # License GPL V2 or later (see http://www.gnu.org/licenses/gpl2.txt)
 ######################################################################################
 
@@ -12,7 +13,7 @@
 user_id=$1
 task_nr=$2
 task_params=$3
-common_file=$4
+commonfile=$4
 
 # return values of a tester
 SUCCESS=0
@@ -41,7 +42,7 @@ source task.cfg
 testbench=${task_name}_tb_${user_id}_Task${task_nr}.vhdl
 
 #include simulator specific common file
-source ../_common/$common_file
+source ../_common/$commonfile
 
 #----------------- TEST ----------------
 generate_testbench

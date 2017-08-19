@@ -1,0 +1,7 @@
+p1:
+ A := A + %%value_a
+ N <= N + %%value_n
+ O <= %%c1 * A + %%c2 * N after %%delay_o
+ P <= %%c3 * A - %%c4 * N after %%delay_p
+p2:
+ E <= %%c5 * O + %%c6 * E after %%delay_e
