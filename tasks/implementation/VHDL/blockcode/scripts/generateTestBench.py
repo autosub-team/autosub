@@ -14,6 +14,7 @@ import string
 import sys
 
 from bitstring import Bits
+
 import parity_functions
 
 class MyTemplate(string.Template):
@@ -42,6 +43,9 @@ params={}
 ##########################################
 ######## GENERATE THE TESTVECTORS ########
 ##########################################
+
+# set up equations
+parity_equations = parity_functions.create_parity_equations(chosen_parities)
 
 # 20 cycles to test + 1 initial + 1 after state
 num_cycles = 20 + 2
@@ -76,7 +80,12 @@ for i in range(0,len(cycle_values)-1):
     code_available = ( len(fifo) > 0 )
 
     if ((not sending) or transmission_success) and code_available:
-        next_cycle.code = fifo.pop(0)
+        data_string = fifo.pop(0)
+        data_bits = list(data_string)
+        data = [int(number) for number in list(data_bits)]
+        parity = parity_functions.create_parity_check(parity_equations,
+                                                      data)
+        next_cycle.code = data_string + parity
         next_cycle.code_valid = "1"
         #print("next_new")
     elif sending and not transmission_success:
@@ -155,7 +164,7 @@ test_pattern=("\n" + 2*"\t").join(test_vectors) #format and join
 ##########################################
 ## SET PARAMETERS FOR TESTBENCH TEMPLATE #
 ##########################################
-params.update({"DATALEN":n, "CODELEN":(n+k), "TESTPATTERN": test_pattern})
+params.update({"DATALEN":k, "CODELEN":n, "TESTPATTERN": test_pattern})
 
 ############################
 ## FILL TESTBENCH TEMPLATE #
