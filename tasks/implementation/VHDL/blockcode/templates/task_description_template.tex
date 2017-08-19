@@ -5,11 +5,14 @@
 \usepackage{hyperref}
 \usepackage{caption}
 \usepackage{enumitem}
+\usepackage{amsmath}
+\usepackage[font=small,labelfont=bf]{caption}
 
 \begin{document}
+
+\pagenumbering{arabic} 
 \setlist[enumerate,1]{start=0}
 
-\pagestyle{empty}
 \setlength{\parindent}{0em} 
 \section*{\noindent Blockcode}
 Your task is to program the behavior of an entity called ``blockcode". This entity is declared in the attached 
@@ -19,10 +22,10 @@ file ``blockcode.vhdl" and has the following ports:
 	\item Input: \textit{rst} with type std\_logic; global synchrous reset
 	\item Input: \textit{clk} with type std\_logic; global clock
 	\item Input: \textit{data\_valid} with type std\_logic
-	\item Input: \textit{data} with type std\_logic\_vector of length %%DATALENGTH
+	\item Input: \textit{data} with type std\_logic\_vector of length %%DATALENGTH ; little endian
 	\item Input: \textit{sink\_ready} with type std\_logic
 	\item Output: \textit{code\_valid} with type std\_logic
-	\item Output: \textit{code} with type std\_logic\_vector of length %%CODELENGTH
+	\item Output: \textit{code} with type std\_logic\_vector of length %%CODELENGTH ; little endian
 
 \end{itemize}
 
@@ -61,7 +64,8 @@ file ``blockcode.vhdl" and has the following ports:
 Do not change the file ``blockcode.vhdl".\\
 
 This entity should work as a intermediate unit, that creates blockcode elements from given data elements and transmits 
-them to a following data sink as seen in Figure 1.
+them to a following data sink as seen in Figure 1. In the following sections the transmission and the encoding will 
+be discussed in depth.
 \\
 
 \begin{figure}[h!]
@@ -72,6 +76,7 @@ a following data sink.}
 \end{figure}
 
 \newpage
+\subsection*{\noindent Transmission}
 
 \textbf{Transmission data source $\rightarrow$ ``blockcode" entity:} This transmission is with the following ports:
 \begin{itemize} 
@@ -98,8 +103,23 @@ Your buffer needs to be able to buffer a maximum of 3 elements for this task. \\
 \textbf{Synchronous outputs:} All outputs of entities in the system are registered to the common clock \textit{clk},
 meaning that changes on these ports only happen at the rising edge of the common clock \textit{clk}.\\
 
-\textbf{Blockcode encoding:} Do the blockcode encoding with the following generator matrix, consisting of an 
-identity matrix and the parity matrix (separated by a vertical line):
+\newpage
+\subsection*{\noindent Encoding}
+
+The dataword has to be encoded as a $[%%CODELENGTH,%%DATALENGTH]$ blockcode, meaning 
+%%DATALENGTH data bits are padded with %%NUMPARITY parity bits:
+
+\begin{equation}
+d = (d_0,d_1, .. d_%%LASTDATAELEM) \longrightarrow c = (d_0,d_1,...,d_%%LASTDATAELEM,p_0,...,p_%%LASTPARITYELEM)
+\end{equation}
+
+The encoding is done with the help of a generator matrix G:
+
+\begin{equation}
+c = d \cdot G
+\end{equation}
+
+Use the given generator matrix consisting of an identity matrix and the parity matrix (separated by a vertical line):
 
 \begin{center}
 \[
@@ -111,12 +131,15 @@ identity matrix and the parity matrix (separated by a vertical line):
 \]
 \end{center}
 
-\textbf{Parity:} Use XOR to calculate the parity. The parity bits are to be placed as the the most significant bits of the code element: (data) $\longrightarrow$ (parity,data) \\
+\textbf{Tip:} As + in binary is the same as XOR, use XOR to calculate the parity. \\
 \\
-\textbf{Encoding example:} (%%EXAMPLEDATA) $\longrightarrow$ (%%EXAMPLECODE) \\
+
+\textbf{Encoding example:} (%%EXAMPLEDATA) $\longrightarrow$ (%%EXAMPLECODE) \\ 
 
 \newpage
-\begin{figure}
+\subsection*{\noindent System behavior}
+
+\begin{figure}[h!]
 \includegraphics[scale=0.5]{../static/diagram.pdf} 
 
 \caption{Example behavior of the whole system. The numbers denote the start of clock cycles.}
@@ -135,8 +158,8 @@ Figure 2 illustrates the desired behavior of the entity ``blockcode" by example 
 \item No new valid data element is given. $C_4$ is set and captured.
 \end{enumerate}
 
+\newpage
 
-\vspace{2.5cm}
 The described  behavior has to be programmed in the attached file ``blockcode\_beh.vhdl".\\
 
 To turn in your solution write an email to %%SUBMISSIONEMAIL with Subject ``Result Task %%TASKNR" and attach your behavior file(s):

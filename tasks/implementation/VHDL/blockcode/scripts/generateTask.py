@@ -35,14 +35,16 @@ params_tb_exam = {}
 ###########################################
 #   GENERATROR MATRIX GENERATION          #
 ###########################################
-# (n,k) code; n= data; k= parity
+# (n,k) code; n= codelength; k= num of data bits, n-k= num of parity bits
 
-n = random.randrange(5,8) # 5-7 data bits
-k = random.randrange(3, n-n%2)
+# fixing it: n + k ->n ; n -> k ; k -> n - k
 
-identity_vectors = [i*'0'+'1'+(n-i-1)*'0' for i in range(0,n)]
+k = random.randrange(5,8) # 5-7 data bits
+n = k + random.randrange(3, k-k%2)
 
-parities = ["".join(seq) for seq in itertools.product("01", repeat=n)]
+identity_vectors = [i*'0'+'1'+(k-i-1)*'0' for i in range(0,k)]
+
+parities = ["".join(seq) for seq in itertools.product("01", repeat=k)]
 
 # remove the 0
 del parities[0]
@@ -57,35 +59,34 @@ for parity in parities:
     else:
         remaining_parities.append(parity)
 
-# chose k of these parity vectors
-chosen_parities_indexes = random.sample(range(0, num_remaining-1), k)
+# chose n - k of these parity vectors
+chosen_parities_indexes = random.sample(range(0, num_remaining-1), (n - k))
 chosen_parities = [remaining_parities[index] for index in chosen_parities_indexes]
 
 generator_vectors = identity_vectors + chosen_parities
 
 generator_matrix = ""
 generator_rows = []
-for i in range(0,n):
+for i in range(0,k):
     generator_row = ""
-    for j in range(0,n+k):
+    for j in range(0,n):
         generator_row += generator_vectors[j][i];
     generator_rows.append(" & ".join(generator_row) + " \\\\ \n")
 generator_matrix = "".join(generator_rows)
 
-matrix_header = n*'c' + "|" + k*'c' #for the seperating vertical line
+matrix_header = k*'c' + "|" + (n-k)*'c' #for the seperating vertical line
 
-task_parameters = str(n) + '|' + str(k) + '|' + ",".join(chosen_parities)
-
-#print(chosen_parities)
+chosen_parities_formated = ["'" + parity + "'" for parity in chosen_parities]
+task_parameters = str(n) + '|' + str(k) + '|' + "["+",".join(chosen_parities_formated)+"]"
 
 parity_equations = parity_functions.create_parity_equations(chosen_parities)
 
-data_bits = list(Bits(uint=randrange(0,2**n),length=n).bin)
+data_bits = list(Bits(uint=randrange(0,2**k),length=k).bin)
 data = [int(number) for number in data_bits]
 
 example_data = ''.join(data_bits)
 example_parity = parity_functions.create_parity_check(parity_equations, data)
-example_code = str(example_parity) + example_data
+example_code = example_data + str(example_parity)
 
 ###########################################
 # SET PARAMETERS FOR DESCRIPTION TEMPLATE #
@@ -93,7 +94,9 @@ example_code = str(example_parity) + example_data
 params_desc.update({"TASKNR":str(task_nr), "SUBMISSIONEMAIL":submission_email})
 params_desc.update({"GENERATORMATRIX":generator_matrix,
                     "MATRIXHEADER":matrix_header,
-                    "DATALENGTH":str(n), "CODELENGTH":str(n+k),
+                    "DATALENGTH":str(k), "CODELENGTH":str(n),
+                    "NUMPARITY":str(n-k),
+                    "LASTDATAELEM" : str(k-1), "LASTPARITYELEM": str(n-k-1),
                     "EXAMPLEDATA":example_data,
                     "EXAMPLECODE":example_code})
 
@@ -112,7 +115,7 @@ with open (filename, "w") as output_file:
 ###########################################
 # SET PARAMETERS FOR ENTITY TEMPLATE CRC  #
 ###########################################
-params_entity.update({"DATALEN":str(n), "CODELEN":str(n+k)})
+params_entity.update({"DATALEN":str(k), "CODELEN":str(n)})
 
 #############################
 #   FILL ENTITY TEMPLATE    #
@@ -129,25 +132,24 @@ with open (filename, "w") as output_file:
 ############### ONLY FOR TESTING #######################
 filename ="tmp/solution_{0}_Task{1}.txt".format(user_id,task_nr)
 with open (filename, "w") as solution:
-    solution.write("For TaskParameters: " + str(task_parameters) + "\n")
-    solution.write(str(n+k)+ "\n")
+    solution.write("For TaskParameters: " + str(task_parameters) + "\n\n")
     solution.write(str(n)+ "\n")
-
-    for i in range(0,n):
-        solution.write(4 * "\t" + "fifo.data(fifo.write_ptr)(" + str(i)+ ") := data(" + str(i) + ");\n")
+    solution.write(str(k)+ "\n")
 
     for i in range(0,k):
+        solution.write("fifo.data(fifo.write_ptr)(" + str(i)+ ") := data(" + str(i) + ");\n")
+
+    for i in range(0,n-k):
         chosen_databits= []
         parity_vector = chosen_parities[i]
-        print(parity_vector)
-        
-        for j in range(0,n):
+
+        for j in range(0,k):
             if parity_vector[j] == "1":
                 chosen_databits.append("data(" + str(j) + ")")
 
-        left_side =  "fifo.data(fifo.write_ptr)(" + str(n+i)+ ") := "
+        left_side =  "fifo.data(fifo.write_ptr)(" + str(k+i)+ ") := "
         right_side = " xor ".join(chosen_databits)
-        solution.write(4 * "\t"+ left_side + right_side +";\n")
+        solution.write(left_side + right_side +";\n")
 #########################################################
 
 ###########################
