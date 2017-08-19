@@ -1,4 +1,5 @@
 *.cfg
+!task.cfg
 !src/default.cfg
 *.pdf
 !doc/doc_pdf/*.pdf
