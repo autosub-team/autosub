@@ -13,10 +13,10 @@ architecture behavior of blockcode_tb is
 			rst         : in   std_logic;
 			clk         : in   std_logic;
 			data_valid  : in   std_logic;
-			data        : in   std_logic_vector(%%DATALEN-1 downto 0);
+			data        : in   std_logic_vector(0 to %%DATALEN-1);
 			sink_ready  : in   std_logic;
 			code_valid  : out  std_logic;
-			code        : out  std_logic_vector(%%CODELEN-1 downto 0)
+			code        : out  std_logic_vector(0 to %%CODELEN-1)
 		);
 	end component;
 
@@ -38,17 +38,17 @@ architecture behavior of blockcode_tb is
 	signal rst_uut         : std_logic;
 	signal clk_uut         : std_logic;
 	signal data_valid_uut  : std_logic;
-	signal data_uut        : std_logic_vector(data_len-1 downto 0);
+	signal data_uut        : std_logic_vector(0 to data_len-1);
 	signal sink_ready_uut  : std_logic;
 	signal code_valid_uut  : std_logic;
-	signal code_uut        : std_logic_vector(code_len-1 downto 0);
+	signal code_uut        : std_logic_vector(0 to code_len-1);
 
 	type pattern_type is record
 		data_valid	: std_logic;
-		data		: std_logic_vector(data_len-1 downto 0);
+		data		: std_logic_vector(0 to data_len-1);
 		sink_ready	: std_logic;
 		code_valid	: std_logic;
-		code		: std_logic_vector(code_len-1 downto 0);
+		code		: std_logic_vector(0 to code_len-1);
 	end record;
 
     type pattern_array is array (natural range <>) of pattern_type;
