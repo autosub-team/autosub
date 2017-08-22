@@ -14,7 +14,8 @@ def __entries():
     for row in rows:
 
         rows_nrs = semester((UserTasks.UserId == row.UserId) & \
-                            (UserTasks.FirstSuccessful <> None)).select(UserTasks.TaskNr)
+                            (UserTasks.FirstSuccessful <> None)) \
+                            .select(UserTasks.TaskNr, orderby="UserTasks.TaskNr ASC")
         if(len(rows_nrs) == 0):
             numFinished = 0
             finishedTasks = ""
@@ -136,7 +137,7 @@ def viewUser():
                    'CurrentTask':row.CurrentTask}
 
     #user score
-    rowsDoneTasks= semester( (UserTasks.UserId == UserId) & (UserTasks.FirstSuccessful != None)).select(UserTasks.TaskNr)
+    rowsDoneTasks= semester( (UserTasks.UserId == UserId) & (UserTasks.FirstSuccessful != None)).select(UserTasks.TaskNr, orderby="UserTasks.TaskNr ASC")
     userScore= 0
 
     for rowDoneTasks in rowsDoneTasks:
