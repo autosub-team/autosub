@@ -9,11 +9,9 @@
 ########################################################################
 import random
 from random import randrange
-
 import string
 import sys
-
-from bitstring import Bits
+import itertools
 
 import parity_functions
 
@@ -54,27 +52,40 @@ num_cycles = 20 + 2
 cycle_values = [CycleValues(k, n) for i in range(0,num_cycles)]
 
 fifo = []
-#print("num_cycles= " + str(num_cycles) + "\n")
 
 fill_max_at = randrange(0,5)
+fill_max_at = 0
 empty_zero_at = randrange(10, 15)
 
 cycle_values[fill_max_at].next_action = "fill_max"
 cycle_values[empty_zero_at].next_action = "empty_zero"
 
-#print("fill at cycle " + str(fill_max_at))
-#print("empty at cycle " + str(empty_zero_at))
-#print("\n")
+# so we also see this in the testbench
+testing_comment = "fill max at cycle " + str(fill_max_at + 1) + \
+                  " ; empty to zero at cycle " + str(empty_zero_at + 1)
+print("--" + testing_comment +"\n")
+
+# IMPORTANT:
+# To get a codeword one cycle after it was input the entity will have to
+# use a write then read strategy! This has to be held in thougt for next actions
+
+# we want different datas for each data_valid, makes debuging easier
+possible_data = ["".join(seq) for seq in itertools.product("01", repeat=k)]
 
 # only loop from 1 up to last - 1
 for i in range(0,len(cycle_values)-1):
     cur_cycle = cycle_values[i]
     next_cycle = cycle_values[i+1]
 
+    #################
+    # WRITE TO FIFO #
+    #################
     if cur_cycle.data_valid == "1":
         fifo.append(cur_cycle.data)
 
-    # resulting from entity
+    ###################################
+    # READ FROM FIFO, APPLY NEXT CODE #
+    ###################################
     sending = (cur_cycle.code_valid == "1")
     transmission_success = sending and (cur_cycle.sink_ready == '1');
     code_available = ( len(fifo) > 0 )
@@ -87,21 +98,21 @@ for i in range(0,len(cycle_values)-1):
                                                       data)
         next_cycle.code = data_string + parity
         next_cycle.code_valid = "1"
-        #print("next_new")
     elif sending and not transmission_success:
         next_cycle.code = cur_cycle.code
         next_cycle.code_valid = cur_cycle.code_valid
-        #print("next_stay")
     else:
         next_cycle.code = cur_cycle.code
         next_cycle.code_valid = "0"
-        #print("next_idle")
 
+    ##################
+    # PLAN NEXT STEP #
+    ##################
     fifo_state = len(fifo)
 
     if cur_cycle.next_action == "fill_max":
         if fifo_state == 3:
-            possible_actions = ["empty", "keep"]
+            possible_actions = ["empty"]
             cur_cycle.next_action = random.choice(possible_actions)
         else:
             cur_cycle.next_action = "fill"
@@ -115,17 +126,17 @@ for i in range(0,len(cycle_values)-1):
             next_cycle.next_action = "empty_zero"
     else:
         if fifo_state == 3:
-            possible_actions = ["empty", "keep"]
-            # possible_actions = ["empty"]
+            possible_actions = ["empty"]
         else:
             possible_actions = ["fill", "empty", "keep"]
-            # possible_actions = ["fill"]
 
         cur_cycle.next_action = random.choice(possible_actions)
 
     # from testbench
     if(cur_cycle.next_action == "fill"):
-        next_cycle.data = Bits(uint=randrange(0,2**k),length=k).bin
+        random_data_index = randrange(0, len(possible_data))
+        next_cycle.data = possible_data[random_data_index]
+        del possible_data[random_data_index]
         next_cycle.data_valid = "1"
         next_cycle.sink_ready = "0"
     elif(cur_cycle.next_action == "empty"):
@@ -133,25 +144,27 @@ for i in range(0,len(cycle_values)-1):
         next_cycle.data_valid = "0"
         next_cycle.sink_ready = "1"
     elif(cur_cycle.next_action == "keep"):
-        next_cycle.data = Bits(uint=randrange(0,2**k),length=k).bin
+        random_data_index = randrange(0, len(possible_data))
+        next_cycle.data = possible_data[random_data_index]
+        del possible_data[random_data_index]
         next_cycle.data_valid = "1"
         next_cycle.sink_ready = "1"
 
-    #print("fifo_state= " + str(fifo_state))
+
+    print("--" + str(i).zfill(2)+ ": fifo_state= " + str(fifo_state) +  "  next_action= " + cycle_values[i].next_action)
     #print("fifo= " + str(fifo))
     #print("data= " + cycle_values[i].data)
     #print("data_valid= " + cycle_values[i].data_valid)
     #print("sink_ready= " + cycle_values[i].sink_ready)
     #print("code = " + cycle_values[i].code)
     #print("code_valid = " + cycle_values[i].code_valid)
-    #print("next_action= " + cycle_values[i].next_action)
-    #print("----------------------------------\n")
+    print("----------------------------------")
 
 # assemble the test_vectors
 test_vectors= []
 
 for i in range(1,num_cycles-1):
-    test_vectors.append('("{0}","{1}","{2}","{3}","{4}")'\
+    test_vectors.append('(\'{0}\',"{1}",\'{2}\',\'{3}\',"{4}")'\
         .format(cycle_values[i].data_valid, cycle_values[i].data,
                 cycle_values[i].sink_ready, cycle_values[i].code_valid,
                 cycle_values[i].code))

@@ -51,11 +51,15 @@ architecture behavior of blockcode_tb is
 		code		: std_logic_vector(0 to code_len-1);
 	end record;
 
-    type pattern_array is array (natural range <>) of pattern_type;
-
-    constant patterns : pattern_array:=(
+	type pattern_array is array (natural range <>) of pattern_type;
+    
+	constant patterns : pattern_array:=(
 		%%TESTPATTERN
 	);
+
+	signal code_valid_expected : std_logic;
+	signal code_expected : std_logic_vector(0 to code_len-1);
+
 begin
 
 	uut: blockcode
@@ -79,9 +83,6 @@ begin
     end process;
 
 	test: process
-		-- states after edge
-		variable code_valid_edge : std_logic;
-		variable code_edge : std_logic_vector(code_len-1 downto 0);
 	begin
 		-- reset in first cycle
 		wait until rising_edge(clk_uut);
@@ -95,7 +96,10 @@ begin
 			sink_ready_uut <= patterns(i).sink_ready;
 
 			-- wait for the results
-            wait for 10 ns;
+			wait for 10 ns;
+			
+			code_valid_expected <= patterns(i).code_valid;
+			code_expected <= patterns(i).code;
 
 			-- compare to expected results
 			if not std_match(code_valid_uut, patterns(i).code_valid) or
@@ -104,97 +108,26 @@ begin
 				write(OUTPUT,integer'image(i+1));
 				write(OUTPUT,string'(":"));
 
-                write(OUTPUT,string'("\n"));
-                write(OUTPUT,string'("\n"));
+				write(OUTPUT,string'("\n"));
+				write(OUTPUT,string'("\n"));
 
 				write(OUTPUT,string'("Expected:"));
-                write(OUTPUT,string'("\n"));
+				write(OUTPUT,string'("\n"));
 				write(OUTPUT,string'("   code= ") & Image(patterns(i).code));
-                write(OUTPUT,string'("\n"));
-                write(OUTPUT,string'("   code_valid= ") & std_logic'image(patterns(i).code_valid));
-                write(OUTPUT,string'("\n"));
+				write(OUTPUT,string'("\n"));
+				write(OUTPUT,string'("   code_valid= ") & std_logic'image(patterns(i).code_valid));
+				write(OUTPUT,string'("\n"));
 
 				write(OUTPUT,string'("Received::"));
-                write(OUTPUT,string'("\n"));
-				write(OUTPUT,string'("   code= ") & Image(code_uut));
-                write(OUTPUT,string'("\n"));
-                write(OUTPUT,string'("   code_valid= ") & std_logic'image(code_valid_uut));
-                write(OUTPUT,string'("\n"));
 				write(OUTPUT,string'("\n"));
-                write(OUTPUT,string'("\n}§"));
+				write(OUTPUT,string'("   code= ") & Image(code_uut));
+				write(OUTPUT,string'("\n"));
+				write(OUTPUT,string'("   code_valid= ") & std_logic'image(code_valid_uut));
+				write(OUTPUT,string'("\n"));
+				write(OUTPUT,string'("\n"));
+				write(OUTPUT,string'("\n}§"));
 
 				report "Simulation error" severity failure;
-			end if;
-
-			code_valid_edge := code_valid_uut;
-			code_edge := code_uut;
-
-			-- check1 for non changing signals during cycle
-			wait for clk_period * 1/2;
-			if (code_valid_uut /= code_valid_edge) or (code_uut /= code_edge) then
-				write(OUTPUT,string'("§{Your design does not behave like specified for clock cycle "));
-				write(OUTPUT,integer'image(i+1));
-				write(OUTPUT,string'(":"));
-
-                write(OUTPUT,string'("\n"));
-                write(OUTPUT,string'("\n"));
-
-				write(OUTPUT,string'("Your output signals change during the clock cycle"));
-
-                write(OUTPUT,string'("\n"));
-                write(OUTPUT,string'("\n"));
-
-				write(OUTPUT,string'("At rising edge of clk:"));
-                write(OUTPUT,string'("\n"));
-				write(OUTPUT,string'("   code= ") & Image(code_edge));
-                write(OUTPUT,string'("\n"));
-                write(OUTPUT,string'("   code_valid= ") & std_logic'image(code_valid_edge));
-                write(OUTPUT,string'("\n"));
-
-				write(OUTPUT,string'("Received:"));
-                write(OUTPUT,string'("\n"));
-				write(OUTPUT,string'("   code= ") & Image(code_uut));
-                write(OUTPUT,string'("\n"));
-                write(OUTPUT,string'("   code_valid= ") & std_logic'image(code_valid_uut));
-                write(OUTPUT,string'("\n"));
-				write(OUTPUT,string'("\n"));
-                write(OUTPUT,string'("\n}§"));
-
-				--report "Simulation error" severity failure;
-			end if;
-
-			-- check2 for non changing signals during cycle
-			wait for clk_period * 1/4;
-			if (code_valid_uut /= code_valid_edge) or (code_uut /= code_edge) then
-				write(OUTPUT,string'("§{Your design does not behave like specified for clock cycle "));
-				write(OUTPUT,integer'image(i+1));
-				write(OUTPUT,string'(":"));
-
-                write(OUTPUT,string'("\n"));
-                write(OUTPUT,string'("\n"));
-
-				write(OUTPUT,string'("Your output signals change during the clock cycle"));
-
-                write(OUTPUT,string'("\n"));
-                write(OUTPUT,string'("\n"));
-
-				write(OUTPUT,string'("At rising edge of clk:"));
-                write(OUTPUT,string'("\n"));
-				write(OUTPUT,string'("   code= ") & Image(code_edge));
-                write(OUTPUT,string'("\n"));
-                write(OUTPUT,string'("   code_valid= ") & std_logic'image(code_valid_edge));
-                write(OUTPUT,string'("\n"));
-
-				write(OUTPUT,string'("Received:"));
-                write(OUTPUT,string'("\n"));
-				write(OUTPUT,string'("   code= ") & Image(code_uut));
-                write(OUTPUT,string'("\n"));
-                write(OUTPUT,string'("   code_valid= ") & std_logic'image(code_valid_uut));
-                write(OUTPUT,string'("\n"));
-				write(OUTPUT,string'("\n"));
-                write(OUTPUT,string'("\n}§"));
-
-				--report "Simulation error" severity failure;
 			end if;
 
         end loop;
