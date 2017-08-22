@@ -169,8 +169,13 @@ class Worker(threading.Thread):
                                                   user_id, \
                                                   self.queues["logger"], \
                                                   self.name))
+
+        if not c.is_valid_task_nr(self.dbs["course"], next_task_nr, \
+                                  self.queues["logger"], self.name):
+            return
+
         if currenttask < next_task_nr:
-        # user did not get this task yet
+            # user did not get this task yet
             task_start = c.get_task_starttime(self.dbs["course"], \
                                               next_task_nr, \
                                               self.queues["logger"], \

@@ -83,6 +83,14 @@ class TaskGenerator(threading.Thread):
         user_id = next_gen_msg.get('user_id')
         user_email = next_gen_msg.get('user_email')
         message_id = next_gen_msg.get('message_id')
+        
+        # requested task is a valid task?
+        if not c.is_valid_task_nr(self.dbs["course"], next_task_nr, \
+                                  self.queues["logger"], self.name):
+            logmsg = ("Generator was given the task to create non valid TaskNr {0}. "
+                      "This should not happen!").format(task_nr)
+            c.log_a_msg(self.queues["logger"], self.name, logmsg, "ERROR")
+            return
 
         # generate the directory for the task in the space of the user
         usertask_dir = 'users/' + str(user_id) + "/Task"+str(task_nr)

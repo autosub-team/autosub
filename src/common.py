@@ -252,7 +252,7 @@ def is_valid_task_nr(coursedb, task_nr, lqueue, lname):
 
     curc, conc = connect_to_db(coursedb, lqueue, lname)
     data = {'task_nr' : task_nr}
-    sql_cmd = "SELECT TaskNr from TaskConfiguration WHERE TaskNr = :task_nr"
+    sql_cmd = "SELECT TaskNr FROM TaskConfiguration WHERE TaskNr = :task_nr"
     curc.execute(sql_cmd, data)
     res = curc.fetchone()
     conc.close()
