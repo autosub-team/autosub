@@ -154,27 +154,23 @@ class Worker(threading.Thread):
 
             # initiate generation of next task for user (if possible)
             next_task_nr = int(task_nr) + 1
-            self.initiate_next_task(user_id, user_email, next_task_nr)
+            self.initiate_next_task(user_id, user_email, task_nr, next_task_nr)
 
     ####
     # initiate_next_task
     ####
-    def initiate_next_task(self, user_id, user_email, next_task_nr):
+    def initiate_next_task(self, user_id, user_email, current_task_nr, next_task_nr):
         """
         Initiate the generation of the next task for the user if he has not got
         the task already and if it has already started
         """
 
-        currenttask = int(c.user_get_current_task(self.dbs["semester"], \
-                                                  user_id, \
-                                                  self.queues["logger"], \
-                                                  self.name))
 
         if not c.is_valid_task_nr(self.dbs["course"], next_task_nr, \
                                   self.queues["logger"], self.name):
             return
 
-        if currenttask < next_task_nr:
+        if current_task_nr < next_task_nr:
             # user did not get this task yet
             task_start = c.get_task_starttime(self.dbs["course"], \
                                               next_task_nr, \
