@@ -4,19 +4,19 @@ use IEEE.numeric_std.all;
 use std.textio.ALL;
 use IEEE.std_logic_textio.all;
 
-entity blockcode_source_tb is
-end blockcode_source_tb;
+entity blockcode_tb is
+end blockcode_tb;
 
-architecture behavior of blockcode_source_tb is
-	component blockcode_source
+architecture behavior of blockcode_tb is
+	component blockcode
 		port(
 			rst         : in   std_logic;
 			clk         : in   std_logic;
 			data_valid  : in   std_logic;
-			data        : in   std_logic_vector(3-1 downto 0);
+			data        : in   std_logic_vector(0 to 5-1);
 			sink_ready  : in   std_logic;
 			code_valid  : out  std_logic;
-			code        : out  std_logic_vector(5-1 downto 0)
+			code        : out  std_logic_vector(0 to 8-1)
 		);
 	end component;
 
@@ -32,53 +32,52 @@ architecture behavior of blockcode_source_tb is
     end Image;
 
 	constant clk_period : time := 10 ms;
-	constant data_len : integer := 3;
-	constant code_len : integer := 5;
+	constant data_len : integer := 5;
+	constant code_len : integer := 8;
 
 	signal rst_uut         : std_logic;
 	signal clk_uut         : std_logic;
 	signal data_valid_uut  : std_logic;
-	signal data_uut        : std_logic_vector(data_len-1 downto 0);
+	signal data_uut        : std_logic_vector(0 to data_len-1);
 	signal sink_ready_uut  : std_logic;
 	signal code_valid_uut  : std_logic;
-	signal code_uut        : std_logic_vector(code_len-1 downto 0);
+	signal code_uut        : std_logic_vector(0 to code_len-1);
 
 	type pattern_type is record
 		data_valid	: std_logic;
-		data		: std_logic_vector(data_len-1 downto 0);
+		data		: std_logic_vector(0 to data_len-1);
 		sink_ready	: std_logic;
 		code_valid	: std_logic;
-		code		: std_logic_vector(code_len-1 downto 0);
+		code		: std_logic_vector(0 to code_len-1);
 	end record;
-
-	constant D0 : std_logic_vector(2 downto 0) := "111";
-	constant D1 : std_logic_vector(2 downto 0) := "101";
-	constant D2 : std_logic_vector(2 downto 0) := "100";
-	constant D3 : std_logic_vector(2 downto 0) := "001";
-	constant D4 : std_logic_vector(2 downto 0) := "110";
-
-	constant C0 : std_logic_vector(4 downto 0) := "00" & D0;
-	constant C1 : std_logic_vector(4 downto 0) := "11" & D1;
-	constant C2 : std_logic_vector(4 downto 0) := "10" & D2;
-	constant C3 : std_logic_vector(4 downto 0) := "01" & D3;
-	constant C4 : std_logic_vector(4 downto 0) := "01" & D4;
 
     type pattern_array is array (natural range <>) of pattern_type;
 
     constant patterns : pattern_array:=(
-		('1', D0, '1', '0', "-----"), -- '-' is dont care
-		('1', D1, '1', '1', C0),
-		('0', D1, '1', '1', C1),
-		('1', D2, '0', '0', C1),
-		('1', D3, '0', '1', C2),
-		('1', D4, '1', '1', C2),
-		('0', D4, '1', '1', C3),
-		('0', D4, '1', '1', C4),
-		('0', D4, '1', '0', C4)
+		('1',"11100",'0','0',"--------"),
+		('1',"00010",'1','1',"11100111"),
+		('0',"00010",'1','1',"00010001"),
+		('1',"01110",'0','0',"00010001"),
+		('1',"00101",'0','1',"01110010"),
+		('1',"01010",'0','1',"01110010"),
+		('1',"00000",'0','1',"01110010"),
+		('0',"00000",'1','1',"01110010"),
+		('1',"00010",'1','1',"00101100"),
+		('1',"01111",'0','1',"01010100"),
+		('1',"00101",'1','1',"01010100"),
+		('1',"00000",'1','1',"00000000"),
+		('0',"00000",'1','1',"00010001"),
+		('0',"00000",'1','1',"01111000"),
+		('0',"00000",'1','1',"00101100"),
+		('0',"00000",'1','1',"00000000"),
+		('1',"11001",'0','0',"00000000"),
+		('0',"11001",'1','1',"11001011"),
+		('1',"01001",'1','0',"11001011"),
+		('0',"01001",'1','1',"01001111")
 	);
 begin
 
-	uut: blockcode_source
+	uut: blockcode
 		port map(
 			rst => rst_uut,
 			clk => clk_uut,
@@ -101,8 +100,9 @@ begin
 	test: process
 		-- states after edge
 		variable code_valid_edge : std_logic;
-		variable code_edge : std_logic_vector(code_len-1 downto 0);
+		variable code_edge : std_logic_vector(0 to code_len-1);
 	begin
+		-- reset in first cycle
 		wait until rising_edge(clk_uut);
 		rst_uut <= '1';
 
@@ -219,5 +219,6 @@ begin
         end loop;
 
         report "Success" severity failure;
-    end process test ;
+    end process test;
 end behavior;
+

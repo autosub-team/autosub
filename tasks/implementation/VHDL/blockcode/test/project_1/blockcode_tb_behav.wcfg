@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<wave_config>
+   <wave_state>
+   </wave_state>
+   <db_ref_list>
+      <db_ref path="blockcode_tb_behav.wdb" id="1">
+         <top_modules>
+            <top_module name="blockcode_tb" />
+         </top_modules>
+      </db_ref>
+   </db_ref_list>
+   <zoom_setting>
+      <ZoomStartTime time="17699704726443fs"></ZoomStartTime>
+      <ZoomEndTime time="86460071054712fs"></ZoomEndTime>
+      <Cursor1Time time="27627020680000fs"></Cursor1Time>
+   </zoom_setting>
+   <column_width_setting>
+      <NameColumnWidth column_width="174"></NameColumnWidth>
+      <ValueColumnWidth column_width="171"></ValueColumnWidth>
+   </column_width_setting>
+   <WVObjectSize size="11" />
+   <wave_markers>
+      <marker label="" time="25000000000000" />
+      <marker label="" time="45000000000000" />
+      <marker label="" time="55000000000000" />
+      <marker label="" time="65000000000000" />
+      <marker label="" time="75000000000000" />
+      <marker label="" time="85000000000000" />
+      <marker label="" time="95000000000000" />
+      <marker label="" time="115000000000000" />
+      <marker label="" time="125075024808000" />
+      <marker label="" time="135000000000000" />
+      <marker label="" time="145000000000000" />
+      <marker label="" time="155000000000000" />
+      <marker label="" time="165000000000000" />
+      <marker label="" time="185000000000000" />
+      <marker label="" time="195000000000000" />
+      <marker label="" time="205000000000000" />
+      <marker label="" time="15000000000000" />
+      <marker label="" time="35083968804000" />
+      <marker label="" time="105000000000000" />
+      <marker label="" time="175000000000000" />
+   </wave_markers>
+   <wvobject type="logic" fp_name="/blockcode_tb/rst_uut">
+      <obj_property name="ElementShortName">rst_uut</obj_property>
+      <obj_property name="ObjectShortName">rst_uut</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/blockcode_tb/clk_uut">
+      <obj_property name="ElementShortName">clk_uut</obj_property>
+      <obj_property name="ObjectShortName">clk_uut</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/blockcode_tb/data_valid_uut">
+      <obj_property name="ElementShortName">data_valid_uut</obj_property>
+      <obj_property name="ObjectShortName">data_valid_uut</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/blockcode_tb/data_uut">
+      <obj_property name="ElementShortName">data_uut[0:4]</obj_property>
+      <obj_property name="ObjectShortName">data_uut[0:4]</obj_property>
+      <obj_property name="Radix">BINARYRADIX</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/blockcode_tb/sink_ready_uut">
+      <obj_property name="ElementShortName">sink_ready_uut</obj_property>
+      <obj_property name="ObjectShortName">sink_ready_uut</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/blockcode_tb/code_valid_uut">
+      <obj_property name="ElementShortName">code_valid_uut</obj_property>
+      <obj_property name="ObjectShortName">code_valid_uut</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/blockcode_tb/code_uut">
+      <obj_property name="ElementShortName">code_uut[0:7]</obj_property>
+      <obj_property name="ObjectShortName">code_uut[0:7]</obj_property>
+      <obj_property name="Radix">HEXRADIX</obj_property>
+   </wvobject>
+   <wvobject fp_name="divider307" type="divider">
+      <obj_property name="label">SEPERATOR</obj_property>
+      <obj_property name="DisplayName">label</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/blockcode_tb/uut/fifo_sig">
+      <obj_property name="ElementShortName">fifo_sig</obj_property>
+      <obj_property name="ObjectShortName">fifo_sig</obj_property>
+      <obj_property name="isExpanded"></obj_property>
+   </wvobject>
+   <wvobject type="other" fp_name="/blockcode_tb/uut/place_sig">
+      <obj_property name="ElementShortName">place_sig</obj_property>
+      <obj_property name="ObjectShortName">place_sig</obj_property>
+   </wvobject>
+   <wvobject type="other" fp_name="/blockcode_tb/uut/code_available_sig">
+      <obj_property name="ElementShortName">code_available_sig</obj_property>
+      <obj_property name="ObjectShortName">code_available_sig</obj_property>
+   </wvobject>
+</wave_config>
