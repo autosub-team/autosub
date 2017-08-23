@@ -260,6 +260,27 @@ def is_valid_task_nr(coursedb, task_nr, lqueue, lname):
     return res != None
 
 ####
+# user_received_task
+####
+def user_received_task(semesterdb, user_id, task_nr, lqueue, lname):
+    """
+    Check if the user already received this task
+    """
+
+    curs, cons = connect_to_db(semesterdb, lqueue, lname)
+
+    data = {"user_id": user_id,
+            "task_nr": task_nr}
+    sql_cmd = ("SELECT TaskNr FROM UserTasks "
+               "WHERE TaskNr == :task_nr AND  UserId == :user_id")
+
+    curs.execute(sql_cmd, data)
+    res = curs.fetchone()
+    cons.close()
+
+    return res != None
+
+####
 # get_num_tasks
 ####
 def get_num_tasks(coursedb, lqueue, lname):

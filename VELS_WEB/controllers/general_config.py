@@ -18,11 +18,11 @@ def __entries():
         else:
             entries.update({row.ConfigItem:row.Content})
 
-        if row.ConfigItem == 'allow_skipping' or row.ConfigItem == 'auto_advance':
-            if row.Content == 1:
-                entries.update({row.ConfigItem:"True"})
+        if row.ConfigItem in ['allow_skipping', 'auto_advance', 'allow_requests']:
+            if row.Content == "1":
+                entries.update({row.ConfigItem: "True"})
             else:
-                entries.update({row.ConfigItem:"False"})
+                entries.update({row.ConfigItem: "False"})
     return dict(entries=entries)
 
 def index():

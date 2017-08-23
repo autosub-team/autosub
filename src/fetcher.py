@@ -41,7 +41,7 @@ class MailFetcher(threading.Thread):
     """
 
     def __init__(self, name, queues, dbs, imap_info, poll_period, \
-                 allow_skipping):
+                 allow_skipping, allow_requests):
         """
         Constructor for fetcher thread
         """
@@ -53,6 +53,7 @@ class MailFetcher(threading.Thread):
         self.imap_info = imap_info
         self.poll_period = poll_period
         self.allow_skipping = allow_skipping
+        self.allow_requests = allow_requests
 
         # for backlog handling
         self.mid_to_job_tuple = {}
@@ -72,7 +73,7 @@ class MailFetcher(threading.Thread):
         curc, conc = c.connect_to_db(self.dbs["course"], self.queues["logger"], self.name)
 
         sql_cmd = ("SELECT Content FROM GeneralConfig "
-                  "WHERE ConfigItem == 'admin_email'")
+                   "WHERE ConfigItem == 'admin_email'")
         curc.execute(sql_cmd)
         result = curc.fetchone()
         if result != None:
@@ -136,7 +137,7 @@ class MailFetcher(threading.Thread):
         cons.commit()
 
         # the new user has now been added to the database. Next we need
-        # to send him an email with the first task.
+        # to send him an email with the first task if allow_requests != True
 
         # read back the new users UserId and create a directory for putting his
         # submissions in.
@@ -148,6 +149,7 @@ class MailFetcher(threading.Thread):
             logmsg = ("Created new user with "
                       "name= {0} , email={1} failed").format(user_name, user_email)
             c.log_a_msg(self.queues["logger"], self.name, logmsg, "DEBUG")
+            return
 
         user_id = str(res[0])
         dir_name = 'users/'+ user_id
@@ -155,8 +157,12 @@ class MailFetcher(threading.Thread):
 
         cons.close()
 
+        # in allow_requests mode the user gets no first task send
+        if self.allow_requests:
+            return
+
         # Give the user the task which is starttime <= now < deadline AND
-        # min(TaskNr)
+        # min(TaskNr) as initial task
         curc, conc = c.connect_to_db(self.dbs["course"], self.queues["logger"], self.name)
 
         data = {'TimeNow': str(int(time.time()))}
@@ -169,22 +175,23 @@ class MailFetcher(threading.Thread):
         conc.close()
 
         if not res or not res[0]:
-            logmsg = ("Error generating first Task for UserId = {0}. Could not "
-                      "find first task for this user").format(user_id)
+            logmsg = ("Error generating initial Task for UserId = {0}. Could not "
+                      "find a initial task for this user").format(user_id)
             c.log_a_msg(self.queues["logger"], self.name, logmsg, "ERROR")
-        else:
-            task_nr = int(res[0])
+            return
 
-            #adjust users CurrentTask if he does not get Task with task_nr=1
-            if task_nr != 1:
-                c.user_set_current_task(self.dbs["semester"], task_nr, user_id, \
-                                        self.queues["logger"], self.name)
+        task_nr = int(res[0])
 
-            logmsg = ("Calling Generator to create"
-                      "TaskNr:{0} for UserId:{1}").format(task_nr, user_id)
-            c.log_a_msg(self.queues["logger"], self.name, logmsg, "DEBUG")
+        #adjust users CurrentTask if he does not get Task with task_nr=1
+        if task_nr != 1:
+            c.user_set_current_task(self.dbs["semester"], task_nr, user_id, \
+                                    self.queues["logger"], self.name)
 
-            c.generate_task(self.queues["generator"], user_id, task_nr, user_email, "")
+        logmsg = ("Calling Generator to create"
+                  "TaskNr:{0} for UserId:{1}").format(task_nr, user_id)
+        c.log_a_msg(self.queues["logger"], self.name, logmsg, "DEBUG")
+
+        c.generate_task(self.queues["generator"], user_id, task_nr, user_email, "")
 
     ###
     # increment_submission_nr
@@ -379,11 +386,7 @@ class MailFetcher(threading.Thread):
                 .format(user_id, task_nr)
         c.log_a_msg(self.queues["logger"], self.name, logmsg, "INFO")
 
-        # at which task_nr is the user
-        cur_task = c.user_get_current_task(self.dbs["semester"], user_id, self.queues["logger"], \
-                                      self.name)
-
-        #task with this tasknr exists?
+        #task with this task_nr exists?
         is_task = c.is_valid_task_nr(self.dbs["course"], task_nr, self.queues["logger"],\
                                      self.name)
 
@@ -397,8 +400,12 @@ class MailFetcher(threading.Thread):
         deadline = c.get_task_deadline(self.dbs["course"], task_nr, self.queues["logger"], \
                                            self.name)
 
-        if is_task and cur_task < int(task_nr):
-        #task_nr valid, but user has not reached that tasknr yet
+        already_received = c.user_received_task(self.dbs["semester"], user_id, \
+                                                task_nr, self.queues["logger"], \
+                                                self.name)
+
+        if is_task and not already_received:
+        #task_nr valid, but user has not gotten that task yet
             logmsg = ("User can not submit for this task yet.")
             c.log_a_msg(self.queues["logger"], self.name, logmsg, "DEBUG")
 
@@ -443,6 +450,86 @@ class MailFetcher(threading.Thread):
                 self.mid_to_job_tuple[message_id] = job_tuple
 
     ####
+    # task_list_requested
+    ####
+    def task_list_requested(self, user_id, user_email, message_id):
+        """
+        Process a request for the list of tasks for the course.
+        """
+
+        logmsg = ("TASKSLIST requested: User with UserId:{0}, Email: {1}").format(\
+                 user_id, user_email)
+        c.log_a_msg(self.queues["logger"], self.name, logmsg, "DEBUG")
+
+        curs, cons = c.connect_to_db(self.dbs["semester"], self.queues["logger"], self.name)
+
+        data = {'user_id':user_id}
+        sql_cmd = "SELECT CurrentTask FROM Users WHERE UserId == :user_id"
+        curs.execute(sql_cmd, data)
+        res = curs.fetchone()
+        current_task = res[0]
+
+        cons.close()
+
+        c.send_email(self.queues["sender"], user_email, user_id, "TasksList", current_task, \
+                     "", message_id)
+
+        return
+
+    ####
+    # a_task_is_requested
+    ####
+    def a_task_is_requested(self, user_id, user_email, task_nr, message_id):
+        """
+        Process a request for a certain task_nr. Check if that task
+        exists, if it is active, and if the deadline has not passed
+        yet. If yes put in generator queue.
+        """
+
+        logmsg = "Processing a Task Request, UserId:{0} TaskNr:{1}"\
+                 .format(user_id, task_nr)
+        c.log_a_msg(self.queues["logger"], self.name, logmsg, "INFO")
+
+        #task with this task_nr exists?
+        is_task = c.is_valid_task_nr(self.dbs["course"], task_nr, self.queues["logger"], \
+                                     self.name)
+
+        if not is_task:
+        # task_nr is not valid
+            c.send_email(self.queues["sender"], user_email, "", "InvalidTask", str(task_nr), \
+                         "", message_id)
+            return
+
+        # get time now, deadline and starttime of task
+        time_now = datetime.datetime.now()
+        starttime = c.get_task_starttime(self.dbs["course"], task_nr, \
+                                         self.queues["logger"], self.name)
+        deadline = c.get_task_deadline(self.dbs["course"], task_nr, \
+                                       self.queues["logger"], self.name)
+
+        if not (starttime <= time_now):
+        # task not active yet
+            logmsg = ("Task not active")
+            c.log_a_msg(self.queues["logger"], self.name, logmsg, "DEBUG")
+            c.send_email(self.queues["sender"], user_email, "", "TaskNotActive", \
+                         str(task_nr), "", message_id)
+            return
+
+        if deadline < time_now:
+        # deadline passed for that task_nr!
+            logmsg = ("Deadline passed")
+            c.log_a_msg(self.queues["logger"], self.name, logmsg, "DEBUG")
+            c.send_email(self.queues["sender"], user_email, "", "DeadTask", \
+                         str(task_nr), "", message_id)
+            return
+
+        logmsg = ("Calling Generator to create"
+                  "TaskNr:{0} for UserId:{1}").format(task_nr, user_id)
+        c.log_a_msg(self.queues["logger"], self.name, logmsg, "DEBUG")
+
+        c.generate_task(self.queues["generator"], user_id, task_nr, user_email, "")
+
+    ####
     # skip_was_requested
     ####
     def skip_was_requested(self, user_id, user_email, message_id):
@@ -466,13 +553,9 @@ class MailFetcher(threading.Thread):
         if is_task:
             task_starttime = c.get_task_starttime(self.dbs["course"], next_task,
                                                   self.queues["logger"], self.name)
-            task_has_started = task_starttime < datetime.datetime.now()
+            task_has_started = task_starttime <= datetime.datetime.now()
 
             if task_has_started:
-                #set new current task
-                c.user_set_current_task(self.dbs["semester"], next_task, user_id, \
-                                        self.queues["logger"], self.name)
-
                 #tell generator thread to create new task
                 logmsg = ("Calling Generator to create "
                           "TaskNr:{0} for UserId:{1}").format(next_task, user_id)
@@ -714,11 +797,35 @@ class MailFetcher(threading.Thread):
                              "", message_id)
                 return
 
-            #Result + number
+            # Result + number
             task_nr = search_obj.group()
 
             self.a_result_was_submitted(user_id, user_email, task_nr, message_id, \
                                         mail)
+
+        ###############
+        #     LIST    #
+        ###############
+        elif re.search('[Ll][Ii][Ss][Tt]', mail_subject):
+            self.task_list_requested(user_id, user_email, message_id)
+
+        ###############
+        #   REQUEST   #
+        ###############
+        elif self.allow_requests and re.search('[Rr][Ee][Qq][Uu][Ee][Ss][Tt]', mail_subject):
+            search_obj = re.search('[0-9]+', mail_subject)
+            if search_obj is None:
+            # Result + no number
+                logmsg = ("Got a kind of message I do not understand. "
+                          "Sending a usage mail...")
+                c.log_a_msg(self.queues["logger"], self.name, logmsg, "INFO")
+                c.send_email(self.queues["sender"], user_email, "", "Usage", "", \
+                             "", message_id)
+                return
+
+            # Request + number
+            task_nr = search_obj.group()
+            self.a_task_is_requested(user_id, user_email, task_nr, message_id)
 
         elif re.search('[Qq][Uu][Ee][Ss][Tt][Ii][Oo][Nn]', mail_subject):
         ###############
@@ -757,7 +864,7 @@ class MailFetcher(threading.Thread):
         tuple can be dispatched at the same time.
         """
 
-        if len(self.jobs_backlog) == 0:
+        if not self.jobs_backlog:
             return
 
         uid_of_mid = self.idmap_all_emails(m)
@@ -774,7 +881,6 @@ class MailFetcher(threading.Thread):
 
         for job_tuple in to_delete:
             del self.jobs_active[job_tuple]
-            #TODO: log this?
 
         # can a backlogged job be dispatched?
         dispatch_time = time.time()
@@ -825,7 +931,7 @@ class MailFetcher(threading.Thread):
                 # delete the message_id from backlog, if no more backlog for this
                 # job_tuple then mark for deletion of whole entry
                 del message_ids[0]
-                if len(self.jobs_backlog[job_tuple]) == 0:
+                if not self.jobs_backlog[job_tuple]:
                     to_delete.append(job_tuple)
 
         for job_tuple in to_delete:

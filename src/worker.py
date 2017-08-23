@@ -9,6 +9,7 @@
 import threading
 import datetime
 from subprocess import Popen, PIPE
+import os
 
 import common as c
 
@@ -20,7 +21,7 @@ class Worker(threading.Thread):
     ####
     # __init__
     ####
-    def __init__(self, name, queues, dbs, tasks_dir):
+    def __init__(self, name, queues, dbs, tasks_dir, allow_requests):
         """
         Constructor of the Worker thread.
         """
@@ -30,6 +31,7 @@ class Worker(threading.Thread):
         self.queues = queues
         self.dbs = dbs
         self.tasks_dir = tasks_dir
+        self.allow_requests = allow_requests
 
     ####
     # get_task_parameters
@@ -152,6 +154,11 @@ class Worker(threading.Thread):
             c.send_email(self.queues["sender"], user_email, user_id, \
                          "Success", task_nr, "", message_id)
 
+
+            # no initiate creation of next task if allow_requests set
+            if self.allow_requests:
+                return
+
             # initiate generation of next task for user (if possible)
             next_task_nr = int(task_nr) + 1
             self.initiate_next_task(user_id, user_email, task_nr, next_task_nr)
@@ -171,13 +178,13 @@ class Worker(threading.Thread):
             return
 
         if current_task_nr < next_task_nr:
-            # user did not get this task yet
+        # user did not get this task yet
             task_start = c.get_task_starttime(self.dbs["course"], \
                                               next_task_nr, \
                                               self.queues["logger"], \
                                               self.name)
 
-            if task_start < datetime.datetime.now():
+            if task_start <= datetime.datetime.now():
                 # task has already started
                 c.generate_task(self.queues["generator"], user_id, next_task_nr, user_email, "")
 
@@ -213,9 +220,14 @@ class Worker(threading.Thread):
         configured_common = self.get_configured_common(task_nr)
 
         if not scriptpath:
+            logmsg = "Could not fetch test script from database"
+            c.log_a_msg(self.queues["logger"], self.name, logmsg, "ERROR")
             return
 
-        #TODO: Check if script exists?
+        if not os.path.isfile(scriptpath):
+            logmsg = "Test script does not exist"
+            c.log_a_msg(self.queues["logger"], self.name, logmsg, "ERROR")
+            return
 
         # run the test script and log the stderr and stdout
         command = [scriptpath, user_id, task_nr, task_params, configured_common]

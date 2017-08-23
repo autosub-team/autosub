@@ -88,13 +88,16 @@ specialmsgs\_dir & Directory for messages that are sent to users on special even
 \hline
 course\_name & The name of the course. & No name set \\
 \hline
-mode & The mode in which to run. Possible values: exam normal). & normal \\ 
+mode & The mode in which to run. Possible values: exam normal & normal \\ 
 \hline
 allow\_skipping & Allows users to skip ahead to the next task with a skip email. 
 	Possible values: yes no & no \\
 \hline
 auto\_advance & Decides if users get auto advanced to a task which is activated by its 
 	TaskStart. Possible values: yes no & no \\
+\hline
+allow\_requests & Decides if the users can request tasks by number. If this is activated 
+	auto\_advance and allow\_skipping are set to no. Possible values: yes no & no \\ 
 \hline
 \end{tabular}
 
@@ -131,7 +134,7 @@ auto\_advance & Decides if users get auto advanced to a task which is activated 
 					attack on the system.
 				\item {\tt TaskAlert} -- An error message for failures in files that were 
 					created for tasks.
-				\item {\tt InvalidTask} -- A result submission for a non-existent task.
+				\item {\tt InvalidTask} -- A submission or request for a non-existent task.
 				\item {\tt Usage} -- An E-Mail with usage explanation shall be sent to the 
 					student. 
 				\item {\tt Question} -- Confirm that a question was received.
@@ -144,6 +147,8 @@ auto\_advance & Decides if users get auto advanced to a task which is activated 
 					started yet.
 				\item {\tt TaskNotSubmittable} -- A user wants to submit to a task
 					which has not started yet.
+				\item {\tt TaskNotActive} -- An action concerning a task that is not active 
+					yet.
             \end{itemize}
 
         \item {\bf task\_nr} Number of the task that message concerns (e.g. the current 

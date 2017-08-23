@@ -1,6 +1,6 @@
 Hi,
 
-You just sent an e-mail to <SUBMISSIONEMAIL>. All e-mail sent
+you just sent an e-mail to {{ submission_email }}. All e-mail sent
 to this address is automatically handled by me, a stupid little computer
 program.
 
@@ -12,11 +12,34 @@ one of the following ways:
 
 Results:
    If you want to commit a result, the Subject of your email has to contain
-   the word "Result" as well as the task this submission is concerning.
+   the word "Result" as well as the task number this submission is concerning.
    So for example, if you want to submit results for Task1 your subject
    could be "Result Task1" or "I am Submitting my ReSuLtS for TAsk1"
    the exact phrase does not matter, only that some form of the string
    "Result" and "Task1" are in the subject.
+{% if allow_skipping %}
+Skipping:
+   If you cannot solve a task, you can get the next task by sending an
+   e-mail in which the subject contains the word "Skip". If there is 
+   a next task, which is active, the task description of the next task
+   will be sent to you. "Skipping" does not hinder you to send results 
+   for the task you "skipped", as long as that task's deadline was not 
+   reached.
+
+{% endif -%}
+{% if allow_requests %}
+Request Task:
+   You can request a specific task by sending an e-mail in which the
+   subject contains the word "Request" as well as the task you want 
+   to get. So for example, if you want to get the Task1 your subject
+   could be "Request Task1" or "I want to ReQuEsT the TAsk1"
+   the exact phrase does not matter, only that some form of the string
+   "Result" and "Task1" are in the subject.
+
+{% endif -%}
+Task List:
+   If you want to know what tasks are configured for this course just 
+   send an e-mail in which the subject contains the word "List".
 
 Status:
    If you want to know your current status in the course (what tasks did

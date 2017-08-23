@@ -28,7 +28,7 @@ class MailSender(threading.Thread):
     Thread in charge of sending out mails (responses to users as well as
     notifications for admins).
     """
-    def __init__(self, name, queues, dbs, smtp_info, course_info):
+    def __init__(self, name, queues, dbs, smtp_info, course_info, allow_requests):
         """
         Constructor for sender thread
         """
@@ -39,6 +39,7 @@ class MailSender(threading.Thread):
         self.dbs = dbs
         self.smtp_info = smtp_info
         self.course_info = course_info
+        self.allow_requests = allow_requests
 
 ####
 # get_admin_emails
@@ -113,7 +114,7 @@ class MailSender(threading.Thread):
         Returns: If the LastDone had to be set right now
         """
 
-        #has he allready last done? --> nothing to do
+        #has he already last done? --> nothing to do
         if self.has_last_done(userid):
             return False
 
@@ -202,10 +203,15 @@ class MailSender(threading.Thread):
         res = curc.fetchone()
         conc.close()
 
-        message = str(res[0])
-        message = message.replace("<SUBMISSIONEMAIL>", \
-                                  "<" + self.course_info["mail"]+ ">")
-        message = message.replace("<COURSENAME>", self.course_info["name"])
+        if not res:
+            logmsg = ("Error reading the Specialmessage named {0} from the "
+                      "database").format(msgname)
+            c.log_a_msg(self.queues["logger"], self.name, logmsg, "ERROR")
+
+            message = "Hi something went wrong. Please contact the course admin"
+        else:
+            message = str(res[0])
+
         return message
 
 ####
@@ -281,6 +287,39 @@ class MailSender(threading.Thread):
         #    msg = "{0}\nNo more deadlines for you -- all Tasks are finished!".format(msg)
 
         msg = msg + "\n\nSo long, and thanks for all the fish!"
+
+        return msg
+
+####
+# generate_tasks_list
+####
+    def generate_tasks_list(self):
+        """
+        Generate the email body for response to list tasks.
+        """
+
+        curc, conc = c.connect_to_db(self.dbs["course"], \
+                                     self.queues["logger"], \
+                                     self.name)
+
+        msg = ("Hi,\n\nYou requested the list of tasks for the "
+               "course, here you go:\n\n")
+
+        sql_cmd = ("SELECT TaskNr, TaskName, TaskStart, TaskDeadline, Score "
+                   "FROM TaskConfiguration")
+
+        curc.execute(sql_cmd)
+        rows = curc.fetchall()
+
+        for row in rows:
+            msg = msg + ("Task Number: {0}\nTask Name: {1}\nStart: {2}\n"
+                         "Deadline: {3}\nScore: {4}\n") \
+                       .format(row[0], row[1], row[2], row[3], row[4])
+            msg = msg + 40*"-" + "\n\n"
+
+        msg += "\n\nSo long, and thanks for all the fish!"
+
+        conc.close()
 
         return msg
 
@@ -439,110 +478,92 @@ class MailSender(threading.Thread):
             logmsg = "Task in send_queue: " + str(next_send_msg)
             c.log_a_msg(self.queues["logger"], self.name, logmsg, "DEBUG")
 
-            numtasks = c.get_num_tasks(self.dbs["course"], \
-                       self.queues["logger"], self.name)
-            cur_task_nr = c.user_get_current_task(self.dbs["semester"], user_id, \
-                                             self.queues["logger"], self.name)
+            # 2 Cases:
+            # allow_requests -> send Task anyway
+            # now allow_requests: check if he is at a higher task_nr,
+            #                     if yes: do not send
 
-            ########################### NEEDED? #########################
-            # did user solve this task already?
-            data = {"user_id":user_id, "task_nr":task_nr}
-            sql_cmd = ("SELECT UserId FROM UserTasks WHERE UserId = :user_id "
-                       "AND TaskNr = :task_nr AND FirstSuccessful IS NOT NULL")
+            cur_task = c.user_get_current_task(self.dbs["semester"], user_id, \
+                                               self.queues["logger"], self.name)
+            at_higher_task = (cur_task > int(task_nr))
+
+            should_not_send = not self.allow_requests and at_higher_task
+
+            if should_not_send:
+                logmsg = ("Task sending initiated, but user already reveived "
+                          "this task!!!")
+                c.log_a_msg(self.queues["logger"], self.name, logmsg, "ERROR")
+                return
+
+            data = {'task_nr': str(task_nr)}
+            sql_cmd = ("SELECT TaskName FROM TaskConfiguration "
+                       "WHERE TaskNr == :task_nr")
+
+            curc.execute(sql_cmd, data)
+            res = curc.fetchone()
+
+            if not res:
+                logmsg = ("Failed to fetch Configuration for TaskNr: "
+                          "{0} from the database! Table "
+                          "TaskConfiguration corrupted?").format(task_nr)
+                c.log_a_msg(self.queues["logger"], self.name, logmsg, "ERROR")
+
+                message_text = ("Sorry, but something went wrong... "
+                                "probably misconfiguration or missing"
+                                "configuration of Task {0}").format(task_nr)
+                msg = self.assemble_email(msg, message_text, '')
+                self.send_out_email(recipient, msg.as_string(), \
+                                    message_type)
+                self.archive_message(message_id)
+
+                return
+
+            task_name = res[0]
+            description_path = self.course_info['tasks_dir'] + \
+                               '/' + task_name + '/description.txt'
+
+            if not os.path.isfile(description_path):
+                logmsg = "No description.txt found for Task {0}.".format(task_nr)
+                c.log_a_msg(self.queues["logger"], self.name, \
+                        logmsg, "ERROR")
+
+                message_text = ("Sorry, but something went wrong... "
+                                "probably misconfiguration or missing"
+                                "configuration of Task {0}").format(task_nr)
+                msg = self.assemble_email(msg, message_text, '')
+                self.send_out_email(recipient, msg.as_string(), message_type)
+                self.archive_message(message_id)
+                return
+
+            msg['Subject'] = "Description Task" + str(task_nr)
+            task_deadline = c.get_task_deadline(self.dbs["course"], task_nr,
+                                                self.queues["logger"], self.name)
+            dl_text = "\nDeadline for this Task: {0}\n".format(task_deadline)
+
+            message_text = self.read_text_file(description_path) \
+                               + dl_text
+
+            data = {'task_nr': str(task_nr), 'user_id': user_id}
+            sql_cmd = ("SELECT TaskAttachments FROM UserTasks "
+                       "WHERE TaskNr == :task_nr AND UserId == :user_id")
             curs.execute(sql_cmd, data)
             res = curs.fetchone()
-            task_already_solved = (res != None)
 
-            #did the user solve the previous task?
-            data = {"user_id":user_id, "task_nr":int(task_nr) - 1}
-            sql_cmd = ("SELECT UserId FROM UserTasks WHERE UserId = :user_id "
-                       "AND TaskNr = :task_nr AND FirstSuccessful IS NOT NULL")
-            curs.execute(sql_cmd, data)
-            res = curs.fetchone()
-            prev_task_already_solved = (res != None)
-            #############################################################
+            logmsg = "got the following attachments: " + str(res)
+            c.log_a_msg(self.queues["logger"], self.name, logmsg, \
+                        "DEBUG")
+            if res:
+                attachments = str(res[0]).split()
+            else:
+                attachments = ""
 
-            # user did not solve the task with highest TaskNr
-            if numtasks + 1 != int(task_nr):
-                # only send the task description, when the user just now got
-                # to this task or it is the first task
-                if int(task_nr)-1 <= int(cur_task_nr) or int(cur_task_nr) == 1:
-                    msg['Subject'] = "Description Task" + str(task_nr)
-                    task_deadline = c.get_task_deadline(self.dbs["course"], task_nr,
-                                                        self.queues["logger"], self.name)
-                    dl_text = "\nDeadline for this Task:{0}\n".format(task_deadline)
+            msg = self.assemble_email(msg, message_text, attachments)
+            self.send_out_email(recipient, msg.as_string(), message_type)
+            self.archive_message(message_id)
 
-                    data = {'task_nr': str(task_nr)}
-
-                    sql_cmd = ("SELECT TaskName FROM TaskConfiguration "
-                               "WHERE TaskNr == :task_nr")
-                    curc.execute(sql_cmd, data)
-                    res = curc.fetchone()
-
-                    if not res:
-                        logmsg = ("Failed to fetch Configuration for TaskNr: {0} from the "
-                        "database! Table TaskConfiguration corrupted?").format(task_nr)
-                        c.log_a_msg(self.queues["logger"], self.name, logmsg, "ERROR")
-
-                        message_text = ("Sorry, but something went wrong... "
-                                       "probably missconfiguration or missing"
-                                       "configuration of Task {0}."
-                                       "Please contact the course admin").format(task_nr)
-                        msg = self.assemble_email(msg, message_text, '')
-                        self.send_out_email(recipient, msg.as_string(), \
-                                            message_type)
-                        self.archive_message(message_id)
-
-                        return
-
-                    task_name = res[0]
-                    description_path = self.course_info['tasks_dir'] + \
-                                       '/' + task_name + '/description.txt'
-
-                    if not os.path.isfile(description_path):
-                        logmsg = "No description.txt found for Task {0}.".format(task_nr)
-                        c.log_a_msg(self.queues["logger"], self.name, \
-                                logmsg, "ERROR")
-
-                        message_text = ("Sorry, but something went wrong... "
-                                       "probably missconfiguration or missing"
-                                       "configuration of Task {0}."
-                                       "Please contact the course admin").format(task_nr)
-                        msg = self.assemble_email(msg, message_text, '')
-                        self.send_out_email(recipient, msg.as_string(), \
-                                        message_type)
-                        self.archive_message(message_id)
-
-                        return
-
-                    message_text = self.read_text_file(description_path) \
-                                       + dl_text
-
-                    data = {'task_nr': str(task_nr), 'user_id': user_id}
-                    sql_cmd = ("SELECT TaskAttachments FROM UserTasks "
-                               "WHERE TaskNr == :task_nr AND UserId == :user_id")
-                    curs.execute(sql_cmd, data)
-                    res = curs.fetchone()
-
-                    logmsg = "got the following attachments: " + str(res)
-                    c.log_a_msg(self.queues["logger"], self.name, logmsg, \
-                                "DEBUG")
-                    if res:
-                        attachments = str(res[0]).split()
-                    else:
-                        attachments = ""
-
-                    msg = self.assemble_email(msg, message_text, \
-                                              attachments)
-                    self.send_out_email(recipient, msg.as_string(), \
-                                        message_type)
-                    self.archive_message(message_id)
-
-            #advance user's current TaskNr to the Task task_nr if he is not
-            # at a higher task yet
-            if int(cur_task_nr) < int(task_nr):
-                c.user_set_current_task(self.dbs["semester"], task_nr, user_id, \
-                                        self.queues["logger"], self.name)
+            # Everything went okay -> adjust cur_task_nr
+            c.user_set_current_task(self.dbs["semester"], task_nr, user_id, \
+                                    self.queues["logger"], self.name)
 
         elif message_type == "Failed":
         #################
@@ -657,7 +678,7 @@ class MailSender(threading.Thread):
                 #also attach current task
                 data = {'task_nr': str(task_nr), 'user_id': user_id}
                 sql_cmd = ("SELECT TaskAttachments FROM UserTasks "
-                          "WHERE TaskNr == :task_nr AND UserId == :user_id")
+                           "WHERE TaskNr == :task_nr AND UserId == :user_id")
                 curs.execute(sql_cmd, data)
                 res = curs.fetchone()
                 logmsg = "got the following attachments: " + str(res)
@@ -671,6 +692,16 @@ class MailSender(threading.Thread):
                 msg = self.assemble_email(msg, message_text, attachments)
                 self.send_out_email(recipient, msg.as_string(), message_type)
                 self.archive_message(message_id)
+
+        elif message_type == "TasksList":
+        #################
+        #   TASKSLIST   #
+        #################
+            msg['Subject'] = "List of tasks"
+            message_text = self.generate_tasks_list()
+            msg = self.assemble_email(msg, message_text, attachments)
+            self.send_out_email(recipient, msg.as_string(), message_type)
+            self.archive_message(message_id)
 
         elif message_type == "InvalidTask":
         #################
@@ -698,6 +729,16 @@ class MailSender(threading.Thread):
         #########################
             msg['Subject'] = "Submission for this task not possible"
             message_text = self.read_specialmessage('TASKNOTSUBMITTABLE')
+            msg = self.assemble_email(msg, message_text, '')
+            self.send_out_email(recipient, msg.as_string(), message_type)
+            self.archive_message(message_id)
+
+        elif message_type == "TaskNotActive":
+        #########################
+        # TASK NOT SUBMITTABLE  #
+        #########################
+            msg['Subject'] = "Task not active yet"
+            message_text = self.read_specialmessage('TASKNOTACTIVE')
             msg = self.assemble_email(msg, message_text, '')
             self.send_out_email(recipient, msg.as_string(), message_type)
             self.archive_message(message_id)
@@ -759,7 +800,7 @@ class MailSender(threading.Thread):
             orig_mail.replace_header("To", recipient)
             orig_mail.replace_header("Subject", "Question from " + orig_from)
 
-            self.send_out_email(recipient,orig_mail.as_string(), message_type)
+            self.send_out_email(recipient, orig_mail.as_string(), message_type)
 
         elif message_type == "Welcome":
         #################

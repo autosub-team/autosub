@@ -8,6 +8,8 @@
 
 import threading
 from subprocess import Popen, PIPE
+import os
+import shutil
 
 import common as c
 
@@ -67,6 +69,38 @@ class TaskGenerator(threading.Thread):
         return scriptpath
 
     ####
+    # check_delete_usertask
+    ####
+    def check_delete_usertask(self, user_id, task_nr):
+        """
+        Check if the user has already gotten this tasks by checking in the
+        TasksStats table for a matching entry. If yes delete entry.
+        """
+
+        already_received = c.user_received_task(self.dbs["semester"], user_id, \
+                                                task_nr, self.queues["logger"], \
+                                                self.name)
+        if already_received:
+            logmsg = ("User with Id {0} TaskNr {1} already got this task, "
+                      "deleting it to make place for new").format(user_id, task_nr)
+            c.log_a_msg(self.queues["logger"], self.name, logmsg, "DEBUG")
+
+            # delete db entry
+            curs, cons = c.connect_to_db(self.dbs["semester"], self.queues["logger"], self.name)
+            data = {"user_id": user_id,
+                    "task_nr": task_nr}
+            sql_cmd = ("DELETE FROM UserTasks "
+                       "WHERE TaskNr == :task_nr AND UserId == :user_id")
+
+            # remove directory
+            usertask_dir = 'users/' + str(user_id) + "/Task"+str(task_nr)
+            shutil.rmtree(usertask_dir)
+
+            curs.execute(sql_cmd, data)
+            cons.commit()
+            cons.close()
+
+    ####
     # generator_loop
     ####
     def generator_loop(self):
@@ -92,6 +126,9 @@ class TaskGenerator(threading.Thread):
             c.log_a_msg(self.queues["logger"], self.name, logmsg, "ERROR")
             return
 
+        # check if user already got this task, if yes delete old db entry
+        self.check_delete_usertask(user_id, task_nr)
+
         # generate the directory for the task in the space of the user
         usertask_dir = 'users/' + str(user_id) + "/Task"+str(task_nr)
         c.check_dir_mkdir(usertask_dir, self.queues["logger"], self.name)
@@ -103,10 +140,11 @@ class TaskGenerator(threading.Thread):
         # get the path to the generator script
         scriptpath = self.get_scriptpath(task_nr)
 
-        if not scriptpath:
+        # check the path
+        if not scriptpath or not os.path.isfile(scriptpath):
+            logmsg = "Could not find generator script for task{0}".format(task_nr)
+            c.log_a_msg(self.queues["logger"], self.name, logmsg, "ERROR")
             return
-
-        #TODO: Check if script exists?
 
         command = [scriptpath, str(user_id), str(task_nr), self.submission_mail,\
                    str(self.course_mode), self.dbs["semester"]]
@@ -130,9 +168,10 @@ class TaskGenerator(threading.Thread):
             logmsg = "Failed executing the generator script, return value: " + \
                      str(generator_res)
             c.log_a_msg(self.queues["logger"], self.name, logmsg, "ERROR")
+            return
 
-        logmsg = "Generated individual task for user/tasknr:" + str(user_id) + "/" + \
-                 str(task_nr)
+        logmsg = "Generated individual task for user/task_nr:" + str(user_id) \
+                 + "/" + str(task_nr)
         c.log_a_msg(self.queues["logger"], self.name, logmsg, "INFO")
 
         c.send_email(self.queues["sender"], str(user_email), str(user_id), \

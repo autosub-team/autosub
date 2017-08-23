@@ -20,6 +20,8 @@ import optparse
 import configparser
 import os
 
+from jinja2 import FileSystemLoader, Environment
+
 # autosub common functions
 import common as c
 
@@ -66,6 +68,7 @@ tasks_dir = None
 specialmsgs_dir = None
 auto_advance = None
 allow_skipping = None
+allow_requests = None
 
 job_queue = None
 sender_queue = None
@@ -114,18 +117,18 @@ def check_and_init_db_table(dbname, tablename, fields):
         c.log_a_msg(logger_queue, "autosub.py", logmsg, "DEBUG")
 
         return 0
-    else:
-        logmsg = 'table ' + tablename + ' does not exist'
-        c.log_a_msg(logger_queue, "autosub.py", logmsg, "DEBUG")
 
-        data = {'fields': fields}
-        sql_cmd = "CREATE TABLE {0}({1})".format(tablename, fields)
-        cur.execute(sql_cmd)
-        con.commit()
+    logmsg = 'table ' + tablename + ' does not exist'
+    c.log_a_msg(logger_queue, "autosub.py", logmsg, "DEBUG")
 
-        con.close()
+    data = {'fields': fields}
+    sql_cmd = "CREATE TABLE {0}({1})".format(tablename, fields)
+    cur.execute(sql_cmd)
+    con.commit()
 
-        return 1
+    con.close()
+
+    return 1
 
 ####
 # init_db_statvalue()
@@ -166,18 +169,20 @@ def set_general_config_param(configitem, content):
 ####
 # load_specialmessage_to_db
 ####
-def load_specialmessage_to_db(msgname, filename):
+def load_specialmessage_to_db(env, msgname, filename):
     """
     Load the SpecialMessages in the db.
     """
 
-    with open(specialmsgs_dir + "/" + filename, 'r') as smfp:
-        filecontent = smfp.read()
+    template = env.get_template(filename)
+    data = {'course_name' : course_name, "submission_email" : smtpmail,
+            'allow_skipping': allow_skipping, 'allow_requests': allow_requests}
+    template = template.render(data)
 
     curc, conc = c.connect_to_db(coursedb, logger_queue, "autosub.py")
 
-    data = {'EventName': msgname, 'EventText': filecontent}
-    sql_cmd = ("INSERT INTO SpecialMessages (EventName, EventText) "
+    data = {'EventName': msgname, 'EventText': template}
+    sql_cmd = ("INSERT OR REPLACE INTO SpecialMessages (EventName, EventText) "
                "VALUES(:EventName, :EventText)")
     curc.execute(sql_cmd, data)
     conc.commit()
@@ -197,7 +202,7 @@ def parse_config(config):
     global num_workers, queue_size, poll_period, semesterdb, coursedb, log_dir,\
            log_threshhold
     global course_name, course_mode, tasks_dir, specialmsgs_dir
-    global auto_advance, allow_skipping
+    global auto_advance, allow_skipping, allow_requests
 
 
     ####################
@@ -267,7 +272,6 @@ def parse_config(config):
     ####################
     #      SYSTEM      #
     ####################
-
     try:
         num_workers = config.getint('system', 'num_workers')
         queue_size = config.getint('system', 'queue_size')
@@ -351,6 +355,17 @@ def parse_config(config):
     except:
         allow_skipping = False
 
+    try:
+        allow_requests = config.get('course', 'allow_requests')
+        if allow_requests == "yes" or allow_requests == "1":
+            allow_requests = True
+            auto_advance = False
+            allow_skipping = False
+        else:
+            allow_requests = False
+    except:
+        allow_requests = False
+
 ####
 # generate_queues
 ####
@@ -414,7 +429,8 @@ def start_threads():
 
     course_info = {"name": course_name, "mail": imapmail, "tasks_dir": tasks_dir}
 
-    sender_t = sender.MailSender("sender", queues, dbs, smtp_info, course_info)
+    sender_t = sender.MailSender("sender", queues, dbs, smtp_info, course_info, \
+                                 allow_requests)
 
     # make the sender thread a daemon, this way the main will clean it up before
     # terminating!
@@ -439,7 +455,7 @@ def start_threads():
                  "security": imapsecurity}
 
     fetcher_t = fetcher.MailFetcher("fetcher", queues, dbs, imap_info, \
-                                    poll_period, allow_skipping)
+                                    poll_period, allow_skipping, allow_requests)
 
     # make the fetcher thread a daemon, this way the main will clean it up before
     # terminating!
@@ -491,7 +507,7 @@ def start_threads():
 
     for thread_id in range(1, num_workers + 1):
         t_name = "Worker" + str(thread_id)
-        worker_t = worker.Worker(t_name, queues, dbs, tasks_dir)
+        worker_t = worker.Worker(t_name, queues, dbs, tasks_dir, allow_requests)
         worker_t.daemon = True
         worker_t.start()
         threads.append(worker_t)
@@ -570,50 +586,47 @@ def check_init_ressources():
 
     ## SpecialMessages #
     fields = "EventName TEXT PRIMARY KEY, EventText TEXT"
-    ret = check_and_init_db_table(coursedb, "SpecialMessages", fields)
+    check_and_init_db_table(coursedb, "SpecialMessages", fields)
 
-    # we use the .txt files to initialize it
-    # after first start the messages can be changed during operation
-    if ret:
-        if allow_skipping:
-            filename = 'welcome_withskip.txt'
-            load_specialmessage_to_db('WELCOME', filename)
+    # we use the .txt files to set the SpecialMessages in the database with jinja
+    env = Environment()
+    env.loader = FileSystemLoader(specialmsgs_dir)
 
-            filename = 'usage_withskip.txt'
-            load_specialmessage_to_db('USAGE', filename)
-        else:
-            filename = 'welcome.txt'
-            load_specialmessage_to_db('WELCOME', filename)
+    filename = 'welcome.txt'
+    load_specialmessage_to_db(env, 'WELCOME', filename)
 
-            filename = 'usage.txt'
-            load_specialmessage_to_db('USAGE', filename)
+    filename = 'usage.txt'
+    load_specialmessage_to_db(env, 'USAGE', filename)
 
-        filename = 'question.txt'
-        load_specialmessage_to_db('QUESTION', filename)
+    filename = 'question.txt'
+    load_specialmessage_to_db(env, 'QUESTION', filename)
 
-        filename = 'invalidtask.txt'
-        load_specialmessage_to_db('INVALID', filename)
+    filename = 'invalidtask.txt'
+    load_specialmessage_to_db(env, 'INVALID', filename)
 
-        filename = 'congratulations.txt'
-        load_specialmessage_to_db('CONGRATS', filename)
+    filename = 'congratulations.txt'
+    load_specialmessage_to_db(env, 'CONGRATS', filename)
 
-        filename = 'registrationover.txt'
-        load_specialmessage_to_db('REGOVER', filename)
+    filename = 'registrationover.txt'
+    load_specialmessage_to_db(env, 'REGOVER', filename)
 
-        filename = 'notallowed.txt'
-        load_specialmessage_to_db('NOTALLOWED', filename)
+    filename = 'notallowed.txt'
+    load_specialmessage_to_db(env, 'NOTALLOWED', filename)
 
-        filename = 'curlast.txt'
-        load_specialmessage_to_db('CURLAST', filename)
+    filename = 'curlast.txt'
+    load_specialmessage_to_db(env, 'CURLAST', filename)
 
-        filename = 'deadtask.txt'
-        load_specialmessage_to_db('DEADTASK', filename)
+    filename = 'deadtask.txt'
+    load_specialmessage_to_db(env, 'DEADTASK', filename)
 
-        filename = 'skipnotpossible.txt'
-        load_specialmessage_to_db('SKIPNOTPOSSIBLE', filename)
+    filename = 'skipnotpossible.txt'
+    load_specialmessage_to_db(env, 'SKIPNOTPOSSIBLE', filename)
 
-        filename = 'tasknotsubmittable.txt'
-        load_specialmessage_to_db('TASKNOTSUBMITTABLE', filename)
+    filename = 'tasknotsubmittable.txt'
+    load_specialmessage_to_db(env, 'TASKNOTSUBMITTABLE', filename)
+
+    filename = 'tasknotactive.txt'
+    load_specialmessage_to_db(env, 'TASKNOTACTIVE', filename)
 
     ### GeneralConfig ##
     fields = "ConfigItem Text PRIMARY KEY, Content TEXT"
@@ -633,6 +646,7 @@ def check_init_ressources():
     set_general_config_param('tasks_dir', tasks_dir)
     set_general_config_param('allow_skipping', allow_skipping)
     set_general_config_param('auto_advance', auto_advance)
+    set_general_config_param('allow_requests', allow_requests)
 
 ##########################
 #         MAIN           #
