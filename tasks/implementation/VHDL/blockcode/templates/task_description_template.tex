@@ -19,7 +19,7 @@ Your task is to program the behavior of an entity called ``blockcode". This enti
 file ``blockcode.vhdl" and has the following ports:
 
 \begin{itemize}
-	\item Input: \textit{rst} with type std\_logic; global synchrous reset
+	\item Input: \textit{rst} with type std\_logic; global synchronous reset
 	\item Input: \textit{clk} with type std\_logic; global clock
 	\item Input: \textit{data\_valid} with type std\_logic
 	\item Input: \textit{data} with type std\_logic\_vector of length %%DATALENGTH ; little endian
@@ -63,8 +63,8 @@ file ``blockcode.vhdl" and has the following ports:
 
 Do not change the file ``blockcode.vhdl".\\
 
-This entity should work as a intermediate unit, that creates blockcode elements from given data elements and transmits 
-them to a following data sink as seen in Figure 1. In the following sections the transmission and the encoding will 
+This entity should work as an intermediate unit, that creates blockcode elements from given data elements and transmits
+them to the following data sink as seen in Figure 1. In the following sections the transmission and the encoding will
 be discussed in depth.
 \\
 
@@ -72,7 +72,7 @@ be discussed in depth.
 \centering
 \includegraphics[scale=0.6]{../static/system_view.pdf} 
 \caption{System view. The source creates data to be encoded by your entity, which sends the blockcode encoded data to
-a following data sink.}
+the following data sink.}
 \end{figure}
 
 \newpage
@@ -150,10 +150,10 @@ Figure 2 illustrates the desired behavior of the entity ``blockcode" by example 
 \item Global reset.
 \item A valid data element $D_0$ is given. This is indicated by a \textit{data\_valid} being set.
 \item A new valid data element $D_1$ is given. The encoded element $C_0$ is set to be transmitted. The sink is ready as seen by the set \textit{sink\_ready}. Therefore the sink captures the code element in this clock cycle.
-\item No new valid data element given, as seen by the unset \textit{data\_valid}. The encoded element $C_1$ is set to be transmitted and captured by the sink.
+\item No new valid data element is given, as seen by the unset \textit{data\_valid}. The encoded element $C_1$ is set to be transmitted and captured by the sink.
 \item A new valid data element $D_2$ is given. As $C_1$ was already captured, the set code element is not valid, no transmission will occur. Therefore \textit{code\_valid} is unset.
 \item A new valid data element $D_3$ is given. The encoded element $C_2$ is set to be transmitted and captured by the sink. The sink is not ready to capture as seen by the unset \textit{sink\_ready}.
-\item A new valid data element $D_4$ is given. As $C_2$ was not captured last cycle it rermains set. The sink is ready again and captures $C_2$.
+\item A new valid data element $D_4$ is given. As $C_2$ was not captured in the last cycle it remains set. The sink is ready again and captures $C_2$.
 \item No new valid data element is given. $C_3$ is set and captured.
 \item No new valid data element is given. $C_4$ is set and captured.
 \end{enumerate}
