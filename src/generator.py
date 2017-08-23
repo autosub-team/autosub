@@ -117,9 +117,9 @@ class TaskGenerator(threading.Thread):
         user_id = next_gen_msg.get('user_id')
         user_email = next_gen_msg.get('user_email')
         message_id = next_gen_msg.get('message_id')
-        
+
         # requested task is a valid task?
-        if not c.is_valid_task_nr(self.dbs["course"], next_task_nr, \
+        if not c.is_valid_task_nr(self.dbs["course"], task_nr, \
                                   self.queues["logger"], self.name):
             logmsg = ("Generator was given the task to create non valid TaskNr {0}. "
                       "This should not happen!").format(task_nr)
