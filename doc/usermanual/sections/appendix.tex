@@ -54,7 +54,7 @@ serverport & Port to be used. & ssl:465 starttls:587 none:25 \\
 {\bf Field} & {\bf Description} & {\bf Default}\\
 \hline
 \hline
-\textbf{num\_workers} & Number of Worker threads. This influences how many tests can conducted 
+\textbf{num\_workers} & Number of Worker threads. This influences how many tests can conducted
 	in parallel. & ~ \\
 \hline
 \textbf{queue\_size} & Size of the thread communication queues. & ~\\
@@ -70,7 +70,7 @@ log\_dir & Directory to put tasks and autosub log files. & logs  \\
 \end{tabular}
 \begin{tabular}{|p{2.5cm}|p{8cm}|p{2.5cm}|}
 \hline
-log\_threshhold & Threshhold from which level up log entries should be logged. 
+log\_threshhold & Threshhold from which level up log entries should be logged.
 	Possible values: DEBUG INFO WARNING ERROR & INFO\\
 \hline
 \end{tabular}
@@ -81,107 +81,111 @@ log\_threshhold & Threshhold from which level up log entries should be logged.
 {\bf Field} & {\bf Description} & {\bf Default}\\
 \hline
 \hline
-specialmsgs\_dir & Directory for messages that are sent to users on special events. & 
+specialmsgs\_dir & Directory for messages that are sent to users on special events. &
 	SpecialMessages \\
 \hline
-\textbf{tasks\_dir} & Directory of the tasks implementations. & ~ \\ 
+\textbf{tasks\_dir} & Directory of the tasks implementations. & ~ \\
 \hline
 course\_name & The name of the course. & No name set \\
 \hline
-mode & The mode in which to run. Possible values: exam normal & normal \\ 
+mode & The mode in which to run. Possible values: exam normal & normal \\
 \hline
-allow\_skipping & Allows users to skip ahead to the next task with a skip email. 
+allow\_skipping & Allows users to skip ahead to the next task with a skip email.
 	Possible values: yes no & no \\
 \hline
-auto\_advance & Decides if users get auto advanced to a task which is activated by its 
+auto\_advance & Decides if users get auto advanced to a task which is activated by its
 	TaskStart. Possible values: yes no & no \\
 \hline
-allow\_requests & Decides if the users can request tasks by number. If this is activated 
-	auto\_advance and allow\_skipping are set to no. Possible values: yes no & no \\ 
+allow\_requests & Decides if the users can request tasks by number. If this is activated
+	auto\_advance and allow\_skipping are set to no. Possible values: yes no & no \\
 \hline
 \end{tabular}
 
 \subsection{Description of the message queues} \label{app:queues}
 
 \begin{description}
-\item [job\_queue] The job\_queue is used to trigger Worker threads to start testing 
-	solutions that were received. The messages in the job\_queue are comprised of 
+\item [job\_queue] The job\_queue is used to trigger Worker threads to start testing
+	solutions that were received. The messages in the job\_queue are comprised of
 	the following fields:
     \begin{itemize}
         \item {\bf user\_id:} The unique User ID of the user who submitted this solution.
         \item {\bf user\_email:} The E-Mail address of the user who submitted this solution.
         \item {\bf task\_nr:} Number of the task that solution has been submitted for.
-        \item {\bf message\_id:} The unique message-id of the E-Mail on the server.
+        \item {\bf message\_id:} The unique message-id of the user E-Mail on the IMAP server,
+			which started the testing.
     \end{itemize}
 
-\item [sender\_queue] If a thread wants to send an E-Mail to a user, the Sender thread 
-	is notified via this queue. The data needed by the Sender thread is in the messages 
+\item [sender\_queue] If a thread wants to send an E-Mail to a user, the Sender thread
+	is notified via this queue. The data needed by the Sender thread is in the messages
 	in the sender\_queue. These messages consist of the following fields:
     \begin{itemize}
         \item {\bf user\_id:} The unique User ID of the user who shall receive this E-Mail.
-        \item {\bf recipient} E-Mail address of the recipient (the content of the 
+        \item {\bf recipient} E-Mail address of the recipient (the content of the
 			'To' field in the E-Mail).
-        \item {\bf message\_type} The message type is used to decide on how to format 
-			the E-Mail, and whether or not additional E-Mails have to be sent out 
+        \item {\bf message\_type} The message type is used to decide on how to format
+			the E-Mail, and whether or not additional E-Mails have to be sent out
 			(e.g. when a question is handled). Possible message\_types are:
 
             \begin{itemize}
 				\item {\tt Task} -- A task description.
 				\item {\tt Success} -- A Task has been tested successfully.
-				\item {\tt Failed} -- An error message for a failed test-run of a result 
+				\item {\tt Failed} -- An error message for a failed test-run of a result
 					submission.
-				\item {\tt SecAlert} -- Scanning the code revealed that this might be an 
+				\item {\tt SecAlert} -- Scanning the code revealed that this might be an
 					attack on the system.
-				\item {\tt TaskAlert} -- An error message for failures in files that were 
+				\item {\tt TaskAlert} -- An error message for failures in files that were
 					created for tasks.
 				\item {\tt InvalidTask} -- A submission or request for a non-existent task.
-				\item {\tt Usage} -- An E-Mail with usage explanation shall be sent to the 
-					student. 
+				\item {\tt Usage} -- An E-Mail with usage explanation shall be sent to the
+					student.
 				\item {\tt Question} -- Confirm that a question was received.
 				\item {\tt QFwd} -- Forward a question to the administrator.
 				\item {\tt Welcome} -- Send a welcome message to a new student.
-				\item {\tt NotAllowed} -- A user who is not on the whitelist sent a mail 
+				\item {\tt NotAllowed} -- A user who is not on the whitelist sent a mail
 					to the system.
 				\item {\tt SkipNotPossible} -- A user wants to skip to the next
-					task, when he is either at the last task or the next task has not 
+					task, when he is either at the last task or the next task has not
 					started yet.
 				\item {\tt TaskNotSubmittable} -- A user wants to submit to a task
 					which has not started yet.
-				\item {\tt TaskNotActive} -- An action concerning a task that is not active 
+				\item {\tt TaskNotActive} -- An action concerning a task that is not active
 					yet.
             \end{itemize}
 
-        \item {\bf task\_nr} Number of the task that message concerns (e.g. the current 
+        \item {\bf task\_nr} Number of the task that message concerns (e.g. the current
 			one if the test failed, the next one if the task description shall be sent).
-        \item {\bf message\_id:} The unique message-id of the E-Mail on the server.
+        \item {\bf message\_id:} The unique message-id of the user E-Mail on the IMAP server,
+			which triggered the message sending.
     \end{itemize}
 
 \item [logger\_queue] Trigger the logger to write a log message about an event that happened.
     \begin{itemize}
         \item {\bf message:} The text that describes the event that shall be logged.
-        \item {\bf level:} The log-level of this log message; available log-levels 
+        \item {\bf level:} The log-level of this log message; available log-levels
 			are DEBUG, INFO, WARNING and ERROR.
         \item {\bf src:} Name of the thread that reported the event that shall be logged.
 		\item {\bf dst:} Log destination (autosub log, task message, task error).
     \end{itemize}
 
-\item [generator\_queue] The generator\_queue is used to trigger the Generator thread 
-	to generate a new (variant of) a task. That means that certain parameters of the 
-	task are randomized, in order to assure that each student receives his/her very 
-	own example. 
+\item [generator\_queue] The generator\_queue is used to trigger the Generator thread
+	to generate a new (variant of) a task. That means that certain parameters of the
+	task are randomized, in order to assure that each student receives his/her very
+	own example.
 	\begin{itemize}
         \item {\bf user\_id:} The unique UserID of the User for whom the task is generated.
         \item {\bf user\_email:} E-Mail address of the User for whom the task is generated.
         \item {\bf task\_nr:} Number of the task that shall be generated.
-        \item {\bf message\_id:} The unique message-id of the E-Mail on the server.
+        \item {\bf message\_id:} The unique message-id of the user E-Mail on the IMAP server,
+			which triggered the task generation.
     \end{itemize}
 
 \item [archive\_queue] The archive\_queue is used to announce that a E-Mail has been finished
 	processing. This triggers archiving and removing task submissions from the active queue.
-	own example. 
+	own example.
 	\begin{itemize}
-        \item {\bf message\_id:} The unique message-id of the E-Mail on the server.
-        \item {\bf is\_finished\_job:} Flag to show that the message-id belongs to a finished 
+        \item {\bf message\_id:} The unique message-id of the E-Mail on the IMAP server which shall
+			be archived.
+        \item {\bf is\_finished\_job:} Flag to show that the message-id belongs to a finished
 			processed submitted task.
     \end{itemize}
 \end{description}
@@ -228,7 +232,7 @@ Table Entries & \begin{itemize}
 \hline
 Table Name & TaskCounters \\
 \hline
-Description & Implements counters for certain events, examples for such events are: E-Mail received, E-Mail sent, 
+Description & Implements counters for certain events, examples for such events are: E-Mail received, E-Mail sent,
 question received, new user.\\
 \hline
 Table Entries & \begin{itemize}
@@ -243,7 +247,7 @@ Table Entries & \begin{itemize}
 \hline
 Table Name & UserTasks \\
 \hline
-Description & Used to map configured tasks to users -- e.g. store the generated examples so they can be 
+Description & Used to map configured tasks to users -- e.g. store the generated examples so they can be
     fetched later on for testing.\\
 \hline
 Table Entries & \begin{itemize}
@@ -283,29 +287,29 @@ The database course.db contains the following tables (and entries in those table
 \hline
 Table Name & TaskConfiguration \\
 \hline
-Description & Used to configure tasks, including their order, the scripts used to test 
+Description & Used to configure tasks, including their order, the scripts used to test
 	submissions, etc.\\
 \hline
 Table Entries & \begin{itemize}
-    \item {\bf TaskNr}: The unique number of the task -- this number is used to establish 
+    \item {\bf TaskNr}: The unique number of the task -- this number is used to establish
 		the order of tasks as received by the students.
     \item {\bf TaskStart}: Timestamp of when the task shall be available for students
-		(if any). 
-    \item {\bf TaskDeadline}: The deadline until which the task has to be successfully 
+		(if any).
+    \item {\bf TaskDeadline}: The deadline until which the task has to be successfully
 		submitted (if any).
-    \item {\bf TaskName}: The name of the task folder of te task in respect to the 
+    \item {\bf TaskName}: The name of the task folder of te task in respect to the
 	configured tasks\_directory.
 	\item {\bf CommonFile}: Name of a common script that offers a tester functionalities.
-    \item {\bf GeneratorExecutable}: The executable (script, binary, etc.) used to 
+    \item {\bf GeneratorExecutable}: The executable (script, binary, etc.) used to
 		generate unique examples for each student. If this is not set, all students will
 		receive the same task.
-    \item {\bf TestExecutable}: The executable (script, binary, etc.) used to test the 
+    \item {\bf TestExecutable}: The executable (script, binary, etc.) used to test the
 		results submitted by the students.
     \item {\bf Score:} The points the student scores by solving this task.
-    \item {\bf TaskOperator:} The E-Mail address of the course operator, who is 
+    \item {\bf TaskOperator:} The E-Mail address of the course operator, who is
 		responsible for this task.
     \end{itemize}
-    
+
 \\
 \hline
 \end{tabular}
@@ -319,22 +323,22 @@ Description & A collection of texts that shall be sent, in the case special even
 Table Entries & \begin{itemize}
     \item {\bf EventName}: Currently the following events are implemented:
         \begin{itemize}
-        \item WELCOME -- A welcome message that is sent upon first E-Mail from a student 
+        \item WELCOME -- A welcome message that is sent upon first E-Mail from a student
 			and that gives an explanation of how the system works.
-        \item USAGE -- In case an E-Mail that can not be interpreted is received, this 
+        \item USAGE -- In case an E-Mail that can not be interpreted is received, this
 		messageshall be sent to the user.
-        \item QUESTION -- A message that is sent as a confirmation if a question was 
+        \item QUESTION -- A message that is sent as a confirmation if a question was
 			received.
         \item INVALID -- A message that is sent, in case a result for an invalid task has
                 been received.
-        \item CONGRATS -- A message that congratulates the student upon solving the 
+        \item CONGRATS -- A message that congratulates the student upon solving the
 			last task.
-        \item REGOVER -- A message sent in case a student tries to register after the 
+        \item REGOVER -- A message sent in case a student tries to register after the
 			registration deadline has passed.
         \item NOTALLOWED -- A mesage sent in case the student is not on the whitelist.
-        \item CURLAST -- A mesage sent to inform the student that he has solved the 
+        \item CURLAST -- A mesage sent to inform the student that he has solved the
 			current last task.
-        \item DEADTASK -- A mesage sent to inform the student that he submitted a task 
+        \item DEADTASK -- A mesage sent to inform the student that he submitted a task
 			which's deadline is allready over.
 		\item SKIPNOTPOSSIBLE -- A message sent to the user that the skip he
 			requested was not possible. Only sent if skipping is allowed.
@@ -367,10 +371,10 @@ Handling of testing multiple submissions from users is handled in autosub in the
 \item Multiple Worker threads and seperated user tasks directories make it possible that
 	multiple task submissions can be processed at the same time.
 \item Active task submissions are put in an active queue and removed once they have been fully
-	processed and an response has been sent to the student. Active task submissions that are 
+	processed and an response has been sent to the student. Active task submissions that are
 	not processed after 5 minutes are presumed dead and removed from the active queue.
 \item To prevent conflicts only one combination of user and task\_nr is allowed to be active at any
-	time. If the user submits a solution for the same task before it has been fully processed, it 
-	will be put in a backlog queue. Tasks from backlog are made active once the conflicting 
+	time. If the user submits a solution for the same task before it has been fully processed, it
+	will be put in a backlog queue. Tasks from backlog are made active once the conflicting
 	submission has been fully processed.
 \end{itemize}
