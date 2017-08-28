@@ -266,6 +266,21 @@ Table Entries & \begin{itemize}
 
 \begin{tabular}{|p{3cm}|p{10cm}|}
 \hline
+Table Name & SuccessfulTasks \\
+\hline
+Description & Used to save the task numbers which a user has successfully completed.\\
+\hline
+Table Entries & \begin{itemize}
+    \item {\bf UserId}: ID of the user -- the combination of TaskNr and UserId make the entry unique.
+    \item {\bf TaskNr}: Number of the task. -- the combination of TaskNr and UserId make the entry unique.
+\end{itemize} \\
+\hline
+\end{tabular}
+
+
+
+\begin{tabular}{|p{3cm}|p{10cm}|}
+\hline
 Table Name & UserWhiteList \\
 \hline
 Description & A Whitelist of E-Mail addresses that shall be authorized to interact with the system.\\
@@ -278,6 +293,8 @@ Table Entries & \begin{itemize}
         \end{itemize} \\
 \hline
 \end{tabular}
+
+\newpage
 
 \subsection{Course database course.db} \label{app:course.db}
 

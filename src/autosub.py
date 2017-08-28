@@ -564,6 +564,10 @@ def check_init_ressources():
               "FirstSuccessful INTEGER")
     ret = check_and_init_db_table(semesterdb, "UserTasks", fields)
 
+    ##### SuccessfulTasks ####
+    fields = "UserId INTEGER, TaskNr INTEGER, PRIMARY KEY (UserId, TaskNr)"
+    ret = check_and_init_db_table(semesterdb, "SuccessfulTasks", fields)
+
     #### Whitelist #####
     fields = "UniqueId INTEGER PRIMARY KEY AUTOINCREMENT, Email TEXT, Name TEXT"
     ret = check_and_init_db_table(semesterdb, "Whitelist", fields)

@@ -123,8 +123,8 @@ class MailSender(threading.Thread):
 
         #get number of successful tasks
         data = {'user_id': userid}
-        sql_cmd = ("SELECT COUNT(*) FROM UserTasks "
-                   "WHERE FirstSuccessful IS NOT NULL AND UserId = :user_id")
+        sql_cmd = ("SELECT COUNT(*) FROM SuccessfulTasks "
+                   "WHERE UserId = :user_id")
         curs.execute(sql_cmd, data)
         count_successful = curs.fetchone()[0]
 
@@ -180,6 +180,14 @@ class MailSender(threading.Thread):
                                            str(task_nr))
             self.increment_db_taskcounter('NrSubmissions', \
                                            str(task_nr))
+
+            # insert into SucessfulTasks, if it is already existent ignore
+            data = {'user_id': user_id, 'task_nr': task_nr}
+
+            sql_cmd = ("INSERT OR IGNORE INTO SuccessfulTasks (UserId, TaskNr) "
+                       "VALUES (:user_id, :task_nr")
+            curs.execute(sql_cmd, data)
+            cons.commit()
 
         cons.close()
 
@@ -237,8 +245,7 @@ class MailSender(threading.Thread):
 
         #get the done tasks
         data = {'user_id': user_id}
-        sql_cmd = ("SELECT TaskNr FROM UserTasks WHERE UserId = :user_id AND "
-                   "FirstSuccessful IS NOT NULL")
+        sql_cmd = ("SELECT TaskNr FROM SuccessfulTasks WHERE UserId = :user_id")
         curs.execute(sql_cmd, data)
         rows_nrs = curs.fetchall()
 
@@ -674,6 +681,7 @@ class MailSender(threading.Thread):
                                                        task_nr)
             numtasks = c.get_num_tasks(self.dbs["course"], self.queues["logger"], \
                                        self.name)
+
             if int(numtasks) >= int(task_nr):
                 #also attach current task
                 data = {'task_nr': str(task_nr), 'user_id': user_id}

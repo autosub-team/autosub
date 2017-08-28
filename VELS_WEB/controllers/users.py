@@ -13,9 +13,8 @@ def __entries():
     array=[]
     for row in rows:
 
-        rows_nrs = semester((UserTasks.UserId == row.UserId) & \
-                            (UserTasks.FirstSuccessful <> None)) \
-                            .select(UserTasks.TaskNr, orderby="UserTasks.TaskNr ASC")
+        rows_nrs = semester((SuccessfulTasks.UserId == row.UserId) & \
+                            .select(UserTasks.TaskNr, orderby="SuccessfulTasks.TaskNr ASC")
         if(len(rows_nrs) == 0):
             numFinished = 0
             finishedTasks = ""

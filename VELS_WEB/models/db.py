@@ -41,11 +41,17 @@ semester.define_table('UserTasks',
     migrate=False, primarykey=['UniqueId'])
 UserTasks= semester.UserTasks
 
+semester.define_table('SuccessfulTasks',
+    Field('UserId','integer'),
+    Field('TaskNr','integer'),
+    migrate=False, primarykey = ['UserId', 'TaskNr'])
+SuccessfulTasks= semester.SuccessfulTasks
+
 semester.define_table('Whitelist',
-                      Field('UniqueId', 'integer', unique=True),
-                      Field('Email', 'string', unique=True),
-                      Field('Name', 'string'),
-                      migrate=False, primarykey=['UniqueId'])
+    Field('UniqueId', 'integer', unique=True),
+    Field('Email', 'string', unique=True),
+    Field('Name', 'string'),
+    migrate=False, primarykey=['UniqueId'])
 Whitelist= semester.Whitelist
 
 ###################################################
