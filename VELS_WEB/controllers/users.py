@@ -4,7 +4,7 @@ import csv
 val={'Name'        :[IS_NOT_EMPTY()],
      'Email'       :[IS_NOT_EMPTY(),IS_EMAIL()],
      'LastDone'    :[IS_EMPTY_OR(IS_DATETIME(format=T('%Y-%m-%d %H:%M:%S'),error_message='must be YYYY-MM-DD HH:MM:SS!'))],
-     'FirstMail'   :[IS_NOT_EMPTY(),IS_DATETIME(format=T('%Y-%m-%d %H:%M:%S'),
+     'RegisteredAt'   :[IS_NOT_EMPTY(),IS_DATETIME(format=T('%Y-%m-%d %H:%M:%S'),
                        error_message='must be YYYY-MM-DD HH:MM:SS!')],
      'CurrentTask' :[IS_NOT_EMPTY(),IS_DECIMAL_IN_RANGE(minimum=1)]}
 
@@ -26,14 +26,14 @@ def __entries():
             numFinished = str(len(nrs))
             finishedTasks = ','.join(nrs)
 
-        entry={'UserId'      : row.UserId,
-               'Name'        : row.Name,
-               'Email'       : row.Email,
-               'NumFinished' : numFinished,
-               'FinishedTasks': finishedTasks,
-               'LastDone'    : row.LastDone,
-               'FirstMail'   : row.FirstMail,
-               'CurrentTask' : row.CurrentTask}
+        entry={'UserId'         : row.UserId,
+               'Name'           : row.Name,
+               'Email'          : row.Email,
+               'NumFinished'    : numFinished,
+               'FinishedTasks'  : finishedTasks,
+               'LastDone'       : row.LastDone,
+               'RegisteredAt'   : row.RegisteredAt,
+               'CurrentTask'    : row.CurrentTask}
         array.append(entry)
 
     return dict(entries=array)
@@ -47,7 +47,8 @@ def index():
 def downloadAsCSV():
     download_file = cStringIO.StringIO()
 
-    fields= ['UserId','Name','Email','NumFinished','FinishedTasks','CurrentTask','FirstMail','LastDone']
+    fields=
+    ['UserId','Name','Email','NumFinished','FinishedTasks','CurrentTask','RegisteredAt','LastDone']
     csv_file = csv.DictWriter(download_file, delimiter = ';', fieldnames=fields)
 
     csv_file.writeheader()
@@ -66,7 +67,7 @@ def newUser():
 
     inputs=TD(INPUT(_name='Name',        requires= val['Name']        )),\
            TD(INPUT(_name='Email',       requires= val['Email']       ,_size="30")),\
-           TD(INPUT(_name='FirstMail',   requires= val['FirstMail'],_placeholder="YYYY-MM-DD HH:MM:SS"   )),\
+           TD(INPUT(_name='RegisteredAt',   requires= val['RegisteredAt'],_placeholder="YYYY-MM-DD HH:MM:SS"   )),\
            TD(INPUT(_name='CurrentTask', requires= val['CurrentTask'] )),\
            TD(INPUT(_type='submit',_label='Save'))
     form=FORM(inputs)
@@ -101,7 +102,8 @@ def editUser():
     entry=semester(Users.UserId==UserId).select(Users.ALL).first()
     inputs=TD(INPUT(_name='Name',        _value=entry.Name ,       requires=val['Name']        )),\
            TD(INPUT(_name='Email',       _value=entry.Email ,      requires=val['Email']       )),\
-           TD(INPUT(_name='FirstMail',   _value=entry.FirstMail,   requires=val['FirstMail'], _placeholder="YYYY-MM-DD HH:MM:SS"  )),\
+           TD(INPUT(_name='RegisteredAt',   _value=entry.FirstMail,
+           requires=val['RegisteredAt'], _placeholder="YYYY-MM-DD HH:MM:SS"  )),\
            TD(INPUT(_name='CurrentTask', _value=entry.CurrentTask, requires=val['CurrentTask'] )),\
            TD(INPUT(_type='submit',_label='Save'))
     form=FORM(inputs)
@@ -111,10 +113,10 @@ def editUser():
         for var in form.vars:
             var=var.strip()
 
-        semester(Users.UserId ==UserId).update(Name            =form.vars.Name,
-                                               Email           =form.vars.Email,
-                                               FirstMail       =form.vars.FirstMail,
-                                               CurrentTask     =form.vars.CurrentTask)
+        semester(Users.UserId ==UserId).update(Name             =form.vars.Name,
+                                               Email            =form.vars.Email,
+                                               RegisteredAt     =form.vars.RegisteredAt
+                                               CurrentTask      =form.vars.CurrentTask)
         redirect(URL('index'))
 
     returnDict.update({'editUserId':UserId})
@@ -132,7 +134,7 @@ def viewUser():
     userInfoDict= {'UserId':UserId,
                    'Name':row.Name,
                    'Email':row.Email,
-                   'FirstMail':row.FirstMail,
+                   'RegisteredAt':row.RegisteredAt,
                    'LastDone':row.LastDone,
                    'CurrentTask':row.CurrentTask}
 

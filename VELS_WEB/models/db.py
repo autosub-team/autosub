@@ -9,7 +9,7 @@ semester.define_table('Users',
     Field('UserId','integer'),
     Field('Name','string'),
     Field('Email','string'),
-    Field('FirstMail','datetime'),
+    Field('RegisteredAt','datetime'),
     Field('LastDone','datetime'),
     Field('CurrentTask','integer'),
     migrate=False,primarykey=['UserId'])

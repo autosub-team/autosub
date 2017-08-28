@@ -11,7 +11,7 @@
              <th>Name</th>
              <th>Email</th>
              <th>Finished Tasks</th>
-             <th>First Email</th>
+             <th>Registered At</th>
              <th>Last Done</th>
              <th>Current Task</th>
              <th>View?</th>
@@ -25,7 +25,7 @@
            <td>{{=entry['Name']}}</td>
            <td>{{=entry['Email']}}</td>
            <td><b>{{=entry['NumFinished']}}</b>: {{=entry['FinishedTasks']}}</td>
-           <td>{{=entry['FirstMail']}}</td>
+           <td>{{=entry['RegisteredAt']}}</td>
            <td>{{=entry['LastDone']}}</td>
            <td>{{=entry['CurrentTask']}}</td>
            <td>{{=A('View', callback=URL('viewUser?UserId='+str(entry['UserId'])))}}</td>

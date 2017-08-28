@@ -130,7 +130,7 @@ class MailFetcher(threading.Thread):
 
         data = {'Name': user_name, 'Email': user_email, 'TimeNow': str(int(time.time()))}
         sql_cmd = ("INSERT INTO Users "
-                   "(UserId, Name, Email, FirstMail, LastDone, CurrentTask) "
+                   "(UserId, Name, Email, RegisteredAt, LastDone, CurrentTask) "
                    "VALUES(NULL, :Name, :Email, datetime(:TimeNow, 'unixepoch', 'localtime')"
                    ", NULL, 1)")
         curs.execute(sql_cmd, data)

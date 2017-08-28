@@ -539,7 +539,7 @@ def check_init_ressources():
 
     ####### Users ######
     fields = ("UserId INTEGER PRIMARY KEY AUTOINCREMENT, Name TEXT, Email TEXT, "
-              "FirstMail DATETIME, LastDone DATETIME, CurrentTask INT")
+              "RegistedAt DATETIME, LastDone DATETIME, CurrentTask INT")
     check_and_init_db_table(semesterdb, "Users", fields)
 
     ##### TaskStats ####
