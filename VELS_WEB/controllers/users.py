@@ -13,8 +13,8 @@ def __entries():
     array=[]
     for row in rows:
 
-        rows_nrs = semester((SuccessfulTasks.UserId == row.UserId) & \
-                            .select(UserTasks.TaskNr, orderby="SuccessfulTasks.TaskNr ASC")
+        rows_nrs = semester(SuccessfulTasks.UserId == row.UserId).select(UserTasks.TaskNr, orderby="SuccessfulTasks.TaskNr ASC")
+
         if(len(rows_nrs) == 0):
             numFinished = 0
             finishedTasks = ""
@@ -46,8 +46,7 @@ def index():
 def downloadAsCSV():
     download_file = cStringIO.StringIO()
 
-    fields=
-    ['UserId','Name','Email','NumFinished','FinishedTasks','CurrentTask','RegisteredAt','LastDone']
+    fields= ['UserId','Name','Email','NumFinished','FinishedTasks','CurrentTask','RegisteredAt','LastDone']
     csv_file = csv.DictWriter(download_file, delimiter = ';', fieldnames=fields)
 
     csv_file.writeheader()
@@ -114,7 +113,7 @@ def editUser():
 
         semester(Users.UserId ==UserId).update(Name             =form.vars.Name,
                                                Email            =form.vars.Email,
-                                               RegisteredAt     =form.vars.RegisteredAt
+                                               RegisteredAt     =form.vars.RegisteredAt,
                                                CurrentTask      =form.vars.CurrentTask)
         redirect(URL('index'))
 

@@ -184,8 +184,10 @@ class MailSender(threading.Thread):
             # insert into SucessfulTasks, if it is already existent ignore
             data = {'user_id': user_id, 'task_nr': task_nr}
 
+            # TODO: Error here:
+            # sqlite3.OperationalError: near ":task_nr": syntax error
             sql_cmd = ("INSERT OR IGNORE INTO SuccessfulTasks (UserId, TaskNr) "
-                       "VALUES (:user_id, :task_nr")
+                       "VALUES (:user_id, :task_nr)")
             curs.execute(sql_cmd, data)
             cons.commit()
 
