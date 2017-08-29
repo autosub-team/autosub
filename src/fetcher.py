@@ -527,7 +527,9 @@ class MailFetcher(threading.Thread):
                   "TaskNr:{0} for UserId:{1}").format(task_nr, user_id)
         c.log_a_msg(self.queues["logger"], self.name, logmsg, "DEBUG")
 
-        c.generate_task(self.queues["generator"], user_id, task_nr, user_email, "")
+        c.generate_task(self.queues["generator"], user_id, task_nr, user_email, \
+                        message_id)
+
 
     ####
     # skip_was_requested
