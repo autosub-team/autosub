@@ -13,7 +13,8 @@ def __entries():
     array=[]
     for row in rows:
 
-        rows_nrs = semester(SuccessfulTasks.UserId == row.UserId).select(UserTasks.TaskNr, orderby="SuccessfulTasks.TaskNr ASC")
+        rows_nrs = semester(SuccessfulTasks.UserId == row.UserId) \
+                   .select(SuccessfulTasks.TaskNr, orderby="SuccessfulTasks.TaskNr ASC")
 
         if(len(rows_nrs) == 0):
             numFinished = 0
@@ -100,7 +101,7 @@ def editUser():
     entry=semester(Users.UserId==UserId).select(Users.ALL).first()
     inputs=TD(INPUT(_name='Name',        _value=entry.Name ,       requires=val['Name']        )),\
            TD(INPUT(_name='Email',       _value=entry.Email ,      requires=val['Email']       )),\
-           TD(INPUT(_name='RegisteredAt',   _value=entry.FirstMail,
+           TD(INPUT(_name='RegisteredAt',   _value=entry.RegisteredAt,
            requires=val['RegisteredAt'], _placeholder="YYYY-MM-DD HH:MM:SS"  )),\
            TD(INPUT(_name='CurrentTask', _value=entry.CurrentTask, requires=val['CurrentTask'] )),\
            TD(INPUT(_type='submit',_label='Save'))
@@ -137,18 +138,42 @@ def viewUser():
                    'CurrentTask':row.CurrentTask}
 
     #user score
-    rowsDoneTasks= semester( (UserTasks.UserId == UserId) & (UserTasks.FirstSuccessful != None)).select(UserTasks.TaskNr, orderby="UserTasks.TaskNr ASC")
-    userScore= 0
+    rows_done_tasks= semester(SuccessfulTasks.UserId == UserId) \
+                     .select(UserTasks.TaskNr, orderby="SuccessfulTasks.TaskNr ASC")
 
-    for rowDoneTasks in rowsDoneTasks:
-        taskScore= course(TaskConfiguration.TaskNr == rowDoneTasks.TaskNr).select(TaskConfiguration.Score).first().Score
-        userScore= userScore + taskScore
+    done_tasks = [str(row.TaskNr) for row in rows_done_tasks]
 
+    if not done_tasks:
+        userScore = 0
+    else:
+        sql_string = '(' + ','.join(done_tasks) + ')'
+
+        sql_cmd = "SELECT SUM(Score) FROM TaskConfiguration WHERE TaskNr in {0} " \
+                  .format(sql_string)
+        res = course.executesql(sql_cmd)
+        userScore = res[0][0]
 
     userInfoDict['UserScore']= userScore
 
 
+    # user successful tasks
+    rows_nrs = semester(SuccessfulTasks.UserId == UserId) \
+               .select(SuccessfulTasks.TaskNr, orderby="SuccessfulTasks.TaskNr ASC")
 
+    if(len(rows_nrs) == 0):
+        numFinished = 0
+        finishedTasks = ""
+    else:
+        nrs = []
+        for row_nrs in rows_nrs:
+            nrs.append(str(row_nrs.TaskNr))
+        numFinished = str(len(nrs))
+        finishedTasks = ','.join(nrs)
+
+    userInfoDict['UserNumFinished']= numFinished
+    userInfoDict['UserFinishedTasks'] = finishedTasks
+
+    # assemble the returnDict
     returnDict.update(dict(userInfo=userInfoDict))
 
     #Statistics for each task

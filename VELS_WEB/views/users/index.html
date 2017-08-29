@@ -24,7 +24,11 @@
            <td>{{=entry['UserId']}}</td>
            <td>{{=entry['Name']}}</td>
            <td>{{=entry['Email']}}</td>
-           <td><b>{{=entry['NumFinished']}}</b>: {{=entry['FinishedTasks']}}</td>
+		   {{if entry['NumFinished'] == 0:}}
+           <td><b>None</b></td>
+           {{else:}}
+		   <td><b>{{=entry['NumFinished']}}</b>: {{=entry['FinishedTasks']}}</td>
+		   {{pass}}
            <td>{{=entry['RegisteredAt']}}</td>
            <td>{{=entry['LastDone']}}</td>
            <td>{{=entry['CurrentTask']}}</td>
