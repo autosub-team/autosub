@@ -23,26 +23,14 @@ FAILURE=1
 # root path of the task itself
 task_path=$(readlink -f $0|xargs dirname)
 
-#path to autosub
-autosub_path=$(pwd)
-
-# path for all the files that describe the created task
-desc_path="$autosub_path/users/$1/Task$2/desc"
-
-#path where the testing takes place
-user_task_path="$autosub_path/users/$1/Task$2"
-
-# change to the taskpath
-cd $task_path
+#path to common scripts
+common_path=$(readlink -f $task_path/../_common)
 
 # include external config
-source task.cfg
-
-# name for the testbench
-testbench=${task_name}_tb_${user_id}_Task${task_nr}.vhdl
+source $task_path/task.cfg
 
 #include simulator specific common file
-source ../_common/$commonfile
+source $common_path/$commonfile
 
 #----------------- TEST ----------------
 generate_testbench
@@ -55,7 +43,7 @@ userfiles_analyze
 
 if [ -n "$constraintfile" ]
 then
-	source $constraintfile
+	source $task_path/$constraintfile
 fi
 
 elaborate

@@ -52,7 +52,7 @@ architecture behavior of blockcode_tb is
 	end record;
 
 	type pattern_array is array (natural range <>) of pattern_type;
-    
+
 	constant patterns : pattern_array:=(
 		%%TESTPATTERN
 	);
@@ -62,7 +62,7 @@ architecture behavior of blockcode_tb is
 
 begin
 
-	uut: blockcode
+	UUT: blockcode
 		port map(
 			rst => rst_uut,
 			clk => clk_uut,
@@ -97,7 +97,7 @@ begin
 
 			-- wait for the results
 			wait for 10 ns;
-			
+
 			code_valid_expected <= patterns(i).code_valid;
 			code_expected <= patterns(i).code;
 

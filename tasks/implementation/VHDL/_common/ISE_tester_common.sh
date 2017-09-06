@@ -13,11 +13,29 @@
 zero=0
 one=1
 
+#path to support files for common scripts
+support_files_path=$common_path/support_files
+
+#path to autosub
+autosub_path=$(pwd)
+
+# path for all the files that describe the created task
+desc_path="$autosub_path/users/${user_id}/Task${task_nr}/desc"
+
+#path where the testing takes place
+user_task_path="$autosub_path/users/${user_id}/Task${task_nr}"
+
+# name for the testbench
+testbench=${task_name}_tb_${user_id}_Task${task_nr}.vhdl
+
 # DEBUG OUTPUT
-# echo "user_task_path= $user_task_path"
-# echo "desc_path= $desc_path"
-# echo "task_path= $task_path"
-# echo "autosub_path= $autosub_path"
+#echo "user_task_path= $user_task_path"
+#echo "desc_path= $desc_path"
+#echo "task_path= $task_path"
+#echo "autosub_path= $autosub_path"
+#echo "common_path= $common_path"
+#echo "support_files_path=$support_files_path"
+#echo "---------------------------------------"
 
 ######################################
 #       FUNCTIONS FOR TESTING        #
@@ -44,9 +62,6 @@ function generate_testbench {
 	tgt=$user_task_path/used_tbs/${task_name}_tb_${user_id}_Task${task_nr}_Submission${submission_nr_last}.vhdl
 
 	cp $src $tgt
-
-	# copy the isim tcl file for testing to user's folder
-	cp $task_path/scripts/isim.cmd $user_task_path
 }
 
 function desccp {
@@ -99,6 +114,9 @@ function prepare_test {
 	do
 		desccp $filename
 	done
+
+	# copy the isim tcl file for testing to user's folder
+	cp $support_files_path/isim.cmd $user_task_path
 
 	# prepare ISE
 	. /opt/Xilinx/14.7/ISE_DS/ISE/.settings64.sh /opt/Xilinx/14.7/ISE_DS/ISE
@@ -233,8 +251,13 @@ function simulate {
 	# attach wave file:
 	if [ "$attach_wave_file" -eq "$one" ]
 	then
-		zip wavefile.zip isim.wdb
+		#compression factor is approx 10, so we dont want anything above 20MB
+		head --bytes=20000K signals.vcd >signals_tmp.vcd; #first x K Bytes
+		rm signals.vcd
+		mv signals_tmp.vcd signals.vcd
+		zip wavefile.zip signals.vcd
 		mv wavefile.zip error_attachments/
+		rm signals.vcd
 	fi
 
 	# check if simulation was stopped due to the "run X ms" restriction from the isim.cmd tcl script
@@ -276,7 +299,7 @@ function simulate {
 		cat isim.log | awk '/§{/,/}§/' | sed 's/§{//g' | sed 's/}§//g' | sed 's/** Failure://g' | sed 's/\\n/\n/g' >> error_msg
 		if [ "$attach_wave_file" -eq "$one" ]
 		then
-			echo "Please look at the attached wave file to see what signal your entity produces." >> error_msg
+			echo "Please look at the attached wave file to see what signal(s) your entity produces. Use a viewer like GTKWave." >> error_msg
 		fi
 		exit $FAILURE
 	fi

@@ -13,11 +13,29 @@
 zero=0
 one=1
 
+#path to support files for common scripts
+support_files_path=$common_path/support_files
+
+#path to autosub
+autosub_path=$(pwd)
+
+# path for all the files that describe the created task
+desc_path="$autosub_path/users/${user_id}/Task${task_nr}/desc"
+
+#path where the testing takes place
+user_task_path="$autosub_path/users/${user_id}/Task${task_nr}"
+
+# name for the testbench
+testbench=${task_name}_tb_${user_id}_Task${task_nr}.vhdl
+
 # DEBUG OUTPUT
-# echo "user_task_path= $user_task_path"
-# echo "desc_path= $desc_path"
-# echo "task_path= $task_path"
-# echo "autosub_path= $autosub_path"
+#echo "user_task_path= $user_task_path"
+#echo "desc_path= $desc_path"
+#echo "task_path= $task_path"
+#echo "autosub_path= $autosub_path"
+#echo "common_path= $common_path"
+#echo "support_files_path=$support_files_path"
+#echo "---------------------------------------"
 
 ######################################
 #       FUNCTIONS FOR TESTING        #
@@ -224,6 +242,7 @@ function simulate {
 		mv signals_tmp.vcd signals.vcd
 		zip wavefile.zip signals.vcd
 		mv wavefile.zip error_attachments/
+		rm signals.vcd
 	fi
 
 	# check for the error message from the testbench:
@@ -238,7 +257,7 @@ function simulate {
 		cat /tmp/$USER/tmp_Task${task_nr}_User${user_id}_simulate | awk '/§{/,/}§/' | sed 's/.*§{//g' | sed 's/}§//g' | sed 's/** Failure://g' | sed 's/\\n/\n/g' >> error_msg
 		if [ "$attach_wave_file" -eq "$one" ]
 		then
-			echo "Please look at the attached wave file to see what signal your entity produces." >> error_msg
+			echo "Please look at the attached wave file to see what signal(s) your entity produces. Use a viewer like GTKWave." >> error_msg
 		fi
 		exit $FAILURE
 	fi
