@@ -35,7 +35,7 @@ class TaskActivator(threading.Thread):
                                      self.name)
 
         # first we need to know, which tasks are not active at the moment
-        sql_cmd = "SELECT * FROM TaskConfiguration WHERE TaskActive==0;"
+        sql_cmd = "SELECT * FROM TaskConfiguration WHERE TaskActive = 0"
         curc.execute(sql_cmd)
         rows_tasks = curc.fetchall()
 
@@ -50,8 +50,8 @@ class TaskActivator(threading.Thread):
             if task_start < datetime.datetime.now():
                 # first, let's set the task active!
                 data = {'task_nr': task_nr}
-                sql_cmd = ("UPDATE TaskConfiguration SET TaskActive = 1"
-                           "WHERE TaskNr == :task_nr")
+                sql_cmd = ("UPDATE TaskConfiguration SET TaskActive = 1 "
+                           "WHERE TaskNr = :task_nr")
                 curc.execute(sql_cmd, data)
                 conc.commit()
                 logmsg = "Turned Task {0} to active.".format(str(task_nr))
@@ -110,7 +110,7 @@ class TaskActivator(threading.Thread):
                     try:
                         data = {'task_nr': task_nr}
                         sql_cmd = ("SELECT GeneratorExecutable FROM TaskConfiguration "
-                                   "WHERE TaskNr == :task_nr")
+                                   "WHERE TaskNr = :task_nr")
                         curc.execute(sql_cmd, data)
                         res = curc.fetchone()
                     except:

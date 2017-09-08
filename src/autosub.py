@@ -212,7 +212,7 @@ def parse_config(config):
     try:
         imapserver = config.get('imapserver', 'servername')
         imapuser = config.get('imapserver', 'username')
-        imappasswd = config.get('imapserver', 'password')
+        imappasswd = config.get('imapserver', 'password', raw = True)
         imapmail = config.get('imapserver', 'email')
     except:
         print("Something went wrong reading your IMAP configuration.")
@@ -242,7 +242,7 @@ def parse_config(config):
     try:
         smtpserver = config.get('smtpserver', 'servername')
         smtpuser = config.get('smtpserver', 'username')
-        smtppasswd = config.get('smtpserver', 'password')
+        smtppasswd = config.get('smtpserver', 'password', raw = True)
         smtpmail = config.get('smtpserver', 'email')
 
     except:
