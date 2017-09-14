@@ -1,5 +1,7 @@
 from os.path import isdir
 from os.path import isfile
+from os.path import join
+from os import listdir
 import os
 import datetime
 
@@ -14,43 +16,59 @@ val={'TaskNr'              :[IS_NOT_EMPTY(),IS_DECIMAL_IN_RANGE(minimum=0)],
      'TaskOperator'        :[IS_NOT_EMPTY(),IS_EMAIL_LIST()],
      'TaskActive'          :[IS_NOT_EMPTY(),IS_IN_SET(['0','1'])]}
 
+# takes parameter, automatic private
 def extra_validation(form):
-    # get the configured tasks directory
+
     tasks_dir = course(GeneralConfig.ConfigItem=='tasks_dir').select(GeneralConfig.Content)[0].Content
+    available_tasks , available_commons = __task_system_entries()
 
-    available_tasks = sorted(next(os.walk(tasks_dir))[1])
-    if '_common' in available_tasks:
-        available_tasks.remove('_common')
-
-    #validate TaskName, has tom exist in tasks_dir
+    #validate TaskName existence
     if form.vars.TaskName not in available_tasks:
         form.errors.TaskName = 'task does not exist'
         return
 
-    #validate CommonFile, has to be empty or in tasks_dir/_common/
+    #validate CommonFile existence
     common_file = form.vars.CommonFile.strip()
 
     if not common_file:
         pass
     else:
-        full_path = tasks_dir + "/_common/" + common_file
-        if not isfile(full_path):
+        if not common_file in available_commons:
             form.errors.CommomFile = "file does not exist!"
             return
 
-    task_path = tasks_dir + '/' + form.vars.TaskName
-
+    task_path = join(tasks_dir, form.vars.TaskName)
     #validate GeneratorExecutable
-    full_path = task_path + "/" + form.vars.GeneratorExecutable
-
+    full_path = join(task_path, form.vars.GeneratorExecutable)
     if not isfile(full_path):
         form.errors.GeneratorExecutable = "file does not exist!"
+        return
 
     #validate TestExecutable
-    full_path = task_path + "/" + form.vars.TestExecutable
-
+    full_path = join(task_path, form.vars.TestExecutable)
     if not isfile(full_path):
         form.errors.TestExecutable = "file does not exist!"
+        return
+
+def __task_system_entries():
+    tasks_dir = course(GeneralConfig.ConfigItem=='tasks_dir').select(GeneralConfig.Content)[0].Content
+
+    available_tasks = [""]
+    available_commons = [""]
+
+    if isdir(tasks_dir):
+        # only take subfolders not files of tasks_dir
+        available_tasks = sorted([d for d in listdir(tasks_dir)
+                          if isdir(os.path.join(tasks_dir, d))])
+
+        if '_common' in available_tasks:
+            # delete _common out of it
+            available_tasks.remove('_common')
+            available_commons.extend(sorted(listdir(tasks_dir + "/_common")))
+            if "support_files" in available_commons:
+                available_commons.remove("support_files")
+
+    return (available_tasks , available_commons)
 
 def __entries():
     rows=course().select(TaskConfiguration.ALL, orderby=TaskConfiguration.TaskNr)
@@ -71,21 +89,14 @@ def __entries():
 
     tasks_dir = course(GeneralConfig.ConfigItem=='tasks_dir').select(GeneralConfig.Content)[0].Content
 
-    if not os.path.isdir(tasks_dir):
+    if not isdir(tasks_dir):
         num_found_tasks = "Invalid Path."
     else:
-        # only take subfolders not files of tasks_dir
-        available_tasks = sorted([d for d in os.listdir(tasks_dir) 
-                          if os.path.isdir(os.path.join(tasks_dir, d))])
-
-        # delete _common out of it 
-        if '_common' in available_tasks:
-            available_tasks.remove('_common')
-        num_found_tasks = str(len(available_tasks)) + " task(s) found."
+       available_tasks , available_commons = __task_system_entries()
+       num_found_tasks = str(len(available_tasks)) + " task(s) found."
 
     return dict(entries=array, tasks_dir = tasks_dir,
                 num_found_tasks = num_found_tasks)
-
 
 def index():
     returnDict={}
@@ -104,21 +115,7 @@ def newTask():
         newTaskNr=rows.last().TaskNr+1
     returnDict.update({'newTaskNr': newTaskNr})
 
-    # get the configured tasks directory
-    tasks_dir = course(GeneralConfig.ConfigItem=='tasks_dir').select(GeneralConfig.Content)[0].Content
-
-    available_tasks = [""]
-    available_commons = [""]
-
-    if os.path.isdir(tasks_dir):
-        # only take subfolders not files of tasks_dir
-        available_tasks = sorted([d for d in os.listdir(tasks_dir) 
-                          if os.path.isdir(os.path.join(tasks_dir, d))])
- 
-        if '_common' in available_tasks:
-            # delete _common out of it
-            available_tasks.remove('_common')
-            available_commons.extend(sorted(os.listdir(tasks_dir + "/_common")))
+    available_tasks , available_commons = __task_system_entries()
 
     inputs = TD(newTaskNr,INPUT(_type='hidden',_name='TaskNr',_value=newTaskNr)),\
              TD(INPUT(_name='TaskStart', requires=val['TaskStart'],\
@@ -172,18 +169,9 @@ def editTask():
     returnDict.update(__entries())
 
     TaskNr = int(request.vars['editTaskNr'])
-    entry =returnDict['entries'][TaskNr-1]
+    entry = returnDict['entries'][TaskNr-1]
 
-    # get the configured tasks directory
-    tasks_dir = course(GeneralConfig.ConfigItem=='tasks_dir').select(GeneralConfig.Content)[0].Content
-
-    available_tasks = sorted(next(os.walk(tasks_dir))[1])
-    if '_common' in available_tasks:
-        available_tasks.remove('_common')
-
-    available_commons = [""]
-    if isdir(tasks_dir + "/_common"):
-        available_commons.extend(sorted(next(os.walk(tasks_dir + "/_common"))[2]))
+    available_tasks , available_commons = __task_system_entries()
 
     inputs = TD(TaskNr),\
              TD(INPUT(_name='TaskStart', _value=entry['TaskStart'],\
