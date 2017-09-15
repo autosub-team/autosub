@@ -1,0 +1,48 @@
+\documentclass[a4paper,12pt]{article}
+\usepackage{a4wide}
+\usepackage{tikz}
+\usetikzlibrary{calc}
+\usepackage{hyperref}
+
+\begin{document}
+\pagestyle{empty}
+\setlength{\parindent}{0em}
+\section*{\noindent Counter }
+Your task is to program the behavior of an entity called ``counter". This entity is declared in the attached file ``counter.vhdl" and has the following properties:
+
+\begin{itemize}
+	\item Input: CLK with type std\_logic
+	%%enable_property_desc
+	%%sync_property_desc
+	%%async_property_desc
+	%%input_property_desc
+	%%overflow_property_desc
+	\item Output: Output with type std\_logic\_vector of length %%counter_width
+
+\begin{center}
+\begin{tikzpicture}
+\draw node [draw,rectangle, minimum height=%%minimum_height mm, minimum width=35mm,rounded corners=2mm,thick](entity){};
+%%inputs_tikz
+%%outputs_tikz
+\draw node at ($ (entity) - (0,0mm)$){ counter };
+\end{tikzpicture}
+\end{center}
+
+\end{itemize}
+
+%\begin{center}
+
+Do not change the file ``counter.vhdl".\\
+
+The ``counter" entity shall increment the Output vector on %%every_a rising edge of the CLK signal. The initial value of the Output, before the first rising edge of the CLK signal, shall be ``%%init_value_padded". When the Sync%%sync_variation signal is set to `1' then the Output vector shall be set to %%sync_text at the rising edge of the CLK signal. When the Async%%async_variation signal is set to `1' then the Output vector shall be set to %%async_text immediately. %%Enable_Overflow_text \\
+
+This behavior has to be programmed in the attached file ``counter\_beh.vhdl".\\
+
+
+To turn in your solution write an email to %%SUBMISSIONEMAIL with Subject ``Result Task %%TASKNR" and attach your behavior file ``counter\_beh.vhdl".
+
+\vspace{0.7cm}
+Good Luck and May the Force be with you.
+
+
+\end{document}
