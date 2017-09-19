@@ -37,18 +37,18 @@ class TaskGenerator(threading.Thread):
         self.course_mode = course_mode
 
     ####
-    # get_scriptpath
+    # get_scriptinfo
     ####
-    def get_scriptpath(self, task_nr):
+    def get_scriptinfo(self, task_nr):
         """
-        Get the path to the generator script for task task_nr.
+        Get the path to the generator script and chosen language for task task_nr.
         Returns None if not proper config.
         """
 
         curc, conc = c.connect_to_db(self.dbs["course"], self.queues["logger"], self.name)
 
         data = {'task_nr': task_nr}
-        sql_cmd = ("SELECT TaskName, GeneratorExecutable FROM TaskConfiguration "
+        sql_cmd = ("SELECT TaskName, GeneratorExecutable, Language FROM TaskConfiguration "
                    "WHERE TaskNr == :task_nr")
         curc.execute(sql_cmd, data)
         res = curc.fetchone()
@@ -62,11 +62,12 @@ class TaskGenerator(threading.Thread):
         else:
             task_name = res[0]
             generator_name = res[1]
+            language = res[2]
 
             scriptpath = self.tasks_dir + "/" + task_name + "/" + generator_name
 
         conc.close()
-        return scriptpath
+        return (scriptpath , language)
 
     ####
     # check_delete_usertask
@@ -138,7 +139,7 @@ class TaskGenerator(threading.Thread):
         c.check_dir_mkdir(desc_dir, self.queues["logger"], self.name)
 
         # get the path to the generator script
-        scriptpath = self.get_scriptpath(task_nr)
+        scriptpath, language = self.get_scriptinfo(task_nr)
 
         # check the path
         if not scriptpath or not os.path.isfile(scriptpath):
@@ -147,7 +148,7 @@ class TaskGenerator(threading.Thread):
             return
 
         command = [scriptpath, str(user_id), str(task_nr), self.submission_mail,\
-                   str(self.course_mode), self.dbs["semester"]]
+                   str(self.course_mode), self.dbs["semester"], str(language)]
 
         logmsg = "generator command with arguments: {0} ".format(command)
         c.log_a_msg(self.queues["logger"], self.name, logmsg, "DEBUG")

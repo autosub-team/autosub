@@ -12,6 +12,7 @@ val={'TaskNr'              :[IS_NOT_EMPTY(),IS_DECIMAL_IN_RANGE(minimum=0)],
                              error_message='must be YYYY-MM-DD HH:MM!')],
      'TaskDeadline'        :[IS_NOT_EMPTY(),IS_DATETIME(format=T('%Y-%m-%d %H:%M'), \
                              error_message='must be YYYY-MM-DD HH:MM!')],
+     'Language'            :[IS_ALPHANUMERIC(error_message='must be alphanumeric!')],
      'Score'               :[IS_NOT_EMPTY(),IS_DECIMAL_IN_RANGE(minimum=1)],
      'TaskOperator'        :[IS_NOT_EMPTY(),IS_EMAIL_LIST()],
      'TaskActive'          :[IS_NOT_EMPTY(),IS_IN_SET(['0','1'])]}
@@ -80,6 +81,7 @@ def __entries():
                'TaskDeadline'        :row.TaskDeadline.strftime("%Y-%m-%d %H:%M"),
                'TaskName'            :row.TaskName,
                'GeneratorExecutable' :row.GeneratorExecutable,
+               'Language'            :"" if not row.Language else row.Language,
                'TestExecutable'      :row.TestExecutable,
                'CommonFile'          :"" if not row.CommonFile else row.CommonFile,
                'Score'               :row.Score,
@@ -124,6 +126,7 @@ def newTask():
                       _placeholder="YYYY-MM-DD HH:MM",_id = 'TaskEnd')),\
              TD(SELECT(_name="TaskName", *available_tasks)),\
              TD(INPUT(_name='GeneratorExecutable', _value="generator.sh")),\
+             TD(INPUT(_name='Language', _value="", requires=val['Language'])),\
              TD(INPUT(_name='TestExecutable', _value="tester.sh")),\
              TD(SELECT(_name='CommonFile', *available_commons, _value="")),\
              TD(INPUT(_name='Score', requires=val['Score'], _value=1)),\
@@ -148,6 +151,7 @@ def newTask():
                                  TaskDeadline        =form.vars.TaskDeadline,\
                                  TaskName            =form.vars.TaskName,\
                                  GeneratorExecutable =form.vars.GeneratorExecutable,\
+                                 Language            =form.vars.Language,\
                                  TestExecutable      =form.vars.TestExecutable,\
                                  CommonFile          =form.vars.CommonFile,\
                                  Score               =form.vars.Score,\
@@ -181,6 +185,7 @@ def editTask():
              TD(SELECT(_name="TaskName", value = entry['TaskName'],\
                        *available_tasks)),\
              TD(INPUT(_name='GeneratorExecutable', _value=entry['GeneratorExecutable'])),\
+             TD(INPUT(_name='Language', _value=entry['Language'], requires=val['Language'])),\
              TD(INPUT(_name='TestExecutable', _value=entry['TestExecutable'])),\
              TD(SELECT(_name='CommonFile', *available_commons, value=entry['CommonFile'])),\
              TD(INPUT(_name='Score',_value=entry['Score'],\
@@ -206,6 +211,7 @@ def editTask():
                     TaskDeadline        =form.vars.TaskDeadline,\
                     TaskName            =form.vars.TaskName,\
                     GeneratorExecutable =form.vars.GeneratorExecutable,\
+                    Language            =form.vars.Language,\
                     TestExecutable      =form.vars.TestExecutable,\
                     CommonFile          =form.vars.CommonFile,\
                     Score               =form.vars.Score,\

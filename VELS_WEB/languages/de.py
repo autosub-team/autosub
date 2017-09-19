@@ -121,6 +121,7 @@
 'Menu Model': 'Menü-Muster',
 'Modified By': 'Verändert von',
 'Modified On': 'Verändert am',
+'must be alphanumeric!': 'must be alphanumeric!',
 'must be YYYY-MM-DD HH:MM:SS!': 'must be YYYY-MM-DD HH:MM:SS!',
 'must be YYYY-MM-DD!': 'must be YYYY-MM-DD!',
 'My Sites': 'Meine Seiten',
