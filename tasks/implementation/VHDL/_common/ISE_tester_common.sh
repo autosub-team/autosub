@@ -116,7 +116,13 @@ function prepare_test {
 	done
 
 	# copy the isim tcl file for testing to user's folder
-	cp $support_files_path/isim.cmd $user_task_path
+	# if a special version exists use it, else use common one
+	if [ -f $task_path/scripts/isim.cmd ]
+	then
+		cp $task_path/scripts/isim.cmd $user_task_path
+	else
+		cp $support_files_path/isim.cmd $user_task_path
+	fi
 
 	# prepare ISE
 	. /opt/Xilinx/14.7/ISE_DS/ISE/.settings64.sh /opt/Xilinx/14.7/ISE_DS/ISE
