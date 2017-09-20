@@ -1,4 +1,3 @@
-
 \section{Truth Table} \label{truthtable}
     \begin{tabular}{|p{2cm}|p{11cm}|}
         \hline
@@ -34,7 +33,6 @@
         \hline 
     \end{tabular}
 
-\newpage
 
 \section{Gates} \label{basicgates}
     \begin{tabular}{|p{2cm}|p{11cm}|}
@@ -75,7 +73,6 @@
         \hline 
     \end{tabular}
 
-\newpage
 
 \section{PWM(Pulse-Width Modulation) Generator}\label{pwmgenerator}
     \begin{tabular}{|p{2cm}|p{11cm}|}
@@ -114,7 +111,6 @@
         \hline 
     \end{tabular}
 
-\newpage
 
 \section{Arithmetic}\label{arithmetic}
     \begin{tabular}{|p{2cm}|p{11cm}|}
@@ -155,7 +151,6 @@
         \hline 
     \end{tabular}
 
-\newpage
 
 \section{FSM(Finite State Machine)}\label{finitestatemachine}
     \begin{tabular}{|p{2cm}|p{11cm}|}
@@ -195,7 +190,6 @@
         \hline 
     \end{tabular}
 
-\newpage
 
 \section{CRC(Cyclic Redundancy Check Generator)}\label{crcgenerator}
     \begin{tabular}{|p{2cm}|p{11cm}|}
@@ -231,7 +225,6 @@
         \hline 
     \end{tabular}
  
-\newpage
 
 \section{ALU} \label{alu}
     \begin{tabular}{|p{2cm}|p{11cm}|}
@@ -283,8 +276,6 @@
         \hline 
     \end{tabular}
 
-\newpage
-
 \section{ROM} \label{rom}
     \begin{tabular}{|p{2cm}|p{11cm}|}
         \hline
@@ -325,7 +316,6 @@
         \hline 
     \end{tabular}
 
-\newpage
 
 \section{RAM} \label{ram}
     \begin{tabular}{|p{2cm}|p{11cm}|}
@@ -406,9 +396,7 @@
         \hline 
     \end{tabular}
 
-\newpage
-
-    \section{Register File} \label{register_file}
+\section{Register File} \label{register_file}
     \begin{tabular}{|p{2cm}|p{11cm}|}
         \hline
         Overview & The student has to program the behavior of an entity which acts as a register file with one special register. The special register acts as a status register and therefore bits can be accessed separately. The student learns how to use arrays of std\verb!_!logic\verb!_!vectors and he has to understand signal delay to handle simultaneous read and write situations.
@@ -431,9 +419,8 @@
         \hline 
     \end{tabular}
 
-\newpage
 
-    \section{Timing Demo} \label{timingDemo}
+\section{Timing Demo} \label{timingDemo}
     \begin{tabular}{|p{2cm}|p{13cm}|}
         \hline
         Overview & The student learns and analyses the timing behavior of signals in hardware programme. He or she has to implement the behavior of signals according to a provided waveform. Understanding difference from signals delay and variable assigned is the aim of this task.
@@ -465,3 +452,45 @@
         \\
         \hline
     \end{tabular}
+
+\section{Blockcode}
+    \begin{tabular}{|p{2cm}|p{13cm}|}
+        \hline
+        Overview & The student has to program the behavior of an entity which acts as an intermediate unit between a
+			data source and a sink. The job of this intermediate unit is to convert given datawords to codewords using
+			(n,k) blockcode encoding.
+
+			The student learns to program an entity that follows given communication constraints (synchronous,
+			possible backpressure).
+        \\
+        \hline
+        Description & The student is given an description of the communication system concerning transmission and
+			encoding. Additionally a example waveform view of a few communication cycles is given as diagram with
+			description for each cycle.
+        \\
+        \hline
+        Creation & The encoding is parameterized with the following parameters:
+			\begin{itemize}
+				\item dataword length k: between 5 and 7
+				\item codelength n: between 3 and 8 (depending on k)
+				\item random (n-k) chosen parity vectors, with at least 2 entries
+			\end{itemize}
+		\\
+        \hline
+        Submission & The student has to submit his behavioral implementation vhdl file.
+        \\
+        \hline
+        Testing & A testbench feeds the student's entity with simulated communication from a data source and checks
+			the outgoing communication in respect to right encoding and given timing constraints. Every testing also
+			tests if the student implemented the due backpressure needed FIFO by: a) filling the FIFO fully and b) fully
+			emptying the FIFO.
+        \\
+        \hline
+        Feedback & If the syntax analysis returned errors, they are sent to the student. If the behavior is wrong, the
+			student gets information about the cycle at which the behavior did not fit, expected outgoing communication 
+			and received outgoing communication. Additionally the student gets the signal wave file produced by the
+			simulator to help him debug.
+        \\
+        \hline
+    \end{tabular}
+
