@@ -47,6 +47,7 @@ course_name: My Cool Course
 mode: normal
 allow_skipping: no
 auto_advance: no
+allow_requests: no
 \end{lstlisting}
 
 \subsection{Starting the Daemon}
@@ -157,11 +158,13 @@ Each task in the queue has to be created with the following properties:
     this datetime will be rejected.
 \item {\bf TaskName:} The name of the folder with the implementation of the task in respect
 	to the configured tasks\_dir.
+\item {\bf GeneratorExecutable:} The name of the generator executable.
+\item {\bf Language}: Language code of the language in which the task discription for
+	this task should be created.
+\item {\bf TestExecutable:} The name of the tester executable.
 \item {\bf CommonFile:} Name of a common script that offers a tester functionalities.
 	Such scripts have to be stored in a directory {\tt ``\_common"} in the configured
 	tasks\_dir.
-\item {\bf GeneratorExecutable:} The name of the generator executable.
-\item {\bf TestExecutable:} The name of the tester executable.
 \item {\bf Score:} The score a student gets for successful completion of the task. The
     scores for all completed tasks are added and can therefore also be used for grading.
 \item {\bf TaskOperator:} The E-mail(s) of the operator of the task seperated by commas. 
@@ -206,56 +209,56 @@ don't exist).
 
 The remaining configuration is similar to configuration for normal mode.
 
-\subsection{Testing VELS}\label{sub:testingvels}
-
-%QUESTION Martin: Can we write that semester.db and course.db have to be present?,
-%some of my tests need them to be present..
-% BUMP!!
-
-VELS has a testing suite located in {\tt "autosub/src/tests"}. It consists of unit and
-doctests, testing both the autosub system and the tasks itself. With this test suite you
-can test if everything is set up the right way before starting a course.To run the test
-suite issue the following command from the {\tt "autosub/src/"} directory:
-
-\begin{verbatim}
-nosetests3 --with-doctest --doctest-extension=txt --nologcapture -v
-\end{verbatim}
-
-This will run all doctest as well as unittest test cases.
-
-If you also want the code coverage of the test-suite then run it as follows:
-
-\begin{verbatim}
-nosetests3 --with-doctest --doctest-extension=txt --nologcapture -v --with-coverage
-\end{verbatim}
-
-While the above commands run all of the tests, it is also possible to include or exclude only
-specific tests. In example it is possible to only execute the load test:
-
-\begin{verbatim}
-nosetests3 --nologcapture -s -v  tests/load_test.py:Test_LoadTest
-\end{verbatim}
-
-or it is possible to exclude the load test (which makes sense, as that one takes a considerable
-amount of time):
-
-\begin{verbatim}
-nosetests3 --nologcapture -s -v --ignore-files=load_test.py
-\end{verbatim}
-
-The following is tested by the testsuite:
-\begin{itemize}
-\item Connecting to the databases.
-\item Logging a message.
-\item Sending an E-Mail.
-\item Functionality of the activator thread.
-\item Functionality of the generator thread.
-\item Functionality of the sender thread.
-\item Functionality of the fetcher thread.
-\item Functionality of the common used functions.
-\item Behavior under high load (load test).
-\item Creation off all description files for every task.
-\item Compilation of all generated VHDL files with ghdl.
-\item Tester functionalities for given right submissions with ghdl.
-\end{itemize}
+%\subsection{Testing VELS}\label{sub:testingvels}
+%
+%%QUESTION Martin: Can we write that semester.db and course.db have to be present?,
+%%some of my tests need them to be present..
+%% BUMP!!
+%
+%VELS has a testing suite located in {\tt "autosub/src/tests"}. It consists of unit and
+%doctests, testing both the autosub system and the tasks itself. With this test suite you
+%can test if everything is set up the right way before starting a course.To run the test
+%suite issue the following command from the {\tt "autosub/src/"} directory:
+%
+%\begin{verbatim}
+%nosetests3 --with-doctest --doctest-extension=txt --nologcapture -v
+%\end{verbatim}
+%
+%This will run all doctest as well as unittest test cases.
+%
+%If you also want the code coverage of the test-suite then run it as follows:
+%
+%\begin{verbatim}
+%nosetests3 --with-doctest --doctest-extension=txt --nologcapture -v --with-coverage
+%\end{verbatim}
+%
+%While the above commands run all of the tests, it is also possible to include or exclude only
+%specific tests. In example it is possible to only execute the load test:
+%
+%\begin{verbatim}
+%nosetests3 --nologcapture -s -v  tests/load_test.py:Test_LoadTest
+%\end{verbatim}
+%
+%or it is possible to exclude the load test (which makes sense, as that one takes a considerable
+%amount of time):
+%
+%\begin{verbatim}
+%nosetests3 --nologcapture -s -v --ignore-files=load_test.py
+%\end{verbatim}
+%
+%The following is tested by the testsuite:
+%\begin{itemize}
+%\item Connecting to the databases.
+%\item Logging a message.
+%\item Sending an E-Mail.
+%\item Functionality of the activator thread.
+%\item Functionality of the generator thread.
+%\item Functionality of the sender thread.
+%\item Functionality of the fetcher thread.
+%\item Functionality of the common used functions.
+%\item Behavior under high load (load test).
+%\item Creation off all description files for every task.
+%\item Compilation of all generated VHDL files with ghdl.
+%\item Tester functionalities for given right submissions with ghdl.
+%\end{itemize}
 

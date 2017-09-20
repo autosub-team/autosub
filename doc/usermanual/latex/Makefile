@@ -47,8 +47,12 @@ bib: $(PDFFILES) $(DEPS)
 	$(PDFLATEX) $(TEXFILES)
 
 clean:
-	$(foreach DIR,$(DIRS),$(RM) $(DIR)/*.log $(DIR)/*.blg $(DIR)/*.ilg $(DIR)/*.aux $(DIR)/*.lof $(DIR)/*.lot $(DIR)/*.toc $(DIR)/*.idx \
-	$(DIR)/*.ttt $(DIR)/*.fff $(DIR)/*.out $(DIR)/*~ *.bbl $(DIR)/*.acn $(DIR)/*.glo $(DIR)/*.ist $(DIR)/*.gls $(DIR)/*.glg $(DIR)/*.alg $(DIR)/*.acr)
+	$(foreach DIR,$(DIRS),$(RM) $(DIR)/*.log $(DIR)/*.blg $(DIR)/*.ilg \
+	$(DIR)/*.aux $(DIR)/*.lof $(DIR)/*.lot $(DIR)/*.toc $(DIR)/*.idx \
+	$(DIR)/*.ttt $(DIR)/*.fff $(DIR)/*.out $(DIR)/*~ *.bbl $(DIR)/*.acn \
+	$(DIR)/*.glo $(DIR)/*.ist $(DIR)/*.gls $(DIR)/*.glg $(DIR)/*.alg \
+	$(DIR)/*.acr $(DIR)/*.tdo)
+
 
 strip: clean
 	$(foreach DIR,$(DIRS),$(RM) $(DIR)/*.bbl $(DIR)/*.ind $(DIR)/*.dvi) 
