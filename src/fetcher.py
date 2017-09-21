@@ -602,7 +602,6 @@ class MailFetcher(threading.Thread):
             logmsg = "Login to server was aborted with security= " + self.imap_info["security"] + \
                      " , port= " + str(self.imap_info["port"])
             c.log_a_msg(self.queues["logger"], self.name, logmsg, "ERROR")
-            #m.close()
             return 0
         except imaplib.IMAP4.error:
             logmsg = "Got an error when trying to connect to the imap server with" + \
@@ -636,10 +635,11 @@ class MailFetcher(threading.Thread):
             try:
                 m.close()
                 m.logout()
-                logmsg = "closed connection to imapserver"
+                logmsg = "closed connection to imap server"
                 c.log_a_msg(self.queues["logger"], self.name, logmsg, "INFO")
-            except:
-                logmsg = "Got an error when trying to disconnect from the imap server."
+            except Exception as e:
+                logmsg = ("Got an error when trying to disconnect from the imap "
+                          "server: {0}").format(str(e))
                 c.log_a_msg(self.queues["logger"], self.name, logmsg, "ERROR")
 
     ####
@@ -655,8 +655,8 @@ class MailFetcher(threading.Thread):
         try:
             m.select("Inbox") # here you a can choose a mail box like INBOX instead
             # use m.list() to get all the mailboxes
-        except:
-            logmsg = "Failed to select inbox"
+        except Exception as e:
+            logmsg = "Failed to select inbox with error: " + str(e)
             c.log_a_msg(self.queues["logger"], self.name, logmsg, "ERROR")
             return {}
 
@@ -666,7 +666,13 @@ class MailFetcher(threading.Thread):
         # (check http://www.example-code.com/csharp/imap-search-critera.asp)
 
         #resp, data = m.search(None, "UNSEEN")
-        resp, data = m.uid('search', None, "UNSEEN")
+
+        try:
+            resp, data = m.uid('search', None, "UNSEEN")
+        except Exeption as e:
+            logmsg = "Failed to get messages from inbox with IMAP error: " + str(e)
+            c.log_a_msg(self.queues["logger"], self.name, logmsg, "ERROR")
+            return {}
 
         if resp == 'OK':
             for uid in data[0].split():
@@ -677,7 +683,8 @@ class MailFetcher(threading.Thread):
             return idmap
 
         else:
-            logmsg = "Failed to get messages from inbox"
+            logmsg = ("Failed to get messages from inbox. Got response from IMAP "
+                      "server: {0} ").format(resp)
             c.log_a_msg(self.queues["logger"], self.name, logmsg, "ERROR")
             return {}
 
@@ -694,8 +701,8 @@ class MailFetcher(threading.Thread):
 
         try:
             m.select(mailbox='Inbox', readonly=False)
-        except:
-            logmsg = "Failed to select inbox"
+        except Exception as e:
+            logmsg = "Failed to select inbox with error " + str(e)
             c.log_a_msg(self.queues["logger"], self.name, logmsg, "ERROR")
             return {}
 
@@ -703,8 +710,12 @@ class MailFetcher(threading.Thread):
 
         # you could filter using the IMAP rules here
         # (check http://www.example-code.com/csharp/imap-search-critera.asp)
-        resp, items = m.uid('search', None, "ALL")
-
+        try:
+            resp, items = m.uid('search', None, "ALL")
+        except Exeption as e:
+            logmsg = "Failed to get messages from inbox with IMAP error: " + str(e)
+            c.log_a_msg(self.queues["logger"], self.name, logmsg, "ERROR")
+            return {}
 
         if resp == 'OK':
             for uid in items[0].split():
@@ -713,8 +724,10 @@ class MailFetcher(threading.Thread):
                 idmap[mail['Message-ID']] = uid
 
             return idmap
+
         else:
-            logmsg = "Failed to get messages from inbox"
+            logmsg = ("Failed to get messages from inbox. Got response from IMAP "
+                      "server: {0} ").format(resp)
             c.log_a_msg(self.queues["logger"], self.name, logmsg, "ERROR")
             return {}
 
@@ -977,7 +990,11 @@ class MailFetcher(threading.Thread):
                 del self.mid_to_job_tuple[message_id]
 
             # copy
-            result = m.uid('COPY', uid, archive_dir)
+            try:
+                result = m.uid('COPY', uid, archive_dir)
+            except Exception as e:
+                logmsg = ("Error moving message with ID: {0} copy threw "
+                          "exception: {1}").format(message_id, str(e))
 
             # delete
             if result[0] == 'OK':
