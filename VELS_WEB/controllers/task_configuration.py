@@ -6,13 +6,12 @@ import os
 import datetime
 
 #Validators
-#TaskName, CommonFile, TestExecutable, GeneratorExecutable get validated with extra_validation
+#TaskName, CommonFile, TestExecutable, GeneratorExecutable, Language get validated with extra_validation
 val={'TaskNr'              :[IS_NOT_EMPTY(),IS_DECIMAL_IN_RANGE(minimum=0)],
      'TaskStart'           :[IS_NOT_EMPTY(),IS_DATETIME(format=T('%Y-%m-%d %H:%M'), \
                              error_message='must be YYYY-MM-DD HH:MM!')],
      'TaskDeadline'        :[IS_NOT_EMPTY(),IS_DATETIME(format=T('%Y-%m-%d %H:%M'), \
                              error_message='must be YYYY-MM-DD HH:MM!')],
-     'Language'            :[IS_ALPHANUMERIC(error_message='must be alphanumeric!')],
      'Score'               :[IS_NOT_EMPTY(),IS_DECIMAL_IN_RANGE(minimum=1)],
      'TaskOperator'        :[IS_NOT_EMPTY(),IS_EMAIL_LIST()],
      'TaskActive'          :[IS_NOT_EMPTY(),IS_IN_SET(['0','1'])]}
@@ -26,6 +25,11 @@ def extra_validation(form):
     #validate TaskName existence
     if form.vars.TaskName not in available_tasks:
         form.errors.TaskName = 'task does not exist'
+        return
+
+    #validate Language
+    if form.vars.Language not in __available_languages(form.vars.TaskName):
+        form.errors.Language = "not supported or typo"
         return
 
     #validate CommonFile existence
@@ -100,6 +104,29 @@ def __entries():
     return dict(entries=array, tasks_dir = tasks_dir,
                 num_found_tasks = num_found_tasks)
 
+def __available_languages(task_name):
+    tasks_dir = course(GeneralConfig.ConfigItem=='tasks_dir').select(GeneralConfig.Content)[0].Content
+
+    templates_dir = join(tasks_dir, task_name, "templates", "task_description")
+
+    # no task_description template dir --> return [""]
+    if not isdir(templates_dir):
+        return [""]
+
+    template_prefix = "task_description_template_"
+    template_format = ".tex"
+    prefix_len = len(template_prefix)
+    format_len = len(template_format)
+
+    available_languages = [filename[prefix_len : -format_len] for filename in listdir(templates_dir)
+                                if filename.startswith(template_prefix)]
+
+    if not available_languages:
+        return [""]
+
+    return available_languages
+
+
 def index():
     returnDict={}
     returnDict.update(__entries())
@@ -126,7 +153,7 @@ def newTask():
                       _placeholder="YYYY-MM-DD HH:MM",_id = 'TaskEnd')),\
              TD(SELECT(_name="TaskName", *available_tasks)),\
              TD(INPUT(_name='GeneratorExecutable', _value="generator.sh")),\
-             TD(INPUT(_name='Language', _value="", requires=val['Language'])),\
+             TD(INPUT(_name='Language', _value="")),\
              TD(INPUT(_name='TestExecutable', _value="tester.sh")),\
              TD(SELECT(_name='CommonFile', *available_commons, _value="")),\
              TD(INPUT(_name='Score', requires=val['Score'], _value=1)),\
@@ -185,7 +212,7 @@ def editTask():
              TD(SELECT(_name="TaskName", value = entry['TaskName'],\
                        *available_tasks)),\
              TD(INPUT(_name='GeneratorExecutable', _value=entry['GeneratorExecutable'])),\
-             TD(INPUT(_name='Language', _value=entry['Language'], requires=val['Language'])),\
+             TD(INPUT(_name='Language', _value=entry['Language'])),\
              TD(INPUT(_name='TestExecutable', _value=entry['TestExecutable'])),\
              TD(SELECT(_name='CommonFile', *available_commons, value=entry['CommonFile'])),\
              TD(INPUT(_name='Score',_value=entry['Score'],\
