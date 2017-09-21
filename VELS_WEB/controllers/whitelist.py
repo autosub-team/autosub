@@ -1,8 +1,10 @@
+import sqlite3
+
 val={ 'Email':[IS_NOT_EMPTY(), IS_EMAIL()] ,
       'EmailMass':[IS_NOT_EMPTY(), IS_EMAIL_MASS()]}
 
 def __entries():
-    rows= semester().select(Whitelist.ALL)
+    rows= semester().select(Whitelist.ALL, orderby="Whitelist.Email ASC")
     array= []
     for row in rows:
         entry= {'UniqueId'    :row.UniqueId,
@@ -28,7 +30,11 @@ def newEmail():
         #strip all whitespaces from begin and end
         for var in form.vars:
             var= var.strip().strip('\r')
-        Whitelist.insert(Email= form.vars.Email, Name=form.vars.Name)
+        try:
+            Whitelist.insert(Email= form.vars.Email, Name=form.vars.Name)
+        except sqlite3.IntegrityError:
+            pass #ignore duplicates
+
         redirect(URL('index'))
 
     returnDict.update({'form':form})
@@ -43,7 +49,7 @@ def deleteEmail():
     else:
         msg= 'Email delete failed'
     redirect(URL('index'))
-    
+
 def massEmail():
     returnDict= {}
 
@@ -62,7 +68,11 @@ def massEmail():
                 name= elements[1].strip()
             else:
                 name= ""
-            Whitelist.insert(Email=email, Name=name)
+
+            try:
+                Whitelist.insert(Email=email, Name=name)
+            except:
+                continue #ignore duplicates
 
         redirect(URL('index'))
 

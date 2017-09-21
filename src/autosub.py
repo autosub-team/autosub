@@ -569,7 +569,7 @@ def check_init_ressources():
     ret = check_and_init_db_table(semesterdb, "SuccessfulTasks", fields)
 
     #### Whitelist #####
-    fields = "UniqueId INTEGER PRIMARY KEY AUTOINCREMENT, Email TEXT, Name TEXT"
+    fields = "UniqueId INTEGER PRIMARY KEY AUTOINCREMENT, Email TEXT UNIQUE, Name TEXT"
     ret = check_and_init_db_table(semesterdb, "Whitelist", fields)
 
     ####################
