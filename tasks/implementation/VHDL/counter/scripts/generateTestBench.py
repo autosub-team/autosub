@@ -151,7 +151,7 @@ if ( overflow == 1):
 		wait for CLK_period;
 		for i in 1 to (counter_max-1) loop
 			if (Overflow /= '0') then
-				report "§{OverflowA1 was '" & std_logic'image(Overflow) & "' when it was expected to be '0'. Current counter value is " & image(Output) & ".}§" severity failure;
+				report "§{Overflow was '" & std_logic'image(Overflow) & "' when it was expected to be '0'. Current counter value is " & image(Output) & ".}§" severity failure;
 			end if;
 			wait for CLK_period;
 		end loop;
