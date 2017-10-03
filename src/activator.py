@@ -19,7 +19,7 @@ class TaskActivator(threading.Thread):
     waiting for this task
     """
 
-    def __init__(self, name, queues, dbs, auto_advance):
+    def __init__(self, name, queues, dbs, auto_advance, allow_requests):
         """
         Constructor for the activator thread
         """
@@ -29,6 +29,7 @@ class TaskActivator(threading.Thread):
         self.queues = queues
         self.dbs = dbs
         self.auto_advance = auto_advance
+        self.allow_requests = allow_requests
 
     def activator_loop(self):
         curc, conc = c.connect_to_db(self.dbs["course"], self.queues["logger"],\
@@ -59,6 +60,10 @@ class TaskActivator(threading.Thread):
 
                 curs, cons = c.connect_to_db(self.dbs["semester"], \
                                              self.queues["logger"], self.name)
+
+                # with allow_requests active no other measures have to be taken
+                if self.allow_requests != "no":
+                    continue
 
                 # if auto_advance is activated, all users should be
                 # advanced to that task

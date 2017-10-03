@@ -156,7 +156,7 @@ class Worker(threading.Thread):
 
 
             # no initiate creation of next task if allow_requests set
-            if self.allow_requests:
+            if self.allow_requests != "no":
                 return
 
             # initiate generation of next task for user (if possible)

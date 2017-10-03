@@ -18,7 +18,7 @@ def __entries():
         else:
             entries.update({row.ConfigItem:row.Content})
 
-        if row.ConfigItem in ['allow_skipping', 'auto_advance', 'allow_requests']:
+        if row.ConfigItem in ['allow_skipping', 'auto_advance']:
             if row.Content == "1":
                 entries.update({row.ConfigItem: "True"})
             else:

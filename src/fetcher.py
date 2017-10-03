@@ -136,9 +136,6 @@ class MailFetcher(threading.Thread):
         curs.execute(sql_cmd, data)
         cons.commit()
 
-        # the new user has now been added to the database. Next we need
-        # to send him an email with the first task if allow_requests != True
-
         # read back the new users UserId and create a directory for putting his
         # submissions in.
         data = {'Email': user_email}
@@ -158,7 +155,7 @@ class MailFetcher(threading.Thread):
         cons.close()
 
         # in allow_requests mode the user gets no first task send
-        if self.allow_requests:
+        if self.allow_requests != "no":
             return
 
         # Give the user the task which is starttime <= now < deadline AND
@@ -827,7 +824,8 @@ class MailFetcher(threading.Thread):
         ###############
         #   REQUEST   #
         ###############
-        elif self.allow_requests and re.search('[Rr][Ee][Qq][Uu][Ee][Ss][Tt]', mail_subject):
+        elif (self.allow_requests != "no") \
+             and re.search('[Rr][Ee][Qq][Uu][Ee][Ss][Tt]', mail_subject):
             search_obj = re.search('[0-9]+', mail_subject)
             if search_obj is None:
             # Result + no number

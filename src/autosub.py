@@ -357,14 +357,20 @@ def parse_config(config):
 
     try:
         allow_requests = config.get('course', 'allow_requests')
-        if allow_requests == "yes" or allow_requests == "1":
-            allow_requests = True
+        if allow_requests == "yes" or allow_requests == "1" or \
+           allow_requests == "once":
+            allow_requests = "once"
+            auto_advance = False
+            allow_skipping = False
+
+        elif allow_requests == "multiple":
+            allow_requests = "multiple"
             auto_advance = False
             allow_skipping = False
         else:
-            allow_requests = False
+            allow_requests = "no"
     except:
-        allow_requests = False
+        allow_requests = "no"
 
 ####
 # generate_queues
@@ -474,7 +480,7 @@ def start_threads():
 
     generator_t = generator.TaskGenerator("generator", queues, dbs, \
                                           submission_mail, \
-                                          tasks_dir, course_mode)
+                                          tasks_dir, course_mode, allow_requests)
 
     # make the fetcher thread a daemon, this way the main will clean it up before
     # terminating!
@@ -489,7 +495,8 @@ def start_threads():
               "logger": logger_queue, \
               "generator": generator_queue}
 
-    activator_t = activator.TaskActivator("activator", queues, dbs, auto_advance)
+    activator_t = activator.TaskActivator("activator", queues, dbs, \
+                                          auto_advance, allow_requests)
 
     # make the fetcher thread a daemon, this way the main will clean it up before
     # terminating!
@@ -593,7 +600,7 @@ def check_init_ressources():
     fields = "EventName TEXT PRIMARY KEY, EventText TEXT"
     check_and_init_db_table(coursedb, "SpecialMessages", fields)
 
-    # we use the .txt files to set the SpecialMessages in the database with jinja
+    # we use the .txt files to set the SpecialMessages in the database with jinja2
     env = Environment()
     env.loader = FileSystemLoader(specialmsgs_dir)
 
@@ -632,6 +639,9 @@ def check_init_ressources():
 
     filename = 'tasknotactive.txt'
     load_specialmessage_to_db(env, 'TASKNOTACTIVE', filename)
+
+    filename = 'nomultiplerequest.txt'
+    load_specialmessage_to_db(env, 'NOMULTIPLEREQUEST', filename)
 
     ### GeneralConfig ##
     fields = "ConfigItem Text PRIMARY KEY, Content TEXT"

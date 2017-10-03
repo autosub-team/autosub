@@ -184,8 +184,6 @@ class MailSender(threading.Thread):
             # insert into SucessfulTasks, if it is already existent ignore
             data = {'user_id': user_id, 'task_nr': task_nr}
 
-            # TODO: Error here:
-            # sqlite3.OperationalError: near ":task_nr": syntax error
             sql_cmd = ("INSERT OR IGNORE INTO SuccessfulTasks (UserId, TaskNr) "
                        "VALUES (:user_id, :task_nr)")
             curs.execute(sql_cmd, data)
@@ -488,15 +486,15 @@ class MailSender(threading.Thread):
             c.log_a_msg(self.queues["logger"], self.name, logmsg, "DEBUG")
 
             # 2 Cases:
-            # allow_requests -> send Task anyway
-            # now allow_requests: check if he is at a higher task_nr,
-            #                     if yes: do not send
+            # allow_requests == "once" or "multiple" -> send Task anyway
+            # allow_requests == "no" : check if he is at a higher task_nr,
+            #                          if yes: do not send
 
             cur_task = c.user_get_current_task(self.dbs["semester"], user_id, \
                                                self.queues["logger"], self.name)
             at_higher_task = (cur_task > int(task_nr))
 
-            should_not_send = not self.allow_requests and at_higher_task
+            should_not_send = (self.allow_requests == "no") and at_higher_task
 
             if should_not_send:
                 logmsg = ("Task sending initiated, but user already reveived "
@@ -666,8 +664,8 @@ class MailSender(threading.Thread):
             admin_mails = self.get_admin_emails()
             for admin_mail in admin_mails:
                 msg['To'] = admin_mail
-                msg['Subject'] = "Task Error Alert Task " \
-                                 + task_nr + " User " + user_id
+                msg['Subject'] = "Task Error Alert Task{0} User{1}".format( \
+                                 str(task_nr), str(user_id))
                 message_text = ("There was an error with the task files analyzation for Task {0} " \
                                 "and User {1}. Check the tasks.stderr and tasks.stdout to "
                                 "find what caused it.").format(task_nr, user_id)
@@ -678,7 +676,7 @@ class MailSender(threading.Thread):
         #################
         #    STATUS     #
         #################
-            msg['Subject'] = "Your Current Status"
+            msg['Subject'] = "Your current status"
             message_text = self.generate_status_update(user_id, recipient, \
                                                        task_nr)
             numtasks = c.get_num_tasks(self.dbs["course"], self.queues["logger"], \
@@ -737,7 +735,7 @@ class MailSender(threading.Thread):
         #########################
         # TASK NOT SUBMITTABLE  #
         #########################
-            msg['Subject'] = "Submission for this task not possible"
+            msg['Subject'] = "Submission for Task{0} not possible".format(str(task_nr))
             message_text = self.read_specialmessage('TASKNOTSUBMITTABLE')
             msg = self.assemble_email(msg, message_text, '')
             self.send_out_email(recipient, msg.as_string(), message_type)
@@ -745,10 +743,21 @@ class MailSender(threading.Thread):
 
         elif message_type == "TaskNotActive":
         #########################
-        # TASK NOT SUBMITTABLE  #
+        #    TASK NOT ACTIVE    #
         #########################
-            msg['Subject'] = "Task not active yet"
+            msg['Subject'] = "Task{0} not active yet".format(str(task_nr))
             message_text = self.read_specialmessage('TASKNOTACTIVE')
+            msg = self.assemble_email(msg, message_text, '')
+            self.send_out_email(recipient, msg.as_string(), message_type)
+            self.archive_message(message_id)
+
+        elif message_type == "NoMultipleRequest":
+        #########################
+        #  NO MULTIPLE REQUEST  #
+        #########################
+            msg['Subject'] = "Already received Task{0}".format(str(task_nr))
+
+            message_text = self.read_specialmessage('NOMULTIPLEREQUEST')
             msg = self.assemble_email(msg, message_text, '')
             self.send_out_email(recipient, msg.as_string(), message_type)
             self.archive_message(message_id)
@@ -836,7 +845,7 @@ class MailSender(threading.Thread):
         #################
         #  NOT ALLOWED  #
         #################
-            msg['Subject'] = "Registration Not Successful."
+            msg['Subject'] = "Registration not successful."
             message_text = self.read_specialmessage('NOTALLOWED')
             msg = self.assemble_email(msg, message_text, '')
             self.send_out_email(recipient, msg.as_string(), message_type)

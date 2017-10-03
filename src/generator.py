@@ -22,7 +22,7 @@ class TaskGenerator(threading.Thread):
     # init
     ####
     def __init__(self, name, queues, dbs, submission_mail, tasks_dir, \
-                 course_mode):
+                 course_mode, allow_requests):
         """
         Constructor for the thread.
         """
@@ -35,6 +35,7 @@ class TaskGenerator(threading.Thread):
         self.submission_mail = submission_mail
         self.tasks_dir = tasks_dir
         self.course_mode = course_mode
+        self.allow_requests = allow_requests
 
     ####
     # get_scriptinfo
@@ -67,39 +68,30 @@ class TaskGenerator(threading.Thread):
             scriptpath = self.tasks_dir + "/" + task_name + "/" + generator_name
 
         conc.close()
-        return (scriptpath , language)
+        return (scriptpath, language)
 
     ####
-    # check_delete_usertask
+    # delete_usertask
     ####
-    def check_delete_usertask(self, user_id, task_nr):
+    def delete_usertask(self, user_id, task_nr):
         """
-        Check if the user has already gotten this tasks by checking in the
-        TasksStats table for a matching entry. If yes delete entry.
+        Delete existing usertask and its structures
         """
 
-        already_received = c.user_received_task(self.dbs["semester"], user_id, \
-                                                task_nr, self.queues["logger"], \
-                                                self.name)
-        if already_received:
-            logmsg = ("User with Id {0} TaskNr {1} already got this task, "
-                      "deleting it to make place for new").format(user_id, task_nr)
-            c.log_a_msg(self.queues["logger"], self.name, logmsg, "DEBUG")
+        # delete db entry
+        curs, cons = c.connect_to_db(self.dbs["semester"], self.queues["logger"], self.name)
+        data = {"user_id": user_id,
+                "task_nr": task_nr}
+        sql_cmd = ("DELETE FROM UserTasks "
+                   "WHERE TaskNr == :task_nr AND UserId == :user_id")
 
-            # delete db entry
-            curs, cons = c.connect_to_db(self.dbs["semester"], self.queues["logger"], self.name)
-            data = {"user_id": user_id,
-                    "task_nr": task_nr}
-            sql_cmd = ("DELETE FROM UserTasks "
-                       "WHERE TaskNr == :task_nr AND UserId == :user_id")
+        # remove directory
+        usertask_dir = 'users/' + str(user_id) + "/Task"+str(task_nr)
+        shutil.rmtree(usertask_dir)
 
-            # remove directory
-            usertask_dir = 'users/' + str(user_id) + "/Task"+str(task_nr)
-            shutil.rmtree(usertask_dir)
-
-            curs.execute(sql_cmd, data)
-            cons.commit()
-            cons.close()
+        curs.execute(sql_cmd, data)
+        cons.commit()
+        cons.close()
 
     ####
     # generator_loop
@@ -127,8 +119,25 @@ class TaskGenerator(threading.Thread):
             c.log_a_msg(self.queues["logger"], self.name, logmsg, "ERROR")
             return
 
-        # check if user already got this task, if yes delete old db entry
-        self.check_delete_usertask(user_id, task_nr)
+        # check if user already got this task
+        already_received = c.user_received_task(self.dbs["semester"], user_id, \
+                                                task_nr, self.queues["logger"], \
+                                                self.name)
+
+        if already_received:
+            if self.allow_requests == "multiple":
+                logmsg = ("User with Id {0} TaskNr {1} already got this task, "
+                          "deleting it to make place for new").format(user_id, task_nr)
+                c.log_a_msg(self.queues["logger"], self.name, logmsg, "INFO")
+                self.delete_usertask(user_id, task_nr)
+            else:
+                logmsg = ("User with Id {0} TaskNr {1} already got this task, "
+                          "multiple request not allowed for this course").format(user_id, task_nr)
+                c.log_a_msg(self.queues["logger"], self.name, logmsg, "INFO")
+
+                c.send_email(self.queues["sender"], str(user_email), str(user_id), \
+                             "NoMultipleRequest", str(task_nr), "", str(message_id))
+                return
 
         # generate the directory for the task in the space of the user
         usertask_dir = 'users/' + str(user_id) + "/Task"+str(task_nr)
