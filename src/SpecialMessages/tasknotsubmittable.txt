@@ -1,6 +1,6 @@
 Hi,
 
-you cannot submit a result for the tasknumber you mentioned in your email.
+you cannot submit a result for the task you mentioned in the subject of your last mail.
 
 You have not received a task description for that task yet.
 
