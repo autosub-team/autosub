@@ -137,9 +137,10 @@ def viewUser():
                    'LastDone':row.LastDone,
                    'CurrentTask':row.CurrentTask}
 
+    #TODO: Maybe one query for the whole score calculation?
     #user score
     rows_done_tasks= semester(SuccessfulTasks.UserId == UserId) \
-                     .select(UserTasks.TaskNr, orderby="SuccessfulTasks.TaskNr ASC")
+                     .select(SuccessfulTasks.TaskNr, orderby="SuccessfulTasks.TaskNr ASC")
 
     done_tasks = [str(row.TaskNr) for row in rows_done_tasks]
 
@@ -155,7 +156,7 @@ def viewUser():
 
     userInfoDict['UserScore']= userScore
 
-
+    #TODO: Merge with above queries
     # user successful tasks
     rows_nrs = semester(SuccessfulTasks.UserId == UserId) \
                .select(SuccessfulTasks.TaskNr, orderby="SuccessfulTasks.TaskNr ASC")
