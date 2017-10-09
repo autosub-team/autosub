@@ -24,7 +24,7 @@ language=$6
 ########## PATHS #########
 ##########################
 # src path of autosub system
-autosub_path=$(pwd) 
+autosub_path=$(pwd)
 # root path of the task itself
 task_path=$(readlink -f $0|xargs dirname)
 # path for all the files that describe the created path
@@ -74,7 +74,7 @@ mv ${task_path}/tmp/desc_${user_id}_Task${task_nr}.pdf ${desc_path}
 #copy static files to user's description folder
 cp ${task_path}/static/gates.vhdl ${desc_path}
 cp ${task_path}/static/gates_beh.vhdl ${desc_path}
-cp ${task_path}/static/IEEE_1164_Gates_pkg.vhdl ${desc_path} 
+cp ${task_path}/static/IEEE_1164_Gates_pkg.vhdl ${desc_path}
 cp ${task_path}/static/IEEE_1164_Gates.vhdl ${desc_path}
 cp ${task_path}/static/IEEE_1164_Gates_beh.vhdl ${desc_path}
 
@@ -102,8 +102,8 @@ then
 fi
 if [ -z "${mode}" ] || [ "${mode}" = "normal" ]; #default to normal
 then
-    task_attachments="$task_attachments_base" 
-fi 
+    task_attachments="$task_attachments_base"
+fi
 
 ##########################
 ## ADD TASK TO DATABASE ##
@@ -112,4 +112,4 @@ fi
 cd ${autosub_path}/tools
 python3 add_to_usertasks.py -u ${user_id} -t ${task_nr} -p "${task_parameters}" -a "${task_attachments}" -d ${semester_db}
 
-cd {autosub_path}
+cd ${autosub_path}

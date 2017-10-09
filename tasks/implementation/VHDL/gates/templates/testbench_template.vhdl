@@ -12,10 +12,10 @@ architecture behavior of gates_tb is
     end component;
 
     signal A_UUT,B_UUT,C_UUT,D_UUT,O_UUT : std_logic;
-    
+
     type pattern_type is record
-            --The inputs 
-            D,C,B,A : std_logic; 
+            --The inputs
+            D,C,B,A : std_logic;
     end record;
 
     function calcFromFormula(inputs:pattern_type) return std_logic is
@@ -35,7 +35,7 @@ architecture behavior of gates_tb is
 
 begin
 
-    UUT: gates 
+    UUT: gates
         port map
         (
             A=>A_UUT,
@@ -45,12 +45,12 @@ begin
             O=>O_UUT
         );
 
-    process           
+    process
         --The patterns to apply.
         type pattern_array is array (natural range <>) of pattern_type;
-       
+
         constant patterns : pattern_array:=(
-            {{TESTPATTERN}});   
+            {{TESTPATTERN}});
         variable O_calculated : std_logic;
 
     begin
@@ -67,11 +67,11 @@ begin
             O_calculated := calcFromFormula(patterns(i));
             -- Compare UUT output with proper output
             if O_UUT /= O_calculated then
-                report  "§{Error for" & 
+                report  "§{Error for" &
                         " D=" & std_logic'image(patterns(i).D) &
-                        " C=" & std_logic'image(patterns(i).C) & 
+                        " C=" & std_logic'image(patterns(i).C) &
                         " B=" & std_logic'image(patterns(i).B) &
-                        " A=" & std_logic'image(patterns(i).A) & 
+                        " A=" & std_logic'image(patterns(i).A) &
                         "; expected O=" & std_logic'image(O_calculated) &
                         ", received O=" & std_logic'image(O_UUT) & "}§"
                 severity failure;
@@ -80,6 +80,6 @@ begin
         end loop;
         report "Success";
         wait;
-    end process; 
+    end process;
 
 end behavior;

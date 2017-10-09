@@ -2,7 +2,7 @@
 
 ########################################################################
 # generateTask.py for VHDL task gates
-# Generates random tasks, generates TaskParameters, fill 
+# Generates random tasks, generates TaskParameters, fill
 # entity and description templates
 #
 # Copyright (C) 2015 Martin  Mosbeck   <martin.mosbeck@gmx.at>
@@ -15,7 +15,7 @@ import sys
 
 import LogicFormulaCreator
 
-from jinja2 import FileSystemLoader, Environment 
+from jinja2 import FileSystemLoader, Environment
 
 ###########################
 #### HELPER FUNCTIONS #####
@@ -26,7 +26,7 @@ def toBase3(number,length):
     base3Nr=""
 
     while dividend != 0 :
-        remainder = dividend % 3 
+        remainder = dividend % 3
         dividend = dividend // 3
         base3Nr+=str(remainder)
     base3Nr=base3Nr.zfill(length)
@@ -41,19 +41,17 @@ userId=sys.argv[1]
 taskNr=sys.argv[2]
 submissionEmail=sys.argv[3]
 language = sys.argv[4]
-
-
 #################################################################
 
 paramsDesc={}
-params_inputs= {}  
+params_inputs= {}
 params_gates={}
 params_outputs={}
 
 ###########################
 ######## GATES ############
 ###########################
-  
+
 randGates = random.randrange(0,3**5)
 gates = toBase3(randGates,5)
 
@@ -62,7 +60,7 @@ gate_types={0:"\cand",1:"\cor",2:"\cxor"}
 
 for i in range(0,5):
     params_gates["G"+str(i)]=gate_types[gates[i]]
-	
+
 ###########################
 ### INPUTS ENABLE LVL 1 ###
 ###########################
@@ -142,10 +140,10 @@ with open (filename, "w") as solution:
 
 
 ###########################################
-# SET PARAMETERS FOR DESCRIPTION TEMPLATE # 
+# SET PARAMETERS FOR DESCRIPTION TEMPLATE #
 ###########################################
 paramsDesc.update(params_gates)
-paramsDesc.update(params_inputs)  
+paramsDesc.update(params_inputs)
 paramsDesc.update(params_outputs)
 paramsDesc.update({"TASKNR":str(taskNr),"SUBMISSIONEMAIL":submissionEmail})
 

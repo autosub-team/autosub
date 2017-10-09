@@ -14,7 +14,7 @@ from random import shuffle
 
 import LogicFormulaCreator
 
-from jinja2 import FileSystemLoader, Environment 
+from jinja2 import FileSystemLoader, Environment
 
 ###########################
 #### HELPER FUNCTIONS #####
@@ -25,7 +25,7 @@ def toBase3(number,length):
     base3Nr=""
 
     while dividend != 0 :
-        remainder = dividend % 3 
+        remainder = dividend % 3
         dividend = dividend // 3
         base3Nr+=str(remainder)
     base3Nr=base3Nr.zfill(length)
@@ -36,7 +36,7 @@ def toBase2(number,length):
 
 #################################################################
 
-taskParameter=int(sys.argv[1]) 
+taskParameter=int(sys.argv[1])
 params={}
 
 #get logic formula for taskParameter
@@ -45,7 +45,7 @@ formula = LogicFormulaCreator.createFromParameters(taskParameter)
 
 
 v=[ "('0', '0', '0', '0')",
-    "('0', '0', '0', '1')",      
+    "('0', '0', '0', '1')",
     "('0', '0', '1', '0')",
     "('0', '0', '1', '1')",
     "('0', '1', '0', '0')",
@@ -60,17 +60,17 @@ v=[ "('0', '0', '0', '0')",
     "('1', '1', '0', '1')",
     "('1', '1', '1', '0')",
     "('1', '1', '1', '1')" ]
-         
+
 
 shuffle(v) # make test vector order random
 
 for i in range(len(v)-1) :
     v[i]+=","
 
-testPattern=("\n"+12*" ").join(v) # just to make indentation 
+testPattern=("\n"+12*" ").join(v) # just to make indentation
 
 #########################################
-# SET PARAMETERS FOR TESTBENCH TEMPLATE # 
+# SET PARAMETERS FOR TESTBENCH TEMPLATE #
 #########################################
 params.update({"TESTPATTERN":testPattern, "FORMULA":formula})
 
