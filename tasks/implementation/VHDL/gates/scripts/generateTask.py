@@ -15,11 +15,7 @@ import sys
 
 import LogicFormulaCreator
 
-###########################
-##### TEMPLATE CLASS ######
-###########################
-class MyTemplate(string.Template):
-    delimiter = "%%"
+from jinja2 import FileSystemLoader, Environment 
 
 ###########################
 #### HELPER FUNCTIONS #####
@@ -44,6 +40,10 @@ def toBase2(number,length):
 userId=sys.argv[1]
 taskNr=sys.argv[2]
 submissionEmail=sys.argv[3]
+language = sys.argv[4]
+
+
+#################################################################
 
 paramsDesc={}
 params_inputs= {}  
@@ -58,7 +58,7 @@ randGates = random.randrange(0,3**5)
 gates = toBase3(randGates,5)
 
 
-gate_types={0:"cand",1:"cor",2:"cxor"}
+gate_types={0:"\cand",1:"\cor",2:"\cxor"}
 
 for i in range(0,5):
     params_gates["G"+str(i)]=gate_types[gates[i]]
@@ -82,7 +82,7 @@ while True:
         break
 
 #0 not connected, 1 connected
-input_types={0:["false","%"],1:["true"," "]}
+input_types={0:["{false}","%"],1:["{true}"," "]}
 
 for i in range(0,16):
     params_inputs["IE"+str(i)]=input_types[inputsEnableLvl1[i]][0]
@@ -94,7 +94,7 @@ for i in range(0,16):
 randNegateInputsLvl1 = random.randrange(0,2**16)
 inputsNegateLvl1=toBase2(randNegateInputsLvl1,16)
 
-input_negation={0:"false",1:"true"}
+input_negation={0:"{false}",1:"{true}"}
 
 for i in range(0,16):
     params_inputs["IN"+str(i)]=input_negation[inputsNegateLvl1[i]]
@@ -105,7 +105,7 @@ for i in range(0,16):
 randNegateInputsLvl2=random.randrange(0,2*4)
 inputsNegateLvl2=toBase2(randNegateInputsLvl2,4)
 
-input_negation={0:"false",1:"true"}
+input_negation={0:"{false}",1:"{true}"}
 
 for i in range(16,20):
     params_inputs["IN"+str(i)]=input_negation[inputsNegateLvl2[i-16]]
@@ -117,7 +117,7 @@ for i in range(16,20):
 randNegateOutputs=random.randrange(0,2**5)
 outputsNegate=toBase2(randNegateOutputs,5)
 
-output_negation={0:"false",1:"true"}
+output_negation={0:"{false}",1:"{true}"}
 
 for i in range(0,5):
     params_outputs["ON"+str(i)]=output_negation[outputsNegate[i]]
@@ -153,14 +153,16 @@ paramsDesc.update({"TASKNR":str(taskNr),"SUBMISSIONEMAIL":submissionEmail})
 #############################
 # FILL DESCRIPTION TEMPLATE #
 #############################
-filename ="templates/task_description_template.tex"
-with open (filename, "r") as template_file:
-    data=template_file.read()
+
+env = Environment()
+env.loader = FileSystemLoader('templates/')
+filename ="task_description/task_description_template_{0}.tex".format(language)
+template = env.get_template(filename)
+template = template.render(paramsDesc)
 
 filename ="tmp/desc_{0}_Task{1}.tex".format(userId,taskNr)
 with open (filename, "w") as output_file:
-    s = MyTemplate(data)
-    output_file.write(s.substitute(paramsDesc))
+    output_file.write(template)
 
 ###########################
 ### PRINT TASKPARAMETERS ##

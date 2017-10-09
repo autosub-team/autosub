@@ -29,7 +29,7 @@ architecture behavior of gates_tb is
        B := inputs.B;
        C := inputs.C;
        D := inputs.D;
-       O := %%FORMULA;
+       O := {{FORMULA}};
        return O;
     end calcFromFormula;
 
@@ -50,7 +50,7 @@ begin
         type pattern_array is array (natural range <>) of pattern_type;
        
         constant patterns : pattern_array:=(
-            %%TESTPATTERN);   
+            {{TESTPATTERN}});   
         variable O_calculated : std_logic;
 
     begin

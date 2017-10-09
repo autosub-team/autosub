@@ -39,12 +39,12 @@ Your task is to program the behavior of an entity called "gates". This entity is
 \draw[->,thick] (entity.east) -- ($ (entity.east) + (10mm,0)$);;
 \draw node at ($ (entity.east) + (12mm,0)$){O};
 
-\draw node at ($ (entity) - (0,14mm)$){gates};
+\draw node at ($ (entity) - (0,16mm)$){gates};
 
 \end{tikzpicture}
 \end{center}
 
-Do not change the file "gates.vhdl".
+Do not change the file "gates.vhdl"!
 \\
 
 The "gates" entity shall behave according to the following gate network:
@@ -67,13 +67,13 @@ The "gates" entity shall behave according to the following gate network:
 
 %\<type> {<b>}{<b>}{<b>}{<b>} {<b>}{<b>}{<b>}{<b>} {<b>}(7,5.5){G4}
 
-\%%G0 {%%IE0}{%%IE1}{%%IE2}{%%IE3} {%%IN0}{%%IN1}{%%IN2}{%%IN3} {%%ON0}(2,1){G0}
-\%%G1 {%%IE4}{%%IE5}{%%IE6}{%%IE7} {%%IN4}{%%IN5}{%%IN6}{%%IN7} {%%ON1}(2,4){G1}
-\%%G2 {%%IE8}{%%IE9}{%%IE10}{%%IE11} {%%IN8}{%%IN9}{%%IN10}{%%IN11} {%%ON2}(2,7){G2}
-\%%G3 {%%IE12}{%%IE13}{%%IE14}{%%IE15} {%%IN12}{%%IN13}{%%IN14}{%%IN15} {%%ON3}(2,10){G3}
+{{G0}} {{ IE0  }}{{ IE1  }}{{ IE2  }}{{ IE3  }} {{ IN0  }}{{ IN1  }}{{ IN2  }}{{ IN3  }} {{ ON0 }}(2,1){G0}
+{{G1}} {{ IE4  }}{{ IE5  }}{{ IE6  }}{{ IE7  }} {{ IN4  }}{{ IN5  }}{{ IN6  }}{{ IN7  }} {{ ON1 }}(2,4){G1}
+{{G2}} {{ IE8  }}{{ IE9  }}{{ IE10 }}{{ IE11 }} {{ IN8  }}{{ IN9  }}{{ IN10 }}{{ IN11 }} {{ ON2 }}(2,7){G2}
+{{G3}} {{ IE12 }}{{ IE13 }}{{ IE14 }}{{ IE15 }} {{ IN12 }}{{ IN13 }}{{ IN14 }}{{ IN15 }} {{ ON3 }}(2,10){G3}
 
 %output gate
-\%%G4{true}{true}{true}{true} {%%IN19}{%%IN18}{%%IN17}{%%IN16} {%%ON4}(7,5.5){G4}
+{{G4}} {true}{true}{true}{true} {{ IN19 }}{{ IN18 }}{{ IN17 }}{{ IN16 }} {{ ON4 }}(7,5.5){G4}
 
 
 
@@ -97,29 +97,29 @@ The "gates" entity shall behave according to the following gate network:
 %\psline{*-}(0.8,go+1.25)(2.1,go+1.25) %b
 %\psline{*-}(0.4,go+1.75)(2.1,go+1.75) %a
 
-%G0 go=1
-%%GI0   \psline{*-}(0.4,2.75)(2.1,2.75)%a
-%%GI1   \psline{*-}(0.8,2.25)(2.1,2.25)%b
-%%GI2   \psline{*-}(1.2,1.75)(2,1.75)%c
-%%GI3   \psline{*-}(1.6,1.25)(2,1.25)%d
+%G0 go=1 
+{{GI0}}   \psline{*-}(0.4,2.75)(2.1,2.75)%a
+{{GI1}}   \psline{*-}(0.8,2.25)(2.1,2.25)%b
+{{GI2}}   \psline{*-}(1.2,1.75)(2,1.75)%c
+{{GI3}}   \psline{*-}(1.6,1.25)(2,1.25)%d
 
 %G1 go=4
-%%GI4   \psline{*-}(0.4,5.75)(2.1,5.75) %a
-%%GI5   \psline{*-}(0.8,5.25)(2.1,5.25) %b
-%%GI6   \psline{*-}(1.2,4.75)(2,4.75)   %c
-%%GI7   \psline{*-}(1.6,4.25)(2,4.25)   %d
+{{GI4}}  \psline{*-}(0.4,5.75)(2.1,5.75) %a
+{{GI5}}   \psline{*-}(0.8,5.25)(2.1,5.25) %b
+{{GI6}}   \psline{*-}(1.2,4.75)(2,4.75)   %c
+{{GI7}}   \psline{*-}(1.6,4.25)(2,4.25)   %d
 
 %G2 g0=7
-%%GI8   \psline{*-}(0.4,8.75)(2.1,8.75) %a
-%%GI9   \psline{*-}(0.8,8.25)(2.1,8.25) %b
-%%GI10  \psline{*-}(1.2,7.75)(2,7.75)   %c
-%%GI11  \psline{*-}(1.6,7.25)(2,7.25)   %d
+{{GI8}}   \psline{*-}(0.4,8.75)(2.1,8.75) %a
+{{GI9}}   \psline{*-}(0.8,8.25)(2.1,8.25) %b
+{{GI10}}  \psline{*-}(1.2,7.75)(2,7.75)   %c
+{{GI11}}  \psline{*-}(1.6,7.25)(2,7.25)   %d
 
 %G3 go=10\\
-%%GI12  \psline{*-}(0.4,11.75)(2.1,11.75) %a
-%%GI13  \psline{*-}(0.8,11.25)(2.1,11.25) %b
-%%GI14  \psline{*-}(1.2,10.75)(2,10.75)   %c
-%%GI15  \psline{*-}(1.6,10.25)(2,10.25)   %d
+{{GI12}} \psline{*-}(0.4,11.75)(2.1,11.75) %a
+{{GI13}} \psline{*-}(0.8,11.25)(2.1,11.25) %b
+{{GI14}} \psline{*-}(1.2,10.75)(2,10.75)   %c
+{{GI15}} \psline{*-}(1.6,10.25)(2,10.25)   %d
 
 
 

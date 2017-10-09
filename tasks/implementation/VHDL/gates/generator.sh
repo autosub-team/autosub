@@ -13,102 +13,103 @@
 ##########################
 ####### PARAMETERS #######
 ##########################
-# $1 ... UserId
-# $2 ... TaskNr
-# $3 ... Submission Email
-# $4 ... Mode
-# $5 ... Semester DB
+user_id=$1
+task_nr=$2
+submission_email=$3
+mode=$4
+semester_db=$5
+language=$6
 
 ##########################
 ########## PATHS #########
 ##########################
 # src path of autosub system
-autosubPath=$(pwd) 
+autosub_path=$(pwd) 
 # root path of the task itself
-taskPath=$(readlink -f $0|xargs dirname)
+task_path=$(readlink -f $0|xargs dirname)
 # path for all the files that describe the created path
-descPath="$autosubPath/users/$1/Task$2/desc"
+desc_path="${autosub_path}/users/${user_id}/Task${task_nr}/desc"
 
 ##########################
 ##### PATH CREATIONS #####
 ##########################
-if [ ! -d "$taskPath/tmp" ]
+if [ ! -d "${task_path}/tmp" ]
 then
-   mkdir $taskPath/tmp
+   mkdir ${task_path}/tmp
 fi
 
-if [ ! -d "$descPath" ]
+if [ ! -d "${desc_path}" ]
 then
-   mkdir $descPath
+   mkdir ${desc_path}
 fi
 
 ##########################
 ####### GENERATE #########
 ##########################
-cd $taskPath
+cd ${task_path}
 
-task_parameters=$(python3 scripts/generateTask.py "$1" "$2" "$3")
+task_parameters=$(python3 scripts/generateTask.py "${user_id}" "${task_nr}" "${submission_email}" "${language}")
 
 #generate the description pdf and move it to user's description folder
-cd $taskPath/tmp
+cd ${task_path}/tmp
 
-latex --halt-on-error desc_$1_Task$2.tex >/dev/null 2>/dev/null
+latex --halt-on-error desc_${user_id}_Task${task_nr}.tex >/dev/null 2>/dev/null
 RET=$?
 zero=0
 if [ "$RET" -ne "$zero" ];
 then
-    echo "ERROR with pdf generation for Task$2 !!! Are all needed LaTeX packages installed??">&2
+    echo "ERROR with pdf generation for Task${task_nr} !!! Are all needed LaTeX packages installed??">&2
 fi
 
-dvips desc_$1_Task$2.dvi >/dev/null 2>/dev/null
-ps2pdf desc_$1_Task$2.ps >/dev/null 2>/dev/null
+dvips desc_${user_id}_Task${task_nr}.dvi >/dev/null 2>/dev/null
+ps2pdf desc_${user_id}_Task${task_nr}.ps >/dev/null 2>/dev/null
 
-rm desc_$1_Task$2.dvi
-rm desc_$1_Task$2.aux
-rm desc_$1_Task$2.ps
-rm desc_$1_Task$2.log
-rm desc_$1_Task$2.tex
-mv $taskPath/tmp/desc_$1_Task$2.pdf $descPath
+rm desc_${user_id}_Task${task_nr}.dvi
+rm desc_${user_id}_Task${task_nr}.aux
+rm desc_${user_id}_Task${task_nr}.ps
+rm desc_${user_id}_Task${task_nr}.log
+rm desc_${user_id}_Task${task_nr}.tex
+mv ${task_path}/tmp/desc_${user_id}_Task${task_nr}.pdf ${desc_path}
 
 #copy static files to user's description folder
-cp $taskPath/static/gates.vhdl $descPath
-cp $taskPath/static/gates_beh.vhdl $descPath
-cp $taskPath/static/IEEE_1164_Gates_pkg.vhdl $descPath 
-cp $taskPath/static/IEEE_1164_Gates.vhdl $descPath
-cp $taskPath/static/IEEE_1164_Gates_beh.vhdl $descPath
+cp ${task_path}/static/gates.vhdl ${desc_path}
+cp ${task_path}/static/gates_beh.vhdl ${desc_path}
+cp ${task_path}/static/IEEE_1164_Gates_pkg.vhdl ${desc_path} 
+cp ${task_path}/static/IEEE_1164_Gates.vhdl ${desc_path}
+cp ${task_path}/static/IEEE_1164_Gates_beh.vhdl ${desc_path}
 
 #for exam
-cp $taskPath/exam/testbench_exam.vhdl $descPath/gates_tb_exam.vhdl
+cp ${task_path}/exam/testbench_exam.vhdl ${desc_path}/gates_tb_exam.vhdl
 
 
 ############### ONLY FOR TESTING #################
-mv $taskPath/tmp/solution_$1_Task$2.txt $descPath
+mv ${task_path}/tmp/solution_${user_id}_Task${task_nr}.txt ${desc_path}
 ##################################################
 
 ##########################
 ##   EMAIL ATTACHMENTS  ##
 ##########################
 
-taskAttachments=""
-taskAttachmentsBase="$descPath/desc_$1_Task$2.pdf $descPath/gates.vhdl $descPath/gates_beh.vhdl $descPath/IEEE_1164_Gates_pkg.vhdl $descPath/IEEE_1164_Gates.vhdl $descPath/IEEE_1164_Gates_beh.vhdl"
+task_attachments=""
+task_attachments_base="${desc_path}/desc_${user_id}_Task${task_nr}.pdf ${desc_path}/gates.vhdl ${desc_path}/gates_beh.vhdl ${desc_path}/IEEE_1164_Gates_pkg.vhdl ${desc_path}/IEEE_1164_Gates.vhdl ${desc_path}/IEEE_1164_Gates_beh.vhdl"
 
-if [ -n "$4" ];
+if [ -n "${mode}" ];
 then
-    if [ "$4" = "exam" ];
+    if [ "${mode}" = "exam" ];
     then
-        taskAttachments="$taskAttachmentsBase $descPath/gates_tb_exam.vhdl"
+        task_attachments="$task_attachments_base ${desc_path}/gates_tb_exam.vhdl"
     fi
 fi
-if [ -z "$4" ] || [ "$4" = "normal" ]; #default to normal
+if [ -z "${mode}" ] || [ "${mode}" = "normal" ]; #default to normal
 then
-    taskAttachments="$taskAttachmentsBase" 
+    task_attachments="$task_attachments_base" 
 fi 
 
 ##########################
 ## ADD TASK TO DATABASE ##
 ##########################
 #NOTE: do not attach solution in final version :)
-cd $autosubPath/tools
-python3 add_to_usertasks.py -u $1 -t $2 -p "$task_parameters" -a "$taskAttachments" -d $5
+cd ${autosub_path}/tools
+python3 add_to_usertasks.py -u ${user_id} -t ${task_nr} -p "${task_parameters}" -a "${task_attachments}" -d ${semester_db}
 
-cd $autosubPath
+cd {autosub_path}
