@@ -18,6 +18,7 @@ task_nr=$2
 submission_email=$3
 mode=$4
 semester_db=$5
+language=$6
 
 ##########################
 ########## PATHS #########
@@ -47,7 +48,7 @@ fi
 ##########################
 cd ${task_path}
 
-task_parameters=$(python3 scripts/generateTask.py "${user_id}" "${task_nr}" "${submission_email}")
+task_parameters=$(python3 scripts/generateTask.py "${user_id}" "${task_nr}" "${submission_email}" "${language}")
 
 #generate the description pdf and move it to user's description folder
 cd ${task_path}/tmp
@@ -66,15 +67,15 @@ rm desc_${user_id}_Task${task_nr}.tex
 mv ${task_path}/tmp/desc_${user_id}_Task${task_nr}.pdf ${desc_path}
 
 #copy static files to user's description folder
-cp $task_path/static/demux_beh.vhdl $desc_path
+cp ${task_path}/static/demux_beh.vhdl ${desc_path}
 
 #move generated files to user's description folder
-mv $task_path/tmp/demux_$1_Task$2.vhdl $desc_path/demux.vhdl
+mv ${task_path}/tmp/demux_${user_id}_Task${task_nr}.vhdl ${desc_path}/demux.vhdl
 
 ##########################
 ##   EMAIL ATTACHMENTS  ##
 ##########################
-task_attachments="$desc_path/desc_$1_Task$2.pdf $desc_path/demux.vhdl $desc_path/demux_beh.vhdl"
+task_attachments="${desc_path}/desc_${user_id}_Task${task_nr}.pdf ${desc_path}/demux.vhdl ${desc_path}/demux_beh.vhdl"
 
 ##########################
 ## ADD TASK TO DATABASE ##

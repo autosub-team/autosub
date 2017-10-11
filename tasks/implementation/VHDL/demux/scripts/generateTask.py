@@ -14,14 +14,15 @@ from random import randrange
 from math import ceil, log
 import string
 
-class MyTemplate(string.Template):
-    delimiter = "%%"
+import json
+from jinja2 import FileSystemLoader, Environment
 
 #################################################################
 
 user_id=sys.argv[1]
 task_nr=sys.argv[2]
 submission_email=sys.argv[3]
+language=sys.argv[4]
 
 params_desc={}
 params_entity={}
@@ -42,6 +43,15 @@ num_out = randrange(3,8)
 
 task_parameters=str(IN1_width)+"|"+str(num_out)
 
+###################################
+## IMPORT LANGUAGE TEXT SNIPPETS ##
+###################################
+
+filename ="templates/task_description/language_support_files/lang_snippets_{0}.json".format(language)
+with open(filename) as data_file:
+    lang_data = json.load(data_file)
+
+#########################################################
 
 ################################################
 # GENERATE PARAMETERS FOR DESCRIPTION TEMPLATE # 
@@ -68,8 +78,7 @@ for x in range(1,num_out+1):
 
 SEL_max_greater_num_out = ""
 if SEL_max > num_out:
-	SEL_max_greater_num_out = "When SEL selects no output then all outputs shall be set to 0."
-
+	SEL_max_greater_num_out = lang_data["SEL_max_greater_num_out"]
 minimum_height = 6 * (1 + num_out) # minimum_height for tikzpicture
 
 outputs_entity = ""
@@ -96,14 +105,15 @@ params_desc.update({"TASKNR":str(task_nr), "SUBMISSIONEMAIL":submission_email, "
 #############################
 # FILL DESCRIPTION TEMPLATE #
 #############################
-filename ="templates/task_description_template.tex"
-with open (filename, "r") as template_file:
-    data=template_file.read()
+env = Environment()
+env.loader = FileSystemLoader('templates/')
+filename ="task_description/task_description_template_{0}.tex".format(language)
+template = env.get_template(filename)
+template = template.render(params_desc)
 
 filename ="tmp/desc_{0}_Task{1}.tex".format(user_id,task_nr)
 with open (filename, "w") as output_file:
-    s = MyTemplate(data)
-    output_file.write(s.substitute(params_desc))
+    output_file.write(template)
 
 ###########################################
 # GENERATE PARAMETERS FOR ENTITY TEMPLATE # 
@@ -126,14 +136,15 @@ params_entity.update({"IN1_width":IN1_width, "SEL_width":SEL_width, "outputs_ent
 #############################
 #   FILL ENTITY TEMPLATE    #
 #############################
-filename ="templates/demux_template.vhdl"
-with open (filename, "r") as template_file:
-    data=template_file.read()
+env = Environment()
+env.loader = FileSystemLoader('templates/')
+filename ="demux_template.vhdl"
+template = env.get_template(filename)
+template = template.render(params_entity)
 
 filename ="tmp/demux_{0}_Task{1}.vhdl".format(user_id,task_nr)
 with open (filename, "w") as output_file:
-    s = MyTemplate(data)
-    output_file.write(s.substitute(params_entity))
+    output_file.write(template)
 
 ###########################
 ### PRINT TASKPARAMETERS ##

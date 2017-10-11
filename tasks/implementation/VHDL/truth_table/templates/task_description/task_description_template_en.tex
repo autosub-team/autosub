@@ -29,12 +29,12 @@ Your task is to program the behavior of an entity called "truth\_table". This en
 \draw[->,thick] (entity.east) -- ($ (entity.east) + (10mm,0)$);;
 \draw node at ($ (entity.east) + (12mm,0)$){O};
 
-\draw node at ($ (entity) - (0,14mm)$){truth\_table};
+\draw node at ($ (entity) - (0,16mm)$){truth\_table};
 
 \end{tikzpicture}
 \end{center}
 
-Do not change the file "truth\_table.vhdl".
+Do not change the file "truth\_table.vhdl"!
 \\
 
 The "truth\_table" entity shall behave according to the following truth table:
@@ -45,52 +45,52 @@ The "truth\_table" entity shall behave according to the following truth table:
 	\hline
 	D & C & B & A & O\\ [0.5ex] 
 	\hline\hline
-	0&0&0&0& %%O0
+	0&0&0&0& {{ O0 }}
 	\\
 	\hline
-	0&0&0&1& %%O1
+	0&0&0&1& {{ O1 }}
 	\\
 	\hline
-	0&0&1&0& %%O2
+	0&0&1&0& {{ O2 }}
 	\\
 	\hline
-	0&0&1&1& %%O3
+	0&0&1&1& {{ O3 }}
 	\\
 	\hline\hline
-	0&1&0&0& %%O4
-    \\
-	\hline
-	0&1&0&1& %%O5
+	0&1&0&0& {{ O4 }}
 	\\
 	\hline
-	0&1&1&0& %%O6
+	0&1&0&1& {{ O5 }}
 	\\
 	\hline
-	0&1&1&1& %%O7
+	0&1&1&0& {{ O6 }}
+	\\
+	\hline
+	0&1&1&1& {{ O7 }}
 	\\
 	\hline\hline
-	1&0&0&0& %%O8
+	1&0&0&0& {{ O8 }}
 	\\
 	\hline
-	1&0&0&1& %%O9
+	1&0&0&1& {{ O9 }}
 	\\
 	\hline
-	1&0&1&0& %%O10
+	1&0&1&0& {{ O10 }}
 	\\
 	\hline
-	1&0&1&1& %%O11
+	1&0&1&1& {{ O11 }}
 	\\
 	\hline\hline
-	1&1&0&0& %%O12
+	1&1&0&0& {{ O12 }}
 	\\
 	\hline
-	1&1&0&1& %%O13
+	1&1&0&1& {{ O13 }}
 	\\
 	\hline
-	1&1&1&0& %%O14
+	1&1&1&0& {{ O14 }}
 	\\
 	\hline
-	1&1&1&1& %%O15
+	1&1&1&1& {{ O15 }}
 	\\
 	\hline\hline
 \end{tabular}
@@ -102,7 +102,7 @@ This behavior has to be programmed in the attached file "truth\_table\_beh.vhdl"
 optimization algorithm like Karnaugh Veith (KV diagram) is encouraged.
 \\
 
-To turn in your solution write an email to %%SUBMISSIONEMAIL with Subject "Result Task %%TASKNR" and attach your file "truth\_table\_beh.vhdl".
+To turn in your solution write an email to {{ SUBMISSIONEMAIL }} with Subject "Result Task {{ TASKNR }}" and attach your file "truth\_table\_beh.vhdl".
 
 \vspace{0.7cm}
 Good Luck and May the Force be with you.

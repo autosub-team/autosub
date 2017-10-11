@@ -40,7 +40,7 @@ architecture behavior of fsm_tb is
     type pattern_array is array (natural range <>) of pattern_type;
 
     constant patterns : pattern_array:=(
-            %%TESTPATTERN
+            {{TESTPATTERN}}
             );  
 
     function Image(In_Image : Std_Logic_Vector) return String is
