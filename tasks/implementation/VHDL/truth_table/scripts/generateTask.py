@@ -13,26 +13,25 @@ import random
 import string
 import sys
 
+from jinja2 import FileSystemLoader, Environment
+
 import qm
 
-###########################
-##### TEMPLATE CLASS ######
-###########################
-class MyTemplate(string.Template):
-    delimiter = "%%"
-
-#################################################################
+########################################################################
 
 userId=sys.argv[1]
 taskNr=sys.argv[2]
 submissionEmail=sys.argv[3]
+language = sys.argv[4]
+
+########################################################################
 
 paramsDesc={}
 
 x= 0
 y= 0
 
-
+## Create binary values for truth-table and make sure that it can be optimized
 while True:
     x=random.randrange(0, 65535) #possible solutions for a 4 bit truth table
 
@@ -83,18 +82,19 @@ with open (filename, "w") as solution:
 for i in range(0,16):
     paramsDesc["O"+str(i)]=y[i]
 paramsDesc.update({"TASKNR":str(taskNr),"SUBMISSIONEMAIL":submissionEmail})
-   
+
 #############################
 # FILL DESCRIPTION TEMPLATE #
 #############################
-filename ="templates/task_description_template.tex"
-with open (filename, "r") as template_file:
-    data=template_file.read()
+env = Environment()
+env.loader = FileSystemLoader('templates/')
+filename ="task_description/task_description_template_{0}.tex".format(language)
+template = env.get_template(filename)
+template = template.render(paramsDesc)
 
 filename ="tmp/desc_{0}_Task{1}.tex".format(userId,taskNr)
 with open (filename, "w") as output_file:
-    s = MyTemplate(data)
-    output_file.write(s.substitute(paramsDesc))
+    output_file.write(template)
 
 ###########################
 ### PRINT TASKPARAMETERS ##
