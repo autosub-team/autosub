@@ -13,11 +13,7 @@ import string
 from random import randrange
 from math import ceil, log
 
-###########################
-##### TEMPLATE CLASS ######
-###########################
-class MyTemplate(string.Template):
-    delimiter = "%%"
+from jinja2 import FileSystemLoader, Environment
 
 # only for testing:
 #IN1_width = 2  #( from: 2-10 -> 9 ) 
@@ -103,8 +99,11 @@ params.update({"IN1_width":IN1_width, "num_out":num_out, "SEL_width":SEL_width, 
 ###########################
 # FILL TESTBENCH TEMPLATE #
 ###########################
-filename ="templates/testbench_template.vhdl"
-with open (filename, "r") as template_file:
-    data=template_file.read()
-    s = MyTemplate(data)
-    print(s.substitute(params))
+env = Environment()
+env.loader = FileSystemLoader('templates/')
+filename ="testbench_template.vhdl"
+
+template = env.get_template(filename)
+template = template.render(params)
+
+print(template)
