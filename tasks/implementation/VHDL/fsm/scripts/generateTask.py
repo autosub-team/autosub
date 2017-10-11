@@ -17,6 +17,9 @@ import math
 import string
 import sys
 
+from jinja2 import FileSystemLoader, Environment
+
+########################################################################
 
 def is_done(nodes, num_nodes):
    # check if all nodes have an outgoing edge:
@@ -37,6 +40,7 @@ def is_done(nodes, num_nodes):
 
    return True
 
+########################################################################
 def num_outgoing(nodedesc, num_nodes):
    num_edges = 0
 
@@ -46,10 +50,13 @@ def num_outgoing(nodedesc, num_nodes):
 
    return num_edges
 
+########################################################################
+
 def gen_rand_output():
    r=randrange(0,4)
    return "{0:#04b}".format(r).split('b')[1]
 
+########################################################################
 
 def num_to_labels(nodematrix, num_nodes):
    nodes = list(list("" for variable in range(0, num_nodes, 1)) for variable in range(0, num_nodes, 1))
@@ -69,14 +76,11 @@ def num_to_labels(nodematrix, num_nodes):
 ###########################
 ##### TEMPLATE CLASS ######
 ###########################
-class MyTemplate(string.Template):
-    delimiter = "%%"
-
-#################################################################
 
 userId=sys.argv[1]
 taskNr=sys.argv[2]
 submissionEmail=sys.argv[3]
+language=sys.argv[4]
 
 paramsDesc={}
 
@@ -171,19 +175,21 @@ with open (filename, "w") as solution:
 # SET PARAMETERS FOR DESCRIPTION TEMPLATE #
 ###########################################
 paramsDesc.update({"TASKNR":str(taskNr),"SUBMISSIONEMAIL":submissionEmail, \
-                   "STATECHART":filename_statechart})
+                   "STATECHART":"{"+filename_statechart+"}"})
 
 #############################
 # FILL DESCRIPTION TEMPLATE #
 #############################
-filename ="templates/task_description_template.tex"
-with open (filename, "r") as template_file:
-    data=template_file.read()
+
+env = Environment()
+env.loader = FileSystemLoader('templates/')
+filename ="task_description/task_description_template_{0}.tex".format(language)
+template = env.get_template(filename)
+template = template.render(paramsDesc)
 
 filename ="tmp/desc_{0}_Task{1}.tex".format(userId,taskNr)
 with open (filename, "w") as output_file:
-    s = MyTemplate(data)
-    output_file.write(s.substitute(paramsDesc))
+    output_file.write(template)
 
 ###########################
 ### PRINT TASKPARAMETERS ##
