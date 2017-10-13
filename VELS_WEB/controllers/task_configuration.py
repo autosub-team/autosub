@@ -28,8 +28,9 @@ def extra_validation(form):
         return
 
     #validate Language
-    if form.vars.Language not in __available_languages(form.vars.TaskName):
-        form.errors.Language = "not supported or typo"
+    available_languages = __available_languages(form.vars.TaskName)
+    if form.vars.Language not in available_languages:
+        form.errors.Language = "supported: " + " , ".join(available_languages)
         return
 
     #validate CommonFile existence
