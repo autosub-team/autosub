@@ -16,7 +16,7 @@ from math import ceil, log
 from jinja2 import FileSystemLoader, Environment
 
 # only for testing:
-#IN1_width = 2  #( from: 2-10 -> 9 ) 
+#IN1_width = 2  #( from: 2-10 -> 9 )
 #num_out   = 3  #( from: 3-7  -> 5 )
 
 ###################################################################
@@ -25,7 +25,7 @@ from jinja2 import FileSystemLoader, Environment
 def generate_test_vectors(n, N):
 	selects = [0] * N
 	n_2 = pow(2,n)
-	
+
 	for i in range(N) :
 		is_unique = 0
 		while is_unique == 0:
@@ -34,9 +34,9 @@ def generate_test_vectors(n, N):
 			for j in range(i) :
 				if selects[j] == selects[i] :
 					is_unique = 0
-	
+
 	selects = [format(x, '0'+str(n)+'b') for x in selects] # convert from integer list to a binary list with zero padding suited for n bit width
-	
+
 	return selects
 
 
@@ -91,7 +91,7 @@ input_test_array = generate_test_vectors(IN1_width, 3)
 input_test_array = (', '.join('\n\t\t"' + x + '"' for x in input_test_array))
 
 #########################################
-# SET PARAMETERS FOR TESTBENCH TEMPLATE # 
+# SET PARAMETERS FOR TESTBENCH TEMPLATE #
 #########################################
 
 params.update({"IN1_width":IN1_width, "num_out":num_out, "SEL_width":SEL_width, "SEL_max":SEL_max, "input_test_array":input_test_array, "outputs_component":outputs_component, "output_signals":output_signals, "outputs_port_map":outputs_port_map, "outputs_test_array":outputs_test_array })

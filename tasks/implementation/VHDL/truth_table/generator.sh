@@ -93,7 +93,7 @@ fi
 if [ -z "${mode}" ] || [ "${mode}" = "normal" ]; #default to normal
 then
     task_attachments="$task_attachments_base"
-fi 
+fi
 
 ##########################
 ## ADD TASK TO DATABASE ##
@@ -102,4 +102,4 @@ fi
 cd ${autosub_path}/tools
 python3 add_to_usertasks.py -u ${user_id} -t ${task_nr} -p "${task_parameters}" -a "${task_attachments}" -d ${semester_db}
 
-cd {autosub_path}
+cd ${autosub_path}

@@ -86,7 +86,7 @@ mv ${task_path}/tmp/solution_${user_id}_Task${task_nr}.txt ${desc_path}
 ##   EMAIL ATTACHMENTS  ##
 ##########################
 task_attachments=""
-task_attachmentsBase="${desc_path}/desc_${user_id}_Task${task_nr}.pdf ${desc_path}/fsm_pkg.vhdl ${desc_path}/fsm.vhdl ${desc_path}/fsm_beh.vhdl"
+task_attachments_base="${desc_path}/desc_${user_id}_Task${task_nr}.pdf ${desc_path}/fsm_pkg.vhdl ${desc_path}/fsm.vhdl ${desc_path}/fsm_beh.vhdl"
 
 if [ -n "${mode}" ];
 then
@@ -105,6 +105,6 @@ fi
 ##########################
 #NOTE: do not attach solution in final version :)
 cd ${autosub_path}/tools
-python3 add_to_usertasks.py -u ${user_id} -t ${task_nr} -p "$task_parameters" -a "$task_attachments" -d ${submission_email}
+python3 add_to_usertasks.py -u ${user_id} -t ${task_nr} -p "$task_parameters" -a "$task_attachments" -d ${semester_db}
 
 cd ${autosub_path}

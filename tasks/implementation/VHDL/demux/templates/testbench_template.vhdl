@@ -14,27 +14,27 @@ architecture Behavioral of demux_tb is
               SEL  : in   std_logic_vector(({{SEL_width}} - 1) downto 0);
               {{outputs_component}}
    end component;
-   
+
    signal IN1 : std_logic_vector(({{IN1_width}} - 1) downto 0);
    signal SEL : std_logic_vector(({{SEL_width}} - 1) downto 0);
    {{output_signals}}
 
    type type_outputs_test_array is array(0 to ({{num_out}} - 1)) of std_logic_vector(({{IN1_width}} - 1) downto 0);
    signal outputs_test_array : type_outputs_test_array;
-   
+
    type type_input_test_array is array(0 to (3 - 1)) of std_logic_vector(({{IN1_width}} - 1) downto 0);
    signal input_test_array : type_input_test_array := ({{input_test_array}});
-   
+
    function image(in_image : std_logic_vector) return string is
       variable L : Line;  -- access type
-      variable W : String(1 to in_image'length) := (others => ' ');  
+      variable W : String(1 to in_image'length) := (others => ' ');
    begin
       WRITE(L, in_image);
       W(L.all'range) := L.all;
       Deallocate(L);
       return W;
    end image;
-   
+
 begin
 
    UUT: demux
@@ -70,9 +70,9 @@ begin
                end loop;
          end loop;
       end loop;
-      
+
       report "Success" severity failure;
-      
+
    end process feed_demux_beh;
 
 end Behavioral;

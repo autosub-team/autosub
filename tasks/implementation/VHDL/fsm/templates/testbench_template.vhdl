@@ -11,7 +11,7 @@ end fsm_tb;
 architecture behavior of fsm_tb is
     component fsm
         port
-        (   
+        (
             CLK     : in    std_logic;
             INPUT   : in    std_logic_vector(1 downto 0);
             RST     : in    std_logic;
@@ -34,18 +34,18 @@ architecture behavior of fsm_tb is
         RESET: std_logic; -- if 1 reset the state machine, all other fields are ignored
         INPUT: std_logic_vector(1 downto 0);
         OUTPUT: std_logic_vector(1 downto 0);
-        STATE: fsm_state; 
+        STATE: fsm_state;
     end record;
 
     type pattern_array is array (natural range <>) of pattern_type;
 
     constant patterns : pattern_array:=(
             {{TESTPATTERN}}
-            );  
+            );
 
     function Image(In_Image : Std_Logic_Vector) return String is
         variable L : Line;  -- access type
-        variable W : String(1 to In_Image'length) := (others => ' ');  
+        variable W : String(1 to In_Image'length) := (others => ' ');
     begin
          WRITE(L, In_Image);
          W(L.all'range) := L.all;
@@ -54,19 +54,19 @@ architecture behavior of fsm_tb is
     end Image;
 
     function Image(In_Image : fsm_state) return String is
-    
-    begin 
 
-        case In_Image is 
+    begin
+
+        case In_Image is
             when START =>
                return "START";
-            when S0 => 
+            when S0 =>
                return "S0";
-            when S1 => 
+            when S1 =>
                return "S1";
-            when S2 => 
+            when S2 =>
                return "S2";
-            when S3 => 
+            when S3 =>
                return "S3";
             when others =>
                return "UNDEFIDED";
@@ -82,16 +82,16 @@ begin
             RST    => RST_UUT,
             INPUT  => INPUT_UUT,
             OUTPUT => OUTPUT_UUT,
-            STATE  => STATE_UUT 
+            STATE  => STATE_UUT
         );
 
-    --generates the global clock cycles 
+    --generates the global clock cycles
     clk_generator : process
     begin
         CLK_UUT <= '0';
-        wait for clk_period/2;  
+        wait for clk_period/2;
         CLK_UUT <= '1';
-        wait for clk_period/2; 
+        wait for clk_period/2;
     end process;
 
     test:process
@@ -125,7 +125,7 @@ begin
                 end if;--endif check
 
                 last_state := START;
-                
+
             else
                 INPUT_UUT <= patterns(i).INPUT;
 
@@ -151,10 +151,10 @@ begin
                 end if;--endif check
 
                 last_state := patterns(i).STATE;
-            end if;--endif RESET                   
+            end if;--endif RESET
         end loop;
 
-        report "Success" severity failure; 
+        report "Success" severity failure;
     end process test ;
 
 end behavior;

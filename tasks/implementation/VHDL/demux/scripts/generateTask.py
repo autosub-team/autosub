@@ -54,7 +54,7 @@ with open(filename) as data_file:
 #########################################################
 
 ################################################
-# GENERATE PARAMETERS FOR DESCRIPTION TEMPLATE # 
+# GENERATE PARAMETERS FOR DESCRIPTION TEMPLATE #
 ################################################
 
 SEL_width = ceil(log(num_out, 2))
@@ -63,7 +63,7 @@ SEL_width = int(SEL_width)
 SEL_max = pow(SEL_width,2)
 
 SEL_possible = range(num_out)
-SEL_possible = [format(x, '0'+str(int(SEL_width))+'b') for x in SEL_possible] # convert from integer list to a binary list 
+SEL_possible = [format(x, '0'+str(int(SEL_width))+'b') for x in SEL_possible] # convert from integer list to a binary list
 SEL_possible = (' & '.join('' + x + '' for x in SEL_possible))
 
 SEL_binary_zero = format(0, '0'+str(int(SEL_width))+'b')
@@ -98,7 +98,7 @@ for x in range(num_out):
 
 
 ############################################
-## SET PARAMETERS FOR DESCRIPTION TEMPLATE # 
+## SET PARAMETERS FOR DESCRIPTION TEMPLATE #
 ############################################
 params_desc.update({"TASKNR":str(task_nr), "SUBMISSIONEMAIL":submission_email, "IN1_width":IN1_width, "SEL_width":SEL_width, "num_out":num_out, "minimum_height":minimum_height, "outputs_entity":outputs_entity, "outputs_comma":outputs_comma, "SEL_binary_zero":SEL_binary_zero, "SEL_binary_one":SEL_binary_one, "SEL_max_greater_num_out":SEL_max_greater_num_out, "num_c":num_c, "SEL_possible":SEL_possible, "OUT_selected":OUT_selected })
 
@@ -116,7 +116,7 @@ with open (filename, "w") as output_file:
     output_file.write(template)
 
 ###########################################
-# GENERATE PARAMETERS FOR ENTITY TEMPLATE # 
+# GENERATE PARAMETERS FOR ENTITY TEMPLATE #
 ###########################################
 
 # generate num_out outputs for the entity declaration

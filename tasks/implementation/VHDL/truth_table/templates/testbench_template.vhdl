@@ -19,15 +19,15 @@ begin
 
     process
         type pattern_type is record
-            --The inputs 
+            --The inputs
             D,C,B,A : std_logic;
-            --The expected outputs 
+            --The expected outputs
             O : std_logic;
         end record;
-           
+
         --The patterns to apply.
         type pattern_array is array (natural range <>) of pattern_type;
-       
+
         constant patterns : pattern_array:=(
             {{TESTPATTERN}};
 
@@ -43,13 +43,13 @@ begin
             wait for 1 ns;
             --Check the outputs.
             if O /= patterns(i).O then
-                report  "§{Error for" & 
+                report  "§{Error for" &
                         " D=" & std_logic'image(patterns(i).D) &
-                        " C=" & std_logic'image(patterns(i).C) & 
+                        " C=" & std_logic'image(patterns(i).C) &
                         " B=" & std_logic'image(patterns(i).B) &
-                        " A=" & std_logic'image(patterns(i).A) & 
+                        " A=" & std_logic'image(patterns(i).A) &
                         "; expected O=" & std_logic'image(patterns(i).O) &
-                        ", received O=" & std_logic'image(O) & "}§" severity failure; 
+                        ", received O=" & std_logic'image(O) & "}§" severity failure;
             end if;
         end loop;
         report "Success" severity failure;

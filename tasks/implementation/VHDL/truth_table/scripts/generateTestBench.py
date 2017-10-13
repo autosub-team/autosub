@@ -6,7 +6,7 @@ from jinja2 import FileSystemLoader, Environment
 
 #################################################################
 
-taskParameter=int(sys.argv[1]) 
+taskParameter=int(sys.argv[1])
 params={}
 
 y=bin(taskParameter)
@@ -14,11 +14,11 @@ z=y[2:]
 z=z.zfill(16)
 
 #########################################
-######### GENERATE TESTVECTORS ########## 
+######### GENERATE TESTVECTORS ##########
 #########################################
 
 test_pattern=[  "('0', '0', '0', '0', ",
-                "('0', '0', '0', '1', ",      
+                "('0', '0', '0', '1', ",
                 "('0', '0', '1', '0', ",
                 "('0', '0', '1', '1', ",
                 "('0', '1', '0', '0', ",
@@ -34,7 +34,7 @@ test_pattern=[  "('0', '0', '0', '0', ",
                 "('1', '1', '1', '0', ",
                 "('1', '1', '1', '1', " ]
 
-v=[]          
+v=[]
 
 for i in range(0,16) :
     v.append(test_pattern[i]+"'"+str(z[i])+"')")
@@ -47,7 +47,7 @@ for i in range(len(v)-1) :
 testPattern=("\n"+12*" ").join(v)
 
 #########################################
-# SET PARAMETERS FOR TESTBENCH TEMPLATE # 
+# SET PARAMETERS FOR TESTBENCH TEMPLATE #
 #########################################
 params.update({"TESTPATTERN":testPattern})
 

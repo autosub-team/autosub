@@ -2,7 +2,7 @@
 
 ########################################################################
 # generateTask.py for VHDL task truth_table
-# Generates random tasks, generates TaskParameters, fill 
+# Generates random tasks, generates TaskParameters, fill
 # entity and description templates
 #
 # Copyright (C) 2015 Martin  Mosbeck   <martin.mosbeck@gmx.at>
@@ -39,16 +39,16 @@ while True:
     y=bin(x);
     y=y[2:]
     y=y.zfill(16)
- 
+
     #find all ones and feed it to Quine–McCluskey algorithm
-    indices = [i for i, x in enumerate(y) if x == '1'] 
+    indices = [i for i, x in enumerate(y) if x == '1']
     optimized=qm.qm(ones=indices)
-   
+
     #find out how many optimizations possile
     xes=[]
     for i in optimized:
         xes.append(i.count("X"));
-    
+
     #we want at least one possible optimization
     if(max(xes)==0 or len(optimized)>4):
        continue
@@ -58,7 +58,7 @@ while True:
 ##############################
 ## PARAMETER SPECIFYING TASK##
 ##############################
-taskParameters=x   
+taskParameters=x
 
 ############### ONLY FOR TESTING #######################
 filename ="tmp/solution_{0}_Task{1}.txt".format(userId,taskNr)
@@ -76,7 +76,7 @@ with open (filename, "w") as solution:
 #########################################################
 
 ###########################################
-# SET PARAMETERS FOR DESCRIPTION TEMPLATE # 
+# SET PARAMETERS FOR DESCRIPTION TEMPLATE #
 ###########################################
 #the bits are labled in template as O0 to O15
 for i in range(0,16):
