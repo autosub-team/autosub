@@ -6,10 +6,3 @@ entity demux is
            SEL  : in  std_logic_vector(({{SEL_width}} - 1) downto 0);
 {{outputs_entity}}
 end demux;
-
-architecture Behavioral of demux is
-
-begin
-
-
-end Behavioral;
