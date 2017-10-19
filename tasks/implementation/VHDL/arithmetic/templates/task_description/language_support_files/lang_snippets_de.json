@@ -1,0 +1,10 @@
+{
+
+	"operation_name_dict":	[	"Addition",
+					"Subtraktion"
+				],
+	"operand_style_dict":	[	"vorzeichenlos",
+					"Einerkomplement",
+					"Zweierkomplement"
+				]
+}

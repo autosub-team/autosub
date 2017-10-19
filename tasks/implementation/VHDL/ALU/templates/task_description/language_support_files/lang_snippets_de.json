@@ -1,0 +1,34 @@
+{
+
+    "desc":	[	"addiert B zu A und gibt das Ergebnis am Ausgang R aus.",
+			"subtrahiert B von A und gibt das Ergebnis am Ausgang R aus.",
+			"verkn\"upft B und A mittels logischem UND und gibt das Ergebnis am Ausgang R aus.",
+			"verkn\"upft B und A mittels logischem OR und gibt das Ergebnis am Ausgang R aus.",
+			"verkn\"upft B und A mittels logischem XOR und gibt das Ergebnis am Ausgang R aus.",
+			"vergleicht A mit B und gibt A am Ausgang R aus",
+			"schiebt alle Bits von A um eine Stelle nach links (das MSB wird verworfen), setzt das LSB auf 0 und gibt am Ausgang die 4 niedrigsten Bit des Ergebnisses aus.",
+			"schiebt alle Bits von A um eine Stelle nach rechts, setzt das MSB auf 0 und gibt am Ausgang die 4 Bit des Ergebnisses aus.",
+			"schiebt alle Bits von A um eine Stelle nach links, wobei das MSB an die Bit-Position 0 geschoben wird, und gibt das Ergebnis am Ausgang R aus.",
+			"schiebt alle Bits von A um eine Stelle nach rechts, wobei das LSB an die Bit-Position 3 geschoben wird, und gibt das Ergebnis am Ausgang R aus."
+			],
+
+	"desc_flag": [	"das Flag ist das Carry der Operation.",
+			"das Flag ist 1, wenn das Ergebnis 0 ist.",
+			"das Flag ist eine Kopie des MSB des Ergebnisses.",
+			"das Flag ist 1, wenn die Anzahl an Einsern im Ergebnis gerade ist. Ansonsten ist es 0."
+				],
+
+	"desc_flag2":	[	"das Flag wird auf 1 gesetzt, wenn ein Overflow entsteht. Bei vorzeichenloser Darstellung entsteht ein Overflow in einer Addition dann, wenn die Summe beider Eing\"ange gr\"o\"ser als 15 ist (f\"ur 4 Bit Werte).",
+				"das Flag wird auf 1 gesetzt, wenn ein Overflow entsteht. Bei vorzeichenloser Darstellung entsteht ein Overflow in einer Subtraktion dann, wenn ein Wert von einem kleineren abgezogen wird.",
+				"wenn A\\textgreater=B, dann ist das Flag Bit 1, wenn A\\textless B dann ist es 0.",
+				"wenn A\\textgreater=B, dann ist das Flag Bit 1, wenn A\\textless B dann ist es 0.",
+				"das Flag ist das MSB von A",
+				"das Flag ist das LSB von A"
+					],
+
+	"inst":		["ADD","SUB","AND","OR","XOR","Comparator","Shift Left","Shift Right","Rotate Left","Rotate Right"],
+	"flag":		["Overflow","Carry","Zero","Sign","Odd Parity"]
+
+
+
+}

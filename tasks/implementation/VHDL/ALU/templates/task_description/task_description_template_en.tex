@@ -5,7 +5,7 @@
 
 \begin{document}
 \pagestyle{empty}
-\setlength{\parindent}{0em} 
+\setlength{\parindent}{0em}
 \section*{ALU}
 
 Your task is to program the behavior of an entity called "ALU". This entity is declared in the attached file "ALU.vhdl" and has the following properties:
@@ -44,43 +44,43 @@ Your task is to program the behavior of an entity called "ALU". This entity is d
 \end{tikzpicture}
 \end{center}
 
-Do not change the file "ALU.vhdl".
+Do not change the file "ALU.vhdl"!
 \\
 
 The "ALU" entity shall behave according to the following:
 \\
-It has two input data which we assume to be unsigned, a clock signal, an enable signal and a selector to select which instruction has to be performed. The output only changes at the rising edges of the clock. The length of data is 4 bits. In a case that the result of the operation is 5 bits only the four least significant bits are used for the output on the port R. The instruction set includes %%INS1, %%INS2, %%INS3 and %%INS4 and the value of selector for each instruction is as follows:
+It has two input data which we assume to be unsigned, a clock signal, an enable signal and a selector to select which instruction has to be performed. The output only changes at the rising edges of the clock. The length of data is 4 bits. In a case that the result of the operation is 5 bits only the four least significant bits are used for the output on the port R. The instruction set includes {{INS1}}, {{INS2}}, {{INS3}} and {{INS4}} and the value of selector for each instruction is as follows:
 \\
 \begin{itemize}
-\item "00": %%INS1
-\item "01": %%INS2
-\item "10": %%INS3
-\item "11": %%INS4
+\item "00": {{INS1}}
+\item "01": {{INS2}}
+\item "10": {{INS3}}
+\item "11": {{INS4}}
 \end{itemize}
 \vspace{0.3cm}
 
 The instruction description is as below:
 \begin{itemize}
-\item %%INS1: %%DESC1 
-\item %%INS2: %%DESC2
-\item %%INS3: %%DESC3
-\item %%INS4: %%DESC4
+\item {{INS1}}: {{DESC1}}
+\item {{INS2}}: {{DESC2}}
+\item {{INS3}}: {{DESC3}}
+\item {{INS4}}: {{DESC4}}
 \end{itemize}
 \vspace{0.3cm}
 
 When the ALU is disabled, the outputs (R and flag) are zero and when it is enabled it performs the selected instruction (based on slc) and then outputs the result. The length of result is equal to the length of input. There is also another output which is a one-bit flag and should be calculated for each selected operation. The flag for each instruction is determined based on the result of each operation and is defined as follows:
 \begin{itemize}
-\item %%INS1 --\textgreater \enspace %%FLAG1: %%DESCflag1
-\item %%INS2 --\textgreater \enspace %%FLAG2: %%DESCflag2
-\item %%INS3 --\textgreater \enspace %%FLAG3: %%DESCflag3
-\item %%INS4 --\textgreater \enspace Flag: %%DESCflag4
+\item {{INS1}} --\textgreater \enspace {{FLAG1}}: {{DESCflag1}}
+\item {{INS2}} --\textgreater \enspace {{FLAG2}}: {{DESCflag2}}
+\item {{INS3}} --\textgreater \enspace {{FLAG3}}: {{DESCflag3}}
+\item {{INS4}} --\textgreater \enspace Flag: {{DESCflag4}}
 \end{itemize}
 \vspace{0.3cm}
 
-This behavior has to be programmed in the attached file "ALU\_beh.vhdl". 
+This behavior has to be programmed in the attached file "ALU\_beh.vhdl".
 \\
 
-To turn in your solution, write an email to %%SUBMISSIONEMAIL with Subject "Result Task %%TASKNR" and attach your file "ALU\_beh.vhdl".
+To turn in your solution, write an email to {{SUBMISSIONEMAIL}} with Subject "Result Task {{TASKNR}}" and attach your file "ALU\_beh.vhdl".
 
 \vspace{0.7cm}
 

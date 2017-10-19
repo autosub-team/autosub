@@ -1,0 +1,10 @@
+{
+
+	"operation_name_dict":	[	"Addition",
+					"Substraction"
+				],
+	"operand_style_dict":	[	"unsigned",
+					"ones' complement",
+					"two's complement"
+				]
+}

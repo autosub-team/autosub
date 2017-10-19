@@ -14,11 +14,11 @@ use std.textio.ALL;
 use IEEE.std_logic_textio.all;
 
 architecture behavior of arithmetic_tb is
-    subtype I1_TYPE is std_logic_vector(%%I1-1 downto 0);
-    subtype I2_TYPE is std_logic_vector(%%I2-1 downto 0);
-    subtype O_TYPE  is std_logic_vector(%%O-1 downto 0);
-    constant operation :string(1 to 3) := "%%OPERATION"; -- ADD or SUB
-    constant N : integer :=%%O; --Nubmer of bits for operarion
+    subtype I1_TYPE is std_logic_vector({{I1}}-1 downto 0);
+    subtype I2_TYPE is std_logic_vector({{I2}}-1 downto 0);
+    subtype O_TYPE  is std_logic_vector({{O}}-1 downto 0);
+    constant operation :string(1 to 3) := "{{OPERATION}}"; -- ADD or SUB
+    constant N : integer :={{O}}; --Nubmer of bits for operarion
 
     component arithmetic
         port(  I1     :in    I1_TYPE;    -- Operand 1
@@ -274,7 +274,7 @@ begin
     process
         type pattern_array is array (natural range <>) of pattern_type;
 
-        constant patterns : pattern_array:=(%%TESTPATTERN);
+        constant patterns : pattern_array:=({{TESTPATTERN}});
         variable sol_cal:solution;
     begin
         for i in patterns'range loop
@@ -284,12 +284,12 @@ begin
             --Wait for the results.
             wait for 10 ns;
             -- Calculate proper outputs
-            sol_cal :=do_operation_%%OPSTYLE('1');
+            sol_cal :=do_operation_{{OPSTYLE}}('1');
             -- Compare UUT output with proper output
             if((O_UUT/= sol_cal.O) or (C_UUT /= sol_cal.C) or (V_UUT /= sol_cal.V) or (VALID_UUT /= sol_cal.VALID)) then
                 write(OUTPUT,string'("§{Error for:"));
                 write(OUTPUT,string'("\n"));
-                write(OUTPUT,string'("   %%OPSTYLE,%%OPERATION")); --for debug!!
+                write(OUTPUT,string'("   {{OPSTYLE}},{{OPERATION}}")); --for debug!!
                 write(OUTPUT,string'("\n"));
                 write(OUTPUT,string'("   I1= ")&Image(patterns(i).I1));
                 write(OUTPUT,string'("\n"));
