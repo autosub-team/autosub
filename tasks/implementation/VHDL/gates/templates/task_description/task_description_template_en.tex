@@ -6,7 +6,7 @@
 
 \begin{document}
 \pagestyle{empty}
-\setlength{\parindent}{0em} 
+\setlength{\parindent}{0em}
 
 % c for custom
 \newcommand{\cand}[9]{\logicand[ninputs=4,iec=true,bubblesize=0.1,inputa=#1,inputb=#2,inputc=#3,inputd=#4, ,invertinputa=#5,invertinputb=#6,invertinputc=#7,invertinputd=#8,invertoutput=#9]}
@@ -59,7 +59,7 @@ The "gates" entity shall behave according to the following gate network:
 
 %input gates
 %<b> =true/false
-%       inputs enabled(a-d)  inputs negates(a-d)  output negated 
+%       inputs enabled(a-d)  inputs negates(a-d)  output negated
 %\<type> {<b>}{<b>}{<b>}{<b>} {<b>}{<b>}{<b>}{<b>} {<b>}(2,1){G0}
 %\<type> {<b>}{<b>}{<b>}{<b>} {<b>}{<b>}{<b>}{<b>} {<b>}(2,4){G1}
 %\<type> {<b>}{<b>}{<b>}{<b>} {<b>}{<b>}{<b>}{<b>} {<b>}(2,7){G2}
@@ -89,13 +89,13 @@ The "gates" entity shall behave according to the following gate network:
 %output
 \rput(10.8,6.5){O}
 
-%lines input->gates, go=gateoffset 
+%lines input->gates, go=gateoffset
 %\psline{*-}(1.6,go+0.25)(2,go+0.25)   %d
 %\psline{*-}(1.2,go+0.75)(2,go+0.75)   %c
 %\psline{*-}(0.8,go+1.25)(2.1,go+1.25) %b
 %\psline{*-}(0.4,go+1.75)(2.1,go+1.75) %a
 
-%G0 go=1 
+%G0 go=1
 {{GI0}}   \psline{*-}(0.4,2.75)(2.1,2.75)%a
 {{GI1}}   \psline{*-}(0.8,2.25)(2.1,2.25)%b
 {{GI2}}   \psline{*-}(1.2,1.75)(2,1.75)%c
@@ -122,7 +122,7 @@ The "gates" entity shall behave according to the following gate network:
 
 %G0 to G4
 \psline{-}(5.25,2)(7,2)
-\psline{-}(7,2)(7,5.75) 
+\psline{-}(7,2)(7,5.75)
 
 %G1 to G4
 \psline{-}(5.5,5)(5.5,6.25)
@@ -134,8 +134,8 @@ The "gates" entity shall behave according to the following gate network:
 
 
 %G3 to G4
-\psline{-}(5.25,11)(7,11) 
-\psline{-}(7,11)(7,7.25) 
+\psline{-}(5.25,11)(7,11)
+\psline{-}(7,11)(7,7.25)
 
 \end{pspicture}
 \end{center}
@@ -143,13 +143,13 @@ The "gates" entity shall behave according to the following gate network:
 This behavior has to be programmed in the attached file "gates\_beh.vhdl".
 \\
 
-In VHDL predefined entities can be used and connected to solve problems. Use the attached IEEE 1164 Gates to build the given gate network. 6 types of gate entities are defined: AND[N], NAND[N], OR[N], NOR[N], XOR[N], XNOR[N] where [N] is the number of Inputs. Inputs are labelled I1..I[N], the Output is labled O. 
+In VHDL predefined entities can be used and connected to solve problems. Use the attached IEEE 1164 Gates to build the given gate network. 6 types of gate entities are defined: AND[N], NAND[N], OR[N], NOR[N], XOR[N], XNOR[N] where [N] is the number of Inputs. Inputs are labelled I1..I[N], the Output is labled O.
 \\
 
 So for example a NAND with 3 inputs would be NAND3 and have the inputs I1, I2 and I3 and the output O. The needed package to use these entities is already imported in the attached "gates\_beh.vhdl".
 \\
 
-To turn in your solution write an email to %%SUBMISSIONEMAIL with Subject "Result Task %%TASKNR" and attach your file "gates\_beh.vhdl".
+To turn in your solution write an email to {{SUBMISSIONEMAIL}} with Subject "Result Task {{TASKNR}}" and attach your file "gates\_beh.vhdl".
 
 \vspace{0.7cm}
 

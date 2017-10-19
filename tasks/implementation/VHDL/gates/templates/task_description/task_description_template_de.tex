@@ -8,7 +8,7 @@
 
 \begin{document}
 \pagestyle{empty}
-\setlength{\parindent}{0em} 
+\setlength{\parindent}{0em}
 
 % c for custom
 \newcommand{\cand}[9]{\logicand[ninputs=4,iec=true,bubblesize=0.1,inputa=#1,inputb=#2,inputc=#3,inputd=#4, ,invertinputa=#5,invertinputb=#6,invertinputc=#7,invertinputd=#8,invertoutput=#9]}
@@ -61,7 +61,7 @@ Die Entity "`gates"' soll sich entsprechend dem folgenden Netzwerk verhalten:
 
 %input gates
 %<b> =true/false
-%       inputs enabled(a-d)  inputs negates(a-d)  output negated 
+%       inputs enabled(a-d)  inputs negates(a-d)  output negated
 %\<type> {<b>}{<b>}{<b>}{<b>} {<b>}{<b>}{<b>}{<b>} {<b>}(2,1){G0}
 %\<type> {<b>}{<b>}{<b>}{<b>} {<b>}{<b>}{<b>}{<b>} {<b>}(2,4){G1}
 %\<type> {<b>}{<b>}{<b>}{<b>} {<b>}{<b>}{<b>}{<b>} {<b>}(2,7){G2}
@@ -91,13 +91,13 @@ Die Entity "`gates"' soll sich entsprechend dem folgenden Netzwerk verhalten:
 %output
 \rput(10.8,6.5){O}
 
-%lines input->gates, go=gateoffset 
+%lines input->gates, go=gateoffset
 %\psline{*-}(1.6,go+0.25)(2,go+0.25)   %d
 %\psline{*-}(1.2,go+0.75)(2,go+0.75)   %c
 %\psline{*-}(0.8,go+1.25)(2.1,go+1.25) %b
 %\psline{*-}(0.4,go+1.75)(2.1,go+1.75) %a
 
-%G0 go=1 
+%G0 go=1
 {{GI0}}   \psline{*-}(0.4,2.75)(2.1,2.75)%a
 {{GI1}}   \psline{*-}(0.8,2.25)(2.1,2.25)%b
 {{GI2}}   \psline{*-}(1.2,1.75)(2,1.75)%c
@@ -124,7 +124,7 @@ Die Entity "`gates"' soll sich entsprechend dem folgenden Netzwerk verhalten:
 
 %G0 to G4
 \psline{-}(5.25,2)(7,2)
-\psline{-}(7,2)(7,5.75) 
+\psline{-}(7,2)(7,5.75)
 
 %G1 to G4
 \psline{-}(5.5,5)(5.5,6.25)
@@ -136,8 +136,8 @@ Die Entity "`gates"' soll sich entsprechend dem folgenden Netzwerk verhalten:
 
 
 %G3 to G4
-\psline{-}(5.25,11)(7,11) 
-\psline{-}(7,11)(7,7.25) 
+\psline{-}(5.25,11)(7,11)
+\psline{-}(7,11)(7,7.25)
 
 \end{pspicture}
 \end{center}
@@ -151,7 +151,7 @@ Sie k\"onnen die in VHDL vordefinierten Entities zur L\"osung der Aufgabe verwen
  Ein Beispiel: Ein NAND Gatter mit 3 Eing\"angen hei"st NAND3 und besitzt die Eing\"ange I1, I2 und I3 und den Ausgang O. Die ben\"otigten Programmpakete zur Benutzung dieser Entities sind bereits in der Datei  "`gates\_beh.vhdl"' importiert.
 \\
 
-Um Ihre L\"osung abzugeben, senden Sie ein E-Mail mit dem Betreff "'Result Task {{ TASKNR }}"' und Ihrer Datei "`gates\_beh.vhdl"'  an {{ SUBMISSIONEMAIL }}. 
+Um Ihre L\"osung abzugeben, senden Sie ein E-Mail mit dem Betreff "'Result Task {{TASKNR}}"' und Ihrer Datei "`gates\_beh.vhdl"'  an {{SUBMISSIONEMAIL}}.
 
 \vspace{0.3cm}
 

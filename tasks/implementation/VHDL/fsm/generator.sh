@@ -92,12 +92,12 @@ if [ -n "${mode}" ];
 then
     if [ "${mode}" = "exam" ];
     then
-        task_attachments="$task_attachments_base ${desc_path}/fsm_tb_exam.vhdl"
+        task_attachments="${task_attachments_base} ${desc_path}/fsm_tb_exam.vhdl"
     fi
 fi
 if [ -z "${mode}" ] || [ "${mode}" = "normal" ]; #default to normal
 then
-    task_attachments="$task_attachments_base"
+    task_attachments="${task_attachments_base}"
 fi
 
 ##########################
@@ -105,6 +105,6 @@ fi
 ##########################
 #NOTE: do not attach solution in final version :)
 cd ${autosub_path}/tools
-python3 add_to_usertasks.py -u ${user_id} -t ${task_nr} -p "$task_parameters" -a "$task_attachments" -d ${semester_db}
+python3 add_to_usertasks.py -u ${user_id} -t ${task_nr} -p "${task_parameters}" -a "${task_attachments}" -d ${semester_db}
 
 cd ${autosub_path}

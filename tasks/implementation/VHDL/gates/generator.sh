@@ -97,12 +97,12 @@ if [ -n "${mode}" ];
 then
     if [ "${mode}" = "exam" ];
     then
-        task_attachments="$task_attachments_base ${desc_path}/gates_tb_exam.vhdl"
+        task_attachments="${task_attachments_base} ${desc_path}/gates_tb_exam.vhdl"
     fi
 fi
 if [ -z "${mode}" ] || [ "${mode}" = "normal" ]; #default to normal
 then
-    task_attachments="$task_attachments_base"
+    task_attachments="${task_attachments_base}"
 fi
 
 ##########################
