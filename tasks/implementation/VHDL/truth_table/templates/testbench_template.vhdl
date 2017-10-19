@@ -29,7 +29,7 @@ begin
         type pattern_array is array (natural range <>) of pattern_type;
 
         constant patterns : pattern_array:=(
-            {{TESTPATTERN}};
+            {{TESTPATTERN}});
 
     begin
         --Check each pattern.
