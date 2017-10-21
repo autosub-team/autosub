@@ -12,9 +12,9 @@ end arithmetic_tb;
 
 architecture behavior of arithmetic_tb is
 
-    constant I1_len:integer:= %%I1_WIDTH;
-    constant I2_len:integer:= %%I2_WIDTH;
-    constant O_len:integer:= %%O_WIDTH;
+    constant I1_len:integer:= {{I1_WIDTH}};
+    constant I2_len:integer:= {{I2_WIDTH}};
+    constant O_len:integer:= {{O_WIDTH}};
 
     subtype I1_TYPE is std_logic_vector(I1_len-1 downto 0);
     subtype I2_TYPE is std_logic_vector(I2_len-1 downto 0);
@@ -61,8 +61,8 @@ begin
         -- Stimulation Example
 
         -- Set the inputs   
-        I1_UUT <= "%%I1_EXAMPLE";
-        I2_UUT <= "%%I2_EXAMPLE";
+        I1_UUT <= "{{I1_EXAMPLE}}";
+        I2_UUT <= "{{I2_EXAMPLE}}";
         
         --Wait for the results.
         wait for 10 ns;

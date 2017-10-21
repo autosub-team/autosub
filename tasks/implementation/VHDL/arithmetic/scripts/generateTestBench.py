@@ -15,6 +15,8 @@ from random import shuffle
 from bitstring import Bits
 import math
 
+from jinja2 import FileSystemLoader, Environment
+
 ######################################
 #### GENERATION OF RANDOM NUMBERS ####
 ######################################
@@ -39,41 +41,36 @@ def to_comp1(n,v):
       bits= (bits_raw.__invert__()).bin
    else:
       bits= bits_raw.bin
-   
+
    return bits
 
 
 def rand_unsigned(n):
    randNr=randrange(0,2**n)
    bits=Bits(uint=randNr,length=n).bin
-   return [randNr,bits] 
+   return [randNr,bits]
 
 def rand_comp2(n):
    randNr=randrange(-(2**(n-1)),2**(n-1))
    bits=Bits(int=randNr,length=n).bin
-   return [randNr,bits] 
+   return [randNr,bits]
 
 def rand_comp1(n):
    randNr=randrange(0,2**(n-1)-1)
    bits_raw=Bits(uint=randNr,length=n)
-   
+
    negate=randrange(0,2) #make it negative?
    if(negate==0):
       bits= bits_raw.bin;
    else:
       bits= (~bits_raw).bin
       randNr=-randNr
-   
+
    return [randNr,bits]
 
-###########################
-##### TEMPLATE CLASS ######
-###########################
-class MyTemplate(string.Template):
-    delimiter = "%%"
 
 #################################################################
-taskParameters=int(sys.argv[1]) 
+taskParameters=int(sys.argv[1])
 params={}
 
 #|2|1|5|5|5| bits from taskParameters
@@ -96,14 +93,14 @@ v=[] #testvectors
 ########################################
 ##### GENERATION VALID = 0 TESTS #######
 ########################################
-numTestWrong=randrange(10,20)  
+numTestWrong=randrange(10,20)
 
 #first create valid=0 szenarios
-if(operand_style==0): #unsigned [0 .. 2^n -1] 
+if(operand_style==0): #unsigned [0 .. 2^n -1]
    i1_min= 0
    i2_min= 0
    i1_max= 2**i1_width - 1
-   i2_max= 2**i2_width - 1  
+   i2_max= 2**i2_width - 1
    i1=0
    i2=0
 
@@ -112,7 +109,7 @@ if(operand_style==0): #unsigned [0 .. 2^n -1]
          # + + + overflow
          i1= i1_max - randrange(i2_min , math.floor(1/2*i2_max) )
          i2= randrange(math.floor(1/2*i2_max) , i2_max)
-          
+
          i1_bits=to_unsigned(i1_width,i1)
          i2_bits=to_unsigned(i2_width,i2)
          v.append('\n'+12*" "+'-- ({0}) , ({1}) \n'.format(i1,i2)+12*" "+'("{0}","{1}")'.format(i1_bits,i2_bits))
@@ -132,9 +129,9 @@ elif(operand_style==2): #2comp  -2^(n-1) ... 2^(n-1)-1
    i1_min= 2**(i1_width-1)
    i2_min= 2**(i2_width-1)
    i1_max= 2**(i1_width-1)-1
-   i2_max= 2**(i2_width-1)-1  
+   i2_max= 2**(i2_width-1)-1
    i1=0
-   i2=0 
+   i2=0
 
    if(operation==0): #add
       for i in range(0,numTestWrong):
@@ -149,14 +146,14 @@ elif(operand_style==2): #2comp  -2^(n-1) ... 2^(n-1)-1
             i2= randrange( math.floor(1/2*i2_max) , i2_max)
 
          i1_bits=to_comp2(i1_width,i1)
-         i2_bits=to_comp2(i2_width,i2) 
-         v.append('\n'+12*" "+'-- ({0}) , ({1}) \n'.format(i1,i2)+12*" "+'("{0}","{1}")'.format(i1_bits,i2_bits))     
-    
+         i2_bits=to_comp2(i2_width,i2)
+         v.append('\n'+12*" "+'-- ({0}) , ({1}) \n'.format(i1,i2)+12*" "+'("{0}","{1}")'.format(i1_bits,i2_bits))
+
    if(operation==1): #sub
       for i in range(0,numTestWrong):
          errorCase=randrange(0,2)
          if(errorCase==0):
-         ## + - - overflow 
+         ## + - - overflow
             i1= i1_max - randrange(0 , math.floor(1/2*i2_min) )
             i2= - randrange( math.floor(1/2*i2_min) , i2_min)
 
@@ -167,16 +164,16 @@ elif(operand_style==2): #2comp  -2^(n-1) ... 2^(n-1)-1
 
          i1_bits=to_comp2(i1_width,i1)
          i2_bits=to_comp2(i2_width,i2)
-         v.append('\n'+12*" "+'-- ({0}) , ({1}) \n'.format(i1,i2)+12*" "+'("{0}","{1}")'.format(i1_bits,i2_bits)) 
+         v.append('\n'+12*" "+'-- ({0}) , ({1}) \n'.format(i1,i2)+12*" "+'("{0}","{1}")'.format(i1_bits,i2_bits))
 
 elif(operand_style==1): #2comp [-(2^(n-1)-1) ... 2^(n-1)-1)]
    #all absolutes
    i1_min= 2**(i1_width-1)-1
    i2_min= 2**(i2_width-1)-1
    i1_max= 2**(i1_width-1)-1
-   i2_max= 2**(i2_width-1)-1 
+   i2_max= 2**(i2_width-1)-1
    i1=0
-   i2=0  
+   i2=0
 
 
    if(operation==0): #add
@@ -193,13 +190,13 @@ elif(operand_style==1): #2comp [-(2^(n-1)-1) ... 2^(n-1)-1)]
 
          i1_bits=to_comp1(i1_width,i1)
          i2_bits=to_comp1(i2_width,i2)
-         v.append('\n'+12*" "+'-- ({0}) , ({1}) \n'.format(i1,i2)+12*" "+'("{0}","{1}")'.format(i1_bits,i2_bits))       
-    
+         v.append('\n'+12*" "+'-- ({0}) , ({1}) \n'.format(i1,i2)+12*" "+'("{0}","{1}")'.format(i1_bits,i2_bits))
+
    if(operation==1): #sub
       for i in range(0,numTestWrong):
          errorCase=randrange(0,2)
          if(errorCase==0):
-         ## + - - overflow 
+         ## + - - overflow
            i1= i1_max - randrange(0 , math.floor(1/2*i2_min) )
            i2= - randrange( math.floor(1/2*i2_min) , i2_min)
 
@@ -210,7 +207,7 @@ elif(operand_style==1): #2comp [-(2^(n-1)-1) ... 2^(n-1)-1)]
 
          i1_bits=to_comp1(i1_width,i1)
          i2_bits=to_comp1(i2_width,i2)
-         v.append('\n'+12*" "+'-- ({0}) , ({1}) \n'.format(i1,i2)+12*" "+'("{0}","{1}")'.format(i1_bits,i2_bits))  
+         v.append('\n'+12*" "+'-- ({0}) , ({1}) \n'.format(i1,i2)+12*" "+'("{0}","{1}")'.format(i1_bits,i2_bits))
 
 
 ########################################
@@ -224,9 +221,9 @@ elif(operand_style==1):
     rand_style_func=rand_comp1
 else:
     rand_style_func=rand_comp2
-  
-numTestRandom=randrange(10,20) 
- 
+
+numTestRandom=randrange(10,20)
+
 
 for i in range(0,numTestRandom):
     i1,i1_bits=rand_style_func(i1_width)
@@ -241,11 +238,11 @@ shuffle(v)
 for i in range(len(v)-1) :
     v[i]+=","
 
-testPattern=("").join(v) 
+testPattern=("").join(v)
 
 
 #########################################
-# SET PARAMETERS FOR TESTBENCH TEMPLATE # 
+# SET PARAMETERS FOR TESTBENCH TEMPLATE #
 #########################################
 operation_dict={0:"ADD",1:"SUB"}
 operand_style_dict={0:"unsigned",1:"comp1",2:"comp2"}
@@ -256,9 +253,9 @@ params.update({"TESTPATTERN": testPattern})
 ###########################
 # FILL TESTBENCH TEMPLATE #
 ###########################
-filename ="templates/testbench_template.vhdl"
-with open (filename, "r") as template_file:
-    data=template_file.read()
-    s = MyTemplate(data)
-    print(s.substitute(params))
-
+env = Environment()
+env.loader = FileSystemLoader('templates/')
+filename ="testbench_template.vhdl"
+template = env.get_template(filename)
+template = template.render(params)
+print(template)

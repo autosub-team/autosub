@@ -14,21 +14,20 @@ import string
 import sys
 from bitstring import Bits
 
-###########################
-##### TEMPLATE CLASS ######
-###########################
-class MyTemplate(string.Template):
-    delimiter = "%%"
+from jinja2 import FileSystemLoader, Environment
+
+import json
 
 #################################################################
 
-userId=sys.argv[1]
-taskNr=sys.argv[2]
-submissionEmail=sys.argv[3]
+user_id=sys.argv[1]
+task_nr=sys.argv[2]
+submission_email=sys.argv[3]
+language=sys.argv[4]
 
-paramsDesc={}
-paramsEntity={}
-paramsTbExam={}
+params_desc={}
+params_entity={}
+params_TbExam={}
 
 width1=0
 width2=0
@@ -51,81 +50,86 @@ operation=random.randrange(0,2)
 #operand style: 0-> unsigned, 1->1s complement, 2->2s complement
 operand_style=random.randrange(0,3)
 
+###################################
+## IMPORT LANGUAGE TEXT SNIPPETS ##
+###################################
+filename ="templates/task_description/language_support_files/lang_snippets_{0}.json".format(language)
+with open(filename) as data_file:
+    lang_data = json.load(data_file)
 ##############################
 ## PARAMETER SPECIFYING TASK##
 ##############################
 #|2|1|5|5|5|
-taskParameters=(operand_style<<16)+(operation<<15)+(o_width<<10)+(i2_width<<5)+i1_width
+task_parameters=(operand_style<<16)+(operation<<15)+(o_width<<10)+(i2_width<<5)+i1_width
 
 ############### ONLY FOR TESTING #######################
-filename ="tmp/solution_{0}_Task{1}.txt".format(userId,taskNr)
+filename ="tmp/solution_{0}_Task{1}.txt".format(user_id,task_nr)
 with open (filename, "w") as solution:
-    solution.write("For TaskParameters: " + str(taskParameters) + "\n")
+    solution.write("For TaskParameters: " + str(task_parameters) + "\n")
     solution.write("FOOBAR")
-   
+
 #########################################################
 
 ###########################################
-# SET PARAMETERS FOR DESCRIPTION TEMPLATE # 
-###########################################
-operation_name_dict={0:"Addition",1:"Substraction"}
+# SET PARAMETERS FOR DESCRIPTION TEMPLATE #
 ###########################################
 operation_sign_dict={0:"+",1:"-"}
-operand_style_dict={0:"unsigned",1:"ones' complement",2:"two's complement"}
 
-paramsDesc.update({"TASKNR":str(taskNr),"SUBMISSIONEMAIL":submissionEmail})
-paramsDesc.update({"I1_WIDTH":str(i1_width),"I2_WIDTH":str(i2_width),"O_WIDTH":str(o_width)})
-paramsDesc.update({"OPERATION_NAME":operation_name_dict[operation],"OPERATION_SIGN":operation_sign_dict[operation],"OPERAND_STYLE":operand_style_dict[operand_style]})
+params_desc.update({"TASKNR":str(task_nr),"SUBMISSIONEMAIL":submission_email})
+params_desc.update({"I1_WIDTH":str(i1_width),"I2_WIDTH":str(i2_width),"O_WIDTH":str(o_width)})
+params_desc.update({"OPERATION_NAME":lang_data["operation_name_dict"][operation],"OPERATION_SIGN":operation_sign_dict[operation],"OPERAND_STYLE":lang_data["operand_style_dict"][operand_style]})
 
 #############################
 # FILL DESCRIPTION TEMPLATE #
 #############################
-filename ="templates/task_description_template.tex"
-with open (filename, "r") as template_file:
-    data=template_file.read()
+env = Environment()
+env.loader = FileSystemLoader('templates/')
+filename ="task_description/task_description_template_{0}.tex".format(language)
+template = env.get_template(filename)
+template = template.render(params_desc)
 
-filename ="tmp/desc_{0}_Task{1}.tex".format(userId,taskNr)
+filename ="tmp/desc_{0}_Task{1}.tex".format(user_id,task_nr)
 with open (filename, "w") as output_file:
-    s = MyTemplate(data)
-    output_file.write(s.substitute(paramsDesc))
-
+    output_file.write(template)
 ###########################################
-#    SET PARAMETERS FOR ENTITY TEMPLATE   # 
+#    SET PARAMETERS FOR ENTITY TEMPLATE   #
 ###########################################
-paramsEntity.update({"I1_WIDTH":i1_width,"I2_WIDTH":i2_width,"O_WIDTH":o_width})
+params_entity.update({"I1_WIDTH":i1_width,"I2_WIDTH":i2_width,"O_WIDTH":o_width})
 
 #############################
 #   FILL ENTITY TEMPLATE    #
 #############################
-filename ="templates/arithmetic_template.vhdl"
-with open (filename, "r") as template_file:
-    data=template_file.read()
+env = Environment()
+env.loader = FileSystemLoader('templates/')
+filename ="arithmetic_template.vhdl"
+template = env.get_template(filename)
+template = template.render(params_entity)
 
-filename ="tmp/arithmetic_{0}_Task{1}.vhdl".format(userId,taskNr)
+filename ="tmp/arithmetic_{0}_Task{1}.vhdl".format(user_id,task_nr)
 with open (filename, "w") as output_file:
-    s = MyTemplate(data)
-    output_file.write(s.substitute(paramsEntity))
+    output_file.write(template)
 
 ##############################################
-# SET PARAMETERS FOR EXAM TESTBENCH TEMPLATE # 
+# SET PARAMETERS FOR EXAM TESTBENCH TEMPLATE #
 ##############################################
 i1Example=Bits(uint=random.randrange(1,2**i1_width-1),length=i1_width).bin
 i2Example=Bits(uint=random.randrange(1,2**i2_width-1),length=i2_width).bin
-paramsTbExam.update({"I1_WIDTH":i1_width,"I2_WIDTH":i2_width,"O_WIDTH":o_width,"I1_EXAMPLE":i1Example,"I2_EXAMPLE":i2Example})
+params_TbExam.update({"I1_WIDTH":i1_width,"I2_WIDTH":i2_width,"O_WIDTH":o_width,"I1_EXAMPLE":i1Example,"I2_EXAMPLE":i2Example})
 
 #############################
 #   FILL ENTITY TEMPLATE    #
 #############################
-filename ="exam/testbench_exam_template.vhdl"
-with open (filename, "r") as template_file:
-    data=template_file.read()
+env = Environment()
+env.loader = FileSystemLoader('exam/')
+filename ="testbench_exam_template.vhdl"
+template = env.get_template(filename)
+template = template.render(params_TbExam)
 
-filename ="tmp/arithmetic_tb_exam_{0}_Task{1}.vhdl".format(userId,taskNr)
+filename ="tmp/arithmetic_tb_exam_{0}_Task{1}.vhdl".format(user_id,task_nr)
 with open (filename, "w") as output_file:
-    s = MyTemplate(data)
-    output_file.write(s.substitute(paramsTbExam))
+    output_file.write(template)
 
 ###########################
 ### PRINT TASKPARAMETERS ##
 ###########################
-print(taskParameters)
+print(task_parameters)

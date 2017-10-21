@@ -1,0 +1,35 @@
+{
+
+    "desc":	[	"adds B to A and outputs the result on R.",
+			"subtracts B from A and outputs the result on R.",
+			"operates logical AND between A and B and outputs the result on R.",
+			"operates logical OR between A and B and outputs the result on R.",
+			"operates logical XOR between A and B and outputs the result on R.",
+			"compares A with B, and outputs A on R.",
+			"shifts all bits of A one place to the left (the most significant bit is discarded), sets the least sigificant bit to 0, and outputs the four least significant bits on R.",
+			"shifts all bits of A one place to the right, sets the most sigificant bit to 0, and outputs the four bits on R.",
+			"shifts all bits of A one place to the left with the most significant bit moved to position 0, outputs the result on R.",
+			"shifts all bits of A one place to the right with the least significant bit moved to position 3, outputs the result on R."
+			],
+
+	"desc_flag": 	[	"the flag is the carry of the operation.",
+				"the flag is 1, when the result is zero.",
+				"the flag is the copy of the most significant bit of the result.",
+				"the flag is 1 if the number of ones in the result is even. Otherwise it is 0."
+					],
+
+	"desc_flag2":	[	"the flag is set to 1, when overflow happens. For unsigned values, overflow happens in an add operation when the sum of the inputs is more than 15 (for 4-bit values).",
+				"the flag is set to 1, when overflow happens. For unsigned values, overflow in subtraction happens when a value is subtracted from a smaller value.",
+				"if A\\textgreater=B then the flag bit will be 1, if A\\textless B then the flag bit will be 0.",
+				"if A\\textgreater=B then the flag bit will be 1, if A\\textless B then the flag bit will be 0.",
+				"the flag is the most significant bit of A.",
+				"the flag is the least significant bit of A."
+					],
+
+
+	"inst":		["ADD","SUB","AND","OR","XOR","Comparator","Shift Left","Shift Right","Rotate Left","Rotate Right"],
+	"flag":		["Overflow","Carry","Zero","Sign","Odd Parity"]
+
+
+
+}

@@ -6,7 +6,7 @@
 
 \begin{document}
 \pagestyle{empty}
-\setlength{\parindent}{0em} 
+\setlength{\parindent}{0em}
 \section*{Arithmetic}
 
 Your task is to program the behavior of an entity called "arithmetic". This entity is declared in the attached file "arithmetic.vhdl" and has the following properties:
@@ -32,7 +32,7 @@ Your task is to program the behavior of an entity called "arithmetic". This enti
 \draw node at ($ (entity.east) + (17mm,-7.5mm)$){VALID};
 
 
-\draw node at ($ (entity) - (0,14mm)$){arithmetic};
+\draw node at ($ (entity) - (0,15mm)$){arithmetic};
 
 \end{tikzpicture}
 \end{center}
@@ -42,18 +42,18 @@ Do not change the file "arithmetic.vhdl".
 
 The entity shall implement the following arithmetic functionality:
 \begin{itemize}
-\item %%OPERATION_NAME I1 %%OPERATION_SIGN I2
-\item Input operand 1 (I1): %%I1_WIDTH bit, %%OPERAND_STYLE
-\item Input operand 2 (I2): %%I2_WIDTH bit, %%OPERAND_STYLE
-\item Output (O): %%O_WIDTH bit, %%OPERAND_STYLE
-\item Overflow (V) and Carry flag (C) set accordingly 
-\item Valid flag (VALID): indicates if the computed solution is valid or not 
+\item {{OPERATION_NAME}} I1 {{OPERATION_SIGN}} I2
+\item Input operand 1 (I1): {{I1_WIDTH}} bit, {{OPERAND_STYLE}}
+\item Input operand 2 (I2): {{I2_WIDTH}} bit, {{OPERAND_STYLE}}
+\item Output (O): {{O_WIDTH}} bit, {{OPERAND_STYLE}}
+\item Overflow (V) and Carry flag (C) set accordingly
+\item Valid flag (VALID): indicates if the computed solution is valid or not
 \end{itemize}
 
-This behavior has to be programmed in the attached file "arithmetic\_beh.vhdl". 
+This behavior has to be programmed in the attached file "arithmetic\_beh.vhdl".
 
 
-\textbf{Note:} The ALU has to be implemented using the width of %%O_WIDTH bit. Sign extension 
+\textbf{Note:} The ALU has to be implemented using the width of {{O_WIDTH}} bit. Sign extension
 of operands might be needed.
 
 
@@ -77,7 +77,7 @@ Otherwise, the carry flag is turned off (zero).
 \begin{itemize}
 \item 0111 + 0001 = 1000 (carry flag is turned off [zero])
 \item 1000 - 0001 = 0111 (carry flag is turned off [zero])
-\end{itemize} 
+\end{itemize}
 
 In ones' complement the carry flag is set before a possible end around operation.
 
@@ -122,10 +122,10 @@ and should be ignored.
 
 \vspace{0.3cm}
 
-Tip: Use the ieee.numeric\_std package to implement the arithmetic operation.
+Tip: Use the "ieee.numeric\_std" package to implement the arithmetic operation.
 \\
 
-To turn in your solution write an email to %%SUBMISSIONEMAIL with Subject "Result Task %%TASKNR" and attach your file "arithmetic\_beh.vhdl".
+To turn in your solution write an email to {{SUBMISSIONEMAIL}} with Subject "Result Task {{TASKNR}}" and attach your file "arithmetic\_beh.vhdl".
 
 \vspace{0.7cm}
 Good Luck and May the Force be with you.
