@@ -18,7 +18,7 @@ architecture behavior of arithmetic_tb is
     subtype I2_TYPE is std_logic_vector({{I2}}-1 downto 0);
     subtype O_TYPE  is std_logic_vector({{O}}-1 downto 0);
     constant operation :string(1 to 3) := "{{OPERATION}}"; -- ADD or SUB
-    constant N : integer :={{O}}; --Nubmer of bits for operarion
+    constant N : integer :={{O}}; --Nubmer of bits for operation
 
     component arithmetic
         port(  I1     :in    I1_TYPE;    -- Operand 1
