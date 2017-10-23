@@ -14,17 +14,28 @@ from random import randrange
 from math import ceil, log
 import string
 
-class MyTemplate(string.Template):
-    delimiter = "%%"
+from jinja2 import FileSystemLoader, Environment
+
+import json
 
 #################################################################
 
 user_id=sys.argv[1]
 task_nr=sys.argv[2]
 submission_email=sys.argv[3]
+language=sys.argv[4]
 
 params_desc={}
 params_entity={}
+
+
+###################################
+## IMPORT LANGUAGE TEXT SNIPPETS ##
+###################################
+
+filename ="templates/task_description/language_support_files/lang_snippets_{0}.json".format(language)
+with open(filename) as data_file:
+    lang_data = json.load(data_file)
 
 ##############################
 ## PARAMETER SPECIFYING TASK##
@@ -72,24 +83,24 @@ task_parameters+=str(enable)+"|"+str(overflow)+"|"+str(constant_value)
 
 enable_property_desc=""
 if (enable == 1):
-	enable_property_desc+="\item Input: Enable with type std\_logic"
+	enable_property_desc+= lang_data["properties"][0]
 
 sync_async_variations=["Clear","LoadConstant","LoadInput"]
 sync_variation = sync_async_variations[synchronous_function]
 async_variation = sync_async_variations[asynchronous_function]
 
-sync_property_desc="\item Input: Sync" + str(sync_variation) +" with type std\_logic"
+sync_property_desc=lang_data["properties"][1] + str(sync_variation) + lang_data["properties"][3]
 
-async_property_desc="\item Input: Async" + str(async_variation) +" with type std\_logic"
+async_property_desc=lang_data["properties"][2]+ str(async_variation) + lang_data["properties"][3]
 
 overflow_property_desc=""
 if (overflow == 1):
-	overflow_property_desc+="\item Output: Overflow with type std\_logic"
+	overflow_property_desc+=lang_data["properties"][4]
 
 input_necessary=0
 input_property_desc=""
 if ((synchronous_function == 2) or (asynchronous_function == 2)):
-	input_property_desc+="\item Input: Input with type std\_logic\_vector of length " + str(counter_width)
+	input_property_desc+=lang_data["properties"][5] + str(counter_width)
 	input_necessary=1
 
 num_in=(3) + (1*enable) + (1*(input_necessary))
@@ -136,27 +147,27 @@ zero_padded = format(0, '0'+str(counter_width)+'b')
 if (synchronous_function == 0):
 	sync_text = ("``" + zero_padded + "\"")
 elif (synchronous_function == 1):
-	sync_text = ("the constant ``" + str(constant_value) + "\"")
+	sync_text = (lang_data["sync_text"][0] + str(constant_value) + "\"")
 elif (synchronous_function == 2):
-	sync_text =  "the value of the Input vector"
+	sync_text =  lang_data["sync_text"][1]
 
 if (asynchronous_function == 0):
 	async_text = ("``" + zero_padded + "\"")
 elif (asynchronous_function == 1):
-	async_text = ("the constant ``" + str(constant_value) + "\"")
+	async_text = (lang_data["sync_text"][0] + str(constant_value) + "\"")
 elif (asynchronous_function == 2):
-	async_text =  "the value of the Input vector"
+	async_text =  lang_data["sync_text"][1]
 
 Enable_Overflow_text=""
 every_a = ""
 if ( enable == 1):
-	Enable_Overflow_text += "When the Enable signal is set to `1' then the ``counter'' entity shall behave as described above. When the Enable signal is set to `0' then the ``counter'' entity shall not react to any input at all and keep the current Output vector unchanged."
-	every_a += "a"
+	Enable_Overflow_text += lang_data["Enable_Overflow_text"][0]
+	every_a += lang_data["every_a"][0]
 elif ( overflow == 1):
 	max_counter_value = [1] * counter_width
 	max_counter_value = ''.join(str(e) for e in max_counter_value)
-	Enable_Overflow_text += ("When the Output vector changes from ``" + max_counter_value  + "\" to ``" + zero_padded +"\", then the Overflow signal shall be set to `1' until the next rising edge of the CLK signal. In all other cases the Overflow signal shall be `0'.")
-	every_a += "every"
+	Enable_Overflow_text += (lang_data["Enable_Overflow_text"][1] + max_counter_value  + lang_data["Enable_Overflow_text"][2] + zero_padded + lang_data["Enable_Overflow_text"][3])
+	every_a += lang_data["every_a"][1]
 
 ############################################
 ## SET PARAMETERS FOR DESCRIPTION TEMPLATE #
@@ -166,14 +177,15 @@ params_desc.update({"TASKNR":str(task_nr), "SUBMISSIONEMAIL":submission_email, "
 #############################
 # FILL DESCRIPTION TEMPLATE #
 #############################
-filename ="templates/task_description_template.tex"
-with open (filename, "r") as template_file:
-    data=template_file.read()
+env = Environment()
+env.loader = FileSystemLoader('templates/')
+filename ="task_description/task_description_template_{0}.tex".format(language)
+template = env.get_template(filename)
+template = template.render(params_desc)
 
 filename ="tmp/desc_{0}_Task{1}.tex".format(user_id,task_nr)
 with open (filename, "w") as output_file:
-    s = MyTemplate(data)
-    output_file.write(s.substitute(params_desc))
+    output_file.write(template)
 
 ###########################################
 # GENERATE PARAMETERS FOR ENTITY TEMPLATE #
@@ -205,15 +217,15 @@ params_entity.update({"entity_in_out":entity_in_out})
 #############################
 #   FILL ENTITY TEMPLATE    #
 #############################
-filename ="templates/counter_template.vhdl"
-with open (filename, "r") as template_file:
-    data=template_file.read()
+env = Environment()
+env.loader = FileSystemLoader('templates/')
+filename ="counter_template.vhdl"
+template = env.get_template(filename)
+template = template.render(params_entity)
 
 filename ="tmp/counter_{0}_Task{1}.vhdl".format(user_id,task_nr)
 with open (filename, "w") as output_file:
-    s = MyTemplate(data)
-    output_file.write(s.substitute(params_entity))
-
+    output_file.write(template)
 ###########################
 ### PRINT TASKPARAMETERS ##
 ###########################

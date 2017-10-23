@@ -1,0 +1,28 @@
+{
+
+	"properties":	[	"\\item Eingang: Enable vom Typ std\\_logic",
+				"\\item Eingang: Sync",
+				"\\item Eingang: Async",
+				" vom Typ std\\_logic",
+				"\\item Ausgang: Overflow vom Typ std\\_logic",
+				"\\item Eingang: Input vom Typ std\\_logic\\_vector und der L\\\"ange "
+
+			],
+
+	"sync_text":		[	"den konstanten Wert ``",
+					"den Wert des Eingangsvektors Input "
+				],
+
+	"Enable_Overflow_text":		[	" Wenn das Enable Signal auf '1' gesetzt ist, dann soll sich die Entity \"`counter\"' wie oben beschrieben verhalten. Wenn das Enable Signal aber auf '0' gesetzt ist, dann soll die Entity \"`counter\"' auf keinen Eingang reagieren und den aktuellen Ausgangsvektor unver\\\"andert lassen.",
+						" Wenn sich der Ausgangsvektor von  \"`",
+						"\"' auf \"`",
+						"\"' ver\\\"andert, dann soll das Overflow Signal bis zur n\\\"achsten steigenden Flanke des Takts auf '1' gesetzt werden. In allen anderen F\\\"allen soll das Overflow Signal auf '0' gesetzt sein."
+					],
+	"every_a":	[	"einer",
+				"jeder"
+			]
+
+
+
+
+}

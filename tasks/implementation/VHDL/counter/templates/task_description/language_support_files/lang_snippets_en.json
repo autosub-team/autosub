@@ -1,0 +1,28 @@
+{
+
+	"properties":	[	"\\item Input: Enable with type std\\_logic",
+				"\\item Input: Sync",
+				"\\item Input: Async",
+				" with type std\\_logic",
+				"\\item Output: Overflow with type std\\_logic",
+				"\\item Input: Input with type std\\_logic\\_vector of length "
+
+			],
+
+	"sync_text":		[	"the constant ``",
+					"the value of the Input vector"
+				],
+
+	"Enable_Overflow_text":		[	"When the Enable signal is set to `1' then the ``counter'' entity shall behave as described above. When the Enable signal is set to `0' then the ``counter'' entity shall not react to any input at all and keep the current Output vector unchanged.",
+						"When the Output vector changes from ``",
+						"\" to ``",
+						"\", then the Overflow signal shall be set to `1' until the next rising edge of the CLK signal. In all other cases the Overflow signal shall be `0'."
+					],
+	"every_a":	[	"a",
+				"every"
+			]
+
+
+
+
+}

@@ -1,0 +1,48 @@
+\documentclass[a4paper,12pt]{article}
+\usepackage{a4wide}
+\usepackage{tikz}
+\usetikzlibrary{calc}
+\usepackage{hyperref}
+\usepackage[ngerman]{babel}
+
+\begin{document}
+\pagestyle{empty}
+\setlength{\parindent}{0em}
+\section*{\noindent Counter}
+Ihre Aufgabe ist es, das Verhalten einer Entity  namens "`counter"' zu programmieren. Die Entity ist in der angeh\"angten Datei "`counter.vhdl"' deklariert und hat folgende Eigenschaften:
+
+\begin{itemize}
+	\item Eingang: CLK vom Typ std\_logic
+	{{enable_property_desc}}
+	{{sync_property_desc}}
+	{{async_property_desc}}
+	{{input_property_desc}}
+	{{overflow_property_desc}}
+	\item Ausgang: Output vom Typ std\_logic\_vector und der L\"ange {{counter_width}}
+
+\begin{center}
+\begin{tikzpicture}
+\draw node [draw,rectangle, minimum height={{minimum_height}} mm, minimum width=35mm,rounded corners=2mm,thick](entity){};
+{{inputs_tikz}}
+{{outputs_tikz}}
+\draw node at ($ (entity) - (0,0mm)$){ counter };
+\end{tikzpicture}
+\end{center}
+
+\end{itemize}
+
+%\begin{center}
+
+Ver\"andern Sie die Datei "`counter.vhdl"' nicht!\\
+
+Die "`counter"' Entity soll den Ausgangsvektor Output bei {{every_a}} steigenden Flanke des Taktsignals CLK inkrementieren. Der Anfangswert des Ausgangs (vor der ersten steigenden Flanke des Takts) soll "`{{init_value_padded}}"' betragen. Wenn das Sync{{sync_variation}} Signal auf '1' gesetzt ist, dann soll der Ausgang bei der steigenden Flanke des Taktes auf {{sync_text}} gesetzt werden. Wenn das Async{{async_variation}} Signal auf '1' gesetzt ist, dann soll der Ausgang sofort auf {{async_text}} gesetzt werden. {{Enable_Overflow_text}} \\
+
+Programmieren Sie dieses Verhalten in der angeh\"angten Datei "`counter\_beh.vhdl"'.\\
+
+Um Ihre L\"osung abzugeben, senden Sie ein E-Mail mit dem Betreff "`Result Task {{TASKNR}}"' und Ihrer Datei "`counter\_beh.vhdl"'  an {{SUBMISSIONEMAIL}}.
+
+\vspace{0.7cm}
+
+Viel Erfolg und m\"oge die Macht mit Ihnen sein.
+
+\end{document}

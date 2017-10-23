@@ -5,7 +5,7 @@
 
 \begin{document}
 \pagestyle{empty}
-\setlength{\parindent}{0em} 
+\setlength{\parindent}{0em}
 \section*{PWM (Pulse-Width Modulation)}
 Your task is to program the behavior of an entity called "pwm". This entity is declared in the attached file "pwm.vhdl" and has the following properties:
 
@@ -27,13 +27,12 @@ Your task is to program the behavior of an entity called "pwm". This entity is d
 \end{tikzpicture}
 \end{center}
 
-Do not change the file "pwm.vhdl".
-\\
+Do not change the file "pwm.vhdl".\\
 
 The "pwm" entity shall generate a PWM (Pulse-Width Modulation) signal from a clock signal (input port CLK) with the following constraints:
 \begin{itemize}
-\item Period $T_{PWM}$ = %%PERIOD, frequency $f_{PWM}$= %%FRQ
-\item Duty cycle $D_{PWM}$= %%DUTY
+\item Period $T_{PWM}$ = {{PERIOD}}, frequency $f_{PWM}$= {{FRQ}}
+\item Duty cycle $D_{PWM}$= {{DUTY}}
 \item The signal lead edge has to be held fixed, the tail edge has to be modulated.
 \end{itemize}
 \vspace{0.3cm}
@@ -44,12 +43,10 @@ This behavior has to be programmed in the attached file "pwm\_beh.vhdl".
 To be proper synthesize-able for a FPGA, the PWM signal generation has to be done without the VHDL constructs 'after' and 'wait'.
 \\
 
-To turn in your solution write an email to %%SUBMISSIONEMAIL with Subject "Result Task %%TASKNR" and attach your file "pwm\_beh.vhdl".
+To turn in your solution write an email to {{SUBMISSIONEMAIL}} with Subject "Result Task {{TASKNR}}" and attach your file "pwm\_beh.vhdl".
 
 \vspace{0.7cm}
 
 Good Luck and May the Force be with you.
-
-
 
 \end{document}

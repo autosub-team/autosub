@@ -12,33 +12,29 @@ import sys
 import string
 import random
 
-###########################
-##### TEMPLATE CLASS ######
-###########################
-class MyTemplate(string.Template):
-    delimiter = "%%"
+from jinja2 import FileSystemLoader, Environment
 
 #################################################################
 
-taskParameters=int(sys.argv[1]) 
+taskParameters=int(sys.argv[1])
 params={}
 
-simCycles = random.randrange(5,30)  
+simCycles = random.randrange(5,30)
 periodClks = taskParameters >> 18
 dutyClks = taskParameters & (2**18-1)
 
 #########################################
-# SET PARAMETERS FOR TESTBENCH TEMPLATE # 
+# SET PARAMETERS FOR TESTBENCH TEMPLATE #
 #########################################
 params.update({"PERIODCLKS":periodClks,"DUTYCLKS":dutyClks,"SIMCYCLES":simCycles})
 
 ###########################
 # FILL TESTBENCH TEMPLATE #
 ###########################
-filename ="templates/testbench_template.vhdl"
-with open (filename, "r") as template_file:
-    data=template_file.read()
-    s = MyTemplate(data)
-    print(s.substitute(params))
+env = Environment()
+env.loader = FileSystemLoader('templates/')
+filename ="testbench_template.vhdl"
+template = env.get_template(filename)
+template = template.render(params)
 
-    
+print(template)
