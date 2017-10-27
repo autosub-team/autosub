@@ -34,7 +34,7 @@ Request Task:
    to get. So for example, if you want to get the Task1 your subject
    could be "Request Task1" or "I want to ReQuEsT the TAsk1"
    the exact phrase does not matter, only that some form of the string
-   "Result" and "Task1" are in the subject.
+   "Request" and "Task1" are in the subject.
 
 {% endif -%}
 Task List:
