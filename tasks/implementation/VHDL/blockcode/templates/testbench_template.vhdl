@@ -13,10 +13,10 @@ architecture behavior of blockcode_tb is
 			rst         : in   std_logic;
 			clk         : in   std_logic;
 			data_valid  : in   std_logic;
-			data        : in   std_logic_vector(0 to %%DATALEN-1);
+			data        : in   std_logic_vector(0 to {{DATALEN}}-1);
 			sink_ready  : in   std_logic;
 			code_valid  : out  std_logic;
-			code        : out  std_logic_vector(0 to %%CODELEN-1)
+			code        : out  std_logic_vector(0 to {{CODELEN}}-1)
 		);
 	end component;
 
@@ -32,8 +32,8 @@ architecture behavior of blockcode_tb is
     end Image;
 
 	constant clk_period : time := 10 ms;
-	constant data_len : integer := %%DATALEN;
-	constant code_len : integer := %%CODELEN;
+	constant data_len : integer := {{DATALEN}};
+	constant code_len : integer := {{CODELEN}};
 
 	signal rst_uut         : std_logic;
 	signal clk_uut         : std_logic;
@@ -54,7 +54,7 @@ architecture behavior of blockcode_tb is
 	type pattern_array is array (natural range <>) of pattern_type;
 
 	constant patterns : pattern_array:=(
-		%%TESTPATTERN
+		{{TESTPATTERN}}
 	);
 
 	signal code_valid_expected : std_logic;

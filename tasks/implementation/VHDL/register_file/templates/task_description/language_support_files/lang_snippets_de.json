@@ -1,0 +1,16 @@
+{
+
+"lower": [ 	"niedrigsten",
+			""],
+
+"bypass_or_read_priority_text1": 	[	"Wenn die Schreib-Adresse WA1 (\"`write address\"') identischt mit der Lese-Adresse RA1 (\"`read address\"') ist, dann sollen die aktuellen Eingangsdaten IN1 ohne Verz\\\"ogerung sofort an den Ausgang weitergeleitet werden.",
+						"Wenn die Schreib-Adresse WA1 (\"`write address\"') identischt mit der Lese-Adresse RA1 (\"`read address\"') ist, dann sollen die aktuellen Eingangsdaten IN1 bei der n\\\"achsten steigenden Flanke des Taktsignals CLK an den Ausgang weitergeleitet werden."
+					],
+
+"bypass_or_read_priority_text2":	[	"Dies gilt auch f\\\"ur das spezielle Register 0: Wenn ein simultaner Schreibe- und Lesebefehl f\\\"ur dieses Register erfolgt, dann sollen die Eingangsdaten IN2 ohne Verz\\\"ogerung sofort an den Ausgang weitergeleitet werden.",
+						"Dies gilt auch f\\\"ur das spezielle Register 0: Wenn ein simultaner Schreibe- und Lesebefehl f\\\"ur dieses Register erfolgt, dann sollen die Eingangsdaten IN2 bei der n\\\"achsten steigenden Flanke des Taktsignals CLK an den Ausgang weitergeleitet werden.",
+						"Im Gegensatz dazu gilt f\\\"ur Register 0: Wenn ein simultaner Schreibe- und Lesebefehl f\\\"ur dieses Register erfolgt, dann sollen die Eingangsdaten IN2 ohne Verz\\\"ogerung sofort an den Ausgang weitergeleitet werden.",
+						"Im Gegensatz dazu gilt f\\\"ur Register 0: Wenn ein simultaner Schreibe- und Lesebefehl f\\\"ur dieses Register erfolgt, dann sollen die Eingangsdaten IN2 bei der n\\\"achsten steigenden Flanke des Taktsignals CLK an den Ausgang weitergeleitet werden."
+					]
+
+}

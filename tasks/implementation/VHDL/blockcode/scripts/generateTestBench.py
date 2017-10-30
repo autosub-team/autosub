@@ -15,8 +15,7 @@ import itertools
 
 import parity_functions
 
-class MyTemplate(string.Template):
-    delimiter = "%%"
+from jinja2 import FileSystemLoader, Environment
 
 # for generation of testvectors
 class CycleValues(object):
@@ -182,8 +181,9 @@ params.update({"DATALEN":k, "CODELEN":n, "TESTPATTERN": test_pattern})
 ############################
 ## FILL TESTBENCH TEMPLATE #
 ############################
-filename ="templates/testbench_template.vhdl"
-with open (filename, "r") as template_file:
-    data=template_file.read()
-    s = MyTemplate(data)
-    print(s.substitute(params))
+env = Environment()
+env.loader = FileSystemLoader('templates/')
+filename ="testbench_template.vhdl"
+template = env.get_template(filename)
+template = template.render(params)
+print(template)

@@ -11,71 +11,71 @@ architecture Behavioral of register_file_tb is
 
     component register_file
     port(
-         IN1    : in  std_logic_vector((%%n - 1) downto 0);
-         WA1    : in  std_logic_vector((%%address_width_n - 1) downto 0);
+         IN1    : in  std_logic_vector(({{n}} - 1) downto 0);
+         WA1    : in  std_logic_vector(({{address_width_n}} - 1) downto 0);
          WE1    : in  std_logic;
 
          IN2    : in  std_logic;
-         WA2    : in  std_logic_vector((%%address_width_reg0 - 1) downto 0);
+         WA2    : in  std_logic_vector(({{address_width_reg0}} - 1) downto 0);
          WE2    : in  std_logic;
 
-         RA1    : in  std_logic_vector((%%address_width_n - 1) downto 0);
+         RA1    : in  std_logic_vector(({{address_width_n}} - 1) downto 0);
 
          CLK    : in  std_logic;
 
-         Output : out std_logic_vector((%%n - 1) downto 0)
+         Output : out std_logic_vector(({{n}} - 1) downto 0)
         );
     end component;
 
 
    -- Inputs
    signal CLK : std_logic := '0';
-   signal IN1 : std_logic_vector((%%n - 1) downto 0) := (others => '0');
-   signal RA1 : std_logic_vector((%%address_width_n - 1) downto 0) := (others => '0');
-   signal WA1 : std_logic_vector((%%address_width_n - 1) downto 0) := (others => '0');
+   signal IN1 : std_logic_vector(({{n}} - 1) downto 0) := (others => '0');
+   signal RA1 : std_logic_vector(({{address_width_n}} - 1) downto 0) := (others => '0');
+   signal WA1 : std_logic_vector(({{address_width_n}} - 1) downto 0) := (others => '0');
    signal WE1 : std_logic := '0';
    signal IN2 : std_logic := '0';
-   signal WA2 : std_logic_vector((%%address_width_reg0 - 1) downto 0) := (others => '0');
+   signal WA2 : std_logic_vector(({{address_width_reg0}} - 1) downto 0) := (others => '0');
    signal WE2 : std_logic := '0';
 
    -- Outputs
-   signal Output : std_logic_vector((%%n - 1) downto 0);
+   signal Output : std_logic_vector(({{n}} - 1) downto 0);
 
    -- Clock period definitions
    constant CLK_period : time := 20 ns;
 
    -- number of n bit wide registers:
-   constant N_n : integer := %%N_n;
+   constant N_n : integer := {{N_n}};
 
    -- number of flags to store in special reg 0:
-   constant special_reg0_size : integer := %%special_reg0_size;
+   constant special_reg0_size : integer := {{special_reg0_size}};
 
    -- number of addresses we need for testing:
-   constant address_array_size: integer := %%address_array_size;
+   constant address_array_size: integer := {{address_array_size}};
 
    -- bit width of the addresses for register with width n
-   constant address_width_n : integer := %%address_width_n;
+   constant address_width_n : integer := {{address_width_n}};
 
    -- bit width of the addresses for the special register 0
-   constant address_width_reg0:integer:= %%address_width_reg0;
+   constant address_width_reg0:integer:= {{address_width_reg0}};
 
    -- if 0: bypass, if 1: read priority  on simultaneous read and write from the same register
-   constant n_bypass_or_read_priority : std_logic := '%%n_bypass_or_read_priority';
+   constant n_bypass_or_read_priority : std_logic := '{{n_bypass_or_read_priority}}';
 
    -- if 0: bypass, if 1: read priority  on simultaneous read and write from the same register
-   constant reg0_bypass_or_read_priority : std_logic := '%%reg0_bypass_or_read_priority';
+   constant reg0_bypass_or_read_priority : std_logic := '{{reg0_bypass_or_read_priority}}';
 
    -- test vectors for n bit wide register bank:
-   type type_n_test_data_array is array(0 to ((2 * N_n) - 1)) of std_logic_vector((%%n - 1) downto 0);
-   signal data_n_test_array : type_n_test_data_array := (%%data_n_test_array);
+   type type_n_test_data_array is array(0 to ((2 * N_n) - 1)) of std_logic_vector(({{n}} - 1) downto 0);
+   signal data_n_test_array : type_n_test_data_array := ({{data_n_test_array}});
 
    -- test vectors for the special register 0:
-   signal reg0_test_vector_1 : std_logic_vector(((special_reg0_size)-1) downto 0) := "%%reg0_test_vector_1";
-   signal reg0_test_vector_2 : std_logic_vector(((special_reg0_size)-1) downto 0) := "%%reg0_test_vector_2";
+   signal reg0_test_vector_1 : std_logic_vector(((special_reg0_size)-1) downto 0) := "{{reg0_test_vector_1}}";
+   signal reg0_test_vector_2 : std_logic_vector(((special_reg0_size)-1) downto 0) := "{{reg0_test_vector_2}}";
 
    -- array containing the addresses needed for testing:
-   type type_test_address_array is array(0 to (address_array_size - 1)) of std_logic_vector((%%address_array_width - 1) downto 0);
-   signal address_test_array : type_test_address_array := (%%address_test_array);
+   type type_test_address_array is array(0 to (address_array_size - 1)) of std_logic_vector(({{address_array_width}} - 1) downto 0);
+   signal address_test_array : type_test_address_array := ({{address_test_array}});
 
 begin
 

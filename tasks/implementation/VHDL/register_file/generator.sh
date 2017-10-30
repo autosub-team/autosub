@@ -13,89 +13,90 @@
 ##########################
 ####### PARAMETERS #######
 ##########################
-# $1 ... UserId
-# $2 ... TaskNr
-# $3 ... Submission Email
-# $4 ... Mode
-# $5 ... SemesterDB
+user_id=$1
+task_nr=$2
+submission_email=$3
+mode=$4
+semester_db=$5
+language=$6
 
 ##########################
 ########## PATHS #########
 ##########################
 # src path of autosub system
-autosubPath=$(pwd) 
+autosub_path=$(pwd)
 # root path of the task itself
-taskPath=$(readlink -f $0|xargs dirname)
+task_path=$(readlink -f $0|xargs dirname)
 # path for all the files that describe the created path
-descPath="$autosubPath/users/$1/Task$2/desc"
+desc_path="${autosub_path}/users/${user_id}/Task${task_nr}/desc"
 
 ##########################
 ##### PATH CREATIONS #####
 ##########################
-if [ ! -d "$taskPath/tmp" ]
+if [ ! -d "${task_path}/tmp" ]
 then
-   mkdir $taskPath/tmp
+   mkdir ${task_path}/tmp
 fi
 
-if [ ! -d "$descPath" ]
+if [ ! -d "${desc_path}" ]
 then
-   mkdir $descPath
+   mkdir ${desc_path}
 fi
 
 ##########################
 ####### GENERATE #########
 ##########################
-cd $taskPath
+cd ${task_path}
 
-task_parameters=$(python3 scripts/generateTask.py "$1" "$2" "$3")
-echo $task_parameters
+task_parameters=$(python3 scripts/generateTask.py "${user_id}" "${task_nr}" "${submission_email}" "${language}")
+echo ${task_parameters}
 
 # copy Latex style file bytefield from static to tmp directory
 cp static/bytefield.sty tmp
 
 #generate the description pdf and move it to user's description folder
-cd $taskPath/tmp
+cd ${task_path}/tmp
 
-pdflatex -halt-on-error desc_$1_Task$2.tex >/dev/null
+pdflatex -halt-on-error desc_${user_id}_Task${task_nr}.tex >/dev/null
 RET=$?
 zero=0
 if [ "$RET" -ne "$zero" ];
 then
-    echo "ERROR with pdf generation for Task$2 !!!" >&2
+    echo "ERROR with pdf generation for Task${task_nr} !!!" >&2
 fi
 
 # clean up:
-rm desc_$1_Task$2.aux
-rm desc_$1_Task$2.log
-rm desc_$1_Task$2.out
-rm desc_$1_Task$2.tex
+rm desc_${user_id}_Task${task_nr}.aux
+rm desc_${user_id}_Task${task_nr}.log
+rm desc_${user_id}_Task${task_nr}.out
+#rm desc_${user_id}_Task${task_nr}.tex
 rm bytefield.sty
 
 # move the task description PDF to users description path
-mv $taskPath/tmp/desc_$1_Task$2.pdf $descPath
+mv ${task_path}/tmp/desc_${user_id}_Task${task_nr}.pdf ${desc_path}
 
 #copy static files to user's description folder
-cp $taskPath/static/register_file_beh.vhdl $descPath
+cp ${task_path}/static/register_file_beh.vhdl ${desc_path}
 
 # move generated files to user's description folder
-mv $taskPath/tmp/register_file_$1_Task$2.vhdl $descPath/register_file.vhdl
+mv ${task_path}/tmp/register_file_${user_id}_Task${task_nr}.vhdl ${desc_path}/register_file.vhdl
 
 
 ##########################
 ##   EMAIL ATTACHMENTS  ##
 ##########################
-taskAttachments=""
-taskAttachmentsBase="$descPath/desc_$1_Task$2.pdf $descPath/register_file_beh.vhdl $descPath/register_file.vhdl"
+task_attachments=""
+task_attachments_base="${desc_path}/desc_${user_id}_Task${task_nr}.pdf ${desc_path}/register_file_beh.vhdl ${desc_path}/register_file.vhdl"
 
-if [ -z "$4" ] || [ "$4" = "normal" ]; #default to normal
+if [ -z "${mode}" ] || [ "${mode}" = "normal" ]; #default to normal
 then
-    taskAttachments="$taskAttachmentsBase" 
-fi 
+    task_attachments="$task_attachments_base"
+fi
 
 ##########################
 ## ADD TASK TO DATABASE ##
 ##########################
-cd $autosubPath/tools
-python3 add_to_usertasks.py -u $1 -t $2 -p "$task_parameters" -a "$taskAttachments" -d $5
+cd ${autosub_path}/tools
+python3 add_to_usertasks.py -u ${user_id} -t ${task_nr} -p "${task_parameters}" -a "${task_attachments}" -d ${semester_db}
 
-cd $autosubPath
+cd ${autosub_path}

@@ -5,11 +5,7 @@ import random
 from random import shuffle
 from random import randint
 
-###########################
-##### TEMPLATE CLASS ######
-###########################
-class MyTemplate(string.Template):
-    delimiter = "%%"
+from jinja2 import FileSystemLoader, Environment
 
 #################################################################
 
@@ -26,7 +22,7 @@ if taskParameter[4]==0: write_len=taskParameter[0]
 elif taskParameter[4]==1: write_len=taskParameter[0]*2
 
 ########################################
-######## GENERATE TESTVECTORS ########## 
+######## GENERATE TESTVECTORS ##########
 ########################################
 random_addr=[]
 content_in=[]
@@ -62,7 +58,7 @@ for j in y:
         content_out.append('"'+i+'"')
 
 for i in range(len(content_in)-1):
-    content_in[i]+=","        
+    content_in[i]+=","
 content_in=("\n"+(25)*" ").join(content_in)
 for i in range(len(content_out)-1):
     content_out[i]+=","
@@ -94,7 +90,7 @@ for i in range(len(content_test_out)-1):
 content_test_out=("\n"+(25)*" ").join(content_test_out)
 
 #########################################
-# SET PARAMETERS FOR TESTBENCH TEMPLATE # 
+# SET PARAMETERS FOR TESTBENCH TEMPLATE #
 #########################################
 params.update({"READLENGTH":str(read_len-1),"ADDRLENGTH":str(taskParameter[1]-1),"WRITELENGTH":str(write_len-1),
                "DATASIZE":str(taskParameter[0]),"RANDOM_ADDR":random_addr,"CONTENT_IN1":content_in,"CONTENT_OUT1":content_out,
@@ -104,18 +100,17 @@ params.update({"READLENGTH":str(read_len-1),"ADDRLENGTH":str(taskParameter[1]-1)
 # FILL TESTBENCH TEMPLATE #
 ###########################
 if taskParameter[2]==0:
-    filename ="templates/testbench_template_1.vhdl"
+    filename ="testbench_template_1.vhdl"
 elif taskParameter[2]==1:
-    filename ="templates/testbench_template_2.vhdl"
+    filename ="testbench_template_2.vhdl"
 elif taskParameter[2]==2:
-    filename ="templates/testbench_template_3.vhdl"
+    filename ="testbench_template_3.vhdl"
 elif taskParameter[2]==3:
-    filename ="templates/testbench_template_4.vhdl"
-    
-with open (filename, "r") as template_file:
-    data=template_file.read()
-    s = MyTemplate(data)
-    print(s.substitute(params))
+    filename ="testbench_template_4.vhdl"
 
+env = Environment()
+env.loader = FileSystemLoader('templates/')
+template = env.get_template(filename)
+template = template.render(params)
 
-
+print(template)

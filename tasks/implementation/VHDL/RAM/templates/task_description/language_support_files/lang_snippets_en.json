@@ -1,0 +1,16 @@
+{
+
+	"RW": 	[	" and addr2 is different from the next higher address of addr1",
+			" and addr1 is different from the next higher address of addr2",
+			", addr2 is different from the next higher address of addr1 and addr1 is different from the next higher address of addr2"
+		],
+
+
+	"WW":	[	", addr2 is different from the next higher address of addr1 and addr1 is different from the next higher address of addr2"
+		],
+
+	"WR":	[	" and addr1 is different from the next higher address of addr2",
+			" and addr2 is different from the next higher address of addr1",
+			", addr2 is different from the next higher address of addr1 and addr1 is different from the next higher address of addr2"
+		]
+}

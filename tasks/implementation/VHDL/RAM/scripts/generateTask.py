@@ -2,7 +2,7 @@
 
 ########################################################################
 # generateTask.py for VHDL task RAM
-# Generates random tasks, generates TaskParameters, fill 
+# Generates random tasks, generates TaskParameters, fill
 # entity and description templates
 #
 # Copyright (C) 2016 Hedyeh Agheh Kholerdi   <hedyeh.kholerdi@tuwien.ac.at>
@@ -14,20 +14,27 @@ import sys
 from random import randint
 from random import choice
 
-###########################
-##### TEMPLATE CLASS ######
-###########################
-class MyTemplate(string.Template):
-    delimiter = "%%"
+from jinja2 import FileSystemLoader, Environment
+
+import json
 
 #################################################################
 
 userId=sys.argv[1]
 taskNr=sys.argv[2]
 submissionEmail=sys.argv[3]
+language=sys.argv[4]
 
 x = []
 
+###################################
+## IMPORT LANGUAGE TEXT SNIPPETS ##
+###################################
+
+filename ="templates/task_description/language_support_files/lang_snippets_{0}.json".format(language)
+with open(filename) as data_file:
+    lang_data = json.load(data_file)
+####################################
 
 x.append(choice(range(8, 20, 2)))    # length of each location in RAM
 x.append(random.randint(6, 12))   # length of address
@@ -50,7 +57,7 @@ with open (filename, "w") as solution:
     solution.write("For TaskParameters: " + taskParameters + "\n")
 
 ###########################################
-# SET PARAMETERS FOR ENTITY FILE TEMPLATE # 
+# SET PARAMETERS FOR ENTITY FILE TEMPLATE #
 ###########################################
 paramsEntity={}
 read_len=0
@@ -63,7 +70,7 @@ Desc7="%"
 if x[3]==0:
     read_len=x[0]
     Desc6=""
-    
+
 elif x[3]==1:
     read_len=x[0]*2
     Desc7=""
@@ -113,38 +120,37 @@ elif x[2]==3:
 
 #for i in range(len(entity)-1):
     #entity[i]+=","
-    
+
 entity=("\n"+(10)*" ").join(entity)
-    
+
 paramsEntity.update({"ADDRLENGTH":str(x[1]-1),"ENTITY":entity})
 
 ##########################
 ### CHANGE ENTITY FILE ###
 ##########################
-filename ="templates/RAM_template.vhdl"
-with open (filename, "r") as template_file:
-    data=template_file.read()
-    
+env = Environment()
+env.loader = FileSystemLoader('templates/')
+filename ="RAM_template.vhdl"
+template = env.get_template(filename)
+template = template.render(paramsEntity)
+
 filename ="tmp/RAM_{0}_Task{1}.vhdl".format(userId,taskNr)
 with open (filename, "w") as output_file:
-    s = MyTemplate(data)
-    output_file.write(s.substitute(paramsEntity))
-    
+    output_file.write(template)
+
 ###########################################
-# SET PARAMETERS FOR DESCRIPTION TEMPLATE # 
+# SET PARAMETERS FOR DESCRIPTION TEMPLATE #
 ###########################################
 paramsDesc={}
 enRead=""
-RW11="."
-RW12=", and addr2 is different from the next higher address of addr1."
-RW21=", and addr1 is different from the next higher address of addr2."
-RW22=", addr2 is different from the next higher address of addr1, and addr1 is different from the next higher address of addr2."
-WW11="."
-WW22=", addr2 is different from the next higher address of addr1, and addr1 is different from the next higher address of addr2."
-WR11="."
-WR12=", and addr1 is different from the next higher address of addr2."
-WR21=", and addr2 is different from the next higher address of addr1."
-WR22=", addr2 is different from the next higher address of addr1, and addr1 is different from the next higher address of addr2."
+
+RW12=lang_data["RW"][0]
+RW21=lang_data["RW"][1]
+RW22=lang_data["RW"][2]
+WW22=lang_data["WW"][0]
+WR12=lang_data["WR"][0]
+WR21=lang_data["WR"][1]
+WR22=lang_data["WR"][2]
 
 if x[2]==0:
     enRead="%"
@@ -159,7 +165,7 @@ if x[2]==0:
     Desc1="%"
     Desc2="%"
     Desc3="%"
-    
+
 elif x[2]==1:
     enRead=""
     enReadIndex="1"
@@ -202,7 +208,7 @@ elif x[2]==3:
     Desc2="%"
     Desc3=""
 
-### single and double 
+### single and double
 if (x[3]==0 and x[4]==0):
     RW12=""
     RW21=""
@@ -211,33 +217,25 @@ if (x[3]==0 and x[4]==0):
     WR12=""
     WR21=""
     WR22=""
-    
+
 elif (x[3]==1 and x[4]==0):
-    RW11=""
     RW21=""
     RW22=""
     WW22=""
-    WR11=""
     WR21=""
     WR22=""
 elif (x[3]==0 and x[4]==1):
-    RW11=""
     RW12=""
     RW22=""
-    WW11=""
-    WR11=""
     WR12=""
-    WR22=""  
-  
+    WR22=""
+
 elif (x[3]==1 and x[4]==1):
-    RW11=""
     RW12=""
     RW21=""
-    WW11=""
-    WR11=""
     WR12=""
     WR21=""
-    
+
 paramsDesc.update({"ENREAD":enRead,"enReadIndex":enReadIndex,"ENWRITE":enWrite,
                    "enWriteIndex":enWriteIndex,"IN2":in2,"inIndex":inIndex,"OUT2":out2,"outIndex":outIndex,
                    "ADDRLENGTH":str(x[1]),"WRITELENGTH":str(write_len),"READLENGTH":str(read_len),
@@ -245,23 +243,23 @@ paramsDesc.update({"ENREAD":enRead,"enReadIndex":enReadIndex,"ENWRITE":enWrite,
                    "Desc4":Desc4,"Desc5":Desc5,"Desc6":Desc6,"Desc7":Desc7,
                    "TASKNR":str(taskNr),"SUBMISSIONEMAIL":submissionEmail})
 
-paramsDesc.update({"RW11":RW11,"RW12":RW12,"RW21":RW21,"RW22":RW22,"WW11":WW11,"WW22":WW22,
-		   "WR11":WR11,"WR12":WR12,"WR21":WR21,"WR22":WR22})
+paramsDesc.update({"RW12":RW12,"RW21":RW21,"RW22":RW22,"WW22":WW22,
+		   "WR12":WR12,"WR21":WR21,"WR22":WR22})
 
 #############################
 # FILL DESCRIPTION TEMPLATE #
 #############################
-filename ="templates/task_description_template.tex"
-with open (filename, "r") as template_file:
-    data=template_file.read()
+env.loader = FileSystemLoader('templates/')
+filename ="task_description/task_description_template_{0}.tex".format(language)
+template = env.get_template(filename)
+template = template.render(paramsDesc)
 
 filename ="tmp/desc_{0}_Task{1}.tex".format(userId,taskNr)
 with open (filename, "w") as output_file:
-    s = MyTemplate(data)
-    output_file.write(s.substitute(paramsDesc))
+    output_file.write(template)
 
 ########################################
-######## GENERATE TESTVECTORS ########## 
+######## GENERATE TESTVECTORS ##########
 ########################################
 random_addr=[]
 content_in=[]
@@ -285,7 +283,7 @@ for i in y:
     content_in.append('"'+'0'*(write_len-len(bin(i)[2:]))+bin(i)[2:]+'"')
 
 for i in range(len(content_in)-1):
-    content_in[i]+=","        
+    content_in[i]+=","
 content_in=("\n"+(25)*" ").join(content_in)
 
 # array of random second input data
@@ -298,7 +296,7 @@ for i in range(len(content_test_in)-1):
 content_test_in=("\n"+(25)*" ").join(content_test_in)
 
 ########################################
-### SET PARAMETERS FOR EXAM TEMPLATE ### 
+### SET PARAMETERS FOR EXAM TEMPLATE ###
 ########################################
 paramsExam.update({"READLENGTH":str(read_len-1),"ADDRLENGTH":str(x[1]-1),"WRITELENGTH":str(write_len-1),
                "RANDOM_ADDR":random_addr,"CONTENT_IN1":content_in,
@@ -308,21 +306,22 @@ paramsExam.update({"READLENGTH":str(read_len-1),"ADDRLENGTH":str(x[1]-1),"WRITEL
 ### FILL EXAM TEMPLATE ###
 ##########################
 if x[2]==0:
-    filename ="templates/testbench_exam_1.vhdl"
+    filename ="testbench_exam_1.vhdl"
 elif x[2]==1:
-    filename ="templates/testbench_exam_2.vhdl"
+    filename ="testbench_exam_2.vhdl"
 elif x[2]==2:
-    filename ="templates/testbench_exam_3.vhdl"
+    filename ="testbench_exam_3.vhdl"
 elif x[2]==3:
-    filename ="templates/testbench_exam_4.vhdl"
-    
-with open (filename, "r") as template_file:
-    data=template_file.read()
-    
+    filename ="testbench_exam_4.vhdl"
+
+env = Environment()
+env.loader = FileSystemLoader('templates/')
+template = env.get_template(filename)
+template = template.render(paramsExam)
+
 filename ="tmp/RAM_tb_exam_{0}_Task{1}.vhdl".format(userId,taskNr)
 with open (filename, "w") as output_file:
-    s = MyTemplate(data)
-    output_file.write(s.substitute(paramsExam))
+    output_file.write(template)
 
 ###########################
 ### PRINT TASKPARAMETERS ##

@@ -18,6 +18,7 @@ task_nr=$2
 submission_email=$3
 mode=$4
 semester_db=$5
+language=$6
 
 ##########################
 ########## PATHS #########
@@ -46,7 +47,7 @@ fi
 ####### GENERATE #########
 ##########################
 cd ${task_path}
-task_parameters=$(python3 scripts/generateTask.py "${user_id}" "${task_nr}" "${submission_email}")
+task_parameters=$(python3 scripts/generateTask.py "${user_id}" "${task_nr}" "${submission_email}" "${language}")
 
 #generate the description pdf and move it to user's description folder
 cd ${task_path}/tmp
@@ -62,18 +63,20 @@ fi
 rm desc_${user_id}_Task${task_nr}.aux
 rm desc_${user_id}_Task${task_nr}.log
 rm desc_${user_id}_Task${task_nr}.tex
+
+#move the generated entity file to user's descritption folder
 mv ${task_path}/tmp/desc_${user_id}_Task${task_nr}.pdf ${desc_path}
 
 #copy static files to user's description folder
-cp $task_path/static/blockcode_beh.vhdl $desc_path
+cp ${task_path}/static/blockcode_beh.vhdl $desc_path
 
 #move generated files to user's description folder
-mv $task_path/tmp/blockcode_${user_id}_Task${task_nr}.vhdl $desc_path/blockcode.vhdl
+mv ${task_path}/tmp/blockcode_${user_id}_Task${task_nr}.vhdl ${desc_path}/blockcode.vhdl
 
 ##########################
 ##   EMAIL ATTACHMENTS  ##
 ##########################
-task_attachments="$desc_path/desc_${user_id}_Task${task_nr}.pdf $desc_path/blockcode_beh.vhdl $desc_path/blockcode.vhdl"
+task_attachments="${desc_path}/desc_${user_id}_Task${task_nr}.pdf ${desc_path}/blockcode_beh.vhdl ${desc_path}/blockcode.vhdl"
 
 ##########################
 ## ADD TASK TO DATABASE ##

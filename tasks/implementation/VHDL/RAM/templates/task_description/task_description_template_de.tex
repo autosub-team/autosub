@@ -1,0 +1,131 @@
+\documentclass[a4paper,12pt]{article}
+\usepackage{a4wide}
+\usepackage{tikz}
+\usetikzlibrary{calc}
+
+\usepackage[ngerman]{babel}
+
+\begin{document}
+\pagestyle{empty}
+\setlength{\parindent}{0em}
+\section*{RAM (Datenspeicher)}
+
+Ihre Aufgabe ist es, das Verhalten einer Entity  namens "`RAM"' zu programmieren. Die Entity ist in der angeh\"angten Datei "`RAM.vhdl"' deklariert und hat folgende Eigenschaften:
+
+\begin{itemize}
+\item Eingang:  Clk vom Typ std\_logic
+\item Eingang:  en\_read{{enReadIndex}} vom Typ std\_logic
+{{ENREAD}}\item Eingang:  en\_read2 vom Typ std\_logic
+\item Eingang:  en\_write{{enWriteIndex}} vom Typ std\_logic
+{{ENWRITE}}\item Eingang:  en\_write2 vom Typ std\_logic
+\item Eingang:  input{{inIndex}} vom Typ std\_logic\_vector
+{{IN2}}\item Eingang:  input2 vom Typ std\_logic\_vector
+\item Eingang:  addr1 vom Typ std\_logic\_vector
+\item Eingang:  addr2 vom Typ std\_logic\_vector
+\item Ausgang: output{{outIndex}} vom Typ std\_logic\_vector
+{{OUT2}}\item Ausgang: output2 vom Typ std\_logic\_vector
+\end{itemize}
+
+\begin{center}
+\begin{tikzpicture}
+\draw node [draw,rectangle, minimum height=45mm, minimum width=35mm,rounded corners=2mm,thick](entity){};
+\draw[->,thick] ($ (entity.west)-(10mm,18mm)$) -- ($ (entity.west) - (0mm,18mm)$);
+\draw node at ($ (entity.west)-(15mm,18mm)$){Clk};
+
+{{ENREAD}}\draw[->,thick] ($ (entity.west)-(10mm,13mm)$) -- ($ (entity.west) - (0mm,13mm)$);
+{{ENREAD}}\draw node at ($ (entity.west)-(19mm,13mm)$){en\_read2};
+\draw[->,thick] ($ (entity.west)-(10mm,9mm)$) -- ($ (entity.west) - (0mm,9mm)$);
+\draw node at ($ (entity.west)-(19mm,9mm)$){en\_read{{enReadIndex}}};
+{{ENWRITE}}\draw[->,thick] ($ (entity.west)-(10mm,5mm)$) -- ($ (entity.west) - (0mm,5mm)$);
+{{ENWRITE}}\draw node at ($ (entity.west)-(19mm,5mm)$){en\_write2};
+\draw[->,thick] ($ (entity.west)-(10mm,1mm)$) -- ($ (entity.west) - (0mm,1mm)$);
+\draw node at ($ (entity.west)-(19mm,1mm)$){en\_write{{enWriteIndex}}};
+
+{{IN2}}\draw[->,thick] ($ (entity.west)-(10mm,-5mm)$) -- ($ (entity.west) - (0mm,-5mm)$);
+{{IN2}}\draw node at ($ (entity.west)-(17mm,-5mm)$){input2};
+\draw[->,thick] ($ (entity.west)-(10mm,-9mm)$) -- ($ (entity.west) - (0mm,-9mm)$);
+\draw node at ($ (entity.west)-(17mm,-9mm)$){input{{inIndex}}};
+
+\draw[->,thick] ($ (entity.west)-(10mm,-15mm)$) -- ($ (entity.west) - (0mm,-15mm)$);
+\draw node at ($ (entity.west)-(17mm,-15mm)$){addr2};
+\draw[->,thick] ($ (entity.west)-(10mm,-19mm)$) -- ($ (entity.west) - (0mm,-19mm)$);
+\draw node at ($ (entity.west)-(17mm,-19mm)$){addr1};
+
+\draw[->,thick] ($ (entity.east) + (0mm,-2.5mm)$) -- ($ (entity.east) + (10mm,-2.5mm)$);
+\draw node at ($ (entity.east) + (19mm,-2.5mm)$){output{{outIndex}}};
+{{OUT2}}\draw[->,thick] ($ (entity.east) + (0mm,2.5mm)$) -- ($ (entity.east) + (10mm,2.5mm)$);
+{{OUT2}}\draw node at ($ (entity.east) + (19mm,2.5mm)$){output2};
+
+\draw node at ($ (entity) - (0,14mm)$){RAM};
+
+\end{tikzpicture}
+\end{center}
+
+Ver\"andern sie die Datei "`RAM.vhdl"' nicht!\\
+
+Die Entity "`RAM"' soll sich wie folgt verhalten:\\
+
+Die Ausg\"ange der Entity und der Inhalt des RAMs k\"onnen sich nur bei einer steigenden Flanke des Taktsignals ver\"andern. Der anf\"angliche Inhalt des Speichers ist Null.\\
+
+Die Adresse einer Speicherposition, an die Daten geschrieben oder von der Daten ausgelesen werden, wird durch die Adresseing\"ange festgelegt. Wenn die Steuerein\"ange f\"ur einen Lesebefehl ("`read enable"') oder einen Schreibbefehl ("`write enable"') aktiv sind ('1'), dann soll der jeweilige Befehl bei steigender Flanke des Taktsignals ausgef\"uhrt werden.
+
+\begin{itemize}
+{{Desc0}}\item Die erste Adresse ist die Adresse f\"ur den ersten Schreibbefehl (aktiviert durch en\_write1) und den Lesebefehl (aktiviert durch en\_read). Die zweite Adresse ist die Adresse f\"ur den zweiten Schreibbefehl (aktiviert durch en\_write2) und hat keine zus\"atzliche Funktion.
+{{Desc0}}\item Wenn nur en\_read '1' ist, dann wird der Inhalt von addr1 gelesen und am Ausgang ausgegeben.
+{{Desc0}}\item Wenn nur en\_write1 '1' ist, dann wird der Eingang input1 an die Adresse addr1 geschrieben.
+{{Desc0}}\item Wenn nur en\_write2 '1' ist, dann wird der Eingang input2 an die Adresse addr2 geschrieben.
+{{Desc0}}\item Lesen von addr1 und Schreiben auf addr2 kann gleichzeitig ausgef\"uhrt werden, wenn addr1 sich von addr2 unterscheidet{{RW22}}{{RW12}}{{RW21}}.
+{{Desc0}}\item Zwei Schreibbefehle k\"onnen gleichzeitig ausgef\"uhrt werden, wenn sich addr1 von addr2 unterscheidet{{WW22}}.
+{{Desc0}}\item Beachten Sie, dass sich in allen anderen F\"allen der Inhalt des RAMs nicht ver\"andern darf und der Ausgang hochohmig (high impedance, 'Z') sein soll.
+
+
+{{Desc1}}\item Die erste Adresse ist die Adresse f\"ur den ersten Lesebefehl (aktiviert durch en\_read1) und den Schreibbefehl (aktiviert durch en\_write). Die zweite Adresse ist die Adresse f\"ur den zweiten Lesebefehl (aktiviert durch en\_read2) und hat keine zus\"atzliche Funktion.
+{{Desc1}}\item Wenn nur en\_read1 '1' ist, dann wird der Inhalt von addr1 gelesen und am Ausgang output1 ausgegeben.
+{{Desc1}}\item Wenn nur en\_read2 '1' ist, dann wird der Inhalt von addr2 gelesen und am Ausgang output2 ausgegeben.
+{{Desc1}}\item Wenn nur en\_write '1' ist, dann wird der Eingang an die Adresse addr1 geschrieben.
+{{Desc1}}\item Lesen von addr2 und Schreiben auf addr1 kann gleichzeitig ausgef\"uhrt werden, wenn addr1 sich von addr2 unterscheidet{{WR22}}{{WR12}}{{WR21}}.
+{{Desc1}}\item Zwei Lesebefehle k\"onnen gleichzeitig ausgef\"uhrt werden.
+{{Desc1}}\item Beachten Sie, dass sich in allen anderen F\"allen der Inhalt des RAMs nicht ver\"andern darf und der Ausgang hochohmig (high impedance, 'Z') sein soll.
+
+
+{{Desc2}}\item Die erste Adresse ist die Adresse f\"ur den ersten Lesebefehl (aktiviert durch en\_read1) und den ersten Schreibbefehl (aktiviert durch en\_write1). Die zweite Adresse ist die Adresse f\"ur den zweiten Lesebefehl (aktiviert durch en\_read2) und den zweiten Schreibbefehl (aktiviert durch en\_write2).
+{{Desc2}}\item Wenn nur en\_read1 '1' ist, dann wird der Inhalt von addr1 gelesen und am Ausgang output1 ausgegeben.
+{{Desc2}}\item Wenn nur en\_read2 '1' ist, dann wird der Inhalt von addr2 gelesen und am Ausgang output2 ausgegeben.
+{{Desc2}}\item Wenn nur en\_write1 '1' ist, dann wird der Eingang input1 an die Adresse addr1 geschrieben.
+{{Desc2}}\item Wenn nur en\_write2 '1' ist, dann wird der Eingang input2 an die Adresse addr2 geschrieben.
+{{Desc2}}\item Zwei Schreibbefehle k\"onnen gleichzeitig ausgef\"uhrt werden, wenn sich addr1 von addr2 unterscheidet{{WW22}}.
+{{Desc2}}\item Lesen von addr1 und Schreiben auf addr2 kann gleichzeitig erfolgen, wenn sich addr1 von addr2 unterscheidet{{RW22}}{{RW12}}{{RW21}}.
+{{Desc2}}\item Lesen von addr2 und Schreiben auf addr1 kann gleichzeitig erfolgen, wenn sich addr1 von addr2 unterscheidet{{WR22}}{{WR12}}{{WR21}}.
+{{Desc2}}\item Zwei Lesebefehle k\"onnen gleichzeitig ausgef\"uhrt werden.
+{{Desc2}}\item Beachten Sie, dass sich in allen anderen F\"allen der Inhalt des RAMs nicht ver\"andern darf und der Ausgang hochohmig (high impedance, 'Z') sein soll.
+
+
+{{Desc3}}\item Die erste Adresse ist die Adresse f\"ur den Schreibbefehl (aktiviert durch en\_write). Die zweite Adresse ist die Adresse f\"ur den Lesebefehl (aktiviert durch en\_read).
+{{Desc3}}\item Wenn nur en\_write '1' ist, dann wird der Eingang an die Adresse addr1 geschrieben.
+{{Desc3}}\item Wenn nur en\_read '1' ist, dann wird der Inhalt von addr2 gelesen und am Ausgang ausgegeben.
+{{Desc3}}\item Lese- und Schreibbefehl k\"onnen gleichzeitig von bzw. auf die gleiche Adresse erfolgen. Der Lesebefehl wird dabei vorrangig behandlet. Dies bedeutet, dass zuerst der Lesebefehl ausgef\"uhrt wird und erst danach der Schreibbefehl.
+{{Desc3}}\item Beachten Sie, dass sich in allen anderen F\"allen der Inhalt des RAMs nicht ver\"andern darf und der Ausgang hochohmig (high impedance, 'Z') sein soll.
+
+\item Wenn der Speicher nicht ausgelesen wird, soll der zugeh\"orige Ausgang hochohmig (high impedance,'Z') sein.
+\end{itemize}
+
+Die L\"ange der Adressen betr\"agt {{ADDRLENGTH}} Bit, die L\"ange der Eingangsdaten {{WRITELENGTH}} Bit, die L\"ange der Ausgangsdaten {{READLENGTH}} Bit und die L\"ange der einzelnen Speicherzellen {{DATASIZE}} Bit.
+\begin{itemize}
+{{Desc4}}\item Wenn en\_write aktiv ist, dann sollen die Eingangsdaten an die angegebene Adresse geschrieben werden. Die L\"ange der Eingangsdaten und die L\"ange der Speicherzellen sind gleich.
+{{Desc5}}\item Die L\"ange der Eingangsdaten ist doppelt so gro"s wie die L\"ange der Speicherzellen. Daher soll die untere H\"alfte der Eingangsdaten an die angegebene Adresse und die oberen H\"alfte an die n\"achsth\"ohere Adresse geschrieben werden. Wir nehmen dabei an, dass die letztm\"ogliche Speicheradresse nie f\"ur einen Schreibbefehl verwendet wird.
+{{Desc6}}\item Wenn en\_read aktiv ist, dann sollen die Daten von der angegebenen Adresse gelesen werden. Die L\"ange der Ausgangsdaten und die L\"ange der Speicherzellen sind gleich.
+{{Desc7}}\item Die L\"ange der Ausgangsdaten ist doppelt so gro"s wie die L\"ange der Speicherzellen. Daher sollen die Daten von der angegebenen Adresse gelesen und in die untere H\"alfte der Ausgangsdaten gesetzt werden. In die obere H\"alfte der Ausgangsdaten sollen die Daten von der n\"achsth\"oheren Adresse gesetzt werden. Wir nehmen dabei an, dass die letztm\"ogliche Speicheradresse nie f\"ur einen Lesebefehl verwendet wird.
+\end{itemize}
+
+\vspace{0.7cm}
+
+Programmieren Sie dieses Verhalten in der angeh\"angten Datei "`RAM\_beh.vhdl"'.\\
+
+Um Ihre L\"osung abzugeben, senden Sie ein E-Mail mit dem Betreff "`Result Task {{ TASKNR }}"' und Ihrer Datei "`RAM\_beh.vhdl"'  an {{ SUBMISSIONEMAIL }}.
+
+\vspace{0.7cm}
+
+Viel Erfolg und m\"oge die Macht mit Ihnen sein.
+
+\end{document}
+\grid

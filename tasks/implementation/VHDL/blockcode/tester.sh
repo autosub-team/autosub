@@ -24,13 +24,13 @@ FAILURE=1
 task_path=$(readlink -f $0|xargs dirname)
 
 #path to common scripts
-common_path=$(readlink -f $task_path/../_common)
+common_path=$(readlink -f ${task_path}/../_common)
 
 # include external config
-source $task_path/task.cfg
+source ${task_path}/task.cfg
 
 #include simulator specific common file
-source $common_path/$commonfile
+source ${common_path}/${commonfile}
 
 #----------------- TEST ----------------
 generate_testbench
@@ -41,9 +41,9 @@ taskfiles_analyze
 
 userfiles_analyze
 
-if [ -n "$constraintfile" ]
+if [ -n "${constraintfile}" ]
 then
-	source $task_path/$constraintfile
+	source ${task_path}/${constraintfile}
 fi
 
 elaborate
@@ -51,9 +51,9 @@ elaborate
 simulate
 
 # catch unhandled cases:
-cd $user_task_path
+cd ${user_task_path}
 touch error_msg
 echo "Error: Unhandled tester case for task ${task_name} for user ${user_id}!"
 echo "Something went wrong with task ${task_nr}. This is not your " \
 "fault. We are working on a solution" > error_msg
-exit $TASKERROR
+exit ${TASKERROR}
