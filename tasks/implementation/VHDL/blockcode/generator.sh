@@ -64,13 +64,13 @@ rm desc_${user_id}_Task${task_nr}.aux
 rm desc_${user_id}_Task${task_nr}.log
 rm desc_${user_id}_Task${task_nr}.tex
 
-#move the generated entity file to user's descritption folder
+#move the generated description file to user's descritption folder
 mv ${task_path}/tmp/desc_${user_id}_Task${task_nr}.pdf ${desc_path}
 
 #copy static files to user's description folder
 cp ${task_path}/static/blockcode_beh.vhdl $desc_path
 
-#move generated files to user's description folder
+#move generated entity file to user's description folder
 mv ${task_path}/tmp/blockcode_${user_id}_Task${task_nr}.vhdl ${desc_path}/blockcode.vhdl
 
 ##########################
