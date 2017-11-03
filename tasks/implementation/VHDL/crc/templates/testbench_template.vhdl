@@ -11,40 +11,40 @@ architecture behavior of crc_tb is
         port
         (
             NEW_MSG   : in std_logic;
-            MSG       : in std_logic_vector(%%MSGLEN-1 downto 0);
+            MSG       : in std_logic_vector({{MSGLEN}}-1 downto 0);
             CLK       : in std_logic;
             CRC_VALID : out std_logic;
-            CRC       : out std_logic_vector(%%CRCWIDTH-1 downto 0)
+            CRC       : out std_logic_vector({{CRCWIDTH}}-1 downto 0)
         );
-    end component;    
+    end component;
 
     type pattern_type is record
-        MSG : std_logic_vector(%%MSGLEN-1 downto 0);
-        CRC : std_logic_vector(%%CRCWIDTH-1 downto 0);
+        MSG : std_logic_vector({{MSGLEN}}-1 downto 0);
+        CRC : std_logic_vector({{CRCWIDTH}}-1 downto 0);
     end record;
 
     type pattern_array is array (natural range <>) of pattern_type;
 
     constant patterns : pattern_array:=(
-            %%TESTPATTERN
+            {{TESTPATTERN}}
             );
 
     function image(in_image : std_logic_vector) return string is
         variable L : Line;  -- access type
-        variable W : String(1 to in_image'length) := (others => ' ');  
+        variable W : String(1 to in_image'length) := (others => ' ');
     begin
         WRITE(L, in_image);
         W(L.all'range) := L.all;
         Deallocate(L);
         return W;
     end image;
-    
+
     signal NEW_MSG_UUT      : std_logic;
-    signal MSG_UUT          : std_logic_vector(%%MSGLEN-1 downto 0);
+    signal MSG_UUT          : std_logic_vector({{MSGLEN}}-1 downto 0);
     signal CLK_UUT          : std_logic;
     signal CRC_VALID_UUT    : std_logic;
-    signal CRC_UUT          : std_logic_vector(%%CRCWIDTH-1 downto 0);
-    
+    signal CRC_UUT          : std_logic_vector({{CRCWIDTH}}-1 downto 0);
+
     signal cnt_reset : std_logic;
     signal clk_cnt: integer;
 
@@ -60,7 +60,7 @@ begin
             CRC_VALID  => CRC_VALID_UUT,
             CRC        => CRC_UUT
         );
- 
+
     clk_generator : process
     begin
         CLK_UUT <= '0';
@@ -68,14 +68,14 @@ begin
         CLK_UUT <= '1';
         wait for clk_period/2;
     end process;
-    
-    clk_counter: process(CLK_UUT,cnt_reset)    
+
+    clk_counter: process(CLK_UUT,cnt_reset)
     begin
         if(rising_edge(CLK_UUT)) then
             if(cnt_reset='1') then
                 clk_cnt <= 0;
-            else 
-                clk_cnt <= clk_cnt + 1; 
+            else
+                clk_cnt <= clk_cnt + 1;
             end if;
         end if;
     end process clk_counter;
@@ -92,9 +92,9 @@ begin
             cnt_reset <= '1';
             wait until rising_edge(CLK_UUT);
             cnt_reset <= '0';
- 
-            -- wait msgwidth 
-            wait until (clk_cnt = %%MSGLEN+2);
+
+            -- wait msgwidth
+            wait until (clk_cnt = {{MSGLEN}}+2);
 
             -- check the CRC_VALID
             if(CRC_VALID_UUT /= '1') then
@@ -116,5 +116,5 @@ begin
         end loop;
 
         report "Success" severity failure;
-    end process test;  
+    end process test;
 end behavior;

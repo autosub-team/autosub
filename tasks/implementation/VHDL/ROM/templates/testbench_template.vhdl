@@ -7,14 +7,14 @@ end ROM_tb;
 
 architecture Behavioral of ROM_tb is
     component ROM port(Clk,enable : in std_logic;
-		addr : in std_logic_vector(%%ADDRLENGTH  downto 0);
-		output : out std_logic_vector(%%INSTRUCTIONLENGTH downto 0));
+		addr : in std_logic_vector({{ADDRLENGTH}}  downto 0);
+		output : out std_logic_vector({{INSTRUCTIONLENGTH}} downto 0));
     end component;
 
 
     signal Clk,enable : std_logic := '0'; --clock signal and enable
-    signal addr : std_logic_vector(%%ADDRLENGTH  downto 0) := (others => '0'); --address
-    signal output : std_logic_vector(%%INSTRUCTIONLENGTH downto 0) := (others => '0');  --output of ROM
+    signal addr : std_logic_vector({{ADDRLENGTH}}  downto 0) := (others => '0'); --address
+    signal output : std_logic_vector({{INSTRUCTIONLENGTH}} downto 0) := (others => '0');  --output of ROM
     constant Clk_period : time := 10 ns;
 
 begin
@@ -34,16 +34,16 @@ begin
  stim_proc: process
 
         variable err : std_logic := '0';
-        variable zero_out : std_logic_vector(%%INSTRUCTIONLENGTH downto 0) := (others => '0');
-        variable zero_addr : std_logic_vector(%%ADDRLENGTH downto 0) := (others => '0');
-	    variable U_out : std_logic_vector(%%INSTRUCTIONLENGTH downto 0) := (others => 'U');
+        variable zero_out : std_logic_vector({{INSTRUCTIONLENGTH}} downto 0) := (others => '0');
+        variable zero_addr : std_logic_vector({{ADDRLENGTH}} downto 0) := (others => '0');
+	    variable U_out : std_logic_vector({{INSTRUCTIONLENGTH}} downto 0) := (others => 'U');
 	    --non-zero content findig
 	    variable count: integer :=0;
-	    type con_array is array (0 to 1) of std_logic_vector(%%INSTRUCTIONLENGTH downto 0);
+	    type con_array is array (0 to 1) of std_logic_vector({{INSTRUCTIONLENGTH}} downto 0);
         variable content_clk_check : con_array;
 	    type addr_array is array (0 to 1) of integer;
         variable addr_clk_check : addr_array;
-        variable out_1,out_2,out_3 : std_logic_vector(%%INSTRUCTIONLENGTH downto 0);
+        variable out_1,out_2,out_3 : std_logic_vector({{INSTRUCTIONLENGTH}} downto 0);
 
            --to_string function for report
            function to_string ( a: std_logic_vector) return string is
@@ -55,13 +55,13 @@ begin
                 return b;
             end function;
 
-        type random_array is array (0 to %%DATALENGTH) of integer;
+        type random_array is array (0 to {{DATALENGTH}}) of integer;
         constant random : random_array :=(
-                                    %%RANDOM);
+                                    {{RANDOM}});
 
-        type content_array is array (0 to %%DATALENGTH) of std_logic_vector(%%INSTRUCTIONLENGTH downto 0);
+        type content_array is array (0 to {{DATALENGTH}}) of std_logic_vector({{INSTRUCTIONLENGTH}} downto 0);
         constant content : content_array :=(
-							%%INSTRUCTIONS);
+							{{INSTRUCTIONS}});
 
 begin
 
@@ -69,38 +69,38 @@ begin
     enable <= '1';
 
      for i in random'range loop
-         addr <= std_logic_vector(to_unsigned(random(i),%%ADDRESSLENGTH));
+         addr <= std_logic_vector(to_unsigned(random(i),{{ADDRESSLENGTH}}));
          wait for Clk_period*2;
-             if (output/=content(random(i)-%%START) and output/=U_out) then
+             if (output/=content(random(i)-{{START}}) and output/=U_out) then
 	      report "§{ROM is not properly filled with the data specified in the description file: " &
-                     "In address " & to_string(std_logic_vector(to_unsigned(random(i),%%ADDRESSLENGTH))) &
-                     ", the expected content is " & to_string(content(random(i)-%%START)) &
+                     "In address " & to_string(std_logic_vector(to_unsigned(random(i),{{ADDRESSLENGTH}}))) &
+                     ", the expected content is " & to_string(content(random(i)-{{START}})) &
                      ". But the received output is " & to_string(output) & ".}§"
                      severity failure;
-             elsif (output/=content(random(i)-%%START) and output=U_out) then
+             elsif (output/=content(random(i)-{{START}}) and output=U_out) then
                      report "§{Output is '" &  to_string(std_logic_vector(U_out)) &
                     "'. Probably, you have not correctly assigned or used the output signal 'output' or other variables.}§" severity failure;
              end if;
      end loop;
 
-      for i in %%START+%%DATALENGTH+1 to 2**%%ADDRESSLENGTH-1 loop
-         addr <= std_logic_vector(to_unsigned(i,%%ADDRESSLENGTH));
+      for i in {{START}}+{{DATALENGTH}}+1 to 2**{{ADDRESSLENGTH}}-1 loop
+         addr <= std_logic_vector(to_unsigned(i,{{ADDRESSLENGTH}}));
         wait for Clk_period*2;
          if (output/=zero_out) then
 			report "§{ROM is not properly filled with the data specified in the description file: " &
-                     "In address " & to_string(std_logic_vector(to_unsigned(i,%%ADDRESSLENGTH))) &
+                     "In address " & to_string(std_logic_vector(to_unsigned(i,{{ADDRESSLENGTH}}))) &
                      ", the expected content is zero. But the received output is " & to_string(output) & ".}§"
                      severity failure;
          end if;
       end loop;
 
 
-     for i in 0 to %%START-1 loop
-         addr <= std_logic_vector(to_unsigned(i,%%ADDRESSLENGTH));
+     for i in 0 to {{START}}-1 loop
+         addr <= std_logic_vector(to_unsigned(i,{{ADDRESSLENGTH}}));
         wait for Clk_period*2;
          if (output/=zero_out) then
 	      report "§{ROM is not properly filled with the data specified in the description file: " &
-                     "In address " & to_string(std_logic_vector(to_unsigned(i,%%ADDRESSLENGTH))) &
+                     "In address " & to_string(std_logic_vector(to_unsigned(i,{{ADDRESSLENGTH}}))) &
                      ", the expected content is zero. But the received output is " & to_string(output) & ".}§"
                      severity failure;
          end if;
@@ -114,14 +114,14 @@ begin
     -- to find two non-zero content
 
     for i in random'range loop
-        if (content(random(i)-%%START)/=zero_out and count<2) then
-            if (count=1 and content_clk_check(0)/=content(random(i)-%%START)) then
+        if (content(random(i)-{{START}})/=zero_out and count<2) then
+            if (count=1 and content_clk_check(0)/=content(random(i)-{{START}})) then
                 addr_clk_check(count):=random(i);
-                content_clk_check(count):=content(random(i)-%%START);
+                content_clk_check(count):=content(random(i)-{{START}});
             end if;
             if count=0 then
                 addr_clk_check(count):=random(i);
-                content_clk_check(count):=content(random(i)-%%START);
+                content_clk_check(count):=content(random(i)-{{START}});
             end if;
             count:=count+1;
         end if;
@@ -130,40 +130,40 @@ begin
 
     --Check if wrong edge is used
     enable <= '1';
-    wait until %%OPPOSITECLK(Clk);
+    wait until {{OPPOSITECLK}}(Clk);
     wait for Clk_period/10;
-    addr <= std_logic_vector(to_unsigned(addr_clk_check(0),%%ADDRESSLENGTH));
-    wait until %%CLK(Clk);
+    addr <= std_logic_vector(to_unsigned(addr_clk_check(0),{{ADDRESSLENGTH}}));
+    wait until {{CLK}}(Clk);
     wait for Clk_period/10;
     out_1 := output;
 
-    wait until %%OPPOSITECLK(Clk);
+    wait until {{OPPOSITECLK}}(Clk);
     wait for Clk_period/10;
 
     out_2 := output;
 
     if (out_1 /= out_2) then
-        report "§{The output is changing on %%oppositeClk of the clock signal, but it should not.}§" severity failure;
+        report "§{The output is changing on {{oppositeClk}} of the clock signal, but it should not.}§" severity failure;
     end if;
 
     --Check the right edge is used
-    wait until %%CLK(Clk);
+    wait until {{CLK}}(Clk);
     wait for Clk_period/10;
-    addr <= std_logic_vector(to_unsigned(addr_clk_check(1),%%ADDRESSLENGTH));
-    wait until %%OPPOSITECLK(Clk);
+    addr <= std_logic_vector(to_unsigned(addr_clk_check(1),{{ADDRESSLENGTH}}));
+    wait until {{OPPOSITECLK}}(Clk);
     wait for Clk_period/10;
     out_1 := output;
-    wait until %%CLK(Clk);
+    wait until {{CLK}}(Clk);
     wait for Clk_period/10;
     out_3 := output;
     if (out_1 = content_clk_check(1) or out_3 /= content_clk_check(1)) then
-        report "§{Your output does not change on the first %%mainClk after a new address was set on the input 'addr'.}§" severity failure;
+        report "§{Your output does not change on the first {{mainClk}} after a new address was set on the input 'addr'.}§" severity failure;
     end if;
 
     ----------------- enable check-----------------------
 	enable <= '0';
 	for i in random'range loop
-		addr <= std_logic_vector(to_unsigned(random(i),%%ADDRESSLENGTH));
+		addr <= std_logic_vector(to_unsigned(random(i),{{ADDRESSLENGTH}}));
 		wait for Clk_period/0.9;
 		if (output/=zero_out) then
 			report "§{The output is not zero when the enable signal is not active.}§" severity failure;

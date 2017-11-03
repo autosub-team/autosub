@@ -14,16 +14,10 @@ from random import randrange
 from crcGenerator import genCRC
 from bitstring import Bits
 
-
-###########################
-##### TEMPLATE CLASS ######
-###########################
-class MyTemplate(string.Template):
-    delimiter = "%%"
-
+from jinja2 import FileSystemLoader, Environment
 #################################################################
 
-taskParameters=sys.argv[1] 
+taskParameters=sys.argv[1]
 params={}
 
 
@@ -52,15 +46,18 @@ for i in range(numVectors-1):
 testPattern=("\n"+12*" ").join(testVectors) #format and join
 
 ##########################################
-## SET PARAMETERS FOR TESTBENCH TEMPLATE # 
+## SET PARAMETERS FOR TESTBENCH TEMPLATE #
 ##########################################
 params.update({"CRCWIDTH":crcWidth,"MSGLEN":msgLen,"TESTPATTERN":testPattern})
 
 ############################
 ## FILL TESTBENCH TEMPLATE #
 ############################
-filename ="templates/testbench_template.vhdl"
-with open (filename, "r") as template_file:
-    data=template_file.read()
-    s = MyTemplate(data)
-    print(s.substitute(params))
+env = Environment()
+env.loader = FileSystemLoader('templates/')
+filename ="testbench_template.vhdl"
+template = env.get_template(filename)
+template = template.render(params)
+
+print(template)
+

@@ -2,7 +2,7 @@
 
 ########################################################################
 # generateTask.py for VHDL task crc
-# Generates random tasks, generates TaskParameters, fill 
+# Generates random tasks, generates TaskParameters, fill
 # entity and description templates
 #
 # Copyright (C) 2015 Martin  Mosbeck   <martin.mosbeck@gmx.at>
@@ -15,17 +15,14 @@ from crcGenerator import genCRC
 import string
 import sys
 
-###########################
-##### TEMPLATE CLASS ######
-###########################
-class MyTemplate(string.Template):
-    delimiter = "%%"
+from jinja2 import FileSystemLoader, Environment
 
 #################################################################
 
 userId=sys.argv[1]
 taskNr=sys.argv[2]
 submissionEmail=sys.argv[3]
+language=sys.argv[4]
 
 paramsDesc={}
 paramsEntityCRC={}
@@ -65,7 +62,7 @@ with open (filename, "w") as solution:
 #########################################################
 
 ################################################
-# GENERATE PARAMETERS FOR DESCRIPTION TEMPLATE # 
+# GENERATE PARAMETERS FOR DESCRIPTION TEMPLATE #
 ################################################
 generatorString=[]
 
@@ -87,7 +84,7 @@ exampleMSG=Bits(uint=randrange(0,2**msgLen),length=msgLen).bin
 exampleCRC=genCRC(exampleMSG,generator)
 
 ###########################################
-# SET PARAMETERS FOR DESCRIPTION TEMPLATE # 
+# SET PARAMETERS FOR DESCRIPTION TEMPLATE #
 ###########################################
 paramsDesc.update({"CRCWIDTH":str(genDegree),"GENSTRING":generatorString,"MSGLEN":str(msgLen),"GENDEG":str(genDegree),"GENBIN":"".join(generator),"CLOCKCYCLES":clockCycles,"EXAMPLEMSG":exampleMSG,"EXAMPLECRC":exampleCRC})
 paramsDesc.update({"TASKNR":str(taskNr),"SUBMISSIONEMAIL":submissionEmail})
@@ -95,52 +92,54 @@ paramsDesc.update({"TASKNR":str(taskNr),"SUBMISSIONEMAIL":submissionEmail})
 #############################
 # FILL DESCRIPTION TEMPLATE #
 #############################
-filename ="templates/task_description_template.tex"
-with open (filename, "r") as template_file:
-    data=template_file.read()
+env = Environment()
+env.loader = FileSystemLoader('templates/')
+filename ="task_description/task_description_template_{0}.tex".format(language)
+template = env.get_template(filename)
+template = template.render(paramsDesc)
 
 filename ="tmp/desc_{0}_Task{1}.tex".format(userId,taskNr)
 with open (filename, "w") as output_file:
-    s = MyTemplate(data)
-    output_file.write(s.substitute(paramsDesc))
+    output_file.write(template)
 
 ###########################################
-# SET PARAMETERS FOR ENTITY TEMPLATE CRC  # 
+# SET PARAMETERS FOR ENTITY TEMPLATE CRC  #
 ###########################################
 paramsEntityCRC.update({"CRCWIDTH":str(genDegree),"MSGLEN":str(msgLen)})
 
 #############################
 #   FILL ENTITY TEMPLATE    #
 #############################
-filename ="templates/crc_template.vhdl"
-with open (filename, "r") as template_file:
-    data=template_file.read()
+env = Environment()
+env.loader = FileSystemLoader('templates/')
+filename ="crc_template.vhdl"
+template = env.get_template(filename)
+template = template.render(paramsEntityCRC)
 
 filename ="tmp/crc_{0}_Task{1}.vhdl".format(userId,taskNr)
 with open (filename, "w") as output_file:
-    s = MyTemplate(data)
-    output_file.write(s.substitute(paramsEntityCRC))
-
+    output_file.write(template)
 
 ###########################################
-# SET PARAMETERS FOR ENTITY TEMPLATE FSR  # 
+# SET PARAMETERS FOR ENTITY TEMPLATE FSR  #
 ###########################################
 paramsEntityFSR.update({"CRCWIDTH":str(genDegree)})
 
 #############################
 #   FILL ENTITY TEMPLATE    #
 #############################
-filename ="templates/fsr_template.vhdl"
-with open (filename, "r") as template_file:
-    data=template_file.read()
+env = Environment()
+env.loader = FileSystemLoader('templates/')
+filename ="fsr_template.vhdl"
+template = env.get_template(filename)
+template = template.render(paramsEntityFSR)
 
 filename ="tmp/fsr_{0}_Task{1}.vhdl".format(userId,taskNr)
 with open (filename, "w") as output_file:
-    s = MyTemplate(data)
-    output_file.write(s.substitute(paramsEntityFSR))
+    output_file.write(template)
 
 ##############################################
-# SET PARAMETERS FOR EXAM TESTBENCH TEMPLATE # 
+# SET PARAMETERS FOR EXAM TESTBENCH TEMPLATE #
 ##############################################
 msgExample=Bits(uint=randrange(1,2**msgLen-1),length=msgLen).bin
 paramsTbExam.update({"CRCWIDTH":str(genDegree),"MSGLEN":str(msgLen),"MSG_EXAMPLE":msgExample})
@@ -148,15 +147,15 @@ paramsTbExam.update({"CRCWIDTH":str(genDegree),"MSGLEN":str(msgLen),"MSG_EXAMPLE
 #############################
 #   FILL ENTITY TEMPLATE    #
 #############################
-filename ="exam/testbench_exam_template.vhdl"
-with open (filename, "r") as template_file:
-    data=template_file.read()
+env = Environment()
+env.loader = FileSystemLoader('exam/')
+filename ="testbench_exam_template.vhdl"
+template = env.get_template(filename)
+template = template.render(paramsTbExam)
 
 filename ="tmp/crc_tb_exam_{0}_Task{1}.vhdl".format(userId,taskNr)
 with open (filename, "w") as output_file:
-    s = MyTemplate(data)
-    output_file.write(s.substitute(paramsTbExam))
-
+    output_file.write(template)
 
 ###########################
 ### PRINT TASKPARAMETERS ##

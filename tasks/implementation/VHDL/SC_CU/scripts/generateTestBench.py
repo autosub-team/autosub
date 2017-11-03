@@ -12,11 +12,7 @@ import sys
 import string
 from random import shuffle
 
-###########################
-##### TEMPLATE CLASS ######
-###########################
-class MyTemplate(string.Template):
-    delimiter = "%%"
+from jinja2 import FileSystemLoader, Environment
 
 
 #################################################################
@@ -26,7 +22,7 @@ sel_Inputs = []
 sel_Controls=[]
 sel_Strings =[]
 
-taskParameters=sys.argv[1] 
+taskParameters=sys.argv[1]
 In_1, In_2, In_3, In_4 = taskParameters.split('|')
 
 In_1 = int(In_1)
@@ -61,7 +57,7 @@ Controls=  ["\"10000000001\"",     # add
 		"\"00011000011\"",     # lw
 		"\"-000-100010\"",     # sw
 		"\"-010-0----0\"",     # j
-		"\"-100-001000\"",     # beq, Zero = 1 
+		"\"-100-001000\"",     # beq, Zero = 1
 		"\"-000-001000\"",     # beq, Zero = 0
 		"\"-000-001000\"",     # bne, Zero = 1
 		"\"-100-001000\""]     # bne, Zero = 0
@@ -105,7 +101,7 @@ else :
 	sel_Controls.append(Controls[In_2+1])
 	sel_Strings.append(Strings[In_2])
 	sel_Strings.append(Strings[In_2+1])
-	
+
 if In_3 < 10 :
 	sel_Inputs.append(Inputs[In_3])
 	sel_Controls.append(Controls[In_3])
@@ -117,7 +113,7 @@ else :
 	sel_Controls.append(Controls[In_3+1])
 	sel_Strings.append(Strings[In_3])
 	sel_Strings.append(Strings[In_3+1])
-	
+
 if In_4 < 10 :
 	sel_Inputs.append(Inputs[In_4])
 	sel_Controls.append(Controls[In_4])
@@ -149,26 +145,27 @@ for i in range(len(sel_Inputs)-1) :
 
 for i in range(len(sel_Controls)-1) :
     sel_Controls[i]+=","
-    
+
 for i in range(len(sel_Strings)-1) :
     sel_Strings[i]+=","
 
 TestPattern_inputs=("\n"+2*"\t").join(sel_Inputs)
 TestPattern_controls=("\n"+2*"\t").join(sel_Controls)
-TestPattern_strings=("\n"+2*"\t").join(sel_Strings)  
+TestPattern_strings=("\n"+2*"\t").join(sel_Strings)
 
 #########################################
-# SET PARAMETERS FOR TESTBENCH TEMPLATE # 
+# SET PARAMETERS FOR TESTBENCH TEMPLATE #
 #########################################
 params.update({"TESTPATTERN_INPUTS":TestPattern_inputs, "TESTPATTERN_CONTROLS":TestPattern_controls, "TESTPATTERN_STRINGS":TestPattern_strings, "ARRAY_SIZE":array_size})
 
 ###########################
 # FILL TESTBENCH TEMPLATE #
 ###########################
-filename ="templates/testbench_template.vhdl"
-with open (filename, "r") as template_file:
-    data=template_file.read()
-    s = MyTemplate(data)
-    print(s.substitute(params))
+env = Environment()
+env.loader = FileSystemLoader('templates/')
+filename ="testbench_template.vhdl"
 
+template = env.get_template(filename)
+template = template.render(params)
 
+print(template)

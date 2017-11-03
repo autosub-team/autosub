@@ -14,23 +14,23 @@ architecture behavior of crc_tb is
         port
         (
             NEW_MSG   : in std_logic;
-            MSG       : in std_logic_vector(%%MSGLEN-1 downto 0);
+            MSG       : in std_logic_vector({{MSGLEN}}-1 downto 0);
             CLK       : in std_logic;
             CRC_VALID : out std_logic;
-            CRC       : out std_logic_vector(%%CRCWIDTH-1 downto 0)
+            CRC       : out std_logic_vector({{CRCWIDTH}}-1 downto 0)
         );
-    end component; 
+    end component;
 
-    constant clk_period : time := 20 ns;  -- for 50MHz -> 20 ns   
+    constant clk_period : time := 20 ns;  -- for 50MHz -> 20 ns
 
     ---------------------------------------------------
     --------------- CONNECTING SIGNALS ----------------
-    ---------------------------------------------------   
+    ---------------------------------------------------
     signal NEW_MSG_UUT      : std_logic;
-    signal MSG_UUT          : std_logic_vector(%%MSGLEN-1 downto 0);
+    signal MSG_UUT          : std_logic_vector({{MSGLEN}}-1 downto 0);
     signal CLK_UUT          : std_logic;
     signal CRC_VALID_UUT    : std_logic;
-    signal CRC_UUT          : std_logic_vector(%%CRCWIDTH-1 downto 0);
+    signal CRC_UUT          : std_logic_vector({{CRCWIDTH}}-1 downto 0);
 
 begin
 
@@ -47,7 +47,7 @@ begin
             CRC_VALID  => CRC_VALID_UUT,
             CRC        => CRC_UUT
         );
- 
+
     ---------------------------------------------------
     --------------- CLOCK GENERATION ------------------
     ---------------------------------------------------
@@ -68,12 +68,12 @@ begin
         -- Stimulation Example
         NEW_MSG_UUT<='0';
         wait until rising_edge(CLK_UUT);
-        MSG_UUT<="%%MSG_EXAMPLE";
+        MSG_UUT<="{{MSG_EXAMPLE}}";
         NEW_MSG_UUT<='1';
         wait until rising_edge(CLK_UUT);
         NEW_MSG_UUT <= '0';
-        
+
         wait for 10 ns;
 
-    end process stimulate;  
+    end process stimulate;
 end behavior;

@@ -1,7 +1,7 @@
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
 
-entity SC_CU_beh is
+entity SC_CU is
     port( Opcode    : in  std_logic_vector(5 downto 0);
           Funct     : in  std_logic_vector(5 downto 0);
           Zero      : in  std_logic;
@@ -15,4 +15,4 @@ entity SC_CU_beh is
           ALUControl: out std_logic_vector(2 downto 0);
           ALUSrc    : out std_logic;
           RegWrite  : out std_logic);
-end SC_CU_beh;
+end SC_CU;

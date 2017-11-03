@@ -9,18 +9,18 @@
 
 \newlength{\maxheight}
 \setlength{\maxheight}{\heightof{W}}
-\newcommand{\baselinealign}[1]{%
+\newcommand{\baselinealign}[1]{ %
 	\centering
-	\raisebox{0pt}[\maxheight][0pt]{#1}%
+	\raisebox{0pt}[\maxheight][0pt]{ #1}%
 }
 
 \newcommand\Tstrut{\rule{0pt}{2.6ex}}       % "top" strut
 
-\definecolor{grau}{gray}{.5}  
+\definecolor{grau}{gray}{.5}
 
 \begin{document}
 \pagestyle{empty}
-\setlength{\parindent}{0em} 
+\setlength{\parindent}{0em}
 \section*{Single Cycle Control Unit}
 
 Your task is to program the behavior of an entity called ``SC\_CU". This entity is declared in the attached file ``SC\_CU.vhdl" and has the following properties:
@@ -80,32 +80,31 @@ Your task is to program the behavior of an entity called ``SC\_CU". This entity 
 
 Do not change the file ``SC\_CU.vhdl".\\
 
-
 You will have to implement the following types of instructions:
-%%SELECTED_INSTRUCTIONS_TYPE
+{{SELECTED_INSTRUCTIONS_TYPE}}
 
-The ``SC\_CU" entity shall control the single cycle processor depicted in Figure~1 to perform the following instructions:
+The ``SC\_CU" entity shall control the single cycle processor depicted in  Figure~1 to perform the following instructions:
 
 \begin{table}[h!]
 \centering
     \begin{tabular}{|c|c|c|c|c|} \hline \Tstrut
 		instruction & opcode  & funct	& zero & type   \\ \hline \Tstrut
-		%%SELECTED_INSTRUCTIONS
+		{{SELECTED_INSTRUCTIONS}}
     \hline
     \end{tabular}
 \end{table}
 
-%%SELECTED_INSTRUCTIONS_TEXT
+{{SELECTED_INSTRUCTIONS_TEXT}}
 
 \begin{table}[h!]
 \centering
     \begin{tabular}{|c|c|} \hline \Tstrut
 		ALUControl & Function   \\ \hline \Tstrut
-		%%SELECTED_ALUCONTROLS
+		{{SELECTED_ALUCONTROLS}}
     \hline
     \end{tabular}
     \caption{ALUControls}
-    \label{tab:ALUControls}  
+    \label{tab:ALUControls}
 \end{table}
 
 To get a better understanding of the control signals, here is a description of each control signal. Use Figure~1 to see how the control signals control the data paths.
@@ -128,12 +127,12 @@ To get a better understanding of the control signals, here is a description of e
 	\item{ALUSrc: Selects whether the ALU gets a value from the register's read data 2 output, or from the sign extended immediate value of the instruction.}
 
 	\item{RegWrite: When the RegWrite signal is set to `1', then the register writes the write data to the write register.\\}
-	
+
 \end{itemize}
 
 Consider which actions each part of the processor in Figure~1 has to take to fulfill the functions of the operations and set the control signals accordingly. This behavior has to be programmed in the attached file ``SC\_CU\_beh.vhdl".\\
 
-To turn in your solution write an email to %%SUBMISSIONEMAIL with Subject ``Result Task %%TASKNR" and attach your file ``SC\_CU\_beh.vhdl".
+To turn in your solution write an email to {{SUBMISSIONEMAIL}} with Subject ``Result Task {{TASKNR}}" and attach your file ``SC\_CU\_beh.vhdl".
 
 \vspace{0.7cm}
 Good Luck and May the Force be with you.

@@ -4,11 +4,7 @@ import string
 import random
 from random import shuffle
 
-###########################
-##### TEMPLATE CLASS ######
-###########################
-class MyTemplate(string.Template):
-    delimiter = "%%"
+from jinja2 import FileSystemLoader, Environment
 
 #################################################################
 
@@ -23,7 +19,7 @@ params={}
 clk =['falling_edge','rising_edge']
 
 #########################################
-######### GENERATE TESTVECTORS ########## 
+######### GENERATE TESTVECTORS ##########
 #########################################
 instructions=[]
 random_num=[]
@@ -36,13 +32,13 @@ for i in range(len(instructions)-1):
 
 instructions=("\n"+(28)*" ").join(instructions)
 
-random_tmp=random.sample(range(taskParameter[3], taskParameter[3]+taskParameter[4]),taskParameter[4])    
+random_tmp=random.sample(range(taskParameter[3], taskParameter[3]+taskParameter[4]),taskParameter[4])
 for i in range(0,taskParameter[4]):
-    random_num.append(str(random_tmp[i]))    
+    random_num.append(str(random_tmp[i]))
 
 for i in range(len(random_num)-1):
     random_num[i]+=","
-    
+
 random_num=("\n"+(28)*" ").join(random_num)
 
 if taskParameter[0]==0:
@@ -52,7 +48,7 @@ elif taskParameter[0]==1:
     main_clk='rising edge'
     opposite_clk ='falling edge'
 #########################################
-# SET PARAMETERS FOR TESTBENCH TEMPLATE # 
+# SET PARAMETERS FOR TESTBENCH TEMPLATE #
 #########################################
 params.update({"CLK":clk[taskParameter[0]],"mainClk":main_clk,"oppositeClk":opposite_clk,
 	       "OPPOSITECLK":clk[abs(taskParameter[0]-1)],"RANDOM":str(random_num),
@@ -63,10 +59,10 @@ params.update({"CLK":clk[taskParameter[0]],"mainClk":main_clk,"oppositeClk":oppo
 ###########################
 # FILL TESTBENCH TEMPLATE #
 ###########################
-filename ="templates/testbench_template.vhdl"
-with open (filename, "r") as template_file:
-    data=template_file.read()
-    s = MyTemplate(data)
-    print(s.substitute(params))
+filename ="testbench_template.vhdl"
+env = Environment()
+env.loader = FileSystemLoader('templates/')
+template = env.get_template(filename)
+template = template.render(params)
 
-
+print(template)
