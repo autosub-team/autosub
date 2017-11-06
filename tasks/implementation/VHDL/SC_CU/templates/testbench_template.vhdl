@@ -7,7 +7,7 @@ end SC_CU_tb;
 
 architecture Behavioral of SC_CU_tb is
 
-      component SC_CU_beh
+      component SC_CU
             port( Opcode     : in  std_logic_vector(5 downto 0);
                   Funct      : in  std_logic_vector(5 downto 0);
                   Zero       : in  std_logic;
@@ -63,7 +63,7 @@ begin
 	-- concatenate all control signals to one std_logic_vector:
       Controls <= RegDst & Branch & Jump & MemRead & MemtoReg & MemWrite & ALUControl & ALUSrc & RegWrite;
 
-      UUT: SC_CU_beh
+      UUT: SC_CU
             port map
             (     Opcode => Opcode,
                   Funct => Funct,
@@ -84,7 +84,7 @@ begin
       begin
             if(rising_edge(CLK)) then
                   if i < array_size  then
-                        Opcode <= Inputs_test_array(i)(12 downto 6);
+                        Opcode <= Inputs_test_array(i)(12 downto 7);
                         Funct <= Inputs_test_array(i)(6 downto 1);
                         Zero <= Inputs_test_array(i)(0);
                         i := i + 1;
