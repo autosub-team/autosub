@@ -145,7 +145,7 @@ msgExample=Bits(uint=randrange(1,2**msgLen-1),length=msgLen).bin
 paramsTbExam.update({"CRCWIDTH":str(genDegree),"MSGLEN":str(msgLen),"MSG_EXAMPLE":msgExample})
 
 #############################
-#   FILL ENTITY TEMPLATE    #
+#   FILL EXAM TEMPLATE    #
 #############################
 env = Environment()
 env.loader = FileSystemLoader('exam/')
