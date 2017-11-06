@@ -142,7 +142,7 @@ function taskfiles_analyze {
 		if [ "$RET" -ne "$zero" ]
 		then
 			echo "Error with task ${task_nr} for user ${user_id} while analyzing $filename"
-			echo "Something went wrong with the task ${task_nr} test generation. This is not your " \
+			echo "Something went wrong with the task ${task_nr} test generation. This is not your" \
 			     "fault. We are working on a solution" > error_msg
 			exit $TASKERROR
 		fi
@@ -153,7 +153,7 @@ function taskfiles_analyze {
 	if [ "$RET" -ne "$zero" ]
 	then
 		echo "Error with task ${task_nr} for user ${user_id} while analyzing the testbench"
-		echo "Something went wrong with the task ${task_nr} test generation. This is not your " \
+		echo "Something went wrong with the task ${task_nr} test generation. This is not your"\
 		     "fault. We are working on a solution" > error_msg
 		exit $TASKERROR
 	fi
@@ -165,7 +165,7 @@ function taskfiles_analyze {
 		if [ "$RET" -ne "$zero" ]
 		then
 			echo "Error with task ${task_nr} for user ${user_id} while analyzing $filename"
-			echo "Something went wrong with the task ${task_nr} test generation. This is not your " \
+			echo "Something went wrong with the task ${task_nr} test generation. This is not your" \
 			     "fault. We are working on a solution" > error_msg
 			exit $TASKERROR
 		fi
