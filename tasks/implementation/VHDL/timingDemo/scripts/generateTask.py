@@ -14,18 +14,13 @@ import string
 import sys
 import fileinput
 
-###########################
-##### TEMPLATE CLASS ######
-###########################
-class MyTemplate(string.Template):
-    delimiter = "%%"
-
+from jinja2 import FileSystemLoader, Environment
 #################################################################
 
 userId=sys.argv[1]
 taskNr=sys.argv[2]
 submissionEmail=sys.argv[3]
-
+language=sys.argv[4]
 paramsDesc={}
 
 ###########################
@@ -221,25 +216,27 @@ with open (filename, "w") as solution:
     solution.write("For TaskParameters: " + str(taskParameters) + "\n")
 
 #task solution
-filename ="templates/solution_template.txt"
-with open (filename, "r") as template_file:
-	data=template_file.read()
+env = Environment()
+env.loader = FileSystemLoader('templates/')
+filename ="solution_template.txt"
+template = env.get_template(filename)
+template = template.render(paramsDesc)
+
 filename ="tmp/solution_{0}_Task{1}.txt".format(userId,taskNr)
 with open (filename, "w") as output_file:
-	s = MyTemplate(data)
-	output_file.write(s.substitute(paramsDesc))
-
+    output_file.write(template)
 #############################
 # FILL DESCRIPTION TEMPLATE #
 #############################
+env = Environment()
+env.loader = FileSystemLoader('templates/')
+filename ="task_description/task_description_template_{0}.tex".format(language)
+template = env.get_template(filename)
+template = template.render(paramsDesc)
 
-filename ="templates/task_description_template.tex"
-with open (filename, "r") as template_file:
-	data=template_file.read()
 filename ="tmp/desc_{0}_Task{1}.tex".format(userId,taskNr)
 with open (filename, "w") as output_file:
-	s = MyTemplate(data)
-	output_file.write(s.substitute(paramsDesc))
+    output_file.write(template)
 
 ###########################
 ### PRINT TASKPARAMETERS ##

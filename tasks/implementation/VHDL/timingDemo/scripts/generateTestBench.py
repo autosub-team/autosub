@@ -13,11 +13,7 @@ import string
 import ast
 from random import shuffle
 
-###########################
-##### TEMPLATE CLASS ######
-###########################
-class MyTemplate(string.Template):
-    delimiter = "%%"
+from jinja2 import FileSystemLoader, Environment
 
 #################################################################
 
@@ -25,8 +21,6 @@ params={}
 
 taskParameter=ast.literal_eval(sys.argv[1])
 #x=sys.argv[1]
-
-
 
 
 #########################################
@@ -65,16 +59,12 @@ params.update({"TESTPATTERN":testPattern, "time_o1":(ONS1-1), "time_p1":(PNS1-ON
 ###########################
 # FILL TESTBENCH TEMPLATE #
 ###########################
-filename ="templates/testbench_template.vhdl"
-with open (filename, "r") as template_file:
-    data=template_file.read()
-    s = MyTemplate(data)
-    print(s.substitute(params))
+env = Environment()
+env.loader = FileSystemLoader('templates/')
+filename ="testbench_template.vhdl"
 
-#filename ="tmp/testbench_template1.vhdl"
-#with open (filename, "w") as output_file:
-#	s = MyTemplate(data)
-#	output_file.write(s.substitute(params))
+template = env.get_template(filename)
+template = template.render(params)
 
-#########################################
+print(template)
 

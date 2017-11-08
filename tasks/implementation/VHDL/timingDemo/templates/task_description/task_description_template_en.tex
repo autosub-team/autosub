@@ -7,7 +7,7 @@
 \usetikzlibrary{calc}
 
 \definecolor{forestgreen}{rgb}{0.1, 0.7, 0.0}
-\newcommand\tab[1][1cm]{\hspace*{#1}}
+\newcommand\tab[1][1cm]{\hspace*{ #1} }
 
 \begin{document}
 \pagestyle{empty}
@@ -104,7 +104,7 @@ The timing behavior has to be programmed in the attached file "timingDemo\_beh.v
 In the file "timingDemo\_beh.vhdl" there are two process, p1 and p2. One should includes the signal corresponded to E only and be triggered by signal O and P. For the other process, it should includes the rest of the signals with signal E as its sesitivity list. Your design should declare 4 signals and 1 variable (called "A" here but can be declared any name). All in all, the signals should be assigned to corresponding outputs, N, O, P, or E since the entity is used in this task. Only the behavior of variable A is given and the properties of all signals are demonstrated below:
 \begin{description}
 \item [The variable A]\textbf{:} \\
-The value of the signal is derived by adding %%value_a to itself without delays, as $A := A + %%value_a $. Do not need to assigned A to output signal.
+The value of the signal is derived by adding {{value_a}} to itself without delays, as $A := A + {{value_a}} $. Do not need to assigned A to output signal.
 
 \item [The signal for N]\textbf{:} \\
 The value of the signal is derived by adding an integer to itself and the signal is assigned to signal N.
@@ -113,7 +113,7 @@ The value of the signal is derived by adding an integer to itself and the signal
 The value of the signal is combined with the value of A and N which have coefficients placed before to multiply, as $c_{1} * A + c_{2} * N\_sig$, when $c_{1}$ and $c_{2}$ are integer.
 
 \item [The signal for P]\textbf{:} \\
-The value of the signal is combined with the value of A and N only which have coefficients placed before to multiply, as $c_{3} * A + c_{4} * N\_sig$, when $c_{3}$ and $c_{4}$ are integer. 
+The value of the signal is combined with the value of A and N only which have coefficients placed before to multiply, as $c_{3} * A + c_{4} * N\_sig$, when $c_{3}$ and $c_{4}$ are integer.
 
 \item [The signal for E]\textbf{:} \\
 The value of the signal is combined with the value of O and P only which have coefficients placed before, as $c_{5} * O\_sig + c_{6} * P\_sig$, when $c_{5}$ and $c_{6}$ are integer.
@@ -144,11 +144,11 @@ The figure below shows the waveform running to about 260 ns though the simulatio
 \psline{-}(1.75,7.25)(16.25,7.25)
 \psline{-}(1.75,6.75)(16.25,6.75)
 \rput(16.5,7){...}
-\rput(4.75,7){%%nv1} %value at 0 ns
-\rput(11.25,7){%%nv2}
+\rput(4.75,7){ {{nv1}} } %value at 0 ns
+\rput(11.25,7){ {{nv2}} }
 \psline{-,linecolor=red}(7.75,6.75)(8.25,7.25) %time at 130ns
 \psline{-,linecolor=red}(7.75,7.25)(8.25,6.75)
-\rput(15.5,7){%%nv3}
+\rput(15.5,7){ {{nv3}} }
 \psline{-,linecolor=red}(14.25,6.75)(14.75,7.25) %time at 260ns
 \psline{-,linecolor=red}(14.25,7.25)(14.75,6.75)
 
@@ -158,15 +158,15 @@ The figure below shows the waveform running to about 260 ns though the simulatio
 \psline{-}(1.75,5.75)(16.25,5.75)
 \psline{-}(1.75,5.25)(16.25,5.25)
 \rput(16.5,5.5){...}
-\rput(%%ox1_center,5.5){%%ov1} %first run after %%ons1 ns
-\psline{-,linecolor=blue}(%%ox11, 5.75)(%%ox12, 5.25)
-\psline{-,linecolor=blue}(%%ox11, 5.25)(%%ox12, 5.75)
-\rput(%%ox2_center,5.5){%%ov2} %second run after %%ons2 ns
-\psline{-,linecolor=blue}(%%ox21, 5.75)(%%ox22, 5.25)
-\psline{-,linecolor=blue}(%%ox21, 5.25)(%%ox22, 5.75)
-\rput(%%ox3_center,5.5){%%ov3} %third run
-\psline{-,linecolor=blue}(%%ox31, 5.75)(%%ox32, 5.25)
-\psline{-,linecolor=blue}(%%ox32, 5.75)(%%ox31, 5.25)
+\rput({{ox1_center}},5.5){ {{ov1}} } %first run after {{ons1}} ns
+\psline{-,linecolor=blue}({{ox11}} , 5.75)({{ox12}}, 5.25)
+\psline{-,linecolor=blue}({{ox11}}, 5.25)({{ox12}}, 5.75)
+\rput({{ox2_center}},5.5){ {{ov2}} } %second run after {{ons2}} ns
+\psline{-,linecolor=blue}({{ox21}}, 5.75)({{ox22}}, 5.25)
+\psline{-,linecolor=blue}({{ox21}}, 5.25)({{ox22}}, 5.75)
+\rput({{ox3_center}},5.5){ {{ov3}} } %third run
+\psline{-,linecolor=blue}({{ox31}}, 5.75)({{ox32}}, 5.25)
+\psline{-,linecolor=blue}({{ox32}}, 5.75)({{ox31}}, 5.25)
 
 
 
@@ -176,15 +176,15 @@ The figure below shows the waveform running to about 260 ns though the simulatio
 \psline{-}(1.75,4.25)(16.25,4.25)
 \psline{-}(1.75,3.75)(16.25,3.75)
 \rput(16.5,4){...}
-\rput(%%px1_center,4){%%pv1} %first run after %%pns1 ns
-\psline{-,linecolor=forestgreen}(%%px11, 3.75)(%%px12, 4.25)
-\psline{-,linecolor=forestgreen}(%%px11, 4.25)(%%px12, 3.75)
-\rput(%%px2_center,4){%%pv2} %second run after %%pns2 ns
-\psline{-,linecolor=forestgreen}(%%px21, 3.75)(%%px22, 4.25)
-\psline{-,linecolor=forestgreen}(%%px21, 4.25)(%%px22, 3.75)
-\rput(%%px3_center,4){%%pv3} %third run
-\psline{-,linecolor=forestgreen}(%%px31, 3.75)(%%px32, 4.25)
-\psline{-,linecolor=forestgreen}(%%px32, 3.75)(%%px31, 4.25)
+\rput({{px1_center}},4){ {{pv1}} } %first run after {{pns1}} ns
+\psline{-,linecolor=forestgreen}({{px11}}, 3.75)({{px12}}, 4.25)
+\psline{-,linecolor=forestgreen}({{px11}}, 4.25)({{px12}}, 3.75)
+\rput({{px2_center}},4){ {{pv2}} } %second run after {{pns2}} ns
+\psline{-,linecolor=forestgreen}({{px21}}, 3.75)({{px22}}, 4.25)
+\psline{-,linecolor=forestgreen}({{px21}}, 4.25)({{px22}}, 3.75)
+\rput({{px3_center}},4){ {{pv3}} } %third run
+\psline{-,linecolor=forestgreen}({{px31}}, 3.75)({{px32}}, 4.25)
+\psline{-,linecolor=forestgreen}({{px32}}, 3.75)({{px31}}, 4.25)
 
 
 \rput(1,2.5){E}
@@ -194,10 +194,10 @@ The figure below shows the waveform running to about 260 ns though the simulatio
 \psline{-}(1.75,2.25)(16.25,2.25)
 \rput(16.5,2.5){...}
 \rput(4.75,2.5){0} %value at 0ns
-\rput(11.25,2.5){%%ev2}
+\rput(11.25,2.5){ {{ev2}} }
 \psline{-,linecolor=red}(7.75,2.75)(8.25,2.25) %time at 130ns
 \psline{-,linecolor=red}(7.75,2.25)(8.25,2.75)
-\rput(15.5,2.5){%%ev3}
+\rput(15.5,2.5){ {{ev3}} }
 \psline{-,linecolor=red}(14.25,2.75)(14.75,2.25) %time at 260ns
 \psline{-,linecolor=red}(14.25,2.25)(14.75,2.75)
 
@@ -207,25 +207,25 @@ The figure below shows the waveform running to about 260 ns though the simulatio
 \psline{-}(1.5,1)(16.75,1)
 \psline{-}(16.75,1)(16.5,1.10)
 \psline{-}(16.75,1)(16.5,0.90)
-\rput(%%ox1,0.6){\textcolor{blue}{%%ons1}} %time at %%ons1 ns
-\psline{-,linecolor=blue}(%%ox1,1)(%%ox1,0.8)
-\rput(%%px1,1.4){\textcolor{forestgreen}{%%pns1}} %time at %%pns1 ns
-\psline{-,linecolor=forestgreen}(%%px1,1.2)(%%px1,1)
+\rput({{ox1}},0.6){\textcolor{blue}{ {{ons1}} }} %time at {{ons1}} ns
+\psline{-,linecolor=blue}({{ox1}},1)({{ox1}},0.8)
+\rput({{px1}},1.4){\textcolor{forestgreen}{ {{pns1}} }} %time at {{pns1}} ns
+\psline{-,linecolor=forestgreen}({{px1}},1.2)({{px1}},1)
 \rput(8,0.6){\textcolor{red}{130}} %time at 130ns
 \psline{-,linecolor=red}(8,1)(8,0.8)
-\rput(%%ox2,1.4){\textcolor{blue}{%%ons2}} %time at %%ons2 ns
-\psline{-,linecolor=blue}(%%ox2,1.2)(%%ox2,1)
-\rput(%%px2,0.6){\textcolor{forestgreen}{%%pns2}} %time at %%pns2 ns
-\psline{-,linecolor=forestgreen}(%%px2,1)(%%px2,0.8)
+\rput({{ox2}},1.4){\textcolor{blue}{ {{ons2}} }} %time at {{ons2}} ns
+\psline{-,linecolor=blue}({{ox2}},1.2)({{ox2}},1)
+\rput({{px2}},0.6){\textcolor{forestgreen}{ {{pns2}} }} %time at {{pns2}} ns
+\psline{-,linecolor=forestgreen}({{px2}},1)({{px2}},0.8)
 \rput(14.5,1.4){\textcolor{red}{260}} %time at 260
 \psline{-,linecolor=red}(14.5,1.2)(14.5,1)
 
 \end{pspicture}
 
-Make sure that you understand everything in timingdemo example before starting to code the task. No need to add entity in "timingDemo\_beh.vhdl" when you submit as the entity will be added automatically by the system when simulation checking. 
+Make sure that you understand everything in timingdemo example before starting to code the task. No need to add entity in "timingDemo\_beh.vhdl" when you submit as the entity will be added automatically by the system when simulation checking.
 \\
 \\
-To turn in your solution write an email to %%SUBMISSIONEMAIL with Subject "Result Task %%TASKNR" and attach your file "timingDemo\_beh.vhdl".
+To turn in your solution write an email to {{SUBMISSIONEMAIL}} with Subject "Result Task {{TASKNR}}" and attach your file "timingDemo\_beh.vhdl".
 \\
 \\
 Good Luck and May the Force be with you.
