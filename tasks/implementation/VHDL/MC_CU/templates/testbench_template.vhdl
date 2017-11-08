@@ -110,16 +110,16 @@ begin
       wait until rising_edge(CLK); -- wait for first rising edge
 
       -- instruction test 1:
-      %%instruction_test_1
+      {{instruction_test_1}}
 
       -- instruction test 2:
-      %%instruction_test_2
+      {{instruction_test_2}}
 
       -- instruction test 3:
-      %%instruction_test_3
+      {{instruction_test_3}}
 
       -- instruction test 4:
-      %%instruction_test_4
+      {{instruction_test_4}}
 
       report "Success" severity failure;
    end process;

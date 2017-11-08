@@ -8,9 +8,9 @@
 
 \newlength{\maxheight}
 \setlength{\maxheight}{\heightof{W}}
-\newcommand{\baselinealign}[1]{%
+\newcommand{\baselinealign}[1]{ %
 	\centering
-	\raisebox{0pt}[\maxheight][0pt]{#1}%
+	\raisebox{0pt}[\maxheight][0pt]{ #1}%
 }
 
 \newcommand\Tstrut{\rule{0pt}{2.6ex}}       % "top" strut
@@ -96,9 +96,9 @@ Do not change the file ``MC\_CU.vhdl".\\
 
 You will have to implement the following types of instructions:
 
-%%selected_instruction_type_text
+{{selected_instruction_type_text}}
 
-Before the execution of an instruction the instruction has to be fetched and decoded. This takes two clock cycles. During the fetch clock cycle the instruction is read from the current program counter value (PC) and is saved to the instruction register. Also during the fetch clock cycle the PC register is incremented by 4 using the ALU. The next clock cycle is used to decode the instruction in the control unit. %%beq_bne_decode_addition \\
+Before the execution of an instruction the instruction has to be fetched and decoded. This takes two clock cycles. During the fetch clock cycle the instruction is read from the current program counter value (PC) and is saved to the instruction register. Also during the fetch clock cycle the PC register is incremented by 4 using the ALU. The next clock cycle is used to decode the instruction in the control unit. {{beq_bne_decode_addition}} \\
 
 The ``MC\_CU" entity shall control the multicycle processor depicted in Figure~1 to perform the following instructions:
 
@@ -106,20 +106,20 @@ The ``MC\_CU" entity shall control the multicycle processor depicted in Figure~1
 \centering
     \begin{tabular}{|c|c|c|c|c|} \hline \Tstrut
 		instruction & opcode  & funct & type   \\ \hline \Tstrut
-		%%selected_instruction_table_text
+		{{selected_instruction_table_text}}
     \hline
     \end{tabular}
 \end{table}
 
-%%first_instruction_text \\
+{{first_instruction_text}} \\
 
-%%second_instruction_text \\
+{{second_instruction_text}} \\
 
 \begin{table}[h!]
 \centering
     \begin{tabular}{|c|c|} \hline \Tstrut
 		ALUControl & Function   \\ \hline \Tstrut
-		%%ALUControl_table
+		{{ALUControl_table}}
     \hline
     \end{tabular}
     \caption{ALUControls}
@@ -158,7 +158,7 @@ signal. Use Figure~1 to see how the control signals control the data paths.
 Consider which actions each part of the processor in Figure~1 has to take to fulfill the functions of the operations and set the control signals accordingly. This behavior has to be programmed in the attached file ``MC\_CU\_beh.vhdl".\\
 
 
-To turn in your solution write an email to %%SUBMISSIONEMAIL with Subject ``Result Task %%TASKNR" and attach your behavior file ``MC\_CU\_beh.vhdl"
+To turn in your solution write an email to {{SUBMISSIONEMAIL}} with Subject ``Result Task {{TASKNR}}" and attach your behavior file ``MC\_CU\_beh.vhdl"
 
 
 \vspace{0.7cm}

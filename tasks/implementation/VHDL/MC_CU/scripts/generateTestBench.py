@@ -14,11 +14,7 @@ import sys
 import string
 from random import randrange
 
-###########################
-##### TEMPLATE CLASS ######
-###########################
-class MyTemplate(string.Template):
-    delimiter = "%%"
+from jinja2 import FileSystemLoader, Environment
 
 params={}
 
@@ -360,8 +356,11 @@ params.update({"instruction_test_1":instruction_test_1, "instruction_test_2":ins
 #####################################
 # FILL AND PRINT TESTBENCH TEMPLATE #
 #####################################
-filename ="templates/testbench_template.vhdl"
-with open (filename, "r") as template_file:
-    data=template_file.read()
-    s = MyTemplate(data)
-    print(s.substitute(params))
+env = Environment()
+env.loader = FileSystemLoader('templates/')
+filename ="testbench_template.vhdl"
+
+template = env.get_template(filename)
+template = template.render(params)
+
+print(template)

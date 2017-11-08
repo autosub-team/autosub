@@ -25,7 +25,7 @@
 \setlength{\parindent}{0em}
 \section*{Single Cycle Control Unit}
 
-Ihre Aufgabe ist es, das Verhalten einer Entity  namens "`SC\_CU"' zu programmieren. Die Entity ist in der angeh\"angten Datei "`ALU.vhdl"' deklariert und hat folgende Eigenschaften:
+Ihre Aufgabe ist es, das Verhalten einer Entity  namens "`SC\_CU"' zu programmieren. Die Entity ist in der angeh\"angten Datei "`SC\_CU.vhdl"' deklariert und hat folgende Eigenschaften:
 \begin{itemize}
 \item Eingang:  Opcode vom Typ std\_logic\_vector mit einer L\"ange von 6
 \item Eingang:  Funct vom Typ std\_logic\_vector mit einer L\"ange von 6
@@ -97,7 +97,7 @@ Die Entity soll den Single Cycle Prozessor, welcher in Abbildung~1 dargestellt i
     \end{tabular}
 \end{table}
 
-{{SELECTED_INSTRUCTIONS_TEXT}}
+{{SELECTED_INSTRUCTIONS_TEXT}} \\
 
 \begin{table}[h!]
 \centering
@@ -114,32 +114,31 @@ Die Entity soll den Single Cycle Prozessor, welcher in Abbildung~1 dargestellt i
 Um ein besseres Verst\"andnis f\"ur die Steuersignale zu erhalten, sei hier eine Beschreibung aller Signale gegeben. Verwenden Sie Abbildung~1 um zu verstehen, wie die Steuersignale die Datenpfade steuern.
 \begin{itemize}
 
-	\item{RegDst: Bestimmt, ob die Zieladresse des Registers entweder von den Bits 20 -- 16 oder 15 -- 11 der Instruktion definiert wird. In anderen Worten entscheidet dieses Steuersignal, ob das Zielregister durch rt oder rd festgelegt wird.}
+	\item{RegDst: Bestimmt, ob die Position des zu beschreibenden Registers "`Write Register"' entweder von den Bits 20 -- 16 oder 15 -- 11 der Instruktion definiert wird. In anderen Worten entscheidet dieses Steuersignal, ob das zu beschreibende Register durch rt oder rd festgelegt wird.}
 
 	\item{Branch: Hat einen Effekt auf die Quelle f\"ur den n\"achsten Wert des Befehlsz\"ahlers (PC). Wenn die Branch Bedingung erf\"ullt ist, ist der Wert '1'. Ist die aktuelle Instruktion keine Branch Instruktion, so ist der Wert immer '0'.}
-
 
 	\item{Jump: Hat einen Einfluss auf die Quelle f\"ur den n\"achsten Wert des Befehlsz\"ahlers (PC). Ist die aktuelle Instruktion keine Jump Instruktion, so ist der Wert immer '0'.}
 
 	\item{MemRead: Wenn das MemRead Signal auf '1' gesetzt ist, dann gibt der Datenspeicher "`Data memory"' jene Daten aus, welche durch den Adresseingang "`Read address"' bestimmt werden.}
 
-	\item{MemtoReg: Bestimmt, ob die in das Register zu schreibenden Daten "`Write data"' entweder vom Ausgang des Datenspeichers "`Data memory"' oder der ALU kommen.}
+	\item{MemtoReg: Bestimmt, ob die in das Register zu schreibenden Daten "`Write data"' entweder vom Ausgang des Datenspeichers "`Data memory"' oder dem ALU Ausgang "`Result"' kommen.}
 
-	\item{MemWrite: Wenn dieses Signal auf '1' gesetzt ist, dann schreibt der Datenspeicher "`Data memory"' seine Daten ("`Write data"') an die Zieladresse "`Write address"'.}
+	\item{MemWrite: Wenn dieses Signal auf '1' gesetzt ist, dann schreibt der Datenspeicher "`Data memory"' seine Eingangsdaten ("`Write data"') an die Zieladresse "`Write address"'.}
 
 	\item{ALUControl: W\"ahlt jene ALU Operation aus, welche die ALU auf ihre zwei Eingangswerte anwendet. Die Steuersignale f\"ur die verf\"ugbaren Operationen sind in Tabelle~1 gelistet.}
 
 	\item{ALUSrc: Bestimmt, ob die ALU einen Wert entweder von dem Ausgang "`Read data 2"' des Registers oder von dem vorzeichenerweiterten Wert IMM der Instruktion erh\"alt.}
 
-	\item{RegWrite: Wenn das RegWrite Signal auf '1' gesetzt ist, dann schreibt das Register die Daten "`Write data"' in das Register "`Write register"'.\\}
+	\item{RegWrite: Wenn das RegWrite Signal auf '1' gesetzt ist, dann schreibt das Register die Eigangsdaten "`Write data"' in das durch "`Write register"' adressierte Register.\\}
 
 \end{itemize}
 
-\"Uberlegen Sie sich, welche Aktion jeder Teil des Prozessors f\"ur die Funktion der jeweiligen Instruktionen erf\"ullen muss und setzen Sie die Steuersignale entsprechend. Programmieren Sie dieses Verhalten in der angeh\"angten Datei "`ALU\_beh.vhdl"'.\\
+\"Uberlegen Sie sich, welche Aktion jeder Teil des Prozessors f\"ur die Funktion der jeweiligen Instruktionen erf\"ullen muss und setzen Sie die Steuersignale entsprechend. Programmieren Sie dieses Verhalten in der angeh\"angten Datei "`SC\_CU\_beh.vhdl"'.\\
 
-Um Ihre L\"osung abzugeben, senden Sie ein E-Mail mit dem Betreff "`Result Task {{ TASKNR }}"' und Ihrer Datei "`truth\_table\_beh.vhdl"'  an {{ SUBMISSIONEMAIL }}.
+Um Ihre L\"osung abzugeben, senden Sie ein E-Mail mit dem Betreff "`Result Task {{ TASKNR }}"' und Ihrer Datei "``SC\_CU\_beh.vhdl"'  an {{ SUBMISSIONEMAIL }}.
 
-\vspace{0.7cm}
+\vspace{0.5cm}
 
 Viel Erfolg und m\"oge die Macht mit Ihnen sein.
 
