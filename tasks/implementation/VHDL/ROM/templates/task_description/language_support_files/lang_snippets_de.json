@@ -1,7 +1,7 @@
 {
 
-	"clk_edge":	[	"steigender",
-				"fallender"
+	"clk_edge":	[	"fallender",
+				"steigender"
 			]
 
 }
