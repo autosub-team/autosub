@@ -1,0 +1,67 @@
+\documentclass[a4paper,12pt]{article}
+\usepackage{a4wide}
+\usepackage{tikz}
+\usetikzlibrary{calc}
+\usepackage[ngerman]{babel}
+
+\begin{document}
+\pagestyle{empty}
+\setlength{\parindent}{0em} 
+\section*{\noindent {{ task_name }} }
+
+{% for entity in entities%}
+Ihre Aufgabe ist es, das Verhalten einer Entity  namens "`{{ entity.name }}"' zu programmieren. Die Entity ist in der angeh\"angten Datei "`{{ entity.name }}"' deklariert und hat folgende Eigenschaften:
+
+\begin{itemize}
+{% for input in entity.inputs %}
+	\item Eingang: {{ input.name }} vom Typ {{ input.type }} {% if input.length %} mit L\"ange {{ input.length }} {% endif %}
+{% endfor %}
+{% for output in entity.outputs %}
+	\item Ausgang: {{ output.name }} vom Typ {{ output.type }} {% if output.length %} mit L\"ange {{ output.length }} {% endif %}
+{% endfor %}
+
+\end{itemize}
+
+\begin{center}
+\begin{tikzpicture}
+\draw node [draw,rectangle, minimum height={{ entity.minimum_height }}mm, minimum width=35mm,rounded corners=2mm,thick](entity){};
+
+{% for input in entity.inputs %}
+\draw[->] ($ (entity.west)+(-10mm,{{ (entity.minimum_height / 2) - (loop.index * (entity.minimum_height / (loop.length + 1)))}}mm)$) -- ($ (entity.west) + (0mm,{{ (entity.minimum_height / 2) - (loop.index * (entity.minimum_height / (loop.length + 1)))}}mm)$);
+\draw[anchor=east] node at ($ (entity.west)+(-9mm,{{ (entity.minimum_height / 2) - (loop.index * (entity.minimum_height / (loop.length + 1)))}}mm)$){ {{input.name}} };
+
+{% endfor %}
+
+{% for output in entity.outputs %}
+\draw[->] ($ (entity.east) + (0mm,{{ (entity.minimum_height / 2) - (loop.index * (entity.minimum_height / (loop.length + 1)))}}mm)$) -- ($ (entity.east) + (10mm,{{ (entity.minimum_height / 2) - (loop.index * (entity.minimum_height / (loop.length + 1)))}}mm)$);
+\draw[anchor=west] node at ($ (entity.east) + (9mm,{{ (entity.minimum_height / 2) - (loop.index * (entity.minimum_height / (loop.length + 1)))}}mm)$){ {{ output.name }} };
+
+{% endfor %}
+
+\draw node at ($ (entity) - (0,0mm)$){ {{ entity.name }} };
+
+\end{tikzpicture}
+\end{center}
+
+Ver\"andern Sie die Datei "`{{ entity.name }}.vhdl"' nicht!\\
+
+---
+insert your description of the task for the user here
+---\\
+
+Dieses Verhalten muss in der angeh\"angten Datei "`{{ entity.name }}"' programmiert werden.
+
+{% endfor %}
+
+Um Ihre L\"osung abzugeben, senden Sie ein E-Mail mit dem Betreff "`Result Task {{TASKNR}}"' an {{SUBMISSIONEMAIL}} und hängen Ihrer Datei(en) an:
+
+\begin{itemize}
+{% for entity in entities%}
+\item ``{{ entity.name }}\_beh.vhdl"
+{% endfor %}
+\end{itemize}
+
+\vspace{0.7cm}
+Viel Erfolg und m\"oge die Macht mit Ihnen sein.
+
+\end{document}

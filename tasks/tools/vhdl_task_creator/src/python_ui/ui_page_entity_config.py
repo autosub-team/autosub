@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file '../qt5_ui/page_entity_config.ui'
 #
-# Created: Tue Jul 18 11:35:58 2017
+# Created: Tue Dec  5 20:28:26 2017
 #      by: PyQt5 UI code generator 5.3.2
 #
 # WARNING! All changes made in this file will be lost!

@@ -15,6 +15,7 @@ class VhdlTaskCreator:
 
         self.entity_configs = {}
         self.extra_files = []
+        self.languages = []
 
         self.page_task_overall = PageTaskOverall(self.wizard, self)
         self.wizard.addPage(self.page_task_overall)

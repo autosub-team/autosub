@@ -38,9 +38,18 @@ class PageSummary(QtWidgets.QWizardPage):
 
         text += '<br>'
 
-        text += '<b>Extra files (place them in static/):</b><br>'
-        for filename in self.base_object.extra_files:
-            text += filename + '<br>'
+        text += '<b>Task description languages::</b><br>'
+        languages = []
+        for language in self.base_object.languages:
+            languages.append(language)
+        text += ",".join(languages) + '<br>'
+
+        text += '<br>'
+
+        if self.base_object.extra_files:
+            text += '<b>Extra files (place them in static/):</b><br>'
+            for filename in self.base_object.extra_files:
+                text += filename + '<br>'
 
         for key, entity_config in self.entity_configs.items():
             text += '<h3>Entity "' + entity_config.entity_name + '"</h3>'
@@ -59,10 +68,11 @@ class PageSummary(QtWidgets.QWizardPage):
 
     # called when Finish pressed
     def validatePage(self):
-        os.makedirs(self.directory)
+        os.makedirs(self.directory,exist_ok=True)
 
         os.makedirs(os.path.join(self.directory, "scripts"), exist_ok=True)
         os.makedirs(os.path.join(self.directory, "templates"), exist_ok=True)
+        os.makedirs(os.path.join(self.directory, "templates/task_description"), exist_ok=True)
         os.makedirs(os.path.join(self.directory, "static"), exist_ok=True)
 
         # copy the description.txt file to task folder
@@ -116,7 +126,7 @@ class PageSummary(QtWidgets.QWizardPage):
                 signal['type'] = inp['signal_type'].replace("_", "\_")
 
                 if inp['length_type'] != 'single':
-                    signal['type'] += " of length " + inp['length_placeholder']
+                    signal['length'] = inp['length_placeholder']
                 entity['inputs'].append(signal)
 
             entity['outputs'] = []
@@ -126,7 +136,7 @@ class PageSummary(QtWidgets.QWizardPage):
                 signal['type'] = outp['signal_type'].replace("_", "\_")
 
                 if outp['length_type'] != 'single':
-                    signal['type'] += " of length " + outp['length_placeholder']
+                    signal['length'] = outp['length_placeholder']
                 entity['outputs'].append(signal)
 
             entities.append(entity)
@@ -147,13 +157,15 @@ class PageSummary(QtWidgets.QWizardPage):
         self.env.trim_blocks = True
         self.env.lstrip_blocks = True
 
-        template = self.env.get_template('task_description_template.tex')
-        template = template.render(data)
+        for language in self.base_object.languages:
+            template = self.env.get_template('task_description/task_description_template_{0}.tex'.format(language))
+            template = template.render(data)
 
-        path = os.path.join(self.directory, "templates", "task_description_template.tex")
+            path = os.path.join(self.directory, "templates/task_description",\
+                                "task_description_template_{0}.tex".format(language))
 
-        with open(path, "w") as fileh:
-            fileh.write(template)
+            with open(path, "w") as fileh:
+                fileh.write(template)
 
     def create_entities(self):
         for key, entity_config in self.entity_configs.items():

@@ -2,21 +2,21 @@
 \usepackage{a4wide}
 \usepackage{tikz}
 \usetikzlibrary{calc}
-\usepackage{hyperref}
 
 \begin{document}
 \pagestyle{empty}
 \setlength{\parindent}{0em} 
 \section*{\noindent {{ task_name }} }
+
 {% for entity in entities%}
 Your task is to program the behavior of an entity called ``{{ entity.name }}". This entity is declared in the attached file ``{{ entity.name }}.vhdl" and has the following properties:
 
 \begin{itemize}
 {% for input in entity.inputs %}
-	\item Input: {{ input.name }} with type {{ input.type }}
+	\item Input: {{ input.name }} with type {{ input.type }} {% if input.length %} of length {{ input.length }} {% endif %}
 {% endfor %}
 {% for output in entity.outputs %}
-	\item Output: {{ output.name }} with type {{ output.type }}
+	\item Output: {{ output.name }} with type {{ output.type }} {% if output.length %} of length {{ output.length }} {% endif %}
 {% endfor %}
 
 \end{itemize}

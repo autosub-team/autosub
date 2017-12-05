@@ -4,6 +4,7 @@ import os
 from PyQt5 import QtCore, QtGui, QtWidgets
 from python_ui.ui_page_task_overall import Ui_PageTaskOverall
 from entity_config import EntityConfig
+from os import listdir
 
 class PageTaskOverall(QtWidgets.QWizardPage):
 
@@ -14,9 +15,22 @@ class PageTaskOverall(QtWidgets.QWizardPage):
         self.wizard = wizard
         self.base_object = base_object
         self.entity_configs = base_object.entity_configs
+        self.languages = base_object.languages
 
         self.ui = Ui_PageTaskOverall()
         self.ui.setupUi(self)
+
+        #available languages selections
+        templates_dir ="templates/task_description"
+        template_prefix = "task_description_template_"
+        template_format = ".tex"
+        prefix_len = len(template_prefix)
+        format_len = len(template_format)
+        available_languages = [filename[prefix_len : -format_len] for filename in listdir(templates_dir)
+                               if filename.startswith(template_prefix)]
+
+        for language in available_languages:
+            self.ui.combo_language.addItem(language)
 
         # register fields, set mandatories
         self.registerField("task_name*", self.ui.task_name)
@@ -25,6 +39,7 @@ class PageTaskOverall(QtWidgets.QWizardPage):
         self.registerField("checkbox_constraint_script", self.ui.checkbox_constraint_script)
         self.registerField("checkbox_attach_wavefile", self.ui.checkbox_attach_wavefile)
         self.registerField("timeout", self.ui.timeout)
+        self.registerField("languages", self.ui.list_languages)
 
         # signals and slots
         self.ui.button_directory.clicked.connect(self.button_directory_clicked)
@@ -32,6 +47,8 @@ class PageTaskOverall(QtWidgets.QWizardPage):
         self.ui.button_user_entities_minus.clicked.connect(self.button_user_entities_minus_clicked)
         self.ui.button_extra_files_plus.clicked.connect(self.button_extra_files_plus_clicked)
         self.ui.button_extra_files_minus.clicked.connect(self.button_extra_files_minus_clicked)
+        self.ui.button_language_plus.clicked.connect(self.button_language_plus_clicked)
+        self.ui.button_language_minus.clicked.connect(self.button_language_minus_clicked)
 
     def nextId(self):
         return self.next_id
@@ -41,6 +58,15 @@ class PageTaskOverall(QtWidgets.QWizardPage):
         self.base_object.extra_files = []
         for i in range(0, self.ui.list_extra_files.count()):
             self.base_object.extra_files.append(self.ui.list_extra_files.item(i).text())
+
+        # save chosen languages
+        self.base_object.languages = []
+        for i in range(0, self.ui.list_languages.count()):
+            self.base_object.languages.append(self.ui.list_languages.item(i).text())
+
+        # default add en
+        if not self.base_object.languages:
+            self.base_object.languages.append("en")
 
         # get the in the gui specified entity names
         entity_names = []
@@ -81,6 +107,20 @@ class PageTaskOverall(QtWidgets.QWizardPage):
         self.entity_configs[keys[-1]].page.next_id = self.base_object.page_summary.page_id
 
         return True
+
+    def button_language_plus_clicked(self):
+        selected_language = self.ui.combo_language.currentText()
+
+        for i in range(0, self.ui.list_languages.count()):
+            if selected_language == self.ui.list_languages.item(i).text():
+                return
+
+        item = QtWidgets.QListWidgetItem(selected_language)
+        self.ui.list_languages.addItem(item)
+
+    def button_language_minus_clicked(self):
+        for item in self.ui.list_languages.selectedItems():
+            self.ui.list_languages.takeItem(self.ui.list_languages.row(item))
 
     def button_directory_clicked(self):
         if os.path.isdir(self.ui.directory.text()):
