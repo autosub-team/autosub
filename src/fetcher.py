@@ -650,8 +650,7 @@ class MailFetcher(threading.Thread):
         """
 
         try:
-            m.select("Inbox") # here you a can choose a mail box like INBOX instead
-            # use m.list() to get all the mailboxes
+            m.select("Inbox", readonly=False)
         except Exception as e:
             logmsg = "Failed to select inbox with error: " + str(e)
             c.log_a_msg(self.queues["logger"], self.name, logmsg, "ERROR")
@@ -659,21 +658,22 @@ class MailFetcher(threading.Thread):
 
         idmap = dict()
 
-        # you could filter using the IMAP rules here
-        # (check http://www.example-code.com/csharp/imap-search-critera.asp)
-
-        #resp, data = m.search(None, "UNSEEN")
-
         try:
             resp, data = m.uid('search', None, "UNSEEN")
-        except Exeption as e:
+        except Exception as e:
             logmsg = "Failed to get messages from inbox with IMAP error: " + str(e)
             c.log_a_msg(self.queues["logger"], self.name, logmsg, "ERROR")
             return {}
 
         if resp == 'OK':
             for uid in data[0].split():
-                typ, msg_data = m.uid('fetch', uid, "(BODY[HEADER])")
+                try:
+                    typ, msg_data = m.uid('fetch', uid, "(BODY[HEADER])")
+                except Exception as e:
+                    logmsg = "Failed to fetch from inbox with error {0}.".format(str(e))
+                    c.log_a_msg(self.queues["logger"], self.name, logmsg, "ERROR")
+                    return {}
+
                 mail = email.message_from_bytes(msg_data[0][1])
                 idmap[mail['Message-ID']] = uid
 
@@ -705,18 +705,23 @@ class MailFetcher(threading.Thread):
 
         idmap = dict()
 
-        # you could filter using the IMAP rules here
-        # (check http://www.example-code.com/csharp/imap-search-critera.asp)
         try:
             resp, items = m.uid('search', None, "ALL")
-        except Exeption as e:
+        except Exception as e:
             logmsg = "Failed to get messages from inbox with IMAP error: " + str(e)
             c.log_a_msg(self.queues["logger"], self.name, logmsg, "ERROR")
             return {}
 
         if resp == 'OK':
             for uid in items[0].split():
-                typ, msg_data = m.uid('fetch', uid, "(BODY[HEADER])")
+                try:
+                    typ, msg_data = m.uid('fetch', uid, "(BODY[HEADER])")
+                except Exception as e:
+                    logmsg = ("Failed to fetch message with uid {0} from "
+                              "inbox with error {1} ").format(uid, str(e))
+                    c.log_a_msg(self.queues["logger"], self.name, logmsg, "ERROR")
+                    return {}
+
                 mail = email.message_from_bytes(msg_data[0][1])
                 idmap[mail['Message-ID']] = uid
 
@@ -748,13 +753,12 @@ class MailFetcher(threading.Thread):
         if res != None:
             return True
 
-        else:
-            logmsg = "Got Mail from a User not on the WhiteList: " + user_email
-            c.log_a_msg(self.queues["logger"], self.name, logmsg, "Warning")
-            c.increment_db_statcounter(self.dbs["semester"], 'nr_non_registered', \
-                                       self.queues["logger"], self.name)
+        logmsg = "Got mail from a user not on the WhiteList: " + user_email
+        c.log_a_msg(self.queues["logger"], self.name, logmsg, "Warning")
+        c.increment_db_statcounter(self.dbs["semester"], 'nr_non_registered', \
+                                   self.queues["logger"], self.name)
 
-            return False
+        return False
 
     ####
     # get_registration_deadline
@@ -882,6 +886,10 @@ class MailFetcher(threading.Thread):
 
         uid_of_mid = self.idmap_all_emails(m)
 
+        # no emails in inbox or imap connection error
+        if not uid_of_mid:
+            return
+
         # if there is a active_job, that should be force removed when
         # (dispatch - now) > 5min
         time_now = time.time()
@@ -908,8 +916,22 @@ class MailFetcher(threading.Thread):
 
                 try:
                     # get the message from server
-                    uid = uid_of_mid[message_id]
-                    resp, data = m.uid('fetch', uid, "(RFC822)")
+                    try:
+                        uid = uid_of_mid[message_id]
+                    except KeyError:
+                        logmsg = ("Error handling backlogged: could not find uid for message"
+                                  "with ID: {0}").format(message_id)
+                        c.log_a_msg(self.queues["logger"], self.name, logmsg, "ERROR")
+                        continue
+
+                    try:
+                        resp, data = m.uid('fetch', uid, "(RFC822)")
+                    except Exception as e:
+                        logmsg = ("Failed to fetch message with ID {0} from "
+                                  "inbox with error {1}").format(message_id, str(e))
+                        c.log_a_msg(self.queues["logger"], self.name, logmsg, "ERROR")
+                        continue
+
                     mail = email.message_from_bytes(data[0][1])
 
                     user_id = job_tuple[0]
@@ -962,6 +984,10 @@ class MailFetcher(threading.Thread):
         archive_dir = self.get_archive_dir()
         uid_of_mid = self.idmap_all_emails(m)
 
+        # if no emails in inbox or imap connection error
+        if not uid_of_mid:
+            return
+
         # process queue, as soon as no next item available immediately return
         while True:
             try:
@@ -980,6 +1006,8 @@ class MailFetcher(threading.Thread):
             except KeyError:
                 logmsg = ("Error moving message: could not find uid for Message"
                           "with ID: {0}").format(message_id)
+                c.log_a_msg(self.queues["logger"], self.name, \
+                            logmsg, "ERROR")
                 continue
 
             if is_finished_job:
@@ -992,18 +1020,24 @@ class MailFetcher(threading.Thread):
                 result = m.uid('COPY', uid, archive_dir)
             except Exception as e:
                 logmsg = ("Error moving message with ID: {0} copy threw "
-                          "exception: {1}").format(message_id, str(e))
+                          "exception: {1}. Is the "
+                          "configured archive_dir '{0}' existing "
+                          "on the IMAP server?!").format(message_id, str(e))
+                c.log_a_msg(self.queues["logger"], self.name, \
+                            logmsg, "ERROR")
+                continue
 
             # delete
             if result[0] == 'OK':
                 m.uid('STORE', uid, '+FLAGS', '(\Deleted)')
                 m.expunge()
             else:
-                log_msg = ("Error moving a message. Is the "
-                           "configured archive_dir '{0}' existing "
-                           "on the IMAP server?!").format(archive_dir)
+                logmsg = ("Error moving a message. Is the "
+                          "configured archive_dir '{0}' existing "
+                          "on the IMAP server?!").format(archive_dir)
                 c.log_a_msg(self.queues["logger"], self.name, \
-                            log_msg, "ERROR")
+                            logmsg, "ERROR")
+                continue
 
     ####
     # handle_new
@@ -1015,7 +1049,8 @@ class MailFetcher(threading.Thread):
 
         uid_of_mid = self.idmap_new_emails(m)
 
-        if uid_of_mid is None:
+        # no new or imap connection error
+        if not uid_of_mid:
             return
 
         curs, cons = c.connect_to_db(self.dbs["semester"], self.queues["logger"], self.name)
@@ -1028,7 +1063,13 @@ class MailFetcher(threading.Thread):
 
             # fetching the mail, "`(RFC822)`" means "get the whole stuff", but you
             # can ask for headers only, etc
-            resp, data = m.uid('fetch', uid, "(RFC822)")
+            try:
+                resp, data = m.uid('fetch', uid, "(RFC822)")
+            except Exception as e:
+                logmsg = ("Failed to fetch message with uid {0} from "
+                          "inbox with error {1}").format(uid, str(e))
+                c.log_a_msg(self.queues["logger"], self.name, logmsg, "ERROR")
+                continue
 
             # parsing the mail content to get a mail object
             mail = email.message_from_bytes(data[0][1])
