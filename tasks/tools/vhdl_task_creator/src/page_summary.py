@@ -38,7 +38,7 @@ class PageSummary(QtWidgets.QWizardPage):
 
         text += '<br>'
 
-        text += '<b>Extra files:</b><br>'
+        text += '<b>Extra files (place them in static/):</b><br>'
         for filename in self.base_object.extra_files:
             text += filename + '<br>'
 
@@ -247,10 +247,82 @@ class PageSummary(QtWidgets.QWizardPage):
         with open(path, "w") as fileh:
             fileh.write(template)
 
-        ######################
-        # tester & generator #
-        ######################
-        copyfile("templates/generator.sh", os.path.join(self.directory, "generator.sh"))
+        #################
+        #   generator   #
+        #################
+
+        ## COPY & MOVE COMMANDS ##
+        copy_move_commands = ""
+
+        copy_move_commands_array = []
+
+        #description file
+        copy_move_commands_array.append("mv ${task_path}/tmp/desc_${user_id}_Task${task_nr}.pdf ${desc_path}")
+
+        for key, entity_config in self.entity_configs.items():
+            entity_name = entity_config.entity_name
+
+            # behavior file is always assumed to be static
+            copy_move_commands_array.append("cp ${task_path}/static/" + \
+                entity_name + "_beh.vhdl ${desc_path}")
+
+            needs_template = False
+
+            for signal in entity_config.inputs:
+                if signal['length_type'] == "variable":
+                    needs_template  = True
+
+            for signal in entity_config.outputs:
+                if signal['length_type'] == "variable":
+                    needs_template  = True
+
+            if needs_template:
+                copy_move_commands_array.append("mv ${task_path}/tmp/" + \
+                    entity_name + "_${user_id}_Task${task_nr}.vhdl ${desc_path}/" + \
+                    entity_name + ".vhdl")
+            else:
+                copy_move_commands_array.append("cp ${task_path}/static/" + \
+                    entity_name + ".vhdl ${desc_path}")
+
+        copy_move_commands = "\n".join(copy_move_commands_array)
+
+        ## ATTACHMENTS ##
+        attachments_base = ""
+
+        attachments_base_array = []
+
+        # description file
+        attachments_base_array.append("${desc_path}/desc_${user_id}_Task${task_nr}.pdf")
+
+        # entity and behavior files
+        for key, entity_config in self.entity_configs.items():
+            entity_name = entity_config.entity_name
+
+            attachments_base_array.append("${desc_path}/" + entity_name + "_beh.vhdl")
+            attachments_base_array.append("${desc_path}/" + entity_name + ".vhdl")
+
+        # extra files
+        for name in self.base_object.extra_files:
+            attachments_base_array.append("${desc_path}/" +name)
+
+        attachments_base = " ".join(attachments_base_array)
+
+        ## FILL TEMPLATE ##
+        data = {'task_name': task_name,
+                'copy_move_commands' : copy_move_commands,
+                'attachments_base' : attachments_base}
+
+        template = self.env.get_template('generator_template.sh')
+        template = template.render(data)
+
+        path = os.path.join(self.directory, "generator.sh")
+
+        with open(path, "w") as fileh:
+            fileh.write(template)
+
+        ##########
+        # tester #
+        ###########
         copyfile("templates/tester.sh", os.path.join(self.directory, "tester.sh"))
 
         if self.field("checkbox_constraint_script"):

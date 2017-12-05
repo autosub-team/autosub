@@ -4,22 +4,28 @@
 # generateTestBench.py for VHDL task {{ task_name }}
 # Generates testvectors and fills a testbench for specified taskParameters
 #
-# Copyright (C)
+# Copyright (C) ADD HERE: year, author, email
 # License GPL V2 or later (see http://www.gnu.org/licenses/gpl2.txt)
 ########################################################################
 
+from jinja2 import FileSystemLoader, Environment
 #################################################################
 
 task_parameters=sys.argv[1] 
 
-###########################################
-#              YOUR CODE                  #
-###########################################
-#...
-#...
-#...
+###################################
+#   GENERATE TESTBENCH/VECTORS    #
+###################################
+params = {}
+# ADD HERE: generation of testbench parts / parameters
 
 ######################################
-## FILL AND PRINT TESTBENCH TEMPLATE #
+#  FILL AND PRINT TESTBENCH TEMPLATE #
 ######################################
+env = Environment()
+env.loader = FileSystemLoader('templates/')
+filename ="testbench_template.vhdl"
+template = env.get_template(filename)
+template = template.render(params)
 
+print(template)
