@@ -1,14 +1,11 @@
 library IEEE;
 use IEEE.std_logic_1164.all;
-use work.fsm_pkg.all;
-use std.textio.ALL;
-use IEEE.std_logic_textio.all;
+use IEEE.numeric_std.all;
 
-entity fsm_tb is
-end fsm_tb;
+entity fsm_moore_tb is
+end fsm_moore_tb;
 
-
-architecture behavior of fsm_tb is
+architecture behavior of fsm_moore_tb is
     component fsm
         port
         (
@@ -56,20 +53,13 @@ architecture behavior of fsm_tb is
     function Image(In_Image : fsm_state) return String is
 
     begin
-
         case In_Image is
-            when START =>
-               return "START";
-            when S0 =>
-               return "S0";
-            when S1 =>
-               return "S1";
-            when S2 =>
-               return "S2";
-            when S3 =>
-               return "S3";
+        {% for num in range(0,num_states) %}
+            when {% if loop.first%}START{% else %}S{{num - 1}}{% endif %} =>
+                return "{% if loop.first%}START{% else %}S{{num - 1}}{% endif %}";
+        {% endfor %}
             when others =>
-               return "UNDEFIDED";
+                return "UNDEFIDED";
         end case;
     end Image;
 

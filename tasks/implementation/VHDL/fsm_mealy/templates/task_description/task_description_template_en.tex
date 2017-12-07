@@ -7,7 +7,7 @@
 \begin{document}
 \pagestyle{empty}
 \setlength{\parindent}{0em} 
-\section*{FSM (Finite State Machine)}
+\section*{Mealy FSM (Finite State Machine)}
 Your task is to program the behavior of an entity called "fsm". This entity is declared in the attached file "fsm.vhdl" and has the following properties:
 
 \begin{itemize}
@@ -43,10 +43,12 @@ Your task is to program the behavior of an entity called "fsm". This entity is d
 \end{tikzpicture}
 \end{center}
 
+\vspace{0.5cm}
+
 Do not change the file "fsm.vhdl"!
 \\
 
-The "fsm" entity shall have the behavior of a deterministic finite state machine with the following constraints:
+The "fsm" entity shall have the behavior of a deterministic \textbf{MEALY} finite state machine with the following constraints:
 \begin{itemize}
 \item Behavior according to state diagram as seen in Figure \ref{state_image}. The input to transit to the next state and the output in the next state is labelled on the edges.
 \item Transitions with rising edge of the clock (port CLK, this is a square-wave clock signal).
@@ -74,7 +76,7 @@ Good Luck and May the Force be with you.
 \begin{figure}[ht]
 	\centering
         \includegraphics[width=\textwidth,height=\textheight,keepaspectratio] {{STATECHART}}
-	\caption{State diagram, the edges are labelled \textit{Input / Next Output}}
+	\caption{State diagram, the edges are labelled \textit{input / next output}}
 	\label{state_image}
 \end{figure}
 

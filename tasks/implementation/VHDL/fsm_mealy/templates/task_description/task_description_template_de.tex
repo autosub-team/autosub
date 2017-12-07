@@ -2,14 +2,12 @@
 \usepackage{a4wide}
 \usepackage{tikz}
 \usetikzlibrary{calc}
-\usepackage{hyperref}
-
 \usepackage[ngerman]{babel}
- 
+
 \begin{document}
 \pagestyle{empty}
 \setlength{\parindent}{0em} 
-\section*{FSM (Finite State Machine)}
+\section*{Mealy FSM (Finite State Machine)}
 
 Ihre Aufgabe ist es, das Verhalten einer Entity  namens "`fsm"' zu programmieren. Die Entity ist in der angeh\"angten Datei "`fsm.vhdl"' deklariert und hat folgende Eigenschaften:
 
@@ -17,7 +15,7 @@ Ihre Aufgabe ist es, das Verhalten einer Entity  namens "`fsm"' zu programmieren
 
 \item Eingang: CLK vom Typ std\_logic
 \item Eingang: RST vom Typ std\_logic
-\item Eingang: INPUT vom Typ std\_logic\_vector mit einer L\"ange von 2   
+\item Eingang: INPUT vom Typ std\_logic\_vector mit einer L\"ange von 2
 \item Ausgang: OUTPUT vom Typ std\_logic\_vector mit einer L\"ange von 2
 \item Ausgang: STATE vom Typ fsm\_state
 
@@ -54,13 +52,13 @@ Ihre Aufgabe ist es, das Verhalten einer Entity  namens "`fsm"' zu programmieren
 Ver\"andern Sie die Datei "`fsm.vhdl"' nicht!
 \\
 
-Die Entity "`fsm"' soll das Verhalten einer deterministischen Finite State Machine wiedergeben und dabei folgende Eigenschaften erf\"ullen:
+Die Entity "`fsm"' soll das Verhalten einer deterministischen \textbf{MEALY} Finite State Machine wiedergeben und dabei folgende Eigenschaften erf\"ullen:
 \begin{itemize}
-\item Ein Verhalten entsprechend dem Zustands\"ubergangsdiagramm in Abbildung \ref{state_image}. Der Eingang, welcher zu dem n\"achsten Zustand führt, und der Ausgang im n\"achsten Zustand sind an den Kanten angegeben.
-\item \"Ubertragungen mit steigender Flanke des Taktsignals (Port CLK; dies ist ein rechteckiges Taktsignal)
-\item  Synchrones Design: Alle neuen Ausg\"ange (Port STATE und Port OUTPUT) m\"ussen mit der steigenden Taktflanke gesetzt werden.
+\item Ein Verhalten entsprechend dem Zustands\"ubergangsdiagramm in Abbildung \ref{state_image}. Der Eingang, welcher zu dem n\"achsten Zustand f\"uhrt, und der Ausgang im n\"achsten Zustand sind an den Kanten angegeben.
+\item \"Uberg\"ange mit steigender Flanke des Taktsignals (Port CLK; dies ist ein rechteckiges Taktsignal)
+\item Synchrones Design: Alle neuen Ausg\"ange (Port STATE und Port OUTPUT) m\"ussen mit der steigenden Taktflanke gesetzt werden.
 \item Der aktuelle Zustand muss am Ausgangsport STATE ausgegeben werden.
-\item Bei einem synchronen Reset (Port RST=1, steigende Flanke des Taktsignals CLK) soll die State Machine auf einen initialen Zustand (Anfangszustand) gesetzt werden: STATE = START, OUTPUT = 00.
+\item Bei einem synchronen Reset (Port RST=1, steigende Flanke des Taktsignals CLK) soll die State Machine auf den initialen Zustand (Anfangszustand) gesetzt werden: STATE = START, OUTPUT = 00.
 \end{itemize}
 \vspace{0.5cm}
 
@@ -69,9 +67,10 @@ Programmieren Sie dieses Verhalten in der angeh\"angten Datei "`fsm\_beh.vhdl"'.
 Der Typ fsm\_state ist in der angeh\"angten Datei "`fsm\_package.vhdl"' deklariert. Die daf\"ur ben\"otigten Pakete sind in den Dateien "`fsm\_beh.vhdl"' und "`fsm.vhdl"' bereits importiert.
 \\
 
-Um Ihre L\"osung abzugeben, senden Sie ein E-Mail mit dem Betreff "`Result Task {{ TASKNR }}"' und Ihrer Datei "`truth\_table\_beh.vhdl"'  an {{ SUBMISSIONEMAIL }}. 
+Um Ihre L\"osung abzugeben, senden Sie ein E-Mail mit dem Betreff "`Result Task {{ TASKNR }}"' und Ihrer Datei "`fsm\_beh.vhdl"' an {{ SUBMISSIONEMAIL }}. 
 \\
 
+\vspace{0.7cm}
 Viel Erfolg und m\"oge die Macht mit Ihnen sein.
 
 \newpage

@@ -1,19 +1,25 @@
 #!/usr/bin/env python3
 
 ########################################################################
-# generateTestBench.py for VHDL task fsm
-# Generates testvectors and fills a testbench for specified taskParameters
+# testVectorsGen.py 
+# Generates testvectors for the fsm, that covers every edge and node
 #
 # Copyright (C) 2015 Martin  Mosbeck   <martin.mosbeck@gmx.at>
 # License GPL V2 or later (see http://www.gnu.org/licenses/gpl2.txt)
 ########################################################################
+
 
 import sys
 import string
 from copy import copy
 from random import randrange
 
-from jinja2 import FileSystemLoader, Environment
+
+###########################
+##### TEMPLATE CLASS ######
+###########################
+class MyTemplate(string.Template):
+     delimiter = "%%"
 
 ###########################
 ######## HELPERS ##########
@@ -88,7 +94,7 @@ for i in range(0,numNodes):
 #########################################
 
 Z=[] #processed nodes
-N=nodes[:] #not processed node
+N=nodes.copy() #not processed nodes
 
 
 while(len(N)!=0):
@@ -108,9 +114,9 @@ while(len(N)!=0):
 #for n in nodes:
 #    print(n.name+": distance= "+str(n.distance)+" pre= "+n.predessesor.name)
 #print("")
+print("")
 
-
-toTestNodes =nodes[1:] #nodes to test, every except start
+toTestNodes =nodes.copy()[1:] #nodes to test, every except start
 testedNodes=[]
 testVectors=[]
 while(len(toTestNodes)!=0):
@@ -139,24 +145,5 @@ while(len(toTestNodes)!=0):
             testVectors.extend(formatTrans(trans))
             startToNodeNecessary=True
 
-for i in range(len(testVectors)-1) :
-    testVectors[i]+=","
-testPattern=("\n"+12*" ").join(testVectors) #format in testbench, join
-
-#########################################
-# SET PARAMETERS FOR TESTBENCH TEMPLATE # 
-#########################################
-params.update({"TESTPATTERN":testPattern})
-
-###########################
-# FILL TESTBENCH TEMPLATE #
-###########################
-env = Environment()
-env.loader = FileSystemLoader('templates/')
-filename ="testbench_template.vhdl"
-
-template = env.get_template(filename)
-template = template.render(params)
-
-print(template)
-    
+for i in range(0,len(testVectors)):
+    print(testVectors[i])

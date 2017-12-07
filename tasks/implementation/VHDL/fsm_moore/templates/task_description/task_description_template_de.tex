@@ -1,0 +1,88 @@
+\documentclass[a4paper,12pt]{article}
+\usepackage{a4wide}
+\usepackage{tikz}
+\usetikzlibrary{calc}
+\usepackage[ngerman]{babel}
+
+\begin{document}
+\pagestyle{empty}
+\setlength{\parindent}{0em} 
+\section*{Moore FSM(Finite State Machine)}
+
+Ihre Aufgabe ist es, das Verhalten einer Entity  namens "`fsm"' zu programmieren. Die Entity ist in der angeh\"angten Datei "`fsm.vhdl"' deklariert und hat folgende Eigenschaften:
+
+\begin{itemize}
+	\item Eingang: CLK vom Typ std\_logic
+	\item Eingang: RST vom Typ std\_logic
+	\item Eingang: INPUT vom Typ std\_logic\_vector mit L\"ange 2
+	\item Ausgang: OUTPUT vom Typ std\_logic\_vector mit L\"ange 2
+	\item Ausgang: STATE vom Typ fsm\_state
+\end{itemize}
+
+\vspace{0.5cm}
+
+\begin{center}
+\begin{tikzpicture}
+\draw node [draw,rectangle, minimum height=24mm, minimum width=35mm,rounded corners=2mm,thick](entity){};
+
+\draw[->] ($ (entity.west)+(-10mm,6.0mm)$) -- ($ (entity.west) + (0mm,6.0mm)$);
+\draw[anchor=east] node at ($ (entity.west)+(-9mm,6.0mm)$){ CLK };
+
+\draw[->] ($ (entity.west)+(-10mm,0.0mm)$) -- ($ (entity.west) + (0mm,0.0mm)$);
+\draw[anchor=east] node at ($ (entity.west)+(-9mm,0.0mm)$){ RST };
+
+\draw[->] ($ (entity.west)+(-10mm,-6.0mm)$) -- ($ (entity.west) + (0mm,-6.0mm)$);
+\draw[anchor=east] node at ($ (entity.west)+(-9mm,-6.0mm)$){ INPUT };
+
+
+\draw[->] ($ (entity.east) + (0mm,4.0mm)$) -- ($ (entity.east) + (10mm,4.0mm)$);
+\draw[anchor=west] node at ($ (entity.east) + (9mm,4.0mm)$){ OUTPUT };
+
+\draw[->] ($ (entity.east) + (0mm,-4.0mm)$) -- ($ (entity.east) + (10mm,-4.0mm)$);
+\draw[anchor=west] node at ($ (entity.east) + (9mm,-4.0mm)$){ STATE };
+
+
+\draw node at ($ (entity) - (0,0mm)$){fsm };
+
+\end{tikzpicture}
+\end{center}
+
+\vspace{0.5cm}
+
+Ver\"andern Sie die Datei "`fsm.vhdl"' nicht!
+\\
+
+Die Entity "`fsm"' soll das Verhalten einer deterministischen \textbf{MOORE} Finite State Machine wiedergeben und dabei folgende Eigenschaften erf\"ullen:
+\begin{itemize}
+\item Ein Verhalten entsprechend dem Zustands\"ubergangsdiagramm in Abbildung \ref{state_image}. Der Eingang, welcher zu dem n\"achsten Zustand f\"uhrt ist an der Kante angegeben. Der Ausgang im Zustand ist in jedem Zustandsknoten angegeben.
+\item \"Uberg\"ange mit steigender Flanke des Taktsignals (Port CLK; dies ist ein rechteckiges Taktsignal)
+\item Synchrones Design: Alle neuen Ausg\"ange (Port STATE und Port OUTPUT) m\"ussen mit der steigenden Taktflanke gesetzt werden.
+\item Der aktuelle Zustand muss am Ausgangsport STATE ausgegeben werden.
+\item Bei einem synchronen Reset (Port RST=1, steigende Flanke des Taktsignals CLK) soll die State Machine auf den initialen Zustand (Anfangszustand) gesetzt werden: STATE = START, OUTPUT = 00.
+\end{itemize}
+\vspace{0.5cm}
+
+Programmieren Sie dieses Verhalten in der angeh\"angten Datei "`fsm\_beh.vhdl"'.\\
+
+Der Typ fsm\_state ist in der angeh\"angten Datei "`fsm\_pkg.vhdl"' deklariert. Die daf\"ur ben\"otigten Pakete sind in den Dateien "`fsm\_beh.vhdl"' und "`fsm.vhdl"' bereits importiert.
+\\
+
+Um Ihre L\"osung abzugeben, senden Sie ein E-Mail mit dem Betreff "`Result Task {{ TASKNR }}"' an {{ SUBMISSIONEMAIL }} und h\"angen Ihre Datei(en) an:
+
+\begin{itemize}
+\item ``fsm\_beh.vhdl"
+\end{itemize}
+
+\vspace{0.7cm}
+Viel Erfolg und m\"oge die Macht mit Ihnen sein.
+
+\newpage
+
+\begin{figure}[ht]
+	\centering
+        \includegraphics[width=\textwidth,height=\textheight,keepaspectratio]{{STATECHART}}
+	\caption{Zustands\"ubergangsdiagramm, die Kanten sind mit \textit{Eingang}, die Zustandsknoten mit \textit{Zustandsname} und \textit{Ausgang im Zustand}  beschriftet}
+	\label{state_image}
+\end{figure}
+
+\end{document}

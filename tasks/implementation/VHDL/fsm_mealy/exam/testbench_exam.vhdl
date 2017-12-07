@@ -1,6 +1,5 @@
 -------------------------------------------------
--- BASIC TESTBENCH FOR THE TASK FSM 
--- AUTHOR: Martin Mosbeck
+-- BASIC TESTBENCH FOR THE TASK FSM_MEALY
 -------------------------------------------------
 
 library IEEE;
@@ -23,7 +22,7 @@ architecture behavior of fsm_tb is
         );
     end component;
 
-    constant clk_period : time := 20 ns; -- for 50MHz -> 20 ns
+    constant clk_period : time := 20 us; -- for 50kHz -> 20 us
  
     ---------------------------------------------------
     --------------- CONNECTING SIGNALS ----------------

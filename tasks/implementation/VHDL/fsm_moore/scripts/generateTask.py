@@ -1,13 +1,16 @@
 #!/usr/bin/env python3
 
 ########################################################################
-# generateTask.py for VHDL task fsm
+# generateTask.py for VHDL task fsm_moore
 # Generates random tasks, generates TaskParameters, fill
 # entity and description templates
 #
-# Copyright (C) 2015 Martin  Mosbeck   <martin.mosbeck@gmx.at>
-#                    Andreas Platschek <andi.platschek@gmail.com>
+# Copyright (C) 2017 Martin  Mosbeck   <martin.mosbeck@gmx.at>
 # License GPL V2 or later (see http://www.gnu.org/licenses/gpl2.txt)
+#
+# Implementation node: Internally the finite state machine is treated
+#                      like a mealy state machine in order to be able
+#                      to reuse code of the mealy task version
 ########################################################################
 
 from graphviz import Digraph
@@ -19,8 +22,16 @@ import sys
 
 from jinja2 import FileSystemLoader, Environment
 
+#################################################################
+
+# generate random 2 bit binary
+def rand_bin2():
+   r=randrange(0,4)
+   return "{0:#04b}".format(r).split('b')[1]
+
 ########################################################################
 
+# does the random transition matrix generate a state graph
 def is_done(nodes, num_nodes):
    # check if all nodes have an outgoing edge:
    for i in range(0, num_nodes):
@@ -41,6 +52,8 @@ def is_done(nodes, num_nodes):
    return True
 
 ########################################################################
+
+# number outgoing edges of a node
 def num_outgoing(nodedesc, num_nodes):
    num_edges = 0
 
@@ -52,12 +65,7 @@ def num_outgoing(nodedesc, num_nodes):
 
 ########################################################################
 
-def gen_rand_output():
-   r=randrange(0,4)
-   return "{0:#04b}".format(r).split('b')[1]
-
-########################################################################
-
+# assign each transition in transitionmatrix an input value
 def num_to_labels(nodematrix, num_nodes):
    nodes = list(list("" for variable in range(0, num_nodes, 1)) for variable in range(0, num_nodes, 1))
 
@@ -65,27 +73,26 @@ def num_to_labels(nodematrix, num_nodes):
       available_inputs=["00","01","10","11"]
       for j in range(0, num_nodes, 1):
          if nodematrix[i][j] > 0:
-            outp = gen_rand_output()
             inp_nr = randrange(0,len(available_inputs))
             inp= available_inputs[inp_nr]
             available_inputs.remove(inp)
-            nodes[i][j]='{0}/{1}'.format(inp,outp)
+            nodes[i][j]='{0}'.format(inp)
    return nodes
 
+########################################################################
 
-###########################
-##### TEMPLATE CLASS ######
-###########################
-
-userId=sys.argv[1]
-taskNr=sys.argv[2]
-submissionEmail=sys.argv[3]
+user_id=sys.argv[1]
+task_nr=sys.argv[2]
+submission_email=sys.argv[3]
 language=sys.argv[4]
 
-paramsDesc={}
+params_desc={}
 
+#####################
+#  TASK GENERATION  #
+#####################
+num_nodes = 4 #CONFIGURE HERE
 
-num_nodes = 5 #shall be configurabe eventually
 
 ###################################################################
 #KNOWN BUG: Sometimes the num_trans condition can not be fullfilled
@@ -95,11 +102,13 @@ genSuccess= False
 nodemartix= None
 cycle_max=100
 
+# create a list of lists as a 'matrix' that contains all
+# the transitions from node in line to node in column
+
+# first step: matrix with 0 = no transmittion, 1 = transmission, no self transmissions
 while not genSuccess:
    redoGen=False
 
-   # create a list of lists as a 'matrix' that contains all
-   # the transitions from node in line to node in column
    nodematrix = list(list(0 for variable in range(0,num_nodes,1)) for variable in range(0,num_nodes,1))
 
    num_cycle= 0
@@ -107,7 +116,7 @@ while not genSuccess:
    lastnode = 0
    while (not is_done(nodematrix, num_nodes) or num_trans < (num_nodes -1) * 2):
       nextnode=randrange(1,num_nodes)
-      if nodematrix[lastnode][nextnode] == 0 and (num_outgoing(nodematrix[lastnode], num_nodes) < (num_nodes-1)):
+      if nodematrix[lastnode][nextnode] == 0 and (num_outgoing(nodematrix[lastnode], num_nodes) < (num_nodes-1)) and (lastnode != nextnode):
          nodematrix[lastnode][nextnode] = 1
          lastnode=nextnode
          num_trans=num_trans+1;
@@ -126,20 +135,27 @@ while not genSuccess:
 
 labeled_trans = num_to_labels(nodematrix, num_nodes)
 
-filename_statechart = "fsm_{0}_Task{1}".format(userId,taskNr)
+filename_statechart = "fsm_{0}_Task{1}".format(user_id,task_nr)
 f = Digraph('finite_state_machine', filename='tmp/' + filename_statechart)
 f.format='png'
 f.attr('graph',overlap='false',size="7,8!")
 f.attr('node', shape='circle')
 f.attr('edge',overlap='false')
 
-node_names=[]
-for i in range(0,num_nodes):
-    if(i==0):
-        node_names.append("START")
-    else:
-        node_names.append("S{0}".format(i-1))
+# states and their output
+state_outputs = []
+node_names= []
 
+for i in range(0,num_nodes):
+    output = rand_bin2()
+    state_outputs.append(output)
+
+    if(i==0):
+        node_names.append("START\n00")
+    else:
+        node_names.append("S{0}\n{1}".format(i-1,output))
+
+#create edges labled with input values
 for i in range (0, num_nodes, 1):
       for j in range(0, num_nodes, 1):
          if nodematrix[i][j] > 0:
@@ -147,11 +163,17 @@ for i in range (0, num_nodes, 1):
 
 f.render()
 
-
-
 ##############################
 ## PARAMETER SPECIFYING TASK##
 ##############################
+# adds /output so each edge is input/output as in a mealy state machine
+for outer in range(0,num_nodes):
+    for inner in range(0,num_nodes):
+        if labeled_trans[outer][inner]:
+            labeled_trans[outer][inner] += "/" + state_outputs[inner]
+
+#format for task_parameters
+
 node_trans=[]
 for i in range(0, num_nodes):
    node_trans.append("{}".format(str(labeled_trans[i])))
@@ -160,38 +182,46 @@ for i in range(0, num_nodes):
 for i in range(0,num_nodes-1):
    node_trans[i]+=","
 
-taskParameters="["+"".join(node_trans)+"]"
+task_parameters="["+"".join(node_trans)+"]"
 
+############################################
+## SET PARAMETERS FOR DESCRIPTION TEMPLATE #
+############################################
+params_desc.update({"TASKNR":str(task_nr), "SUBMISSIONEMAIL":submission_email, \
+                    "STATECHART":"{"+filename_statechart+"}"})
 
-############### ONLY FOR TESTING #######################
-filename ="tmp/solution_{0}_Task{1}.txt".format(userId,taskNr)
-with open (filename, "w") as solution:
-    solution.write("For TaskParameters: " + str(taskParameters) + "\n")
-    solution.write("FOOBAR")
-#########################################################
-
-
-###########################################
-# SET PARAMETERS FOR DESCRIPTION TEMPLATE #
-###########################################
-paramsDesc.update({"TASKNR":str(taskNr),"SUBMISSIONEMAIL":submissionEmail, \
-                   "STATECHART":"{"+filename_statechart+"}"})
-
-#############################
-# FILL DESCRIPTION TEMPLATE #
-#############################
-
+##############################
+## FILL DESCRIPTION TEMPLATE #
+##############################
 env = Environment()
 env.loader = FileSystemLoader('templates/')
 filename ="task_description/task_description_template_{0}.tex".format(language)
 template = env.get_template(filename)
-template = template.render(paramsDesc)
+template = template.render(params_desc)
 
-filename ="tmp/desc_{0}_Task{1}.tex".format(userId,taskNr)
+filename ="tmp/desc_{0}_Task{1}.tex".format(user_id,task_nr)
 with open (filename, "w") as output_file:
     output_file.write(template)
 
-###########################
-### PRINT TASKPARAMETERS ##
-###########################
-print(taskParameters)
+################################################
+# SET & FILL PARAMETERS FOR PACKAGE TEMPLATE   #
+################################################
+params_package={"num_states":num_nodes}
+
+#############################
+#   FILL ENTITY TEMPLATE    #
+#############################
+env = Environment(trim_blocks=True)
+env.loader = FileSystemLoader('templates/')
+filename ="fsm_pkg_template.vhdl"
+template = env.get_template(filename)
+template = template.render(params_package)
+
+filename ="tmp/fsm_pkg_{0}_Task{1}.vhdl".format(user_id,task_nr)
+with open (filename, "w") as output_file:
+    output_file.write(template)
+
+############################
+##   PRINT TASKPARAMETERS  #
+############################
+print(task_parameters)

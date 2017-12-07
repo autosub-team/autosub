@@ -24,7 +24,7 @@ FAILURE=1
 task_path=$(readlink -f $0|xargs dirname)
 
 #path to common scripts
-common_path=$(readlink -f $task_path/../_common)
+common_path=$(readlink -f ${task_path}/../_common)
 
 # include external config
 source ${task_path}/task.cfg
