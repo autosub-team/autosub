@@ -64,7 +64,7 @@ fi
 pdflatex -halt-on-error desc_${user_id}_Task${task_nr}.tex >/dev/null #second time for reference to picture resolution
 rm desc_${user_id}_Task${task_nr}.aux
 rm desc_${user_id}_Task${task_nr}.log
-#rm desc_${user_id}_Task${task_nr}.tex
+rm desc_${user_id}_Task${task_nr}.tex
 rm desc_${user_id}_Task${task_nr}.out
 rm fsm_${user_id}_Task${task_nr}
 
@@ -81,10 +81,6 @@ mv ${task_path}/tmp/fsm_pkg_${user_id}_Task${task_nr}.vhdl ${desc_path}/fsm_pkg.
 
 #for exam
 cp ${task_path}/exam/testbench_exam.vhdl ${desc_path}/fsm_tb_exam.vhdl
-
-############### ONLY FOR TESTING #################
-mv ${task_path}/tmp/solution_${user_id}_Task${task_nr}.txt ${desc_path}
-##################################################
 
 ##########################
 ##   EMAIL ATTACHMENTS  ##
@@ -107,8 +103,5 @@ fi
 ##########################
 ## ADD TASK TO DATABASE ##
 ##########################
-#NOTE: do not attach solution in final version :)
 cd ${autosub_path}/tools
 python3 add_to_usertasks.py -u ${user_id} -t ${task_nr} -p "${task_parameters}" -a "${task_attachments}" -d ${semester_db}
-
-cd ${autosub_path}
