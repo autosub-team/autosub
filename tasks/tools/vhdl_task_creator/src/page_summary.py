@@ -38,7 +38,7 @@ class PageSummary(QtWidgets.QWizardPage):
 
         text += '<br>'
 
-        text += '<b>Task description languages::</b><br>'
+        text += '<b>Task description languages:</b><br>'
         languages = []
         for language in self.base_object.languages:
             languages.append(language)
@@ -123,7 +123,11 @@ class PageSummary(QtWidgets.QWizardPage):
             for inp in entity_config.inputs:
                 signal = {}
                 signal['name'] = inp['signal_name'].replace("_", "\_")
-                signal['type'] = inp['signal_type'].replace("_", "\_")
+
+                if inp['signal_type'] == "custom":
+                    signal['type'] = inp['custom_signal_type'].replace("_", "\_")
+                else:
+                    signal['type'] = inp['signal_type'].replace("_", "\_")
 
                 if inp['length_type'] != 'single':
                     signal['length'] = inp['length_placeholder']
@@ -133,7 +137,11 @@ class PageSummary(QtWidgets.QWizardPage):
             for outp in entity_config.outputs:
                 signal = {}
                 signal['name'] = outp['signal_name'].replace("_", "\_")
-                signal['type'] = outp['signal_type'].replace("_", "\_")
+
+                if outp['signal_type'] == "custom":
+                    signal['type'] = outp['custom_signal_type'].replace("_", "\_")
+                else:
+                    signal['type'] = outp['signal_type'].replace("_", "\_")
 
                 if outp['length_type'] != 'single':
                     signal['length'] = outp['length_placeholder']
@@ -271,6 +279,10 @@ class PageSummary(QtWidgets.QWizardPage):
         #description file
         copy_move_commands_array.append("mv ${task_path}/tmp/desc_${user_id}_Task${task_nr}.pdf ${desc_path}")
 
+        #extra files (assumed to be in static)
+        for name in self.base_object.extra_files:
+            copy_move_commands_array.append("cp ${task_path}/static/" + name + "${desc_path}")
+
         for key, entity_config in self.entity_configs.items():
             entity_name = entity_config.entity_name
 
@@ -278,6 +290,7 @@ class PageSummary(QtWidgets.QWizardPage):
             copy_move_commands_array.append("cp ${task_path}/static/" + \
                 entity_name + "_beh.vhdl ${desc_path}")
 
+            # entity files
             needs_template = False
 
             for signal in entity_config.inputs:
@@ -332,6 +345,9 @@ class PageSummary(QtWidgets.QWizardPage):
         with open(path, "w") as fileh:
             fileh.write(template)
 
+        # -rwxr-xr-x
+        os.chmod(os.path.join(self.directory, "generator.sh"), 0o755)
+
         ##########
         # tester #
         ###########
@@ -340,6 +356,8 @@ class PageSummary(QtWidgets.QWizardPage):
         if self.field("checkbox_constraint_script"):
             copyfile("templates/check.sh", os.path.join(self.directory, "scripts/check.sh"))
 
+        # -rwxr-xr-x
+        os.chmod(os.path.join(self.directory, "tester.sh"), 0o755)
 
     def create_task_cfg(self):
         task_name = self.field("task_name")

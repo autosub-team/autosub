@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file '../qt5_ui/page_entity_config.ui'
 #
-# Created: Tue Dec  5 20:28:26 2017
+# Created: Thu Dec  7 14:52:15 2017
 #      by: PyQt5 UI code generator 5.3.2
 #
 # WARNING! All changes made in this file will be lost!
@@ -15,22 +15,16 @@ class Ui_PageEntityConfig(object):
         PageEntityConfig.resize(996, 760)
         self.gridLayout = QtWidgets.QGridLayout(PageEntityConfig)
         self.gridLayout.setObjectName("gridLayout")
-        spacerItem = QtWidgets.QSpacerItem(20, 77, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
-        self.gridLayout.addItem(spacerItem, 0, 3, 1, 1)
-        self.label_name = QtWidgets.QLabel(PageEntityConfig)
-        self.label_name.setObjectName("label_name")
-        self.gridLayout.addWidget(self.label_name, 1, 1, 1, 1)
         self.line = QtWidgets.QFrame(PageEntityConfig)
         self.line.setFrameShape(QtWidgets.QFrame.HLine)
         self.line.setFrameShadow(QtWidgets.QFrame.Sunken)
         self.line.setObjectName("line")
         self.gridLayout.addWidget(self.line, 2, 1, 1, 5)
+        spacerItem = QtWidgets.QSpacerItem(20, 77, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
+        self.gridLayout.addItem(spacerItem, 0, 3, 1, 1)
         self.label_inputs = QtWidgets.QLabel(PageEntityConfig)
         self.label_inputs.setObjectName("label_inputs")
         self.gridLayout.addWidget(self.label_inputs, 3, 1, 1, 1)
-        self.label_outputs = QtWidgets.QLabel(PageEntityConfig)
-        self.label_outputs.setObjectName("label_outputs")
-        self.gridLayout.addWidget(self.label_outputs, 3, 4, 1, 1)
         self.list_inputs = QtWidgets.QListWidget(PageEntityConfig)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.MinimumExpanding, QtWidgets.QSizePolicy.Fixed)
         sizePolicy.setHorizontalStretch(0)
@@ -40,6 +34,12 @@ class Ui_PageEntityConfig(object):
         self.list_inputs.setMinimumSize(QtCore.QSize(300, 0))
         self.list_inputs.setObjectName("list_inputs")
         self.gridLayout.addWidget(self.list_inputs, 4, 1, 3, 1)
+        self.label_outputs = QtWidgets.QLabel(PageEntityConfig)
+        self.label_outputs.setObjectName("label_outputs")
+        self.gridLayout.addWidget(self.label_outputs, 3, 4, 1, 1)
+        self.label_name = QtWidgets.QLabel(PageEntityConfig)
+        self.label_name.setObjectName("label_name")
+        self.gridLayout.addWidget(self.label_name, 1, 1, 1, 1)
         self.button_inputs_plus = QtWidgets.QPushButton(PageEntityConfig)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
         sizePolicy.setHorizontalStretch(0)
@@ -84,7 +84,10 @@ class Ui_PageEntityConfig(object):
         spacerItem2 = QtWidgets.QSpacerItem(26, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
         self.gridLayout.addItem(spacerItem2, 6, 6, 1, 1)
         spacerItem3 = QtWidgets.QSpacerItem(20, 76, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
-        self.gridLayout.addItem(spacerItem3, 7, 3, 1, 1)
+        self.gridLayout.addItem(spacerItem3, 8, 3, 1, 1)
+        self.label_change_info = QtWidgets.QLabel(PageEntityConfig)
+        self.label_change_info.setObjectName("label_change_info")
+        self.gridLayout.addWidget(self.label_change_info, 7, 1, 1, 2)
 
         self.retranslateUi(PageEntityConfig)
         QtCore.QMetaObject.connectSlotsByName(PageEntityConfig)
@@ -92,13 +95,14 @@ class Ui_PageEntityConfig(object):
     def retranslateUi(self, PageEntityConfig):
         _translate = QtCore.QCoreApplication.translate
         PageEntityConfig.setWindowTitle(_translate("PageEntityConfig", "WizardPage"))
-        self.label_name.setText(_translate("PageEntityConfig", "Signal configuration for entity "))
         self.label_inputs.setText(_translate("PageEntityConfig", "Inputs"))
         self.label_outputs.setText(_translate("PageEntityConfig", "Outputs"))
+        self.label_name.setText(_translate("PageEntityConfig", "Signal configuration for entity "))
         self.button_inputs_plus.setText(_translate("PageEntityConfig", "+"))
         self.button_outputs_plus.setText(_translate("PageEntityConfig", "+"))
         self.button_inputs_minus.setText(_translate("PageEntityConfig", "-"))
         self.button_outputs_minus.setText(_translate("PageEntityConfig", "-"))
+        self.label_change_info.setText(_translate("PageEntityConfig", "Double click to change a created port"))
 
 
 if __name__ == "__main__":

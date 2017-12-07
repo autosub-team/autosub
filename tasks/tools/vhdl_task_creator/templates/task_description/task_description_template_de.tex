@@ -14,10 +14,12 @@ Ihre Aufgabe ist es, das Verhalten einer Entity  namens "`{{ entity.name }}"' zu
 
 \begin{itemize}
 {% for input in entity.inputs %}
-	\item Eingang: {{ input.name }} vom Typ {{ input.type }} {% if input.length %} mit L\"ange {{ input.length }} {% endif %}
+	\item Eingang: {{ input.name }} vom Typ {{ input.type }}{% if input.length %} mit L\"ange {{ input.length }} {% endif %}
+
 {% endfor %}
 {% for output in entity.outputs %}
-	\item Ausgang: {{ output.name }} vom Typ {{ output.type }} {% if output.length %} mit L\"ange {{ output.length }} {% endif %}
+	\item Ausgang: {{ output.name }} vom Typ {{ output.type }}{% if output.length %} mit L\"ange {{ output.length }} {% endif %}
+
 {% endfor %}
 
 \end{itemize}
@@ -53,7 +55,7 @@ Dieses Verhalten muss in der angeh\"angten Datei "`{{ entity.name }}"' programmi
 
 {% endfor %}
 
-Um Ihre L\"osung abzugeben, senden Sie ein E-Mail mit dem Betreff "`Result Task {{TASKNR}}"' an {{SUBMISSIONEMAIL}} und hängen Ihrer Datei(en) an:
+Um Ihre L\"osung abzugeben, senden Sie ein E-Mail mit dem Betreff "`Result Task {{TASKNR}}"' an {{SUBMISSIONEMAIL}} und h\"angen Ihre Datei(en) an:
 
 \begin{itemize}
 {% for entity in entities%}

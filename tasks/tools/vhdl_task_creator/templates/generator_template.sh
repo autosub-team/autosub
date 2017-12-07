@@ -76,7 +76,7 @@ task_attachments=""
 task_attachments_base="{{attachments_base}}"
 
 #UNCOMMENT HERE for specifying testbench file for exam mode
-#$testbench_exam_path=${desc_path}/PATH # CHANGE HERE
+#testbench_exam_path=${desc_path}/PATH # CHANGE HERE
 #if [ -n "${mode}" ];
 #then
 #    if [ "${mode}" = "exam" ];

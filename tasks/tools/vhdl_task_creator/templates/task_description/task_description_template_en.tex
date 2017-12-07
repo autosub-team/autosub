@@ -13,10 +13,12 @@ Your task is to program the behavior of an entity called ``{{ entity.name }}". T
 
 \begin{itemize}
 {% for input in entity.inputs %}
-	\item Input: {{ input.name }} with type {{ input.type }} {% if input.length %} of length {{ input.length }} {% endif %}
+	\item Input: {{ input.name }} with type {{ input.type }}{% if input.length %} of length {{ input.length }} {% endif %}
+
 {% endfor %}
 {% for output in entity.outputs %}
-	\item Output: {{ output.name }} with type {{ output.type }} {% if output.length %} of length {{ output.length }} {% endif %}
+	\item Output: {{ output.name }} with type {{ output.type }}{% if output.length %} of length {{ output.length }} {% endif %}
+
 {% endfor %}
 
 \end{itemize}
@@ -52,7 +54,7 @@ This behavior has to be programmed in the attached file ``{{ entity.name }}\_beh
 
 {% endfor %}
 
-To turn in your solution write an email to %%SUBMISSIONEMAIL with Subject ``Result Task %%TASKNR" and attach your behavior file(s):
+To turn in your solution write an email to {{SUBMISSIONEMAIL}} with Subject ``Result Task {{TASKNR}}" and attach your behavior file(s):
 
 \begin{itemize}
 {% for entity in entities%}
