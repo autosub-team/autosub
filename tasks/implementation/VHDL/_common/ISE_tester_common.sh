@@ -133,7 +133,20 @@ function taskfiles_analyze {
 	cd $user_task_path
 
 	#------ ANALYZE FILES WHICH ARE NOT FROM THE USER ------#
-	# Sequence: task entities - testbench - other needed files (packages etc.)
+	# Sequence: extrafiles (packages etc.) - entities - testbench
+
+	for filename in $extrafiles
+	do
+		vhpcomp $filename
+		RET=$?
+		if [ "$RET" -ne "$zero" ]
+		then
+			echo "Error with task ${task_nr} for user ${user_id} while analyzing $filename"
+			echo "Something went wrong with the task ${task_nr} test generation. This is not your" \
+			     "fault. We are working on a solution" > error_msg
+			exit $TASKERROR
+		fi
+	done
 
 	for filename in $entityfiles
 	do
@@ -157,19 +170,6 @@ function taskfiles_analyze {
 		     "fault. We are working on a solution" > error_msg
 		exit $TASKERROR
 	fi
-
-	for filename in $extrafiles
-	do
-		vhpcomp $filename
-		RET=$?
-		if [ "$RET" -ne "$zero" ]
-		then
-			echo "Error with task ${task_nr} for user ${user_id} while analyzing $filename"
-			echo "Something went wrong with the task ${task_nr} test generation. This is not your" \
-			     "fault. We are working on a solution" > error_msg
-			exit $TASKERROR
-		fi
-	done
 }
 
 function userfiles_analyze {
