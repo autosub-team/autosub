@@ -51,11 +51,11 @@ Ver\"andern Sie die Datei "`{{ entity.name }}.vhdl"' nicht!\\
 insert your description of the task for the user here
 ---\\
 
-Dieses Verhalten muss in der angeh\"angten Datei "`{{ entity.name }}"' programmiert werden.
+Dieses Verhalten muss in der angeh\"angten Datei "`{{ entity.name }}\_beh.vhdl"' programmiert werden.
 
 {% endfor %}
 
-Um Ihre L\"osung abzugeben, senden Sie ein E-Mail mit dem Betreff "`Result Task {{TASKNR}}"' an {{SUBMISSIONEMAIL}} und h\"angen Ihre Datei(en) an:
+Um Ihre L\"osung abzugeben, senden Sie ein E-Mail mit dem Betreff "`Result Task {{tasknr_placeholder}}"' an {{submissionemail_placeholder}} und h\"angen Ihre Datei(en) an:
 
 \begin{itemize}
 {% for entity in entities%}

@@ -8,6 +8,8 @@
 # License GPL V2 or later (see http://www.gnu.org/licenses/gpl2.txt)
 ########################################################################
 
+import sys
+
 from jinja2 import FileSystemLoader, Environment
 #################################################################
 

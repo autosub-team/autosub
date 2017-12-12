@@ -149,18 +149,11 @@ class PageSummary(QtWidgets.QWizardPage):
 
             entities.append(entity)
 
-        for entity in entities:
-            template = self.env.get_template('entity_beh_template.vhdl')
-            data = {'entity_name' : entity['name']}
-            template = template.render(data)
-            path = os.path.join(self.directory, "static", entity['name'] + "_beh.vhdl")
-
-            with open(path, "w") as fileh:
-                fileh.write(template)
-
         # aggregate the values to be rendered in the description template
         data = {'task_name': task_name,
-                'entities' : entities}
+                'entities' : entities,
+                'tasknr_placeholder' : "{{TASKNR}}",
+                'submissionemail_placeholder' : "{{SUBMISSIONEMAIL}}"}
 
         self.env.trim_blocks = True
         self.env.lstrip_blocks = True
@@ -223,6 +216,15 @@ class PageSummary(QtWidgets.QWizardPage):
             template = template.render(data)
 
             # save the rendered template
+            with open(path, "w") as fileh:
+                fileh.write(template)
+
+            # create the static behavior file
+            template = self.env.get_template('entity_beh_template.vhdl')
+            data = {'entity_name' : entity_name}
+            template = template.render(data)
+            path = os.path.join(self.directory, "static", entity_name + "_beh.vhdl")
+
             with open(path, "w") as fileh:
                 fileh.write(template)
 
