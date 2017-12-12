@@ -1,6 +1,8 @@
 library IEEE;
 use IEEE.std_logic_1164.all;
-use IEEE.numeric_std.all;
+use work.fsm_pkg.all;
+use std.textio.ALL;
+use IEEE.std_logic_textio.all;
 
 entity fsm_moore_tb is
 end fsm_moore_tb;
