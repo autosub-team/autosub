@@ -166,7 +166,7 @@ elif(operand_style==2): #2comp  -2^(n-1) ... 2^(n-1)-1
          i2_bits=to_comp2(i2_width,i2)
          v.append('\n'+12*" "+'-- ({0}) , ({1}) \n'.format(i1,i2)+12*" "+'("{0}","{1}")'.format(i1_bits,i2_bits))
 
-elif(operand_style==1): #2comp [-(2^(n-1)-1) ... 2^(n-1)-1)]
+elif(operand_style==1): #1comp [-(2^(n-1)-1) ... 2^(n-1)-1)]
    #all absolutes
    i1_min= 2**(i1_width-1)-1
    i2_min= 2**(i2_width-1)-1

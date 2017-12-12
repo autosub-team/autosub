@@ -56,6 +56,7 @@ operand_style=random.randrange(0,3)
 filename ="templates/task_description/language_support_files/lang_snippets_{0}.json".format(language)
 with open(filename) as data_file:
     lang_data = json.load(data_file)
+
 ##############################
 ## PARAMETER SPECIFYING TASK##
 ##############################
@@ -116,9 +117,9 @@ i1Example=Bits(uint=random.randrange(1,2**i1_width-1),length=i1_width).bin
 i2Example=Bits(uint=random.randrange(1,2**i2_width-1),length=i2_width).bin
 params_TbExam.update({"I1_WIDTH":i1_width,"I2_WIDTH":i2_width,"O_WIDTH":o_width,"I1_EXAMPLE":i1Example,"I2_EXAMPLE":i2Example})
 
-#############################
-#   FILL ENTITY TEMPLATE    #
-#############################
+################################
+#   FILL TESTBENCH TEMPLATE    #
+################################
 env = Environment()
 env.loader = FileSystemLoader('exam/')
 filename ="testbench_exam_template.vhdl"
