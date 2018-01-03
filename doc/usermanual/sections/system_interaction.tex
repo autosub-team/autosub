@@ -28,10 +28,10 @@ seen in Table \ref{tab:usestudent} and Table \ref{tab:useoperator}.
     get status in course & VELS E-Mail Interface 
     \\
     \hline
-    get current task & VELS E-Mail Interface 
+    request/get a task & VELS E-Mail Interface 
     \\
     \hline
-    submit a task & VELS E-Mail Interface
+    submit a task solution & VELS E-Mail Interface
     \\
     \hline
     ask a question & VELS E-Mail Interface
@@ -45,11 +45,14 @@ seen in Table \ref{tab:usestudent} and Table \ref{tab:useoperator}.
 
 \begin{table}[h]
 \centering
-\begin{tabular}{||c | c||} 
+\begin{tabular}{||l | l||} 
     \hline
     Use Case & Responsible interface \\ [0.5ex] 
-     \hline\hline
+    \hline\hline
     configure a course & VELS Web Interface
+    \\
+    \hline
+    configure a task queue & VELS Web Interface
     \\
     \hline
     modify task generation or testbench generation & VELS Direct Server Access
@@ -88,8 +91,7 @@ following cases when using a whitelisted E-Mail address and system reactions are
 \begin{itemize}
 \item \textit{Arbitrary Subject, user not registered:} Registration is initiated. Registration with the 
 	system creates the appropriate data entries in the database for the student. If adding the new user was 
-	successful, two E-Mails are sent to the user: a welcome message with general information on how the 
-	system works and if already available the description of the first task.
+	successful, the user gets an welcome E-Mail with general information on how the system works.
 \item \textit{Subject contains the word "Question":} The student has a question about the course, this 
 	question is forwarded to all course operators. The student receives a confirmation that the 
     question has been passed on.
@@ -106,10 +108,25 @@ following cases when using a whitelisted E-Mail address and system reactions are
     simulation tool, expected output vs. actual output, etc.)
 \item \textit{Subject contains the word "Status":} The student is send an E-Mail with the list of
     his completed tasks and his current task description.
-\item \textit{Subject contains the word "Skip":} The student will be skipped to
-	the task after his current task if this feature is activated. Otherwise he
-	is sent a usage message.
 \item \textit{\textit{default:}} The student is sent an E-Mail with the usage for this interface.
+\end{itemize}
+
+\newpage 
+
+Depending on the chosen task queue mode additional keywords are accepted (for a closer description of different modes 
+look at Section \ref{sub:task_queues}):
+
+\textbf{With request mode:}
+\begin{itemize}
+\item \textit{Subject contains the word "Request Task N":} The student wants to request the task N. If the task can be 
+	given to the student at this moment, the student will receive an E-Mail containing all informations on the task.
+\end{itemize}
+
+\textbf{With linear mode and skipping allowed:}
+\begin{itemize}
+\item \textit{Subject contains the word "Skip":} The student will be skipped to the task after his current task if 
+	this task can be given to the student at this moment and will receive an E-Mail containing all informations on 
+	the task.
 \end{itemize}
 
 
@@ -117,14 +134,14 @@ following cases when using a whitelisted E-Mail address and system reactions are
 
 The VELS Web Interface is a configuration and status tool for the course operators.
 
-Course operators can create a course. A course consists of a task queue, which explicitly orders a 
-selection of the available tasks. The following actions for course configuration  are implemented:
+Course operators can create a course. A course consists of a task queue which is a selection of the available tasks.
+The following actions for course configuration  are implemented:
 \begin{itemize}
-\item Configuration of the task queue including start and end date for the task and points for task completion
+\item Configuration of the task queue
 \item Configure course registration deadline
 \item Modify course registration E-Mail whitelist 
-\item Modify Archive Directory
-\item Set Administrator E-Mail
+\item Modify archive directory
+\item Set administrator E-Mail
 \end{itemize}
 
 Course operators can view the progress of each student and is presented with the following informations:
@@ -136,10 +153,10 @@ Course operators can view the progress of each student and is presented with the
 \item List of attached files for each task the student has received.
 \end{itemize}
 
-Course operators can view statistical informations about his course:
+Course operators can view statistical informations about their course:
 \begin{itemize}
-\item Number of wrong and right submissions for each tasks.
-\item General statistical informations about his course (e.g number E-Mails received/sent).
+\item Number of wrong and right submissions for each task.
+\item General statistical informations about the course (e.g number E-Mails received/sent).
 \end{itemize}
 
 The VELS Web Interface may also be used by the course operator to read the results at the end of the semester,

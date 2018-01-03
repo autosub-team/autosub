@@ -69,8 +69,8 @@ the message queues in the Appendix Section \ref{app:queues}.
         \hline
         Description & Generate a (unique) example for a user. \\
         \hline
-        Rate & Triggered by registration of a new user, and successful submission 
-		of a task.  \\
+        Rate & Asynchronously triggered  by the E-Learning System when a new task for a user has 
+		to be created.\\
         \hline
         Comment & The Generator thread initiates generation of unique tasks for students.
   		The Generator thread is blocking on the generator\_queue, until the generation 
@@ -104,7 +104,7 @@ the message queues in the Appendix Section \ref{app:queues}.
         \hline
         Description & Format log messages and store them in the log file. \\
         \hline
-        Rate & Triggered by all other threads. \\
+        Rate & Asynchronously triggered by all other threads. \\
         \hline
 		Comment & In order to enforce a common logging format, and allow the setting 
 		of a common log-level, all threads just put their log-messages into the 
@@ -116,7 +116,7 @@ the message queues in the Appendix Section \ref{app:queues}.
 		The following log-levels are implemented (from lowest to highest):
         \begin{description}
 		\item [DEBUG:] Print all kind of information that might be helpful to debug
-			problems. This includes, what user sent which e-mail, what action
+			problems. This includes, what user sent which E-Mail, what action
 			was taken, what was the result of that action.
 		\item [INFO:] Information that might be of interest, even if not in debugging
 			mode.
@@ -134,12 +134,12 @@ the message queues in the Appendix Section \ref{app:queues}.
         \hline
         Description & Sends E-Mails to the students \\
         \hline
-        Rate & Triggered by Fetcher, Worker or Generator thread. \\
+        Rate & Asynchronously by Fetcher, Worker or Generator thread. \\
 		\hline
 		Comment & If a message has to be returned to the student, the thread that 
 		wants to send the message just puts the necessary information into the 
 		sender\_queue. The sender thread then takes that information, formats an 
-		e-mail and sends it out using \gls{smtp}.
+		E-Mail and sends it out using \gls{smtp}.
 
         The unique message-id is passed from the fetcher (possibly via other 
 		threads) to the sender thread. If the sender thread has sent out the 
@@ -159,9 +159,9 @@ the message queues in the Appendix Section \ref{app:queues}.
         Rate & Activated every 12 hours. \\
 		\hline
 		Comment & The dailystats thread is used to get a timeline of some very basic statistics.
-		Currently the number users, sent e-mails, received e-mails and received questions
+		Currently the number users, sent E-Mails, received E-Mails and received questions
 		over time are evaluated and plotted into a graph. The graphs are stored and 
-		can e.g. be viewed in the Statistics tab of the web interface.
+		can e.g. be viewed in the Statistics tab of the VELS web interface.
         \\
         \hline
 
@@ -202,7 +202,7 @@ The autosub system uses a config file (.cfg) which is passed to the daemon to co
 individual threads and overall system. The file is read when starting the daemon. If no
 .cfg file is specified, the used file is default.cfg located in {\tt "autosub/src/"}. 
 Information about the config file can be found in the Appendix Section \ref{app:config}
-and an example config filein in Section \ref{sub:exampleconfig}.
+and an example config file in in Section \ref{sub:exampleconfig}.
 
 \subsection{Logging and error detection} \label{logerror}
 
