@@ -13,8 +13,8 @@
 Ihre Aufgabe ist es, das Verhalten einer Entity  namens "`pwm"' zu programmieren. Die Entity ist in der angeh\"angten Datei "`pwm.vhdl"' deklariert und hat folgende Eigenschaften:
 
 \begin{itemize}
-\item Eingang:  CLK vom Typ std\_logic ; dies ist ein rechteckiges Taktsignal mit 50 MHz (Periode $T_{CLK}$= 20 ns)
-\item Ausgang: O vom Typ std\_logic ; dies ist der Port des Ausgangssignals
+\item Eingang:  CLK vom Typ std\_logic; dies ist ein rechteckiges Taktsignal mit 50 MHz (Periode $T_{CLK}$= 20 ns)
+\item Ausgang: O vom Typ std\_logic; dies ist der Port des Ausgangssignals
 \end{itemize}
 \begin{center}
 \begin{tikzpicture}
@@ -32,10 +32,10 @@ Ihre Aufgabe ist es, das Verhalten einer Entity  namens "`pwm"' zu programmieren
 
 Ver\"andern sie die Datei "`pwm.vhdl"' nicht!\\
 
-Die "`pwm"' Entity soll ein PWM (Pulsweitenmodulations-) Signal aus einem Taktsignal (Eingangsport CLK) erzeugen und dabei folgende Eigenschaften erf\"ullen:
+Die Entity "`pwm"' soll ein pulsweitenmoduliertes Signal (PWM) aus einem Taktsignal (Eingangsport CLK) erzeugen und dabei folgende Eigenschaften erf\"ullen:
 \begin{itemize}
 \item Periode $T_{PWM}$ = {{PERIOD}}, Frequenz $f_{PWM}$= {{FRQ}}
-\item Tastgrad (Duty cycle) $D_{PWM}$= {{DUTY}}
+\item Tastverh\"altnis (duty cycle)  $\frac{T_{HIGH}}{T_{PWM}}$ = {{DUTY}}
 \item Die Anfangsflanke des Signals soll konstant gehalten und die Endflanke entsprechend moduliert werden.
 \end{itemize}
 \vspace{0.3cm}
