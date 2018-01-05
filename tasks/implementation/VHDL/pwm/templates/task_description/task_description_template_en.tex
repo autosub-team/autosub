@@ -10,8 +10,8 @@
 Your task is to program the behavior of an entity called "pwm". This entity is declared in the attached file "pwm.vhdl" and has the following properties:
 
 \begin{itemize}
-\item Input:  CLK with type std\_logic ; this is a square-wave clock signal at 50 MHz (period $T_{CLK}$= 20 ns)
-\item Output: O with type std\_logic ; this is the port for the output signal
+\item Input:  CLK with type std\_logic; this is a square-wave clock signal at 50 MHz (period $T_{CLK}$= 20 ns)
+\item Output: O with type std\_logic; this is the port for the output signal
 \end{itemize}
 \begin{center}
 \begin{tikzpicture}
@@ -32,7 +32,7 @@ Do not change the file "pwm.vhdl".\\
 The "pwm" entity shall generate a PWM (Pulse-Width Modulation) signal from a clock signal (input port CLK) with the following constraints:
 \begin{itemize}
 \item Period $T_{PWM}$ = {{PERIOD}}, frequency $f_{PWM}$= {{FRQ}}
-\item Duty cycle $D_{PWM}$= {{DUTY}}
+\item Duty cycle $\frac{T_{HIGH}}{T_{PWM}}$ = {{DUTY}}
 \item The signal lead edge has to be held fixed, the tail edge has to be modulated.
 \end{itemize}
 \vspace{0.3cm}

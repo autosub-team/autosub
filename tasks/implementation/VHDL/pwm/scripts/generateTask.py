@@ -24,12 +24,6 @@ language=sys.argv[4]
 
 paramsDesc={}
 
-# OLD #find a good period, multiples of the 50MHz period and integer PWM frequency
-# OLD # exp=random.randrange(2,5)
-# OLD #digit_possibles={0:1,1:2,2:5,3:25}
-# OLD #digit=digit_possibles[random.randrange(0,4)]
-# OLD #periodClks= digit*10**exp
-
 #find a good period, multiples of the 50MHz period and integer PWM frequency 
 #smaller than 150 us (because of EdaPlayground Waveviewer plot limitation)
 digit_possibles={0:1,1:2,2:5,3:10,4:20,5:25,6:50}
