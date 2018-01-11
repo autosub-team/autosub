@@ -312,11 +312,11 @@ begin
          en_write <= '0';
          addr2 <= random_addr(i);
 	wait for Clk_period;
-	if  ({{READLENGTH}}+1)/({{DATASIZE}})=2 then
+	if  ({{READLENGTH}}+1)/({{DATASIZE}})=1 then
 	  if (output2/=content_out(i)) then
 	    report "§{In your code, the content of RAM changes when en_read2 and en_write are enabled and addr1 is equal to the next higher address of addr2 (addr1=addr2+1). But, the content of the RAM must not be changed and the outputs shall be high impedance (Z) in this case.}§" severity failure;
 	  end if;
-	elsif ({{READLENGTH}}+1)/({{DATASIZE}})=1 then
+	elsif ({{READLENGTH}}+1)/({{DATASIZE}})=2 then
 	   en_read2 <= '1';
 	   addr2 <= std_logic_vector(to_unsigned(to_integer(unsigned(random_addr(i)))+1, {{ADDRLENGTH}}+1));
 	   wait for Clk_period;
