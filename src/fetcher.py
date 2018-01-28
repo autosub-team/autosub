@@ -235,10 +235,13 @@ class MailFetcher(threading.Thread):
 
         #create a directory for putting his submission in:
         detach_dir = 'users/{0}/Task{1}'.format(user_id, task_nr)
+
         ts = datetime.datetime.now()
-        submission_dir = "/Submission{0}_{1}{2}{3}_{4}{5}{6}{7}".format(\
-            submission_nr, ts.year, ts.month, ts.day, ts.hour, ts.minute, \
-            ts.second, ts.microsecond)
+        format_string = '%Y-%m-%d_%H:%M:%S' # e.g 2018-05-01_23:55:21
+
+        submission_dir = "/Submission{0}_{1}".format(\
+            submission_nr, ts.strftime(format_string))
+
         current_dir = detach_dir + submission_dir
         c.check_dir_mkdir(current_dir, self.queues["logger"], self.name)
 
