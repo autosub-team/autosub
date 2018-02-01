@@ -234,11 +234,51 @@ class PageSummary(QtWidgets.QWizardPage):
         ###############
         ## testbench ##
         ###############
+        self.env.trim_blocks = True
+        self.env.lstrip_blocks = True
         template = self.env.get_template('testbench_template.vhdl')
 
         path = os.path.join(self.directory, "templates", "testbench_template.vhdl")
 
-        data = {'task_name': task_name}
+        # generate component declarations for each entity 
+        components = []
+        for key, entity_config in self.entity_configs.items():
+            entity_name = entity_config.entity_name
+
+            # find max string length of input/output width for indentation
+            max_length_in = max(len(signal['signal_name']) for signal in entity_config.inputs)
+            max_length_out= max(len(signal['signal_name']) for signal in entity_config.outputs)
+            max_length_width = max(max_length_in, max_length_out)
+
+            inputs = [{'name': signal['signal_name'].ljust(max_length_width), \
+                       'type': self.signal_typedef(signal)} \
+                      for signal in entity_config.inputs]
+
+            outputs = [{'name': signal['signal_name'].ljust(max_length_width), \
+                        'type': self.signal_typedef(signal)} \
+                       for signal in entity_config.outputs]
+
+            # do we need to put the entity file as template?
+            needs_template = False
+
+            for signal in entity_config.inputs:
+                if signal['length_type'] == "variable":
+                    needs_template  = True
+
+            for signal in entity_config.outputs:
+                if signal['length_type'] == "variable":
+                    needs_template  = True
+
+            # aggregate the values to be rendered in the template
+            component_data = {'entity_name': entity_name,
+                              'inputs' : inputs,
+                              'outputs' : outputs}
+
+            components.append(component_data)
+
+
+
+        data = {'task_name': task_name, 'components' : components}
         template = template.render(data)
         with open(path, "w") as fileh:
             fileh.write(template)
