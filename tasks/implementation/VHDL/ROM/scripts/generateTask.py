@@ -13,8 +13,6 @@ import string
 import sys
 from random import randint
 
-from bitstring import Bits
-
 from jinja2 import FileSystemLoader, Environment
 
 import json
@@ -43,33 +41,28 @@ content = []
 tmp_content = '0'
 
 
-edge = random.randint(0, 1) # edge on which the ROM should be active 0->falling,1->rising
-addr_len = random.randint(8, 16)
-data_len = random.randint(8, 16)
-data_start = random.randint(50, 200) # start location of data inside the ROM
-num_data = random.randint(12, 20))  # number of data inside the ROM
+x.append(random.randint(0, 1))    # clock cycle
+x.append(random.randint(8, 16))   # length of address
+x.append(random.randint(8, 16))   # length of data (instruction)
+x.append(random.randint(50, 200)) # start location of data inside the ROM
+x.append(random.randint(12, 20))  # number of data inside the ROM
 
+y = [randint(0,2**x[2]-1) for p in range(0,x[4])]
+for i in y:
+    content.append('0'*(x[2]-len(bin(i)[2:]))+bin(i)[2:])
 
-content = [Bits(uint =randint(0,2**data_len-1), length = data_len).bin \
-             for i in range(0,num_data)]
-
-#y = [randint(0,2**data_len-1) for p in range(0,num_data)]
-#for i in y:
-#    bits_str = Bits(uint=i,length=data_len).bin
-#    content.append('0'*(data_len-len(bin(i)[2:]))+bin(i)[2:])
-
-tmp_data=(" \\newline").join(content)
+tmp_data=(" \\newline"+(0)*" ").join(content)
 for i in content:
     tmp_content=tmp_content+i
 tmp=int(tmp_content,2)
 
-start = '0'*(addr_len-len(bin(data_start)[2:]))+bin(data_start)[2:]
-stop = '0'*(addr_len-len(bin(data_start+num_data-1)[2:]))+bin(data_start+num_data-1)[2:]
+start = '0'*(x[1]-len(bin(x[3])[2:]))+bin(x[3])[2:]
+stop = '0'*(x[1]-len(bin(x[3]+x[4]-1)[2:]))+bin(x[3]+x[4]-1)[2:]
 
 ###############################
 ## PARAMETER SPECIFYING TASK ##
 ###############################
-taskParameters = str(tmp)+str(edge)+str(addr_len-8)+str(data_len-8)+str(data_start+50)+str(num_data)
+taskParameters = str(tmp)+str(x[0])+str(x[1]-8)+str(x[2]-8)+str(x[3]+50)+str(x[4])
 
 ########################################################
 ############### ONLY FOR TESTING #######################
@@ -82,7 +75,7 @@ with open (filename, "w") as solution:
 # SET PARAMETERS FOR ENTITY FILE TEMPLATE #
 ###########################################
 paramsEntity={}
-paramsEntity.update({"ADDRLENGTH":str(addr_len-1),"INSTRUCTIONLENGTH":str(data_len-1)})
+paramsEntity.update({"ADDRLENGTH":str(x[1]-1),"INSTRUCTIONLENGTH":str(x[2]-1)})
 
 ##########################
 ### CHANGE ENTITY FILE ###
@@ -101,8 +94,8 @@ with open (filename, "w") as output_file:
 #################################
 random_num=[]
 paramsExam={}
-random_tmp=random.sample(range(data_start, data_start+num_data),num_data)
-for i in range(0,num_data):
+random_tmp=random.sample(range(x[3], x[3]+x[4]),x[4])
+for i in range(0,x[4]):
     random_num.append(str(random_tmp[i]))
 
 for i in range(len(random_num)-1):
@@ -110,7 +103,7 @@ for i in range(len(random_num)-1):
 
 random_num=("\n"+(28)*" ").join(random_num)
 
-paramsExam.update({"RANDOM":random_num,"ADDRLENGTH":str(addr_len-1),"INSTRUCTIONLENGTH":str(data_len-1),"START":str(data_start),"DATALENGTH":str(num_data)})
+paramsExam.update({"RANDOM":random_num,"ADDRLENGTH":str(x[1]-1),"INSTRUCTIONLENGTH":str(x[2]-1),"START":str(x[3]),"DATALENGTH":str(x[4])})
 
 ##########################
 #### CHANGE EXAM FILE ####
@@ -128,7 +121,7 @@ with open (filename, "w") as output_file:
 # SET PARAMETERS FOR DESCRIPTION TEMPLATE #
 ###########################################
 #the
-paramsDesc.update({"CLK":lang_data["clk_edge"][edge],"ADDRLENGTH":str(addr_len),"INSTRUCTIONLENGTH":str(data_len),
+paramsDesc.update({"CLK":lang_data["clk_edge"][x[0]],"ADDRLENGTH":str(x[1]),"INSTRUCTIONLENGTH":str(x[2]),
                    "START":start,"STOP":stop,"DATA":tmp_data,"TASKNR":str(taskNr),"SUBMISSIONEMAIL":submissionEmail})
 
 #############################
