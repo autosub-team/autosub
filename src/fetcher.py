@@ -75,16 +75,9 @@ class MailFetcher(threading.Thread):
         sql_cmd = ("SELECT Content FROM GeneralConfig "
                    "WHERE ConfigItem == 'admin_email'")
         curc.execute(sql_cmd)
-        result = curc.fetchone()
-        if result != None:
-            result = str(result[0])
-            admin_emails = [email.strip() for email in result.split(',')]
-        else:
-            admin_emails = []
+        result = curc.fetchone()[0]
 
-        conc.close()
-
-        return admin_emails
+        return str(result)
 
     ####
     # get_taskoperator_emails
@@ -102,17 +95,9 @@ class MailFetcher(threading.Thread):
         sql_cmd = ("SELECT TaskOperator FROM TaskConfiguration "
                    "WHERE TaskNr = :TaskNr")
         curc.execute(sql_cmd, data)
-        result = curc.fetchone()
-        if result != None:
-            result = str(result[0])
-            taskoperator_emails = [email.strip() for email in result.split(',')]
-        else:
-            taskoperator_emails = []
+        result = curc.fetchone()[0]
 
-        conc.close()
-
-        return taskoperator_emails
-
+        return str(result)
 
     ####
     # add_new_user
@@ -338,8 +323,9 @@ class MailFetcher(threading.Thread):
                 c.log_a_msg(self.queues["logger"], self.name, logmsg, "ERROR")
                 return
 
-        for mail_address in fwd_mails:
-            c.send_email(self.queues["sender"], mail_address, user_id, "QFwd", "", mail, message_id)
+        mail["Reply-To"] = user_email
+
+        c.send_email(self.queues["sender"], fwd_mails, user_id, "QFwd", "", mail, message_id)
 
         c.increment_db_statcounter(self.dbs["semester"], 'nr_questions_received', \
                                    self.queues["logger"], self.name)
