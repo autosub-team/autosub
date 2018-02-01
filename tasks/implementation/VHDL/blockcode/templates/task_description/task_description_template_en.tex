@@ -98,7 +98,7 @@ The ``blockcode" entity sends the same code until the sink it is ready. The sink
 \textit{code\_valid} and \textit{sink\_ready} are set.\\
 \\
 \textbf{Buffering:} As the sink can stall the transmission you will need a buffer in the ``blockcode" entity (e.g. circular FIFO).
-Your buffer needs to be able to buffer a maximum of 3 elements for this task. \\
+Your buffer needs to be able to buffer a maximum of 4 elements for this task. \\
 \\
 \textbf{Synchronous outputs:} All outputs of entities in the system are registered to the common clock \textit{clk},
 meaning that changes on these ports only happen at the rising edge of the common clock \textit{clk}.\\

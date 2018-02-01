@@ -93,7 +93,7 @@ Diese Entity soll als Zwischeneinheit funktionieren, welche verschl\"usselte Blo
 
 \textbf{R\"uckmeldung:} Wenn die Senke nicht bereit zum Empfangen ist, wird der Port \textit{sink\_ready} auf '0' gesetzt. Die Entity "`blockcode"' soll den selben Code solange senden, bis die Senke bereit ist. Die Senke erfasst einen Code nur dann, wenn beide Ports \textit{code\_valid} und \textit{sink\_ready} gesetzt (= '1') sind.\\
 \\
-\textbf{Buffering:} Da die Senke die \"Ubertragung verz\"ogern kann, wird innerhalb der Entity "`blockcode"' ein Buffer ben\"otig (z.B. zirkul\"arer FIFO). F\"ur diese Aufgabe soll Ihr Buffer maximal 3 Elemente zwischenspeichern k\"onnen. \\
+\textbf{Buffering:} Da die Senke die \"Ubertragung verz\"ogern kann, wird innerhalb der Entity "`blockcode"' ein Buffer ben\"otig (z.B. zirkul\"arer FIFO). F\"ur diese Aufgabe soll Ihr Buffer maximal 4 Elemente zwischenspeichern k\"onnen. \\
 \\
 \textbf{Synchrone Ausg\"ange:} Alle Ausg\"ange der Entities in diesem System sind an den gemeinsamen Takt \textit{clk} gebunden. Ver\"anderungen an diesen Ports sollen daher nur bei einer steigenden Flanke des Taktsignals \textit{clk} geschehen.\\
 
