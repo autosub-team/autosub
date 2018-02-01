@@ -190,6 +190,9 @@ def newTask():
         TaskStats.insert(TaskId=form.vars.TaskNr,
                           NrSubmissions=0,
                           NrSuccessful=0)
+        
+        # clear all LastDones, as there was a new addidional task added
+        semester.executesql("UPDATE Users SET LastDone = NULL")
 
         redirect(URL('index'))
 
