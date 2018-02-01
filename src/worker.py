@@ -159,7 +159,7 @@ class Worker(threading.Thread):
             if self.allow_requests != "no":
                 return
 
-            # initiate generation of next task for user (if possible)
+            # initiate generation of next higher task_nr task for user (if possible)
             next_task_nr = int(task_nr) + 1
             self.initiate_next_task(user_id, user_email, task_nr, next_task_nr)
 
