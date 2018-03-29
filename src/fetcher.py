@@ -40,8 +40,11 @@ class MailFetcher(threading.Thread):
     assigns work to other threads.
     """
 
+    ####
+    # __init__
+    ####
     def __init__(self, name, queues, dbs, imap_info, poll_period, \
-                 allow_skipping, allow_requests):
+                 allow_requests):
         """
         Constructor for fetcher thread
         """
@@ -52,7 +55,6 @@ class MailFetcher(threading.Thread):
         self.dbs = dbs
         self.imap_info = imap_info
         self.poll_period = poll_period
-        self.allow_skipping = allow_skipping
         self.allow_requests = allow_requests
 
         # for backlog handling
@@ -516,55 +518,6 @@ class MailFetcher(threading.Thread):
         c.generate_task(self.queues["generator"], user_id, task_nr, user_email, \
                         message_id)
 
-
-    ####
-    # skip_was_requested
-    ####
-    def skip_was_requested(self, user_id, user_email, message_id):
-        """
-        Process a requested skip, check if skip is possible, if yes
-        put job in generator queue.
-        """
-
-        # at which task_nr is the user?
-        cur_task = c.user_get_current_task(self.dbs["semester"], user_id, self.queues["logger"], \
-                                           self.name)
-        next_task = cur_task + 1
-
-        logmsg = ("Skip requested: User with UserId:{0}, from "
-                  "TaskNr= {1} to {2}").format(user_id, cur_task, next_task)
-        c.log_a_msg(self.queues["logger"], self.name, logmsg, "DEBUG")
-
-        #task with this tasknr exists?
-        is_task = c.is_valid_task_nr(self.dbs["course"], next_task, self.queues["logger"],\
-                                     self.name)
-        if is_task:
-            task_starttime = c.get_task_starttime(self.dbs["course"], next_task,
-                                                  self.queues["logger"], self.name)
-            task_has_started = task_starttime <= datetime.datetime.now()
-
-            if task_has_started:
-                #tell generator thread to create new task
-                logmsg = ("Calling Generator to create "
-                          "TaskNr:{0} for UserId:{1}").format(next_task, user_id)
-                c.log_a_msg(self.queues["logger"], self.name, logmsg, "DEBUG")
-
-                c.generate_task(self.queues["generator"], user_id, next_task, user_email, message_id)
-
-                logmsg = ("Skip done: User with UserId:{0}, from "
-                          "TaskNr= {1} to {2}").format(user_id, cur_task, next_task)
-                c.log_a_msg(self.queues["logger"], self.name, logmsg, "DEBUG")
-
-                return
-
-        #Skip not possible
-        logmsg = ("Skip NOT POSSIBLE: User with UserId:{0}, from "
-                  "TaskNr= {1} to {2}").format(user_id, cur_task, next_task)
-        c.log_a_msg(self.queues["logger"], self.name, logmsg, "DEBUG")
-
-        c.send_email(self.queues["sender"], user_email, "", "SkipNotPossible", \
-                     "", "", message_id)
-
     ####
     # connect_to_imapserver
     ####
@@ -845,16 +798,10 @@ class MailFetcher(threading.Thread):
         ###############
             self.a_status_is_requested(user_id, user_email, message_id)
 
-        elif self.allow_skipping and re.search('[Ss][Kk][Ii][Pp]', mail_subject):
-        ####################
-        # SKIP, IF ALLOWED #
-        ####################
-            self.skip_was_requested(user_id, user_email, message_id)
-
-        else:
         #####################
         #   DEFAULT ACTION  #
         #####################
+        else:
             logmsg = ("Got a kind of message I do not understand. "
                       "Sending a usage mail...")
             c.log_a_msg(self.queues["logger"], self.name, logmsg, "INFO")

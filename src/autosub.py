@@ -67,7 +67,6 @@ course_mode = None
 tasks_dir = None
 specialmsgs_dir = None
 auto_advance = None
-allow_skipping = None
 allow_requests = None
 
 job_queue = None
@@ -176,7 +175,7 @@ def load_specialmessage_to_db(env, msgname, filename):
 
     template = env.get_template(filename)
     data = {'course_name' : course_name, "submission_email" : smtpmail,
-            'allow_skipping': allow_skipping, 'allow_requests': allow_requests}
+            'allow_requests': allow_requests}
     template = template.render(data)
 
     curc, conc = c.connect_to_db(coursedb, logger_queue, "autosub.py")
@@ -202,7 +201,7 @@ def parse_config(config):
     global num_workers, queue_size, poll_period, semesterdb, coursedb, log_dir,\
            log_threshhold
     global course_name, course_mode, tasks_dir, specialmsgs_dir
-    global auto_advance, allow_skipping, allow_requests
+    global auto_advance, allow_requests
 
 
     ####################
@@ -343,30 +342,20 @@ def parse_config(config):
             auto_advance = True
         else:
             auto_advance = False
+
     except:
         auto_advance = False
 
     try:
-        allow_skipping = config.get('course', 'allow_skipping')
-        if allow_skipping == "yes" or allow_skipping == "1":
-            allow_skipping = True
-        else:
-            allow_skipping = False
-    except:
-        allow_skipping = False
-
-    try:
         allow_requests = config.get('course', 'allow_requests')
-        if allow_requests == "yes" or allow_requests == "1" or \
-           allow_requests == "once":
+        if allow_requests == "yes" or allow_requests == "1" or allow_requests == "once":
             allow_requests = "once"
             auto_advance = False
-            allow_skipping = False
 
         elif allow_requests == "multiple":
             allow_requests = "multiple"
             auto_advance = False
-            allow_skipping = False
+
         else:
             allow_requests = "no"
     except:
@@ -461,7 +450,7 @@ def start_threads():
                  "security": imapsecurity}
 
     fetcher_t = fetcher.MailFetcher("fetcher", queues, dbs, imap_info, \
-                                    poll_period, allow_skipping, allow_requests)
+                                    poll_period, allow_requests)
 
     # make the fetcher thread a daemon, this way the main will clean it up before
     # terminating!
@@ -631,9 +620,6 @@ def check_init_ressources():
     filename = 'deadtask.txt'
     load_specialmessage_to_db(env, 'DEADTASK', filename)
 
-    filename = 'skipnotpossible.txt'
-    load_specialmessage_to_db(env, 'SKIPNOTPOSSIBLE', filename)
-
     filename = 'tasknotsubmittable.txt'
     load_specialmessage_to_db(env, 'TASKNOTSUBMITTABLE', filename)
 
@@ -659,7 +645,6 @@ def check_init_ressources():
     set_general_config_param('course_name', course_name)
     set_general_config_param('submission_email', imapmail)
     set_general_config_param('tasks_dir', tasks_dir)
-    set_general_config_param('allow_skipping', allow_skipping)
     set_general_config_param('auto_advance', auto_advance)
     set_general_config_param('allow_requests', allow_requests)
 
