@@ -91,10 +91,7 @@ course\_name & The name of the course. & No name set \\
 mode & The mode in which to run. Possible values: exam normal & normal \\
 \hline
 allow\_requests & Decides if the system runs in request queue mode or linear queue mode. If this is activated
-	auto\_advance and allow\_skipping are set to no. Possible values: once multiple no & no \\
-\hline
-allow\_skipping & Allows users to skip ahead to the next task with a skip E-Mail. 
-	Only possible in linear task queue mode. Possible values: yes no & no \\
+	auto\_advance is set to no. Possible values: once multiple no & no \\
 \hline
 auto\_advance & Decides if users get auto advanced to a task which is activated by its
 	TaskStart. Only possible in linear task queue mode. Possible values: yes no & no \\
@@ -359,8 +356,6 @@ Table Entries & \begin{itemize}
 			current last task.
         \item DEADTASK -- A mesage sent to inform the student that he submitted a task
 			which's deadline is allready over.
-		\item SKIPNOTPOSSIBLE -- A message sent to the user that the skip he
-			requested was not possible. Only sent if skipping is allowed.
 		\item TASKNOTSUBMITTABLE -- A message sent to the user to tell him that
 			he cannot submit a solution to a task he has not received yet.
         \end{itemize}

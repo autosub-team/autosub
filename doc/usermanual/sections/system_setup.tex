@@ -1,11 +1,11 @@
 \section{Setting up the VELS system} \label{system_setup}
 
 \subsection{Email Configuration} \label{sub:emailconfig}
-VELS has to be connected to an E-Mail account from which it can fetch E-Mails and send E-Mails. 
+VELS has to be connected to an E-Mail account from which it can fetch E-Mails and send E-Mails.
 As VELS itself does not include an E-Mail server, you will have to set up a E-Mail server or
 create an account on an existing server. The account has to be reachable via SMTP and IMAP.
-Note possible secure connection modes (ssl/starttls), ports and connection information of 
-your account/server as you will need them when you create the VELS config file (see 
+Note possible secure connection modes (ssl/starttls), ports and connection information of
+your account/server as you will need them when you create the VELS config file (see
 Section \ref{sub:exampleconfig}).
 
 Additionally the account needs to have a folder to archive processed E-Mails, VELS by default
@@ -13,7 +13,7 @@ expects it to be named archive (can be changed in VELS\_WEB $\rightarrow$ Genera
 only non fully processed E-Mails will be in the inbox of the account. If VELS crashes
 you can set them to unread and the VELS system will process them.
 
-\textbf{Make sure the account you choose has an empty inbox when starting the autosub daemon for the 
+\textbf{Make sure the account you choose has an empty inbox when starting the autosub daemon for the
 first time, as VELS will try to process all unread E-Mails, even if no user has been whitelisted yet!}
 
 \subsection{Getting the VELS system} \label{sub:serversetup}
@@ -30,7 +30,7 @@ VELS can be used in two distinct task queue modes: request mode and linear mode.
 \\
 \textbf{Request mode}\\
 In this mode students request a task out of the configured tasks by request. This enables students to
-choose which tasks they want to solve. In order to choose this queue mode allow\_requests has to be set to 
+choose which tasks they want to solve. In order to choose this queue mode allow\_requests has to be set to
 once or multiple in the configuration file (see Section \ref{sub:exampleconfig}, Section \ref{app:config}).\\
 \\
 
@@ -51,13 +51,6 @@ get sent the first task at registration with the system (if the task is active a
 To be added
 \\
 
-This mode can be combined with allow\_skipping, which allows users to skip a task in the linear queue 
-(see Section \ref{sub:exampleconfig}, Section \ref{app:config}). \\
-
-\underline{Example scenario with allow\_skipping = yes}\\
-To be added
-\\
-
 This mode can be combined with auto\_advance, which auto advances users to a task once it is becoming acvive by its
 TaskStart (see Section \ref{sub:exampleconfig}, Section \ref{app:config}). \\
 
@@ -67,7 +60,7 @@ To be added
 \subsection{Configuration File Creation} \label{sub:exampleconfig}
 The autosub config file is used to configure the connection to the mail server and set
 configuration parameters for the system. In order to run the autosub daemon a config file
-has to be created. The config file fields each belong to one of the groups embraced 
+has to be created. The config file fields each belong to one of the groups embraced
 in [...]. An example config file can be seen below, the full list of fields and their
 meaning is described in Appendix Section \ref{app:config}.
 
@@ -99,7 +92,6 @@ log_threshhold: INFO
 tasks_dir: /home/martin/autosub/tasks/implementation/VHDL
 course_name: My Cool Course
 mode: normal
-allow_skipping: no
 auto_advance: no
 allow_requests: no
 \end{lstlisting}
@@ -107,7 +99,7 @@ allow_requests: no
 \subsection{Starting the Daemon}
 
 Autosub is implemented as a daemon process, that means all messages provided are written
-to files (see Section \ref{logerror} and \ref{tasklog} for details on those files) -- 
+to files (see Section \ref{logerror} and \ref{tasklog} for details on those files) --
 nothing is written to the console. The daemon is started using a shell-script located
 in {\tt autosub/src/}:
 
@@ -140,10 +132,10 @@ python3 installer.py <pathtoautosub> <pathtoconfigfile>
 \end{verbatim}
 
 Use the same configfile you used for starting the autosub daemon! This step will
-also download web2py to the user's home folder and set needed symbolic links to 
+also download web2py to the user's home folder and set needed symbolic links to
 connect VELS\_WEB to the autosub system.
 
-If you change parameters in the category $[$system$]$ in your autosub config file or need to switch to 
+If you change parameters in the category $[$system$]$ in your autosub config file or need to switch to
 another config file run the installer with the reinstall flag:
 
 \begin{verbatim}
@@ -152,17 +144,17 @@ python3 installer.py --reinstall <pathtoautosub> <pathtoconfigfile>
 
 To use https you have to use a SSL key. The system expects the keyfiles
 (server.crt , server.csr , server.key) to be in the web2py directory. To
-generate keys and place them run the following (this can be skipped if you 
+generate keys and place them run the following (this can be skipped if you
 already have keyfiles you can use!):
 
 \begin{verbatim}
-./gen_keys.sh    
+./gen_keys.sh
 \end{verbatim}
 
-To start the VELS\_WEB daemon at port <port> and with web2py admin password 
+To start the VELS\_WEB daemon at port <port> and with web2py admin password
 <password> (this can be set by you!) run:
 \begin{verbatim}
-./daemon.sh start <port> <password> 
+./daemon.sh start <port> <password>
 \end{verbatim}
 
 After this step the VELS\_WEB interface will be reachable via your browser at
@@ -196,7 +188,7 @@ with an error message is sent to him.
 
 Whitelisting can be done in VELS\_WEB under the tab {\it Whitelist}. E-Mail addresses can be added
 one at a time or multiple at a time (mass subscription). Removal of a single E-Mail address
-can also be done in the VELS\_WEB. Names which will be used when users register can also be 
+can also be done in the VELS\_WEB. Names which will be used when users register can also be
 specified. This is usefull, because many users don't send E-Mails with their name configured
 in the "From" header.
 
@@ -205,8 +197,8 @@ Existing tasks can be assembled into a task queue. This configuration is done in
 Each task in the queue has to be created with the following properties:
 \begin{itemize}
 \item {\bf TaskStart:} The start datetime for the task. The task will automatically
-    be set to active if this datetime is reached. If auto\_advance is active (configured 
-    via config file) users waiting for a task to become active will automatically 
+    be set to active if this datetime is reached. If auto\_advance is active (configured
+    via config file) users waiting for a task to become active will automatically
     receive an E-Mail with the task description for that task.
 \item {\bf TaskDeadline:} The end datetime for the task. Submissions for a tasks after
     this datetime will be rejected.
@@ -216,16 +208,16 @@ Each task in the queue has to be created with the following properties:
 \item {\bf Language}: Language code of the language in which the task discription for
 	this task should be created.
 \item {\bf TestExecutable:} The name of the tester executable.
-\item {\bf CommonFile:} Name of a common script that offers a tester functionalities. This allows easy 
-	switching between different simulator backends.	Such scripts have to be stored in a directory 
+\item {\bf CommonFile:} Name of a common script that offers a tester functionalities. This allows easy
+	switching between different simulator backends.	Such scripts have to be stored in a directory
 	{\tt ``\_common"} in the configured
 	tasks\_dir.
 \item {\bf Score:} The score a student gets for successful completion of the task. The
     scores for all completed tasks are added and can therefore also be used for grading.
-\item {\bf TaskOperator:} The E-mail(s) of the operator of the task seperated by commas. 
+\item {\bf TaskOperator:} The E-mail(s) of the operator of the task seperated by commas.
 	These task operators are recipient of task specific questions ("Question Task N").
 \item {\bf TaskActive:} The state of the task, for inactive tasks the generator won't
-    be called. A Task is considered active when the current time is greater than the 
+    be called. A Task is considered active when the current time is greater than the
     TaskStart
 \end{itemize}
 
