@@ -796,7 +796,6 @@ class MailSender(threading.Thread):
             message_text = self.read_specialmessage('QUESTION')
             msg = self.assemble_email(msg, message_text, '')
             self.send_out_email(recipient, msg.as_string(), message_type)
-            self.archive_message(message_id)
 
         elif message_type == "QFwd":
         #################
@@ -810,6 +809,7 @@ class MailSender(threading.Thread):
             orig_mail.replace_header("Subject", "Question from " + orig_from)
 
             self.send_out_email(recipient, orig_mail.as_string(), message_type)
+            self.archive_message(message_id)
 
         elif message_type == "Welcome":
         #################
