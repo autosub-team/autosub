@@ -721,16 +721,6 @@ class MailSender(threading.Thread):
             self.send_out_email(recipient, msg.as_string(), message_type)
             self.archive_message(message_id)
 
-        elif message_type == "SkipNotPossible":
-        ######################
-        # SKIP NOT POSSIBLE  #
-        ######################
-            msg['Subject'] = "Requested Skip not possible"
-            message_text = self.read_specialmessage('SKIPNOTPOSSIBLE')
-            msg = self.assemble_email(msg, message_text, '')
-            self.send_out_email(recipient, msg.as_string(), message_type)
-            self.archive_message(message_id)
-
         elif message_type == "TaskNotSubmittable":
         #########################
         # TASK NOT SUBMITTABLE  #
