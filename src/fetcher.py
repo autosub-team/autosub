@@ -826,19 +826,6 @@ class MailFetcher(threading.Thread):
         if not uid_of_mid:
             return
 
-        # if there is a active_job, that should be force removed when
-        # (dispatch - now) > 5min
-        time_now = time.time()
-        to_delete = []
-
-        for job_tuple, job_info in self.jobs_active.items():
-            dispatch = job_info["dispatch"]
-            if (dispatch - time_now) > 300:
-                to_delete.append(job_tuple)
-
-        for job_tuple in to_delete:
-            del self.jobs_active[job_tuple]
-
         # can a backlogged job be dispatched?
         dispatch_time = time.time()
         to_delete = []
@@ -855,8 +842,8 @@ class MailFetcher(threading.Thread):
                     try:
                         uid = uid_of_mid[message_id]
                     except KeyError:
-                        logmsg = ("Error handling backlogged: could not find uid for message"
-                                  "with ID: {0}").format(message_id)
+                        logmsg = ("Error handling backlogged: could not find "
+                                  "uid for message with ID: {0}").format(message_id)
                         c.log_a_msg(self.queues["logger"], self.name, logmsg, "ERROR")
                         continue
 
@@ -976,6 +963,34 @@ class MailFetcher(threading.Thread):
                 continue
 
     ####
+    # handle_timeout
+    ####
+    def handle_timeout(self):
+        """
+        Force remove a job from jobs_active when no finished was received for a
+        given timout interval.
+        """
+
+        timeout_after = 300 #in seconds
+
+        time_now = time.time()
+        to_delete = []
+
+        for job_tuple, job_info in self.jobs_active.items():
+            dispatch = job_info["dispatch"]
+            time_since_dispatch = dispatch - time_now
+            if time_since_dispatch > timeout_after:
+                to_delete.append(job_tuple)
+
+        for job_tuple in to_delete:
+            del self.jobs_active[job_tuple]
+
+            logmsg = ("Dropped a submission for User {0}, TaskNr {1} as the tester "
+                      "did not return a finished message after 5 minutes. This "
+                      "submission email will not be moved to the archive!")
+            c.log_a_msg(self.queues["logger"], self.name, logmsg, "WARNING")
+
+    ####
     # handle_new
     ####
     def handle_new(self, m):
@@ -1081,9 +1096,10 @@ class MailFetcher(threading.Thread):
         m = self.connect_to_imapserver()
 
         if m != 0:
+            self.archive_processed(m)
+            self.handle_timeout()
             self.handle_backlogged(m)
             self.handle_new(m)
-            self.archive_processed(m)
             self.disconnect_from_imapserver(m)
 
         time.sleep(self.poll_period)
