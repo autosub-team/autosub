@@ -74,7 +74,7 @@ function prepare_test {
 	# create tmp directory for user if it does not exist
 	if [ ! -d "/tmp/$USER" ]
 	then
-   		mkdir /tmp/$USER
+		mkdir /tmp/$USER
 	fi
 
 	# create file for error messages, which will be sent to user
@@ -83,10 +83,10 @@ function prepare_test {
 	#make sure the error_attachments folder is empty
 	if [ ! -d "error_attachments" ];
 	then
-	mkdir error_attachments
+		mkdir error_attachments
 	else
-	rm -r error_attachments
-	mkdir error_attachments
+		rm -r error_attachments
+		mkdir error_attachments
 	fi
 
 	#------ CHECK AND PREPARE USERFILES ------
@@ -188,20 +188,23 @@ function userfiles_analyze {
 
 		if [ "$RET_loop" -eq "$zero" ]
 		then
-		echo "Task ${task_nr} possible infinite loop for user ${user_id}!"
-		echo "Your submitted behavior file seems to contain an infinite loop. Do all your processes have a sensitivity list?" > error_msg
-		exit 1
+			echo "Task ${task_nr} possible infinite loop for user ${user_id}!"
+			echo "Your submitted behavior file seems to contain an infinite loop. Do all your"
+			     "processes have a sensitivity list?" > error_msg
+			exit $FAILURE
 		fi
 
 		if [ "$RET" -eq "$zero" ]
 		then
 		   echo "Task ${task_nr} analyze success for user ${user_id}!"
 		else
-		   echo "Task ${task_nr} analyze FAILED for user ${user_id}!"
-		   echo "Analyzation of your submitted behavior file failed:" > error_msg
-		   cat /tmp/$USER/tmp_Task${task_nr}_User${user_id} | grep -v usenglish | grep WARNING >> error_msg # suppress warnings about non usenglish
-		   cat /tmp/$USER/tmp_Task${task_nr}_User${user_id} | grep ERROR >> error_msg
-		   exit $FAILURE
+			echo "Task ${task_nr} analyze FAILED for user ${user_id}!"
+			echo "Analyzation of your submitted behavior file failed:" > error_msg
+
+			# suppress warnings about non usenglish, ERROR & WARTING >>  error_msg
+			cat /tmp/$USER/tmp_Task${task_nr}_User${user_id} | grep -v usenglish | grep WARNING >> error_msg
+			cat /tmp/$USER/tmp_Task${task_nr}_User${user_id} | grep ERROR >> error_msg
+			exit $FAILURE
 		fi
 	done
 
@@ -211,7 +214,9 @@ function elaborate {
 	cd $user_task_path
 
 	#------ ELABORATE testbench ------#
-	fuse -top ${task_name}_tb
+
+	# don't store error output as it will be read from log
+	fuse -top ${task_name}_tb 2> /dev/null
 	RET=$?
 
 	if [ "$RET" -eq "$zero" ]
