@@ -589,6 +589,8 @@ class MailFetcher(threading.Thread):
         Search for new (unseen) e-mails from the Inbox.
 
         Return a mapping as dict that assigns each Message-Id its UID.
+
+        Note: This is done with read rights. All unread flags are unset.
         """
 
         try:
@@ -636,10 +638,12 @@ class MailFetcher(threading.Thread):
         Search for all emails.
 
         Return a mapping as dict that assigns each Message-Id its UID.
+
+        Note: This is done readonly to preserve unread flags.
         """
 
         try:
-            m.select(mailbox='Inbox', readonly=False)
+            m.select(mailbox='Inbox', readonly=True)
         except Exception as e:
             logmsg = "Failed to select inbox with error " + str(e)
             c.log_a_msg(self.queues["logger"], self.name, logmsg, "ERROR")
@@ -917,6 +921,9 @@ class MailFetcher(threading.Thread):
                 next_archive_msg = self.queues["archive"].get_nowait()
             except queue.Empty:
                 return
+
+            # We need read rights to move a email
+            m.select(mailbox='Inbox', readonly=False)
 
             message_id = next_archive_msg.get('message_id')
             is_finished_job = next_archive_msg.get('is_finished_job')
