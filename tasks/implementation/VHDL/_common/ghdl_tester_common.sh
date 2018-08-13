@@ -95,7 +95,7 @@ function prepare_test {
 		#check if the user supplied a file
 		if [ ! -f $userfile ]
 		then
-			echo "Error with task ${task_nr}. User ${user_id} did not attach the right file."
+			echo "could not test task ${task_nr}. User ${user_id} did not attach the right file."
 			echo "You did not attach your solution. Please attach the file $userfile" > error_msg
 			exit $FAILURE
 		fi
@@ -205,9 +205,9 @@ function elaborate {
 
 	if [ "$RET" -eq "$zero" ]
 	then
-		echo "Task${task_nr} elaboration success for user ${user_id}!"
+		echo "Task ${task_nr} elaboration success for user ${user_id}!"
 	else
-		echo "Task${task_nr} elaboration FAILED for user ${user_id}!"
+		echo "Task ${task_nr} elaboration FAILED for user ${user_id}!"
 		echo "Elaboration with your submitted behavior file failed:" > error_msg
 		cat /tmp/$USER/tmp_Task${task_nr}_User${user_id}_analyze >> error_msg
 		cat /tmp/$USER/tmp_Task${task_nr}_User${user_id}_elaborate >> error_msg
@@ -226,14 +226,14 @@ function simulate {
 		add_wave_file_parameter=""
 	fi
 
-	# start simulation:
-	timeout $simulation_timeout ghdl -r ${task_name}_tb $add_wave_file_parameter 2> /tmp/$USER/tmp_Task${task_nr}_User${user_id}_simulate
+	# start simulation, simulation writes to stdout:
+	timeout $simulation_timeout ghdl -r ${task_name}_tb $add_wave_file_parameter > /tmp/$USER/tmp_Task${task_nr}_User${user_id}_simulate
 	RET_timeout=$?
 
 	# check if simulation timed out:
 	if [ "$RET_timeout" -eq 124 ] # timeout exits 124 if it had to kill the process. Probably the simulation has crashed.
 	then
-		echo "Task${task_nr} simulation timeout for user ${user_id}!"
+		echo "Task ${task_nr} simulation timeout for user ${user_id}!"
 		echo "The simulation of your design timed out. This is not supposed to happen. Check your design." > error_msg
 		exit $FAILURE
 	fi
