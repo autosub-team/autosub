@@ -58,7 +58,7 @@ Die "`crc"' Entity soll einen CRC-Wert f\"ur eine Nachricht unter der Ber\"ucksi
 Die Berechnung erfolgt dabei nach folgendem Schema:
 \begin{enumerate}
     \item Eine steigende Flanke am Port NEW\_MSG zeigt an, dass eine neue CRC Berechnung f\"ur die Nachricht auf Port MSG ausgef\"uhrt werden soll.
-    \item Nach {{CLOCKCYCLES}} Taktzyklen des Taktes (Port CLK) soll der berechnete CRC-Wert am Port CRC ausgegeben werden. Au"serdem soll der Port CRC\_VALID auf '1' gesetzt werden, um anzuzeigen, dass ein g\"ultiges Resultat vorhanden ist.
+    \item Nach {{CLOCKCYCLES}} Taktzyklen des Taktes (Port CLK) soll der berechnete CRC-Wert am Port CRC ausgegeben werden. Au"serdem soll der Port CRC\_VALID auf '1' gesetzt sein, um anzuzeigen, dass ein g\"ultiges Resultat vorhanden ist.
 \end{enumerate}
 
 \newpage
