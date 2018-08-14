@@ -99,9 +99,11 @@ function prepare_test {
 			echo "You did not attach your solution. Please attach the file $userfile" > error_msg
 			exit $FAILURE
 		fi
-
-		#delete all comments from the file
-		sed -i 's:--.*$::g' $userfile
+		
+		# delete comments from the file to allow checks like looking for 'wait'
+		# NOTE: this is not a parse and does not cover 2008 multi line
+		# comments, but should work for most cases
+		sed -i 's:--[^"]*$::g' $userfile
 	done
 
 	#------ COPY NEEDED FILES FOR TEST ------
