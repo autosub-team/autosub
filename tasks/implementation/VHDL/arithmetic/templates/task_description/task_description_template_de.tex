@@ -53,66 +53,77 @@ Die Entity soll folgende arithmetische Funktionen implementieren:
 \end{itemize}
 
 Dieses Verhalten soll von Ihnen in der Datei "`arithmetic\_beh.vhdl"' programmiert werden.
-
+\\
 
 \textbf{Anmerkung:} Die ALU soll mit einer Bitl\"ange von {{O_WIDTH}} implementiert werden. Daher kann eine Vorzeichenerweiterung der Operanden notwendig sein.
 
-\rule{16cm}{0.4pt}\par
+\newpage
 \subsection*{Zusammenfassung: Carry und Overflow Flag}
 
 \textbf{Carry Flag}\\
 Das Carry Flag wird in der bin\"aren Mathematik unter zwei Bedingungen gesetzt (='1'):
 \begin{enumerate}
-\item Das Carry Flag wird gesetzt, wenn bei der Addition von zwei Zahlen das MSB (h\"ochstwertigste oder "`linkeste"' Bit) des Ergebnisses aus den verf\"ugbaren Bit-Stellen "`herausgeschoben"' wird.
+\item Das Carry Flag wird gesetzt, wenn bei der Addition von zwei Zahlen das MSB (h\"ochstwertigste Bit) des Ergebnisses aus den verf\"ugbaren Bit-Stellen "`herausgeschoben"' wird.
 
-   1111 + 0001 = 0000 (Carry Flag ist '1')
+   z.B. 1111 + 0001 = 0000 (Carry Flag ist '1')
 
 \item Das Carry (Borrow) Flag wird ebenfalls bei der Subtraktion zweier Zahlen gesetzt, wenn dabei an der Stelle des MSB ein Bit "`ausgeborgt"' werden muss.
 
-   0000 - 0001 = 1111 (Carry Flag ist '1')
+   z.B. 0000 - 0001 = 1111 (Carry Flag ist '1')
+\end{enumerate}
 
 Ansonsten ist das Carry Flag immer nicht gesetzt (='0').
 
 \begin{itemize}
-\item 0111 + 0001 = 1000 (Carry Flag ist '0')
-\item 1000 - 0001 = 0111 (Carry Flag ist '0')
+\item z.B. 0111 + 0001 = 1000 (Carry Flag ist '0')
+\item z.B. 1000 - 0001 = 0111 (Carry Flag ist '0')
 \end{itemize}
 
-Im Einerkomplement wird das Carry Flag vor einer m\"oglichen R\"uckf\"uhrung des \"Ubertrags ("`end around"') gesetzt.
+%CHANGED: omit 1s complement
+%Im Einerkomplement wird das Carry Flag vor einer m\"oglichen R\"uckf\"uhrung des \"Ubertrags ("`end around"') gesetzt.
 
-In vorzeichenloser Darstellung zeigt das Carry Flag Fehler an.
-In vorzeichenbehafteter Darstellung liefert das Carry Flag keine relevanten Informationen.
+In vorzeichenloser Arithmetik zeigt ein gesetzes Carry Flag, dass das Ergebis falsch ist.
 
-
-\end{enumerate}
+In vorzeichenbehafteter Arithmetik liefert das Carry Flag keine relevanten Informationen.
+\\
 
 \textbf{Overflow Flag}\\
-Das Overflow Flag wird in der bin\"aren Mathematik unter zwei Bedingungen gesetzt (='1'):
+Das Overflow Flag wird in der bin\"aren Mathematik unter folgenden Bedingungen gesetzt (='1'):
+
 \begin{enumerate}
-\item Wenn die Summe zweier Zahlen, welche jeweils kein gesetztes Vorzeichenbit aufweisen, zu einem Ergebnis mit einem gesetzten Vorzeichenbit f\"uhrt, dann wird das Overflow Flag gesetzt.
+\item Wenn die Summe zweier Zahlen, welche jeweils kein gesetzes Vorzeichenbit aufweisen, zu einem Ergebnis mit einem gesetzen Vorzeichenbit f\"uhrt:
 
-   0100 + 0100 = 1000 (Overflow Flag ist '1')
+   z.B. 0100 + 0100 = 1000 (Overflow Flag ist '1')
 
-\item Wenn die Summe zweier Zahlen, welche jeweils ein gesetztes Vorzeichenbit aufweisen, zu einem Ergebnis ohne gesetztem Vorzeichenbit f\"uhrt, dann wird das Overflow Flag gesetzt.
+\item Wenn die Summe zweier Zahlen, welche jeweils ein gesetzes Vorzeichenbit aufweisen, zu einem Ergebnis mit einem nicht gesetzten Vorzeichenbit f\"uhrt:
 
-   1000 + 1000 = 0000 (Overflow Flag ist '1')
+   z.B. 1000 + 1000 = 0000 (Overflow Flag ist '1')
+
+\item Wenn die Subtraktion einer Zahl mit gesetzem Vorzeichenbit von einer Zahl mit nicht gesetzem Vorzeichenbit zu einem Ergebnis mit gesetzem Vorzeichenbit f\"uhrt:
+
+   z.B. 0111 - 1001 = 1110 (Overflow Flag ist '1')
+
+\item Wenn die Subtraktion einer Zahl mit nicht gesetzem Vorzeichenbit von einer Zahl mit gesetzem Vorzeichenbit zu einem Ergebnis mit nicht gesetzem Vorzeichenbit f\"uhrt:
+
+   z.B. 1001 - 0111 = 0010 (Overflow Flag ist '1')
 \end{enumerate}
 
 Ansonsten ist das Overflow Flag immer nicht gesetzt (='0').
+
 \begin{itemize}
-\item 0100 + 0001 = 0101 (Overflow Flag ist '0')
-\item 0110 + 1001 = 1111 (Overflow Flag ist '0')
-\item 1000 + 0001 = 1001 (Overflow Flag ist '0')
-\item 1100 + 1100 = 1000 (Overflow Flag ist '0')
+\item z.B. 0100 + 0001 = 0101 (Overflow Flag ist '0')
+\item z.B. 0110 + 1001 = 1111 (Overflow Flag ist '0')
+\item z.B. 1000 + 0001 = 1001 (Overflow Flag ist '0')
+\item z.B. 1100 + 1100 = 1000 (Overflow Flag ist '0')
 \end{itemize}
 
-Im Einerkomplement wird das Overflow Flag nach einer m\"oglichen R\"uckf\"uhrung des \"Ubertrags ("`end around"') gesetzt.
+%CHANGED: omit 1s complement
+%Im Einerkomplement wird das Overflow Flag nach einer m\"oglichen R\"uckf\"uhrung des \"Ubertrags ("`end around"') gesetzt.
 
-Bei vorzeichenbehafteter Mathematik bedeutet ein gesetztes Overflow Flag, dass das Ergebnis falsch ist: Man hat zwei positive Zahlen addiert und ein negatives Ergebnis erhalten oder zwei negative Zahlen addiert und ein positives Ergebnis erhalten. Bei der vorzeichenlosen Arithmetik ist das Overflow Flag bedeutungslos und kann ignoriert werden.
+Bei vorzeichenbehafteter Arithmetik zeigt ein gesetztes Overflow Flag, dass das Ergebnis falsch ist. 
 
-\vspace{0.5cm}
-\textit{Quelle: }\url{http://teaching.idallen.com/dat2343/10f/notes/040_overflow.txt}
-\\
+Bei der vorzeichenlosen Arithmetik liefert das Overflow Flag keine relevanten Informationen.
+
 \rule{16cm}{0.4pt}
 
 \vspace{0.3cm}
@@ -120,7 +131,7 @@ Bei vorzeichenbehafteter Mathematik bedeutet ein gesetztes Overflow Flag, dass d
 Tipp: Verwenden Sie das "`ieee.numeric\_std"' Package f\"ur die Implementierung der arithmetischen Operation.
 \\
 
-Um Ihre L\"osung abzugeben, senden Sie ein E-Mail mit dem Betreff "`Result Task {{ TASKNR }}"' und Ihrer Datei "`arithmetic\_beh.vhdl"'  an {{ SUBMISSIONEMAIL }}.
+Um Ihre L\"osung abzugeben, senden Sie ein E-Mail mit dem Betreff "`Result Task {{ TASKNR }}"' und Ihrer Datei "`arithmetic\_beh.vhdl"' an {{ SUBMISSIONEMAIL }}.
 
 \vspace{0.7cm}
 

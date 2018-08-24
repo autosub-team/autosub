@@ -66,20 +66,21 @@ The rules for turning on the carry flag in binary math are two:
 \item The carry flag is set if the addition of two numbers causes a carry
    out of the most significant (leftmost) bits added.
 
-   1111 + 0001 = 0000 (carry flag is turned on)
+   e.g. 1111 + 0001 = 0000 (carry flag is '1')
 
 \item The carry (borrow) flag is also set if the subtraction of two numbers
    requires a borrow into the most significant (leftmost) bits subtracted.
 
-   0000 - 0001 = 1111 (carry flag is turned on)
+   e.g. 0000 - 0001 = 1111 (carry flag is '1')
 
-Otherwise, the carry flag is turned off (zero).
+Otherwise, the carry flag is turned off ('0').
 \begin{itemize}
-\item 0111 + 0001 = 1000 (carry flag is turned off [zero])
-\item 1000 - 0001 = 0111 (carry flag is turned off [zero])
+\item e.g. 0111 + 0001 = 1000 (carry flag is '0')
+\item e.g. 1000 - 0001 = 0111 (carry flag is '0')
 \end{itemize}
 
-In ones' complement the carry flag is set before a possible end around operation.
+%CHANGED: omit 1s complement
+%In ones' complement the carry flag is set before a possible end around operation.
 
 In unsigned arithmetic, watch the carry flag to detect errors.
 In signed arithmetic, the carry flag tells you nothing interesting.
@@ -92,28 +93,29 @@ The rules for turning on the overflow flag in binary math are two:
 \item If the sum of two numbers with the sign bits off yields a result number
    with the sign bit on, the "overflow" flag is turned on.
 
-   0100 + 0100 = 1000 (overflow flag is turned on)
+   e.g. 0100 + 0100 = 1000 (overflow flag is '1')
 
 \item If the sum of two numbers with the sign bits on yields a result number
    with the sign bit off, the "overflow" flag is turned on.
 
-   1000 + 1000 = 0000 (overflow flag is turned on)
+   e.g 1000 + 1000 = 0000 (overflow flag is '1')
 \end{enumerate}
 
 Otherwise, the overflow flag is turned off.
 \begin{itemize}
-\item 0100 + 0001 = 0101 (overflow flag is turned off)
-\item 0110 + 1001 = 1111 (overflow flag is turned off)
-\item 1000 + 0001 = 1001 (overflow flag is turned off)
-\item 1100 + 1100 = 1000 (overflow flag is turned off)
+\item e.g. 0100 + 0001 = 0101 (overflow flag is '0')
+\item e.g. 0110 + 1001 = 1111 (overflow flag is '0')
+\item e.g. 1000 + 0001 = 1001 (overflow flag is '0')
+\item e.g. 1100 + 1100 = 1000 (overflow flag is '0')
 \end{itemize}
 
-In ones' complement the overflow flag is set after a possible end around operation.
+%CHANGED: omit 1s complement
+%In ones' complement the overflow flag is set after a possible end around operation.
 
 If you are doing complement (signed) arithmetic, overflow flag on
 means the answer is wrong - you added two positive numbers and got a
-negative, or you added two negative numbers and got a positive.If you are doing unsigned arithmetic, the overflow flag means nothing
-and should be ignored.
+negative, or you added two negative numbers and got a positive. If you are doing unsigned arithmetic, 
+the overflow flag does not give relevant information.
 
 \vspace{0.5cm}
 \textit{Source: }\url{http://teaching.idallen.com/dat2343/10f/notes/040_overflow.txt}

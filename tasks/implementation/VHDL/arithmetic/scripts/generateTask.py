@@ -47,8 +47,14 @@ o_width=max(width1,width2)
 #operation 0->ADD, 0->SUB
 operation=random.randrange(0,2)
 
+#CHANGED: omitting the 1s complement
+#WAS:
 #operand style: 0-> unsigned, 1->1s complement, 2->2s complement
-operand_style=random.randrange(0,3)
+%operand_style=random.randrange(0,3)
+
+#NOW:
+operand_styles = [0,2]
+operand_style=random.choice(operand_styles)
 
 ###################################
 ## IMPORT LANGUAGE TEXT SNIPPETS ##
