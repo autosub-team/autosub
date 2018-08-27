@@ -7,8 +7,8 @@ In the following, the installation of pre-requisites for autosub is documented.
 The probably easiest step is to install standard debian packages:
 
 \begin{verbatim}
-sudo apt-get install python3 python3-mock python3-pip python3-nose 
-sudo apt-get install zip flip git gnat-4.6-base libgnat-4.6 
+sudo apt-get install python3 python3-mock python3-pip python3-nose
+sudo apt-get install zip flip git gnat-4.6-base libgnat-4.6
 sudo apt-get install texlive-latex-extra pgf graphviz build-dep
 sudo apt-get install zlib1g-dev
 \end{verbatim}
@@ -68,7 +68,7 @@ apt package pool now:
 sudo apt-get install python3  python3-mock python3-pip python3-nose
 sudo apt-get install zip flip git gnat-4.9-base libgnat-4.9
 sudo apt-get install texlive-latex-extra pgf graphviz  build-dep
-sudo apt-get install zlib1g-dev python3-pyqt5 python3-matplotlib  
+sudo apt-get install zlib1g-dev python3-pyqt5 python3-matplotlib
 \end{verbatim}
 
 Unfortunately there is a small bug in one of the latex packages that we use,
@@ -112,7 +112,7 @@ For stretch the standard debian packages are available for installation by:
 sudo apt-get install python3 python3-mock python3-pip python3-nose
 sudo apt-get install zip flip git gnat-6 libgnat-6
 sudo apt-get install texlive-latex-extra pgf graphviz build-essentials
-sudo apt-get install zlib1g-dev python3-pyqt5 python3-matplotlib 
+sudo apt-get install zlib1g-dev python3-pyqt5 python3-matplotlib
 \end{verbatim}
 
 Unfortunately there is a small bug in one of the latex packages that we use,
@@ -134,13 +134,7 @@ pip3 install graphviz
 pip3 install jinja2
 \end{verbatim}
 
-Last, we install a vhdl simulator. The simulator of Xilinx's ISE installation is recommended since there is no dedicated
-version of vhdl for Debian stretch. 
-If you still want to use ghdl you can try the version described in Debian 8 (Jessie).
-
-\begin{verbatim}
-dpkg -i ghdl_0.33-1jessie1_amd64.deb
-\end{verbatim}
+Last, we install a vhdl simulator. GHDL for Debian 9 is available from github \footnote{https://github.com/ghdl/ghdl/releases}
 
 To use the Simulator of Xilinx's ISE: ISim, see Section \ref{ISE-install}
 
