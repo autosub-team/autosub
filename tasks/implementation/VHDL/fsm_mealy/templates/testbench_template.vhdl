@@ -95,7 +95,7 @@ begin
                 RST_UUT<='1';
                 wait until rising_edge(CLK_UUT);
                 RST_UUT<='0';
-                wait for 1 ps;
+                wait for 1 ns;
 
                 if(STATE_UUT /= START or OUTPUT_UUT /= "00") then
                     write(OUTPUT,string'("§{\n"));
@@ -122,7 +122,7 @@ begin
                 INPUT_UUT <= patterns(i).INPUT;
 
                 wait until rising_edge(CLK_UUT);
-                wait for 1 ps;
+                wait for 1 ns;
 
                 if(STATE_UUT /= patterns(i).STATE or OUTPUT_UUT /= patterns(i).OUTPUT) then
                     write(OUTPUT,string'("§{\n"));
