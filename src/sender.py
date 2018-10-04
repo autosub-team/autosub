@@ -436,7 +436,7 @@ class MailSender(threading.Thread):
                     msg.attach(part)
                 except:
                     logmsg = "Failed to add an attachement: {0}".format(next_attachment)
-                    c.log_a_msg(self.queues["logger"], self.name, logmsg, "DEBUG")
+                    c.log_a_msg(self.queues["logger"], self.name, logmsg, "ERROR")
 
         # The following message my be helpful during debugging - but
         # if you use attachments, your log-file will grow very fast
@@ -666,11 +666,25 @@ class MailSender(threading.Thread):
                 msg['To'] = admin_mail
                 msg['Subject'] = "Task Error Alert Task{0} User{1}".format( \
                                  str(task_nr), str(user_id))
-                message_text = ("There was an error with the task files analyzation for Task {0} " \
-                                "and User {1}. Check the tasks.stderr and tasks.stdout to "
-                                "find what caused it.").format(task_nr, user_id)
+                message_text = ("There was an error with the Task {0} " \
+                                "and User {1}. Check the logfiles(tasks.stderr, tasks.stdout, "
+                                "autosub.log) to find what caused it.").format(task_nr, user_id)
                 msg = self.assemble_email(msg, message_text, '')
                 self.send_out_email(admin_mail, msg.as_string(), message_type)
+
+            self.archive_message(message_id)
+
+        elif message_type == "TaskErrorNotice":
+        ####################
+        # TASKERROR NOTICE #
+        ####################
+            admins = ",".join(self.get_admin_emails())
+            msg['Subject'] = "Error processing your last message"
+            message_text = ("There was an error processing your last message, please write an "
+                            "email to the administrators {0} and tell them about the time and what you did last. "
+                            "They will work on resolving the issue as soon as possible.").format(admins)
+            msg = self.assemble_email(msg, message_text, '')
+            self.send_out_email(recipient, msg.as_string(), message_type)
 
         elif message_type == "Status":
         #################

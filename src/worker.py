@@ -109,8 +109,12 @@ class Worker(threading.Thread):
         """
         Act based on the result of the test
         """
+        SUCCESS = 0
+        FAILURE = 1
+        SECURITYALERT = 2
+        TASKERROR= 3
 
-        if test_res: # not 0 returned
+        if test_res == FAILURE: # not 0 returned
         #####################
         #       FAILED      #
         #####################
@@ -122,28 +126,33 @@ class Worker(threading.Thread):
             c.send_email(self.queues["sender"], user_email, user_id, \
                         "Failed", task_nr, "", message_id)
 
-            if test_res == 2:
-            #####################
-            #   SECURITY ALERT  #
-            #####################
-                logmsg = "SecAlert: This test failed due to probable attack by user!"
-                c.log_a_msg(self.queues["logger"], self.name, logmsg, "INFO")
+        elif test_res == SECURITYALERT:
+        #####################
+        #   SECURITY ALERT  #
+        #####################
+            logmsg = "SecAlert: This test failed due to probable attack by user!"
+            c.log_a_msg(self.queues["logger"], self.name, logmsg, "INFO")
 
-                c.send_email(self.queues["sender"], "", user_id, \
-                             "SecAlert", task_nr, "", message_id)
+            c.send_email(self.queues["sender"], "", user_id, \
+                         "SecAlert", task_nr, "", message_id)
 
-            elif test_res == 3:
-            #####################
-            #     TASK ALERT    #
-            #####################
-                logmsg = ("TaskAlert: This test for TaskNr {0} and User {1} failed "
-                          " due an error with task/testbench analyzation!").format(task_nr, user_id)
-                c.log_a_msg(self.queues["logger"], self.name, logmsg, "INFO")
+        elif test_res == TASKERROR:
+        #####################
+        #     TASK ERROR    #
+        #####################
+            logmsg = ("TaskAlert: This test for TaskNr {0} and User {1} failed "
+                      " due an error with task/testbench analyzation!").format(task_nr, user_id)
+            c.log_a_msg(self.queues["logger"], self.name, logmsg, "INFO")
 
-                c.send_email(self.queues["sender"], "", user_id, \
-                             "TaskAlert", task_nr, "", message_id)
+            # alert to admins
+            c.send_email(self.queues["sender"], "", user_id, \
+                         "TaskAlert", task_nr, "", message_id)
 
-        else: # 0 returned
+            # error notice to user
+            c.send_email(self.queues["sender"], user_email, user_id, \
+                         "TaskErrorNotice", task_nr, "", message_id)
+
+        elif test_res == SUCCESS: # 0 returned
         #####################
         #       SUCCESS     #
         #####################
