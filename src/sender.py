@@ -672,8 +672,6 @@ class MailSender(threading.Thread):
                 msg = self.assemble_email(msg, message_text, '')
                 self.send_out_email(admin_mail, msg.as_string(), message_type)
 
-            self.archive_message(message_id)
-
         elif message_type == "TaskErrorNotice":
         ####################
         # TASKERROR NOTICE #
@@ -685,6 +683,13 @@ class MailSender(threading.Thread):
                             "They will work on resolving the issue as soon as possible.").format(admins)
             msg = self.assemble_email(msg, message_text, '')
             self.send_out_email(recipient, msg.as_string(), message_type)
+
+            # archive, is_finished_job=True for tester errors, so the job can be
+            # deleted from the active jobs
+            # in the case this error is from a generator, the is_finished will be
+            # ignored as the message_id will not be in the active jobs (see
+            # fetcher.py)
+            self.archive_message(message_id, is_finished_job=True)
 
         elif message_type == "Status":
         #################

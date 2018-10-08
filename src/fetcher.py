@@ -941,9 +941,10 @@ class MailFetcher(threading.Thread):
                 continue
 
             if is_finished_job:
-                job_tuple = self.mid_to_job_tuple[message_id]
-                del self.jobs_active[job_tuple]
-                del self.mid_to_job_tuple[message_id]
+                if message_id in self.mid_to_job_tuple:
+                    job_tuple = self.mid_to_job_tuple[message_id]
+                    del self.jobs_active[job_tuple]
+                    del self.mid_to_job_tuple[message_id]
 
             # copy
             try:
