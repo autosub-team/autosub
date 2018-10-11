@@ -50,9 +50,9 @@ operation=random.randrange(0,2)
 #CHANGED: omitting the 1s complement
 #WAS:
 #operand style: 0-> unsigned, 1->1s complement, 2->2s complement
-%operand_style=random.randrange(0,3)
+#operand_style=random.randrange(0,3)
 
-#NOW:
+#NOW no 1s complement, as 1s complement is almost never uses nowadays:
 operand_styles = [0,2]
 operand_style=random.choice(operand_styles)
 
