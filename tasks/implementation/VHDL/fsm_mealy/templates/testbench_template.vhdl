@@ -21,8 +21,6 @@ architecture behavior of fsm_mealy_tb is
 
     constant clk_period : time := 20 ns; -- for 50MHz -> 20 ns
 
-
-
     signal CLK_UUT: std_logic;
     signal INPUT_UUT: std_logic_vector(1 downto 0);
     signal RST_UUT: std_logic;
@@ -38,9 +36,16 @@ architecture behavior of fsm_mealy_tb is
 
     type pattern_array is array (natural range <>) of pattern_type;
 
-    constant patterns : pattern_array:=(
-            {{TESTPATTERN}}
-            );
+    -- test vector pattern to check the behavior for defined transitions
+    constant patterns_def : pattern_array:=(
+            {{TESTPATTERN_DEF}}
+    );
+
+    -- test vector pattern to check the behavior for undefined transitions
+    -- (remain in same state with last output)
+    constant patterns_undef : pattern_array:=(
+            {{TESTPATTERN_UNDEF}}
+    );
 
     function Image(In_Image : Std_Logic_Vector) return String is
         variable L : Line;  -- access type
@@ -89,8 +94,12 @@ begin
     test:process
         variable last_state : fsm_state;
     begin
-        for i in patterns'range loop
-            if(patterns(i).RESET = '1') then
+
+    -------------------------------
+    -- CHECK DEFINED TRANSITIONS --
+    -------------------------------
+        for i in patterns_def'range loop
+            if(patterns_def(i).RESET = '1') then
                 --goto and check initial state
                 RST_UUT<='1';
                 wait until rising_edge(CLK_UUT);
@@ -119,21 +128,21 @@ begin
                 last_state := START;
 
             else
-                INPUT_UUT <= patterns(i).INPUT;
+                INPUT_UUT <= patterns_def(i).INPUT;
 
                 wait until rising_edge(CLK_UUT);
                 wait for 1 ns;
 
-                if(STATE_UUT /= patterns(i).STATE or OUTPUT_UUT /= patterns(i).OUTPUT) then
+                if(STATE_UUT /= patterns_def(i).STATE or OUTPUT_UUT /= patterns_def(i).OUTPUT) then
                     write(OUTPUT,string'("§{\n"));
-
                     write(OUTPUT,string'("Error:") & string'("\n"));
+
                     write(OUTPUT,string'("   From STATE = ")&Image(last_state)& string'("\n"));
-                    write(OUTPUT,string'("   With INPUT = ")&Image(patterns(i).INPUT)& string'("\n"));
+                    write(OUTPUT,string'("   With INPUT = ")&Image(patterns_def(i).INPUT)& string'("\n"));
 
                     write(OUTPUT,string'("Expected :")& string'("\n"));
-                    write(OUTPUT,string'("   STATE= ")&Image(patterns(i).STATE)& string'("\n"));
-                    write(OUTPUT,string'("   OUTPUT=")&Image(patterns(i).OUTPUT)& string'("\n"));
+                    write(OUTPUT,string'("   STATE= ")&Image(patterns_def(i).STATE)& string'("\n"));
+                    write(OUTPUT,string'("   OUTPUT=")&Image(patterns_def(i).OUTPUT)& string'("\n"));
 
                     write(OUTPUT,string'("Received: ") & string'("\n"));
                     write(OUTPUT,string'("   STATE=  ")&Image(STATE_UUT)& string'("\n"));
@@ -142,7 +151,60 @@ begin
                     report "Simulation error" severity failure;
                 end if;--endif check
 
-                last_state := patterns(i).STATE;
+                last_state := patterns_def(i).STATE;
+            end if;--endif RESET
+        end loop;
+
+    ---------------------------------
+    -- CHECK UNDEFINED TRANSITIONS --
+    ---------------------------------
+       for i in patterns_undef'range loop
+            if(patterns_undef(i).RESET = '1') then
+                --goto and check initial state
+                RST_UUT<='1';
+                wait until rising_edge(CLK_UUT);
+                RST_UUT<='0';
+                wait for 1 ns;
+
+                if(STATE_UUT /= START or OUTPUT_UUT /= "00") then
+                    write(OUTPUT,string'("§{\n"));
+
+                    write(OUTPUT,string'("Error for synchronous reset") & string'("\n"));
+                    write(OUTPUT,string'("\n"));
+
+                    write(OUTPUT,string'("Expected initial configuration:") & string'("\n"));
+                    write(OUTPUT,string'("   STATE=  START ") & string'("\n"));
+                    write(OUTPUT,string'("   OUTPUT= 00") & string'("\n"));
+                    write(OUTPUT,string'("\n"));
+
+                    write(OUTPUT,string'("Received: ") & string'("\n"));
+                    write(OUTPUT,string'("   STATE=  ")&Image(STATE_UUT) & string'("\n"));
+                    write(OUTPUT,string'("   OUTPUT= ")&Image(OUTPUT_UUT) & string'("\n"));
+                    write(OUTPUT,string'("\n"));
+                    write(OUTPUT,string'("\n}§"));
+                    report "Simulation error" severity failure;
+                end if;--endif check
+
+                last_state := START;
+
+            else
+                INPUT_UUT <= patterns_undef(i).INPUT;
+
+                wait until rising_edge(CLK_UUT);
+                wait for 1 ns;
+
+                if(STATE_UUT /= patterns_undef(i).STATE or OUTPUT_UUT /= patterns_undef(i).OUTPUT) then
+                    write(OUTPUT,string'("§{\n"));
+                    write(OUTPUT,string'("Error:") & string'("\n"));
+
+                    write(OUTPUT,string'("   From STATE = ")&Image(last_state)& string'("\n"));
+                    write(OUTPUT,string'("   With INPUT = ")&Image(patterns_undef(i).INPUT)& string'("\n"));
+                    write(OUTPUT,string'("\nReceived a state or output change, although the state has no transition defined for this input!}§"));
+
+                    report "Simulation error" severity failure;
+                end if;--endif check
+
+                last_state := patterns_undef(i).STATE;
             end if;--endif RESET
         end loop;
 

@@ -6,7 +6,7 @@
 
 \begin{document}
 \pagestyle{empty}
-\setlength{\parindent}{0em} 
+\setlength{\parindent}{0em}
 \section*{Mealy FSM (Finite State Machine)}
 
 Ihre Aufgabe ist es, das Verhalten einer Entity  namens "`fsm"' zu programmieren. Die Entity ist in der angeh\"angten Datei "`fsm.vhdl"' deklariert und hat folgende Eigenschaften:
@@ -59,6 +59,7 @@ Die Entity "`fsm"' soll das Verhalten einer deterministischen \textbf{MEALY} Fin
 \item Synchrones Design: Alle neuen Ausg\"ange (Port STATE und Port OUTPUT) m\"ussen mit der steigenden Taktflanke gesetzt werden.
 \item Der aktuelle Zustand muss am Ausgangsport STATE ausgegeben werden.
 \item Bei einem synchronen Reset (Port RST=1, steigende Flanke des Taktsignals CLK) soll die State Machine auf den initialen Zustand (Anfangszustand) gesetzt werden: STATE = START, OUTPUT = 00.
+\item F\"ur Eing\"ange, f\"ur die kein \"Ubergang definiert ist, sollen sich Ausgang und Zustand nicht \"andern.
 \end{itemize}
 \vspace{0.5cm}
 
@@ -67,7 +68,7 @@ Programmieren Sie dieses Verhalten in der angeh\"angten Datei "`fsm\_beh.vhdl"'.
 Der Typ fsm\_state ist in der angeh\"angten Datei "`fsm\_package.vhdl"' deklariert. Die daf\"ur ben\"otigten Pakete sind in den Dateien "`fsm\_beh.vhdl"' und "`fsm.vhdl"' bereits importiert.
 \\
 
-Um Ihre L\"osung abzugeben, senden Sie ein E-Mail mit dem Betreff "`Result Task {{ TASKNR }}"' und Ihrer Datei "`fsm\_beh.vhdl"' an {{ SUBMISSIONEMAIL }}. 
+Um Ihre L\"osung abzugeben, senden Sie ein E-Mail mit dem Betreff "`Result Task {{ TASKNR }}"' und Ihrer Datei "`fsm\_beh.vhdl"' an {{ SUBMISSIONEMAIL }}.
 \\
 
 \vspace{0.7cm}
