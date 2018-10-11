@@ -312,7 +312,8 @@ function simulate {
 		cat isim.log | awk '/§{/,/}§/' | sed 's/§{//g' | sed 's/}§//g' | sed 's/** Failure://g' | sed 's/\\n/\n/g' >> error_msg
 		if [ "$attach_wave_file" -eq "$one" ]
 		then
-			echo "Please look at the attached wave file to see what signal(s) your entity produces. Use a viewer like GTKWave." >> error_msg
+			echo "Please look at the attached wave file to see what signal(s) your entity produces. Use a viewer like GTKWave" \
+			      "or the EdaPlayground Waveviewer(https://www.edaplayground.com/w)." >> error_msg
 		fi
 		exit $FAILURE
 	fi
