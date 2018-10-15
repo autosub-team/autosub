@@ -59,6 +59,7 @@ Die Entity "`fsm"' soll das Verhalten einer deterministischen \textbf{MOORE} Fin
 \item Synchrones Design: Alle neuen Ausg\"ange (Port STATE und Port OUTPUT) m\"ussen mit der steigenden Taktflanke gesetzt werden.
 \item Der aktuelle Zustand muss am Ausgangsport STATE ausgegeben werden.
 \item Bei einem synchronen Reset (Port RST=1, steigende Flanke des Taktsignals CLK) soll die State Machine auf den initialen Zustand (Anfangszustand) gesetzt werden: STATE = START, OUTPUT = 00.
+\item F\"ur Eing\"ange, f\"ur die kein \"Ubergang definiert ist, sollen sich Ausgang und Zustand nicht \"andern.
 \end{itemize}
 \vspace{0.5cm}
 
