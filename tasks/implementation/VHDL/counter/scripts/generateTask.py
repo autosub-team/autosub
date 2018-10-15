@@ -5,7 +5,8 @@
 # Generates random tasks, generates TaskParameters, fill
 # entity and description templates
 #
-# Copyright (C) Gilbert Markum
+# Copyright (C) Gilbert Markum,
+#               Martin Mosbeck <martin.mosbeck@tuwien.ac.at>
 # License GPL V2 or later (see http://www.gnu.org/licenses/gpl2.txt)
 ########################################################################
 
@@ -28,7 +29,6 @@ language=sys.argv[4]
 params_desc={}
 params_entity={}
 
-
 ###################################
 ## IMPORT LANGUAGE TEXT SNIPPETS ##
 ###################################
@@ -44,11 +44,12 @@ with open(filename) as data_file:
 # choose bit width of counter (from: 3-8 -> 6)
 counter_width = randrange(3,9)
 
-# choose initial value of counter (0b0 or 0b1 -> 2)
-init_value = randrange(0,2)
+# initial value of counter shall be 0
+init_value = 0
 
 # choose synchronous function (Clear / Load a constant / Load an input -> 3)
-synchronous_function = randrange(0,3) # 0 = Clear, 1 = LoadC, 2 = LoadI
+# SyncClear gets everybody as sync reset RST
+synchronous_function = randrange(1,3) # 0 = Clear, 1 = LoadC, 2 = LoadI
 
 # choose asynchronous function (Clear / Load a constant / Load an input, but not identical to synchronous function -> 2)
 asynchronous_function = randrange(0,3) # 0 = Clear, 1 = LoadC, 2 = LoadI
@@ -72,10 +73,16 @@ if ((synchronous_function == 1) or (asynchronous_function == 1)):
 ## for testing only:
 # insert values for testing here
 # ...
+#counter_width=4
+#init_value=0
+#synchronous_function = 1
+#asynchronous_function = 1
+#constant_value = '0010' #string, binary value with correct width!
+#enable=0
+#overflow=1
 
 task_parameters=str(counter_width)+"|"+str(init_value)+"|"+str(synchronous_function)+"|"+str(asynchronous_function)+"|"
 task_parameters+=str(enable)+"|"+str(overflow)+"|"+str(constant_value)
-
 
 ################################################
 # GENERATE PARAMETERS FOR DESCRIPTION TEMPLATE #
@@ -103,43 +110,25 @@ if ((synchronous_function == 2) or (asynchronous_function == 2)):
 	input_property_desc+=lang_data["properties"][5] + str(counter_width)
 	input_necessary=1
 
-num_in=(3) + (1*enable) + (1*(input_necessary))
 
-minimum_height = 6 * (1 + num_in) # minimum_height for tikzpicture
+# Specify all inputs & outputs for tikz block
+input_names = ["CLK", "RST"]
+if enable:
+    input_names.append("Enable")
+input_names.append("Sync" + str(sync_variation))
+input_names.append("Async" + str(async_variation))
+if input_necessary:
+    input_names.append("Input")
+num_in= len(input_names)
 
-inputs_tikz = ""
-inputs_tikz+="\draw[->] ($ (entity.west) + (-10mm," + str(((minimum_height / 2) - 6)) + "mm)$) -- ($ (entity.west) + (0mm," + str((minimum_height / 2) - 6) + "mm)$);\n"
-inputs_tikz+= "\draw[anchor=east] node at ($ (entity.west) + (-9mm," + str((minimum_height/2) - 6) + "mm)$){ CLK };\n\n"
-current_tikz_offset=6
+output_names = ["Output"]
+if overflow:
+    output_names.append("Overflow")
+num_out=len(output_names)
 
-if ( enable == 1):
-	inputs_tikz+="\draw[->] ($ (entity.west) + (-10mm," + str(((minimum_height / 2) - 12)) + "mm)$) -- ($ (entity.west) + (0mm," + str((minimum_height / 2) - 12) + "mm)$);\n"
-	inputs_tikz+= "\draw[anchor=east] node at ($ (entity.west) + (-9mm," + str((minimum_height/2) - 12) + "mm)$){ Enable };\n\n"
-	current_tikz_offset+=6
+max_in_out = max(num_in, num_out)
 
-current_tikz_offset+=6
-inputs_tikz+="\draw[->] ($ (entity.west) + (-10mm," + str(((minimum_height / 2) - current_tikz_offset)) + "mm)$) -- ($ (entity.west) + (0mm," + str((minimum_height / 2) - current_tikz_offset) + "mm)$);\n"
-inputs_tikz+= "\draw[anchor=east] node at ($ (entity.west) + (-9mm," + str((minimum_height/2) - current_tikz_offset) + "mm)$){ Sync" + str(sync_variation) + " };\n\n"
-
-current_tikz_offset+=6
-inputs_tikz+="\draw[->] ($ (entity.west) + (-10mm," + str(((minimum_height / 2) - current_tikz_offset)) + "mm)$) -- ($ (entity.west) + (0mm," + str((minimum_height / 2) - current_tikz_offset) + "mm)$);\n"
-inputs_tikz+= "\draw[anchor=east] node at ($ (entity.west) + (-9mm," + str((minimum_height/2) - current_tikz_offset) + "mm)$){ Async" + str(async_variation) + " };\n\n"
-
-if ( input_necessary == 1):
-	current_tikz_offset+=6
-	inputs_tikz+="\draw[->] ($ (entity.west) + (-10mm," + str(((minimum_height / 2) - current_tikz_offset)) + "mm)$) -- ($ (entity.west) + (0mm," + str((minimum_height / 2) - current_tikz_offset) + "mm)$);\n"
-	inputs_tikz+= "\draw[anchor=east] node at ($ (entity.west) + (-9mm," + str((minimum_height/2) - current_tikz_offset) + "mm)$){ Input };\n\n"
-
-num_out=(1) + (1*overflow)
-
-outputs_tikz = ""
-outputs_tikz += "\draw[->] ($ (entity.east) + (0mm," + str((minimum_height / 2) - (1 * (minimum_height / (num_out + 1)))) + "mm)$) -- ($ (entity.east) + (10mm," + str(((minimum_height / 2) - (1 * (minimum_height / (num_out + 1))))) + "mm)$);\n"
-outputs_tikz += "\draw[anchor=west] node at ($ (entity.east) + (9mm," + str(((minimum_height/2) - (1 * ( minimum_height / (num_out + 1))))) + "mm)$){ Output };\n\n"
-
-if (overflow == 1):
-	outputs_tikz += "\draw[->] ($ (entity.east) + (0mm," + str((minimum_height / 2) - (2 * (minimum_height / (num_out + 1)))) + "mm)$) -- ($ (entity.east) + (10mm," + str(((minimum_height / 2) - (2 * (minimum_height / (num_out + 1))))) + "mm)$);\n"
-	outputs_tikz += "\draw[anchor=west] node at ($ (entity.east) + (9mm," + str(((minimum_height/2) - (2 * ( minimum_height / (num_out + 1))))) + "mm)$){ Overflow };\n\n"
-
+# Specify other text
 init_value_padded = format(init_value, '0'+str(counter_width)+'b')
 
 zero_padded = format(0, '0'+str(counter_width)+'b')
@@ -172,7 +161,16 @@ elif ( overflow == 1):
 ############################################
 ## SET PARAMETERS FOR DESCRIPTION TEMPLATE #
 ############################################
-params_desc.update({"TASKNR":str(task_nr), "SUBMISSIONEMAIL":submission_email, "counter_width":counter_width, "enable_property_desc":enable_property_desc, "sync_property_desc":sync_property_desc, "async_property_desc":async_property_desc, "input_property_desc":input_property_desc, "overflow_property_desc":overflow_property_desc, "minimum_height":minimum_height, "inputs_tikz":inputs_tikz, "outputs_tikz":outputs_tikz, "init_value_padded":init_value_padded, "sync_variation":sync_variation, "sync_text":sync_text, "async_variation":async_variation, "async_text":async_text, "every_a":every_a, "Enable_Overflow_text":Enable_Overflow_text })
+params_desc.update({"TASKNR":str(task_nr), "SUBMISSIONEMAIL":submission_email, \
+    "counter_width":counter_width, "enable_property_desc":enable_property_desc, \
+    "sync_property_desc":sync_property_desc, "async_property_desc":async_property_desc, \
+    "input_property_desc":input_property_desc, "overflow_property_desc":overflow_property_desc, \
+    "init_value_padded":init_value_padded, "sync_variation":sync_variation, \
+    "sync_text":sync_text, "async_variation":async_variation, \
+    "async_text":async_text, "every_a":every_a, \
+    "Enable_Overflow_text":Enable_Overflow_text , \
+    "num_out":num_out, "num_in":num_in, "max_in_out":max_in_out,\
+    "input_names" :input_names, "output_names":output_names})
 
 #############################
 # FILL DESCRIPTION TEMPLATE #
@@ -187,37 +185,17 @@ filename ="tmp/desc_{0}_Task{1}.tex".format(user_id,task_nr)
 with open (filename, "w") as output_file:
     output_file.write(template)
 
-###########################################
-# GENERATE PARAMETERS FOR ENTITY TEMPLATE #
-###########################################
-
-entity_in_out = ""
-if ( enable == 1):
-	entity_in_out += "\t\tEnable      : in   std_logic;\n"
-
-entity_in_out += ("\t\tSync" + str(sync_variation) + "   : in   std_logic;\n")
-entity_in_out += ("\t\tAsync" + str(async_variation) + "   : in   std_logic;\n")
-
-if ( input_necessary == 1 ):
-	entity_in_out += ("\t\tInput       : in   std_logic_vector((" + str(counter_width) + "-1) downto 0);\n")
-
-entity_in_out += ("\t\tOutput      : out  std_logic_vector((" +  str(counter_width) + "-1) downto 0)")
-
-if ( overflow == 1):
-	entity_in_out += ";\n"
-	entity_in_out += "\t\tOverflow    : out  std_logic"
-
-
-
 ######################################
 # SET PARAMETERS FOR ENTITY TEMPLATE #
 ######################################
-params_entity.update({"entity_in_out":entity_in_out})
+params_entity.update({"enable":enable, "sync_variation":sync_variation, \
+    "async_variation":async_variation, "counter_width":counter_width, "overflow":overflow, \
+    "input_necessary":input_necessary})
 
 #############################
 #   FILL ENTITY TEMPLATE    #
 #############################
-env = Environment()
+env = Environment(trim_blocks = True, lstrip_blocks = True)
 env.loader = FileSystemLoader('templates/')
 filename ="counter_template.vhdl"
 template = env.get_template(filename)
@@ -226,6 +204,7 @@ template = template.render(params_entity)
 filename ="tmp/counter_{0}_Task{1}.vhdl".format(user_id,task_nr)
 with open (filename, "w") as output_file:
     output_file.write(template)
+
 ###########################
 ### PRINT TASKPARAMETERS ##
 ###########################

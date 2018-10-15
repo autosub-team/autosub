@@ -13,29 +13,41 @@ Ihre Aufgabe ist es, das Verhalten einer Entity  namens "`counter"' zu programmi
 
 \begin{itemize}
 	\item Eingang: CLK vom Typ std\_logic
+	\item Eingang: RST vom Typ std\_logic
 	{{enable_property_desc}}
 	{{sync_property_desc}}
 	{{async_property_desc}}
 	{{input_property_desc}}
 	{{overflow_property_desc}}
 	\item Ausgang: Output vom Typ std\_logic\_vector und der L\"ange {{counter_width}}
+\end{itemize}
 
 \begin{center}
 \begin{tikzpicture}
-\draw node [draw,rectangle, minimum height={{minimum_height}} mm, minimum width=35mm,rounded corners=2mm,thick](entity){};
-{{inputs_tikz}}
-{{outputs_tikz}}
+{# draw the entity block dynamically #}
+{% set minimum_height = 6 * (1 + max_in_out) %}
+
+\draw node [draw,rectangle, minimum height={{minimum_height}}mm, minimum width=35mm,rounded corners=2mm,thick](entity){};
+{% for i in range(1,num_in+1) %}
+    {% set current_tikz_offset= i* (minimum_height / (num_in + 1)) %}
+    \draw[->] ($ (entity.west) + (-10mm, {{ (minimum_height / 2) - current_tikz_offset}} mm)$) -- ($ (entity.west) + (0mm,{{(minimum_height / 2) - current_tikz_offset}}mm)$);
+    \draw[anchor=east] node at ($ (entity.west) + (-9mm,{{(minimum_height/2) - current_tikz_offset}}mm)$){ {{input_names[i-1]}} };
+{% endfor %}
+
+{% for i in range(1,num_out+1) %}
+    {% set current_tikz_offset= i* (minimum_height / (num_out + 1)) %}
+    \draw[->] ($ (entity.east) + (0mm,{{(minimum_height / 2) - current_tikz_offset}}mm)$) -- ($ (entity.east) + (10mm,{{(minimum_height / 2) - current_tikz_offset}}mm)$);
+    \draw[anchor=west] node at ($ (entity.east) + (9mm,{{(minimum_height/2) - current_tikz_offset}}mm)$){ {{output_names[i-1]}} };
+{% endfor %}
+
 \draw node at ($ (entity) - (0,0mm)$){ counter };
 \end{tikzpicture}
 \end{center}
 
-\end{itemize}
-
-%\begin{center}
 
 Ver\"andern Sie die Datei "`counter.vhdl"' nicht!\\
 
-Die "`counter"' Entity soll den Ausgangsvektor Output bei {{every_a}} steigenden Flanke des Taktsignals CLK inkrementieren. Der Anfangswert des Ausgangs (vor der ersten steigenden Flanke des Takts) soll "`{{init_value_padded}}"' betragen. Wenn das Sync{{sync_variation}} Signal auf '1' gesetzt ist, dann soll der Ausgang bei der steigenden Flanke des Taktes auf {{sync_text}} gesetzt werden. Wenn das Async{{async_variation}} Signal auf '1' gesetzt ist, dann soll der Ausgang sofort auf {{async_text}} gesetzt werden. {{Enable_Overflow_text}} \\
+Die "`counter"' Entity soll den Ausgangsvektor Output bei {{every_a}} steigenden Flanke des Taktsignals CLK inkrementieren. Der Eingang RST ist ein synchroner Reset, der Initialwert am Ausgang Output nach dem Reset soll "`{{init_value_padded}}"' betragen. Wenn der Eingang Sync{{sync_variation}}auf '1' gesetzt ist, dann soll der Ausgang Output bei der steigenden Flanke des Taktes auf {{sync_text}} gesetzt werden. Wenn der Eingang Async{{async_variation}} auf '1' gesetzt ist, dann soll der Ausgang Output sofort auf {{async_text}} gesetzt werden. {{Enable_Overflow_text}} \\
 
 Programmieren Sie dieses Verhalten in der angeh\"angten Datei "`counter\_beh.vhdl"'.\\
 

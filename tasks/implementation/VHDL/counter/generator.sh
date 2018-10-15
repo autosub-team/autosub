@@ -35,20 +35,36 @@ desc_path="${autosub_path}/users/${user_id}/Task${task_nr}/desc"
 ##########################
 if [ ! -d "${task_path}/tmp" ]
 then
-   mkdir ${task_path}/tmp
+    mkdir ${task_path}/tmp
 fi
 
 if [ ! -d "${desc_path}" ]
 then
-   mkdir ${desc_path}
+    mkdir ${desc_path}
 fi
+
+##########################
+########## MISC ##########
+##########################
+TASKERROR=3
 
 ##########################
 ####### GENERATE #########
 ##########################
 cd ${task_path}
 
-task_parameters=$(python3 scripts/generateTask.py "${user_id}" "${task_nr}" "${submission_email}" "${language}")
+task_parameters=$(python3 scripts/generateTask.py \
+    "${user_id}" "${task_nr}" "${submission_email}" "${language}" \
+    2> tmp/generator_error_${user_id}_Task${task_nr}.txt)
+
+# output errors from generateTask.py (if any occured) to stderr to be logged
+if [ -s "tmp/generator_error_${user_id}_Task${task_nr}.txt" ]
+then
+    cat tmp/generator_error_${user_id}_Task${task_nr}.txt 1>&2
+    exit $TASKERROR
+else
+    rm -rf tmp/generator_error_${user_id}_Task${task_nr}.txt
+fi
 
 #generate the description pdf and move it to user's description folder
 cd ${task_path}/tmp
@@ -58,7 +74,8 @@ RET=$?
 zero=0
 if [ "$RET" -ne "$zero" ];
 then
-    echo "ERROR with pdf generation for Task${task_nr} !!! Are all needed LaTeX packages installed??">&2
+	echo "ERROR with pdf generation for Task${task_nr} !!! Are all needed LaTeX packages installed??">&2
+	exit $TASKERROR
 fi
 
 rm desc_${user_id}_Task${task_nr}.aux
