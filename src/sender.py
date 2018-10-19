@@ -825,7 +825,11 @@ class MailSender(threading.Thread):
 
             orig_mail.replace_header("From", self.smtp_info["mail"])
             orig_mail.replace_header("To", recipient)
-            orig_mail.replace_header("Subject", "Question from " + orig_from)
+
+            if task_nr:
+                orig_mail.replace_header("Subject", "Question Task" + task_nr +" from " + orig_from)
+            else:
+                orig_mail.replace_header("Subject", "Question from " + orig_from)
 
             self.send_out_email(recipient, orig_mail.as_string(), message_type)
             self.archive_message(message_id)

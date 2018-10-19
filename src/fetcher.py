@@ -303,31 +303,32 @@ class MailFetcher(threading.Thread):
         c.log_a_msg(self.queues["logger"], self.name, logmsg, "DEBUG")
         c.send_email(self.queues["sender"], user_email, "", "Question", "", "", "")
 
-        # was the question asked to a specific task_nr that is valid?
+        # was the question asked to a specific task_nr
         search_obj = re.search('[0-9]+', mail_subject, )
 
-        if (search_obj != None) and int(search_obj.group()) <= c.get_num_tasks(self.dbs["course"], \
-                                            self.queues["logger"], self.name):
-            tasknr = search_obj.group()
-            fwd_mails = self.get_taskoperator_emails(tasknr)
+        task_nr = ""
+
+        if (search_obj != None):
+            task_nr = search_obj.group()
+            fwd_mails = self.get_taskoperator_emails(task_nr)
             if not fwd_mails:
                 logmsg = ("Error getting the taskoperator email for task {0}. "
                           "Question from user with email={1} "
-                          "dropped.").format(tasknr, user_email)
+                          "dropped.").format(task_nr, user_email)
                 c.log_a_msg(self.queues["logger"], self.name, logmsg, "ERROR")
                 return
         else:
             fwd_mails = self.get_admin_emails()
             if not fwd_mails:
-                logmsg = ("Error getting the admin email for task {0}. "
+                logmsg = ("Error getting the admin email."
                           "Question from user with email={1} "
-                          "dropped.").format(tasknr, user_email)
+                          "dropped.").format(task_nr, user_email)
                 c.log_a_msg(self.queues["logger"], self.name, logmsg, "ERROR")
                 return
 
         mail["Reply-To"] = user_email
 
-        c.send_email(self.queues["sender"], fwd_mails, user_id, "QFwd", "", mail, message_id)
+        c.send_email(self.queues["sender"], fwd_mails, user_id, "QFwd",task_nr, mail, message_id)
 
         c.increment_db_statcounter(self.dbs["semester"], 'nr_questions_received', \
                                    self.queues["logger"], self.name)
