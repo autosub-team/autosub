@@ -35,7 +35,7 @@ Ihre Aufgabe ist es, das Verhalten einer Entity  namens "`register\_\,file"' zu 
 
 \begin{itemize}
 \item Eingang:  IN1 vom Typ std\_logic\_vector mit der L\"ange {{n}}
-\item Eingang:  WA1 und RA vom Typ std\_logic\_vector mit der L\"ange {{address_width_n}}
+\item Eingang:  WA1 und RA1 vom Typ std\_logic\_vector mit der L\"ange {{address_width_n}}
 
 \item Eingang:  WA2 vom Typ std\_logic\_vector mit der L\"ange {{address_width_reg0}}
 
@@ -73,7 +73,7 @@ Ihre Aufgabe ist es, das Verhalten einer Entity  namens "`register\_\,file"' zu 
 
 
 \draw[->] ($ (entity.west)+(-10mm,-14mm)$) -- ($ (entity.west) + (0mm,-14mm)$);
-\draw[anchor=east] node at ($ (entity.west)+(-9mm,-14mm)$){RA};
+\draw[anchor=east] node at ($ (entity.west)+(-9mm,-14mm)$){RA1};
 
 
 \draw[->] ($ (entity.west)+(-10mm,-21mm)$) -- ($(entity.west) + (0mm,-21mm)$);
@@ -92,7 +92,7 @@ Ihre Aufgabe ist es, das Verhalten einer Entity  namens "`register\_\,file"' zu 
 Ver\"andern sie die Datei "`register\_\,file.vhdl"' nicht!\\
 
 Die Entity  "`register\_\,file"' soll {{N_n}} Register beinhalten, welche jeweils {{n}} Bit lang sind. Die Eingangsdaten f\"ur Register 1 bis {{N_n_minus_1}} kommen von dem Eingang IN1 und sollen jeweils in das Register mit jener Adresse geschrieben werden, welche durch WA1 angegeben wird. Der Schreibvorgang soll jedoch nur dann ausgef\"uhrt werden, wenn das Write Enable Bit WE1 auf '1' gesetzt ist. Der Adresseingang WA2 wird dazu benutzt, die {{lower}} {{special_reg0_size}} Bit des Registers 0 einzeln zu adressieren. Die Eingangsdaten f\"ur Register 0 kommen von dem Eingang IN2 und sollen aber nur dann in das Register geschrieben werden, wenn das Write Enable Bit WE2 auf '1' gesetzt ist.
-Am Ausgang der Entity soll der Inhalt jenes Registers ausgegeben werden, welches durch den Adresseingang RA adressiert wird.
+Am Ausgang der Entity soll der Inhalt jenes Registers ausgegeben werden, welches durch den Adresseingang RA1 adressiert wird.
 Beachten Sie Abbildung~1 f\"ur einen strukturellen \"Uberblick \"uber die Entity und die vorhandenen Register. \\
 
 \"Anderungen der Eingangssignale sollen jeweils bei einer steigenden Flanke des Taktsignals CLK wirksam werden.\\
