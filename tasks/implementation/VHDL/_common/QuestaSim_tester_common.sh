@@ -229,8 +229,9 @@ function simulate {
 	# set virtual memory limit to 500 MiB
 	ulimit -v $((500*1024))
 
-	# start simulation, output is written to a file called transcript
-	timeout $simulation_timeout vsim -c -do "vsim.do" ${testbench_ent} -voptargs="+acc"
+	# start simulation, output is written to a file called transcript, no need
+	# to output the error messages to stderr, as they are also in the transcript
+	timeout $simulation_timeout vsim -c -do "vsim.do" ${testbench_ent} -voptargs="+acc" 2> /dev/null
 	RET_timeout=$?
 
 	#delete the starting # from the logfile, rename it
