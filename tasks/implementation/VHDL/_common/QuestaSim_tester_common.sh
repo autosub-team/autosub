@@ -208,9 +208,9 @@ function userfiles_analyze {
 			#TODO supress other errors and warnings?
 			cat /tmp/$USER/tmp_Task${task_nr}_User${user_id} | grep -v 'VHDL Compiler exiting' | grep '\*\* Error' >> error_msg
 
-			#TODO:Debug
-			echo -e "\n\n--------------------Full Log--------------------\n" >> error_msg
-			cat /tmp/$USER/tmp_Task${task_nr}_User${user_id} >> error_msg
+			#For Debug
+			#echo -e "\n\n--------------------Full Log--------------------\n" >> error_msg
+			#cat /tmp/$USER/tmp_Task${task_nr}_User${user_id} >> error_msg
 			#########################################################################
 
 			exit $FAILURE
@@ -247,11 +247,11 @@ function simulate {
 		cat /tmp/$USER/tmp_Task${task_nr}_User${user_id} | grep '\*\* Warning' >> error_msg
 		cat vsim.log | grep '\*\* Warning' >> error_msg
 
-		#TODO:Debug
-		echo -e "\n\n--------------------Full Log--------------------\n" >> error_msg
-		cat /tmp/$USER/tmp_Task${task_nr}_User${user_id} >> error_msg
-		echo -e "\n" >> error_msg
-		cat vsim.log >> error_msg
+		#For Debug
+		#echo -e "\n\n--------------------Full Log--------------------\n" >> error_msg
+		#cat /tmp/$USER/tmp_Task${task_nr}_User${user_id} >> error_msg
+		#echo -e "\n" >> error_msg
+		#cat vsim.log >> error_msg
 		#########################################################################
 
 		exit $FAILURE
@@ -291,11 +291,11 @@ function simulate {
 		cat /tmp/$USER/tmp_Task${task_nr}_User${user_id} | grep '\*\* Warning' >> error_msg
 		cat vsim.log | grep '\*\* Warning' >> error_msg
 
-		#TODO:Debug
-		echo -e "\n\n--------------------Full Log--------------------\n" >> error_msg
-		cat /tmp/$USER/tmp_Task${task_nr}_User${user_id} >> error_msg
-		echo -e "\n" >> error_msg
-		cat vsim.log >> error_msg
+		#For Debug
+		#echo -e "\n\n--------------------Full Log--------------------\n" >> error_msg
+		#cat /tmp/$USER/tmp_Task${task_nr}_User${user_id} >> error_msg
+		#echo -e "\n" >> error_msg
+		#cat vsim.log >> error_msg
 		#########################################################################
 
 		exit $FAILURE
@@ -323,11 +323,11 @@ function simulate {
 		cat /tmp/$USER/tmp_Task${task_nr}_User${user_id} | grep '\*\* Warning' >> error_msg
 		cat vsim.log | grep '\*\* Warning' >> error_msg
 
-		#TODO:Debug
-		echo -e "\n\n--------------------Full Log--------------------\n" >> error_msg
-		cat /tmp/$USER/tmp_Task${task_nr}_User${user_id} >> error_msg
-		echo -e "\n" >> error_msg
-		cat vsim.log >> error_msg
+		#For Debug
+		#echo -e "\n\n--------------------Full Log--------------------\n" >> error_msg
+		#cat /tmp/$USER/tmp_Task${task_nr}_User${user_id} >> error_msg
+		#echo -e "\n" >> error_msg
+		#cat vsim.log >> error_msg
 		#########################################################################
 
 		exit $FAILURE
