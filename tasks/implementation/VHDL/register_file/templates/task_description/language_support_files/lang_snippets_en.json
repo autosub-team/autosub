@@ -3,14 +3,14 @@
 "lower": [ 	"lower",
 			""],
 
-"bypass_or_read_priority_text1": 	[	"In a situation when the write address WA1 is identical with the read address RA1, then the currently input data IN1 shall be immediately forwarded to the Output. ",
-						"In a situation when the write address WA1 is identical with the read address RA1, then the currently input data IN1 shall be passed through at the next rising edge of the input CLK signal to the Output. "
+"bypass_or_read_priority_text1": 	[	"In a situation when the write address WA1 is identical with the read address RA1 and WE1 is '1', then the currently input data IN1 shall be immediately forwarded to the Output. ",
+						"In a situation when the write address WA1 is identical with the read address RA1 and WE1 is '1', then the currently input data IN1 shall be passed through at the next rising edge of the input CLK signal to the Output. "
 					],
 
-"bypass_or_read_priority_text2": 	[	"This also goes for the special register 0: if a simultaneous read and write from this register occurs, then the input data IN2 shall be also bypassed immediately to the Output (at the appropriate bit position specified by WA2).",
-						"This also goes for the special register 0: if a simultaneous read and write from this register occurs, then the input data IN2 shall be also passed through at the next rising edge of the input CLK signal to the Output (at the appropriate bit position specified by WA2).",
-						"On the contrary, for special register 0, if a simultaneous read and write from this register occurs, then the input data IN2 shall be bypassed immediately to the Output (at the appropriate bit position specified by WA2).",
-						"On the contrary, for special register 0, if a simultaneous read and write from this register occurs, then the input data IN2 shall be passed through at the next rising edge of the input CLK signal to the Output (at the appropriate bit position specified by WA2)."
+"bypass_or_read_priority_text2": 	[	"This also goes for the special register 0: if a simultaneous read and write (WE2 is '1') from this register occurs, then the input data IN2 shall be also bypassed immediately to the Output (at the appropriate bit position specified by WA2).",
+						"This also goes for the special register 0: if a simultaneous read and write (WE2 is '1') from this register occurs, then the input data IN2 shall be also passed through at the next rising edge of the input CLK signal to the Output (at the appropriate bit position specified by WA2).",
+						"On the contrary, for special register 0, if a simultaneous read and write (WE2 is '1') from this register occurs, then the input data IN2 shall be bypassed immediately to the Output (at the appropriate bit position specified by WA2).",
+						"On the contrary, for special register 0, if a simultaneous read and write (WE2 is '1') from this register occurs, then the input data IN2 shall be passed through at the next rising edge of the input CLK signal to the Output (at the appropriate bit position specified by WA2)."
 					]
 
 }
