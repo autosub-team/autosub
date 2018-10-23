@@ -883,7 +883,7 @@ class MailFetcher(threading.Thread):
                     self.mid_to_job_tuple[message_id] = job_tuple
 
                     logmsg = ("Dispatched backlogged {0},{1},{2}").format(user_id, task_nr, message_id)
-                    c.log_a_msg(self.queues["logger"], self.name, logmsg, "INF")
+                    c.log_a_msg(self.queues["logger"], self.name, logmsg, "INFO")
 
                 except:
                     logmsg = ("Error while dispatching backlogged task UserId = {0} "
