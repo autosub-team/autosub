@@ -24,7 +24,7 @@ params = {}
 ######################################
 #  FILL AND PRINT TESTBENCH TEMPLATE #
 ######################################
-env = Environment()
+env = Environment(trim_blocks = True, lstrip_blocks = True)
 env.loader = FileSystemLoader('templates/')
 filename ="testbench_template.vhdl"
 template = env.get_template(filename)

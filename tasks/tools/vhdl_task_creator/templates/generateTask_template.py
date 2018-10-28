@@ -28,14 +28,14 @@ params_desc={}
 #####################
 #  TASK GENERATION  #
 #####################
-# ADD HERE: generation of parameters of task variant 
+# ADD HERE: generation of parameters of task variant
 
 ##############################
 #  PARAMETER SPECIFYING TASK #
 ##############################
-# SPECIFY HERE: task_parameters 
+# SPECIFY HERE: task_parameters
 # must uniquely specifying a task variant,
-# will be saved in database and given to tester 
+# will be saved in database and given to tester
 task_parameters =
 
 ###########################################
@@ -48,7 +48,7 @@ params_desc.update({"TASKNR":str(task_nr), "SUBMISSIONEMAIL":submission_email})
 #############################
 # FILL DESCRIPTION TEMPLATE #
 #############################
-env = Environment()
+env = Environment(trim_blocks = True, lstrip_blocks = True)
 env.loader = FileSystemLoader('templates/')
 filename ="task_description/task_description_template_{0}.tex".format(language)
 template = env.get_template(filename)
