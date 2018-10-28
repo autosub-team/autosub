@@ -148,39 +148,41 @@ function taskfiles_analyze {
 
 	for filename in $extrafiles
 	do
-		vcom $vcom_params $filename
+		vcom $vcom_params $filename > /tmp/taskfiles_output_${user_id}_Task${task_nr}.txt 
 		RET=$?
 		if [ "$RET" -ne "$zero" ]
 		then
+			echo "Error with task ${task_nr} for user ${user_id} while analyzing $filename" 1>&2
+			cat /tmp/taskfiles_output_${user_id}_Task${task_nr}.txt | grep '\*\* Error' 1>&2 
 			echo "Error with task ${task_nr} for user ${user_id} while analyzing $filename"
-			echo "Something went wrong with the task ${task_nr} test generation. This is not your" \
-			     "fault. We are working on a solution" > error_msg
 			exit $TASKERROR
 		fi
 	done
 
 	for filename in $entityfiles
 	do
-		vcom $vcom_params $filename
+		vcom $vcom_params $filename > /tmp/taskfiles_output_${user_id}_Task${task_nr}.txt
 		RET=$?
 		if [ "$RET" -ne "$zero" ]
 		then
+			echo "Error with task ${task_nr} for user ${user_id} while analyzing $filename" 1>&2
+			cat /tmp/taskfiles_output_${user_id}_Task${task_nr}.txt | grep '\*\* Error' 1>&2 
 			echo "Error with task ${task_nr} for user ${user_id} while analyzing $filename"
-			echo "Something went wrong with the task ${task_nr} test generation. This is not your" \
-			     "fault. We are working on a solution" > error_msg
 			exit $TASKERROR
 		fi
 	done
 
-	vcom $vcom_params $testbench
+	vcom $vcom_params $testbench > /tmp/taskfiles_output_${user_id}_Task${task_nr}.txt
 	RET=$?
 	if [ "$RET" -ne "$zero" ]
 	then
+		echo "Error with task ${task_nr} for user ${user_id} while analyzing the testbench" 1>&2
+		cat /tmp/taskfiles_output_${user_id}_Task${task_nr}.txt | grep '\*\* Error' 1>&2 
 		echo "Error with task ${task_nr} for user ${user_id} while analyzing the testbench"
-		echo "Something went wrong with the task ${task_nr} test generation. This is not your"\
-		     "fault. We are working on a solution" > error_msg
 		exit $TASKERROR
 	fi
+
+	rm -f /tmp/taskfiles_output_${user_id}_Task${task_nr}.txt
 }
 
 function userfiles_analyze {
