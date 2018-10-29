@@ -67,9 +67,12 @@ counter_max = pow(2,counter_width) -1 # calculate highest value for counter
 input_test_array = generate_test_vectors(counter_width, 3)
 
 # calculate random counter value which is not equal to any member of the input_test_array or constant value:
-random_counter_value = randrange(counter_max)+1 # [1,counter_max]
-while ((random_counter_value == (int(constant_value))) or (random_counter_value == (input_test_array[0])) or (random_counter_value == (input_test_array[1])) or (random_counter_value == (input_test_array[2]))):
-	random_counter_value = randrange(counter_max+1) # [0,counter_max]
+random_counter_value = randrange(1, counter_max) # [1,(counter_max-1)]
+while ((random_counter_value == (int(constant_value))) or \
+       (random_counter_value == (input_test_array[0])) or \
+       (random_counter_value == (input_test_array[1])) or \
+       (random_counter_value == (input_test_array[2]))):
+	random_counter_value = randrange(1, counter_max) # [1,(counter_max-1)]
 
 # convert from integer list to a binary list with zero padding suited for the counter_width:
 input_test_array = [format(x, '0'+str(counter_width)+'b') for x in input_test_array]
