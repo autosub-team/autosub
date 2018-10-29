@@ -58,6 +58,7 @@ class DialogSignalConfig(QtWidgets.QDialog):
                 self.ui.option_variable_length.setChecked(True)
                 self.ui.length_placeholder.setEnabled(True)
                 self.ui.label_length_placeholder.setText('Length Placeholder')
+                self.ui.label_infolabel.setText("Use {{ ... }} as  delimiters")
 
             elif values['length_type'] == 'single':
                 self.ui.option_single.setChecked(True)
@@ -102,6 +103,7 @@ class DialogSignalConfig(QtWidgets.QDialog):
             self.ui.label_length_placeholder.setText('Length Placeholder')
             self.ui.length_placeholder.setEnabled(True)
             self.ui.length_placeholder.setText("")
+            self.ui.label_infolabel.setText("Use {{ ... }} as  delimiters")
             self.create_resulting_definition()
 
     def option_fixed_length_changed(self, new_state):
@@ -109,12 +111,14 @@ class DialogSignalConfig(QtWidgets.QDialog):
             self.ui.label_length_placeholder.setText('Length')
             self.ui.length_placeholder.setEnabled(True)
             self.ui.length_placeholder.setText("")
+            self.ui.label_infolabel.setText("")
             self.create_resulting_definition()
 
     def option_single_changed(self, new_state):
         if new_state: #checked
             self.ui.length_placeholder.setEnabled(False)
             self.ui.length_placeholder.setText("")
+            self.ui.label_infolabel.setText("")
             self.create_resulting_definition()
 
     def on_signal_type_change(self, new_signal_type):
