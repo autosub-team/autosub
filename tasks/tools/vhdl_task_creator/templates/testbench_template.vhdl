@@ -18,10 +18,10 @@ architecture behavior of {{ task_name }}_tb is
         W(L.all'range) := L.all;
         Deallocate(L);
         return W;
-    end image;
+    end slv_image;
 
     --components
-    {% for comp in components %} 
+    {% for comp in components %}
     component {{ comp.entity_name }}
         port(
 	{% for input in comp.inputs %}
