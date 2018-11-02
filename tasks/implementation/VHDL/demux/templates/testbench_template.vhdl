@@ -71,6 +71,18 @@ begin
          end loop;
       end loop;
 
+    -- Now apply SEL = 0 and vary IN1 (to check if user has used correct sensitivity list with both IN1 and SEL)
+    wait for 1 ns;
+    SEL <= std_logic_vector(to_unsigned(0, SEL'length));
+
+    for k in 0 to 2 loop
+        IN1 <= input_test_array(k);
+        wait for 1 ns;
+        if (outputs_test_array(0) /= IN1) then
+            report "§{OUT" & integer'image(0+1) & " was "& image(outputs_test_array(0)) & " for SEL=" & image(SEL) & " and IN1=" & image(IN1) & ". Expected OUT" & integer'image(0+1) & " to be " & image(IN1) & ".}§" severity failure;
+        end if;
+    end loop;
+
       report "Success" severity failure;
 
    end process feed_demux_beh;
