@@ -50,11 +50,6 @@ cd ${task_path}
 
 task_parameters=$(python3 scripts/generateTask.py "${user_id}" "${task_nr}" "${submission_email}" "${language}")
 
-# copy multicycle processor image from static to tmp directory
-cp static/Multicycle_Processor_V_1_3.pdf tmp
-
-# copy Latex style file bytefield from static to tmp directory
-cp static/bytefield.sty tmp
 
 #generate the description pdf and move it to user's description folder
 cd ${task_path}/tmp
@@ -71,8 +66,6 @@ rm desc_${user_id}_Task${task_nr}.aux
 rm desc_${user_id}_Task${task_nr}.log
 rm desc_${user_id}_Task${task_nr}.out
 rm desc_${user_id}_Task${task_nr}.tex
-rm Multicycle_Processor_V_1_3.pdf
-rm bytefield.sty
 
 # move the task description PDF to users description path
 mv ${task_path}/tmp/desc_${user_id}_Task${task_nr}.pdf ${desc_path}

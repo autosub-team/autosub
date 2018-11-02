@@ -49,13 +49,7 @@ fi
 cd ${task_path}
 
 task_parameters=$(python3 scripts/generateTask.py "${user_id}" "${task_nr}" "${submission_email}" "${language}")
-echo ${task_parameters}
 
-# copy single cycle processor image from static to tmp directory
-cp static/Single_Cycle_Processor_V_3_0.pdf tmp
-
-# copy Latex style file bytefield from static to tmp directory
-cp static/bytefield.sty tmp
 
 #generate the description pdf and move it to user's description folder
 cd ${task_path}/tmp
@@ -65,16 +59,14 @@ RET=$?
 zero=0
 if [ "$RET" -ne "$zero" ];
 then
-    echo "ERROR with pdf generation for Task${task_nr} !!!" >&2
+    echo "ERROR with pdf generation for Task${task_nr} !!! Are all needed LaTeX packages installed??">&2
 fi
 
 # clean up:
 rm desc_${user_id}_Task${task_nr}.aux
 rm desc_${user_id}_Task${task_nr}.log
 rm desc_${user_id}_Task${task_nr}.out
-#rm desc_${user_id}_Task${task_nr}.tex
-rm Single_Cycle_Processor_V_3_0.pdf
-rm bytefield.sty
+rm desc_${user_id}_Task${task_nr}.tex
 
 # move the task description PDF to users description path
 mv ${task_path}/tmp/desc_${user_id}_Task${task_nr}.pdf ${desc_path}
