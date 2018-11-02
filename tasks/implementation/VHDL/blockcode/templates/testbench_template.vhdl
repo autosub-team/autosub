@@ -95,11 +95,11 @@ begin
 			data_uut <= patterns(i).data;
 			sink_ready_uut <= patterns(i).sink_ready;
 
-			-- wait for the results
-			wait for 10 ns;
-
 			code_valid_expected <= patterns(i).code_valid;
 			code_expected <= patterns(i).code;
+
+			-- wait for the results
+			wait for 10 ns;
 
 			-- compare to expected results
 			if not std_match(code_valid_uut, patterns(i).code_valid) or
