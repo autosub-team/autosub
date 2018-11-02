@@ -77,9 +77,10 @@ then
     exit $TASKERROR
 fi
 
-rm desc_${user_id}_Task${task_nr}.aux
-rm desc_${user_id}_Task${task_nr}.log
-rm desc_${user_id}_Task${task_nr}.tex
+rm -f desc_${user_id}_Task${task_nr}.aux
+rm -f desc_${user_id}_Task${task_nr}.log
+rm -f desc_${user_id}_Task${task_nr}.tex
+rm -f desc_${user_id}_Task${task_nr}.out
 
 #copy & move files to ${desc_path}
 {{copy_move_commands}}
