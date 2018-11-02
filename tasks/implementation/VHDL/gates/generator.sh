@@ -44,11 +44,27 @@ then
 fi
 
 ##########################
+########## MISC ##########
+##########################
+TASKERROR=3
+
+##########################
 ####### GENERATE #########
 ##########################
 cd ${task_path}
 
-task_parameters=$(python3 scripts/generateTask.py "${user_id}" "${task_nr}" "${submission_email}" "${language}")
+task_parameters=$(python3 scripts/generateTask.py \
+    "${user_id}" "${task_nr}" "${submission_email}" "${language}" \
+    2> tmp/generator_error_${user_id}_Task${task_nr}.txt)
+
+# output errors from generateTask.py (if any occured) to stderr to be logged
+if [ -s "tmp/generator_error_${user_id}_Task${task_nr}.txt" ]
+then
+    cat tmp/generator_error_${user_id}_Task${task_nr}.txt 1>&2
+    exit $TASKERROR
+else
+    rm -f tmp/generator_error_${user_id}_Task${task_nr}.txt
+fi
 
 #generate the description pdf and move it to user's description folder
 cd ${task_path}/tmp
@@ -59,16 +75,20 @@ zero=0
 if [ "$RET" -ne "$zero" ];
 then
     echo "ERROR with pdf generation for Task${task_nr} !!! Are all needed LaTeX packages installed??">&2
+    exit $TASKERROR
 fi
 
 dvips desc_${user_id}_Task${task_nr}.dvi >/dev/null 2>/dev/null
 ps2pdf desc_${user_id}_Task${task_nr}.ps >/dev/null 2>/dev/null
 
-rm desc_${user_id}_Task${task_nr}.dvi
-rm desc_${user_id}_Task${task_nr}.aux
-rm desc_${user_id}_Task${task_nr}.ps
-rm desc_${user_id}_Task${task_nr}.log
-rm desc_${user_id}_Task${task_nr}.tex
+rm -f desc_${user_id}_Task${task_nr}.dvi
+rm -f desc_${user_id}_Task${task_nr}.aux
+rm -f desc_${user_id}_Task${task_nr}.ps
+rm -f desc_${user_id}_Task${task_nr}.log
+rm -f desc_${user_id}_Task${task_nr}.tex
+rm -f desc_${user_id}_Task${task_nr}.out
+
+#move the generated description file to user's descritption folder
 mv ${task_path}/tmp/desc_${user_id}_Task${task_nr}.pdf ${desc_path}
 
 #copy static files to user's description folder

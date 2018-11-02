@@ -63,7 +63,7 @@ then
     cat tmp/generator_error_${user_id}_Task${task_nr}.txt 1>&2
     exit $TASKERROR
 else
-    rm -rf tmp/generator_error_${user_id}_Task${task_nr}.txt
+    rm -f tmp/generator_error_${user_id}_Task${task_nr}.txt
 fi
 
 # generate the description pdf and move it to user's description folder
@@ -81,9 +81,10 @@ fi
 #second time for reference to picture resolution
 pdflatex -halt-on-error desc_${user_id}_Task${task_nr}.tex >/dev/null
 
-rm desc_${user_id}_Task${task_nr}.aux
-rm desc_${user_id}_Task${task_nr}.log
-rm desc_${user_id}_Task${task_nr}.tex
+rm -f desc_${user_id}_Task${task_nr}.aux
+rm -f desc_${user_id}_Task${task_nr}.log
+rm -f desc_${user_id}_Task${task_nr}.tex
+rm -f desc_${user_id}_Task${task_nr}.out
 
 #copy & move files to ${desc_path}
 mv ${task_path}/tmp/desc_${user_id}_Task${task_nr}.pdf ${desc_path}
