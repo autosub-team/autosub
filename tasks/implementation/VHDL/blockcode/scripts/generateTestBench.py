@@ -101,7 +101,7 @@ for i in range(0,len(cycle_values)-1):
         next_cycle.code = cur_cycle.code
         next_cycle.code_valid = cur_cycle.code_valid
     else:
-        next_cycle.code = cur_cycle.code
+        next_cycle.code = '-' * n
         next_cycle.code_valid = "0"
 
     ##################

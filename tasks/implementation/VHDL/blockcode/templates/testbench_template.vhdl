@@ -118,7 +118,7 @@ begin
 				write(OUTPUT,string'("   code_valid= ") & std_logic'image(patterns(i).code_valid));
 				write(OUTPUT,string'("\n"));
 
-				write(OUTPUT,string'("Received::"));
+				write(OUTPUT,string'("Received:"));
 				write(OUTPUT,string'("\n"));
 				write(OUTPUT,string'("   code= ") & Image(code_uut));
 				write(OUTPUT,string'("\n"));
