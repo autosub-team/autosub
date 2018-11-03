@@ -494,3 +494,43 @@
         \hline
     \end{tabular}
 
+\section{Cache} \label{cache}
+    \begin{tabular}{|p{2cm}|p{11cm}|}
+        \hline
+        Overview & The student has to implement the reading unit of a direct mapped cache. This task relates to the lecture 'Microcomputer' at 'TU Wien' where basic knowledge about cache is taught. The student needs to understand the concept of a direct mapped cache and learns how to handle arrays of std\_logic\_vectors and how to address parts of an std\_logic\_vector.
+        \\
+        \hline
+        Description & The student receives a PDF file with a specification of the cache. First a sketch and a provided text explane the basic concept of a direct mapped cache and a cache hit or cache miss. This is followed by a detailed list of requirements, which the student should programm in the caches architecture. As the student should only programm the reading unit, a random cache content is also provided in the description.
+\newline
+The main focus of this task lies on the correct handling of the address input. Depending on the given bit widths and cache size the student has to split the address into two parts, one representing the cache index and the other the stored tag.
+
+       \\
+        \hline
+        Creation & Cache has the following randomly generated parameters:
+		\begin{itemize}
+			\item Clock cycle: falling or rising edge
+                        \item Cache size: Number of stored data entries in the cache (between 5 to 32 entries)
+                        \item Data length: Length of stored data entries (between 4 to 8 bits)
+			\item Tag length: Length of the stored tags in the cache (between 3 to 6 bits)
+			\item Address length: This can be calculated from cache size and tag length (between 6 to 11 bits)
+			\item Cache content: Random cache data and tags are generated from a random key which is individually created
+		\end{itemize}
+        \\
+        \hline
+        Submission & The student has to submit his behavioral implementation VHDL file.
+        \\
+        \hline
+    \end{tabular}
+
+    \begin{tabular}{|p{2cm}|p{11cm}|}
+	\hline
+        Testing & A testbench is generated based on the parameters which have been chosen for the student. The testbench starts by applying a correct address with a cache hit and checks, if the cache outputs the correct data and the correct flag. Then the cache is disabled and it is checked, if the outputs stay disabled while different cach hit addresses are applied. Next the cache is enabled, a cache hit address is applied and the correct behaviour is checked. Finally all possible addresses ($2^{n}$... n = length of address) are applied and for each address the correct behaviour is checked (If address is a cache hit, the cache must output the correct data and correct flag, otherwise the cache shall set the data output to high impedance and flag to zero). During all these tests it is always checked, if the outputs do not change before the next working edge (either rising or falling, depending on the chosen parameters).
+        \\
+        \hline
+        Feedback & If the syntax analysis returns errors, they are sent to the student. If the VHDL simulation does not work properly, the wrong
+        and expected outputs and corresponding inputs are sent to the student. If the clock signal is defined wrong, the student is also notified.
+        \\
+        \hline
+    \end{tabular}
+
+
