@@ -614,6 +614,9 @@ def check_init_ressources():
     filename = 'notallowed.txt'
     load_specialmessage_to_db(env, 'NOTALLOWED', filename)
 
+    filename = 'deletedfromwhitelist.txt'
+    load_specialmessage_to_db(env, 'DeletedFromWhitelist', filename)
+
     filename = 'curlast.txt'
     load_specialmessage_to_db(env, 'CURLAST', filename)
 

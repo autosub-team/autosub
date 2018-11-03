@@ -1089,7 +1089,20 @@ class MailFetcher(threading.Thread):
                                      "", "", message_id)
             else:
             # Not on Whitelist
-                c.send_email(self.queues["sender"], user_email, "", "NotAllowed", \
+
+                # Check if user has an UserID and was therefore deleted after registration
+                data = {'Email': user_email}
+                sql_cmd = "SELECT UserId FROM Users WHERE Email = :Email"
+                curs.execute(sql_cmd, data)
+                res = curs.fetchone()
+
+                if res == None:
+                    # Not a registered user
+                    c.send_email(self.queues["sender"], user_email, "", "NotAllowed", \
+                             "", "", message_id)
+                else:
+                    # A registered user, who was removed from the whitelist after registration
+                    c.send_email(self.queues["sender"], user_email, "", "DeletedFromWhitelist", \
                              "", "", message_id)
 
         cons.close()

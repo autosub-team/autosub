@@ -860,6 +860,17 @@ class MailSender(threading.Thread):
         #################
             msg['Subject'] = "Registration not successful."
             message_text = self.read_specialmessage('NOTALLOWED')
+            message_text = message_text.replace("[[recipient]]",recipient)
+            msg = self.assemble_email(msg, message_text, '')
+            self.send_out_email(recipient, msg.as_string(), message_type)
+            self.archive_message(message_id)
+
+        elif message_type == "DeletedFromWhitelist":
+        ############################
+        #  DELETED FROM WHITELIST  #
+        ############################
+            msg['Subject'] = "Not whitelisted anymore"
+            message_text = self.read_specialmessage('DeletedFromWhitelist')
             msg = self.assemble_email(msg, message_text, '')
             self.send_out_email(recipient, msg.as_string(), message_type)
             self.archive_message(message_id)
