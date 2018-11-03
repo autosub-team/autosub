@@ -1,20 +1,25 @@
 autosub development lifecycle (DLC)
 ============================================
-
 1. General
-2. First Steps
-3. Feature Branches
-
+2. Branches
+3. How to use autosub
+4. How to contribute
+5. Concerning Feature Branches
 ============================================
 
 1. General
+----------
 
 The following describes the development lifecycle that is used for autosub, in
-order to allow developers to work collaboratively.
+order to allow developers to work collaboratively. We are basing our lifecycle
+on the lifecycle described in
+    https://nvie.com/posts/a-successful-git-branching-model/ .
+
+The livecycle_model.png gives you a good first overview.
 
 The repository is hosted at GitHub, you can clone it without having an account:
 
-git clone https://github.com/andipla/autosub.git
+git clone https://github.com/autosub-team/autosub
 
 If you want to contribute, you will need to have an account, there are several
 ways to push into a GitHub repository, please refer to GitHub help. In example
@@ -22,69 +27,79 @@ for ssh everything is described in detail here:
 
 https://help.github.com/articles/generating-an-ssh-key/
 
+2. Branches
+-----------
+
 Since the number of developers is rather small, we stick with a simple
-development lifecycle (DLC), which just consists of 2 major branches:
+development lifecycle (DLC), which consists of 2 major branches:
 
 -) master : is the stable branch, this is the version that shall currently be
 	used for deployment, as it is well tested and stable.
 
--) autosub_devel : thats the development branch, this is the version were
+-) autosub_devel : thats the development branch, this is the version
 	developers may directly push smaller changes or merge feature branches
-	after the feature is working.
+	after the feature is working. If you are an outside contributor, this is the
+    branch to base your pull requests on.
 
-In addition, the developers shall (based on their own judgement) create feature
-branches in which they work on larger changes. Only after the whole feature is
-developed, the feature branch is merged into autosub_devel, so it can be tested
-by all developers. 
+Other branches with limited lifespan:
 
-TODO: We need to define when/how autosub_devel is stable and merged into master.
+-) feature branches: developers shall (based on their own judgement) create
+    feature branches in which they work on larger changes. Only after the whole
+    feature is developed, the feature branch is merged into autosub_devel, so it
+    can be tested by all developers. Feature branche are usally just locally
+    on your machine and not pushed to the autosub repository.
 
-============================================
+    Naming convention: feature-foobar
 
-2. First steps
+-) release branches: Release branches support preparation of a new production
+    release. They allow for last-minute dotting of i’s and crossing t’s.
+    Furthermore, they allow for minor bug fixes and preparing meta-data for
+    a release (e.g updating the static docs, providing a migration script for
+    autosub instances to the new version). Release branches are merged into
+    master once the release is ready, the commit tagged in master, and then the
+    release branch is deleted.
 
-As already mentioned above the first step is to clone the repository:
+    Naming convention: release-X.0
 
-$ git clone https://github.com/andipla/autosub.git
+-) hotfix branches: Hotfix branches are very much like release branches in
+    that they are also meant to prepare for a new production release, albeit
+    unplanned. They arise from the necessity to act immediately upon an
+    undesired state of a live production version. When a critical bug in a
+    production version must be resolved immediately, a hotfix branch may be
+    branched off from the corresponding tag on the master branch that marks
+    the production version. Once the hotfix is ready it is merged into master
+    and autusub_devel. Additionally the commit is tagged in master with the
+    minor version number being incremented.
+
+    Naming convention: hotfix-X.Y
+
+3. How to use autosub
+---------------------
+
+The first step is to clone the repository:
+
+$ git clone https://github.com/autosub-team/autosub
 
 After cloning, you are by default on the master branch. If you want to deploy
-autosub that is fine, and you may no switch to the user manual and start
-configuring. If you want do develop, you want to checkout the autosub_devel
-branch:
+autosub that is fine, and you may now look at the user manual located in doc_pdf
+and start configuring.
 
-$ cd autosub
-$ git checkout -b autosub_devel origin/autosub_devel
+4. Contributing
+---------------
+If you want to contribute to the autosub development fork the autosub repository.
+Development is done on the autosub_devel branch.
 
-You can check at any point in time on which branch you are currently operating
-using the "git branch" command:
+To get your changes into autosub, commit them to the autosub_devel branch,
+commit and push it to your forked repository and send a pull request. A good
+tutorial  concerning how to do a pull request is:
+    https://www.thinkful.com/learn/github-pull-request-tutorial/#Time-to-Submit-Your-First-PR
 
-autosub $ git branch
-* autosub_devel
-  master
+If you find an issue with autosub, feel free to open an issue in the autosub
+repository.
 
-Currently only two branches are available, the current branch is marked with
-an asterisk in the very first column.
 
-If the changes you are making are small changes, you may just directly commit
-and push everything into autosub_devel. 
-
-autosub $ git commit -sa
-autosub $ git push
-
-The commit part only commits the changes into your local repository, only with
-the "git push" all local commits are sent to the remote repository at GitHub.
-
-At this point you may get the message that you are behind the remote repository,
-at which point you have do a 
-
-$ git pull
-
-to get the latest version from GitHub -- of course can do this at any point in
-time.
-
-============================================
-
-3. Feature Branches
+5. Concerning Feature Branches
+------------------------------
 
 If you are doing bigger changes (more commits, new feature, longer development
 time, etc.) please do not commit parts of that bigger change over time, but
@@ -96,22 +111,22 @@ $ git pull
 
 to assure you start with the current development version.
 
-$ git checkout -b my_new_feature autosub_devel
+$ git checkout -b feature-bla autosub_devel
 
 If you want to check if you are on that new branch, just ask git:
 
 $ git branch
   autosub_devel
   master
-* my_new_feature
+* feature-bla
 
 Please note, that branch names should have descriptive names that give an idea
-on why that branch was created (so my_new_feature is a *BAD* example :-) ).
+on why that branch was created. So bla should be replaced.
 
 If you want to make your feature branch available to everyone on GitHub you
 may do a:
 
-$ git push -u origin my_new_feature
+$ git push -u origin feature-bla
 
 This not mandatory though but may be of advantage if you want someone else to
 review your experimental changes, or if you are working on several machines
@@ -124,11 +139,9 @@ Once your feature is finished and tested, you want to feed it back into
 autosub_devel by merging the feature branch:
 
 $ git checkout autosub_devel
-$ git merge my_new_feature
+$ git merge feature-bla
 
 Since autosub_devel may have changed in the meantime, it may be necessary to
 resolve some conflicts, a detailed description may be found here:
 
 https://git-scm.com/book/en/v2/Git-Branching-Basic-Branching-and-Merging#Basic-Merge-Conflicts
-
-
