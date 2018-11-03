@@ -52,9 +52,9 @@ class Worker(threading.Thread):
         return params
 
     ####
-    # get_configured_common
+    # get_configured_backend_interface
     ####
-    def get_configured_common(self, task_nr):
+    def get_configured_backend_interface(self, task_nr):
         """
         Get the configured common file configured for the task
         """
@@ -62,7 +62,7 @@ class Worker(threading.Thread):
         curc, conc = c.connect_to_db(self.dbs["course"], self.queues["logger"], self.name)
 
         data = {'task_nr': task_nr}
-        sql_cmd = ("SELECT CommonFile FROM TaskConfiguration "
+        sql_cmd = ("SELECT BackendInterfaceFile FROM TaskConfiguration "
                    "WHERE TaskNr == :task_nr")
         curc.execute(sql_cmd, data)
         common_file = curc.fetchone()[0]
@@ -226,7 +226,7 @@ class Worker(threading.Thread):
         scriptpath = self.get_scriptpath(task_nr)
 
         # get the configured common file
-        configured_common = self.get_configured_common(task_nr)
+        configured_backend_interface = self.get_configured_backend_interface(task_nr)
 
         if not scriptpath:
             logmsg = "Could not fetch test script from database"
@@ -239,7 +239,7 @@ class Worker(threading.Thread):
             return
 
         # run the test script and log the stderr and stdout
-        command = [scriptpath, user_id, task_nr, task_params, configured_common]
+        command = [scriptpath, user_id, task_nr, task_params, configured_backend_interface]
         logmsg = "Running test script with arguments: {0}".format(command)
         c.log_a_msg(self.queues["logger"], self.name, logmsg, "DEBUG")
 

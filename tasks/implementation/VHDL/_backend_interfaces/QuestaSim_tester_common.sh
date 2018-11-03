@@ -13,8 +13,8 @@
 zero=0
 one=1
 
-#path to support files for common scripts
-support_files_path=$common_path/support_files
+#path to support files for backend_interfaces scripts
+support_files_path=$backend_interfaces_path/support_files
 
 #path to autosub
 autosub_path=$(pwd)
@@ -37,7 +37,7 @@ testbench_ent=${task_name}_tb
 #echo "desc_path= $desc_path"
 #echo "task_path= $task_path"
 #echo "autosub_path= $autosub_path"
-#echo "common_path= $common_path"
+#echo "backend_interfaces_path= $backend_interfaces_path"
 #echo "support_files_path=$support_files_path"
 #echo "---------------------------------------"
 

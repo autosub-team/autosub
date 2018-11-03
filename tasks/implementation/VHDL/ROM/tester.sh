@@ -13,7 +13,7 @@
 user_id=$1
 task_nr=$2
 task_params=$3
-commonfile=$4
+backend_interface_file=$4
 
 # return values of a tester
 SUCCESS=0
@@ -24,13 +24,13 @@ FAILURE=1
 task_path=$(readlink -f $0|xargs dirname)
 
 #path to common scripts
-common_path=$(readlink -f ${task_path}/../_common)
+backend_interfaces_path=$(readlink -f ${task_path}/../_backend_interfaces)
 
 # include external config
 source ${task_path}/task.cfg
 
 #include simulator specific common file
-source ${common_path}/${commonfile}
+source ${backend_interfaces_path}/${backend_interface_file}
 
 #----------------- TEST ----------------
 generate_testbench

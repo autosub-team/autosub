@@ -581,7 +581,7 @@ def check_init_ressources():
     fields = ("TaskNr INT PRIMARY KEY, TaskStart DATETIME, "
               "TaskDeadline DATETIME, TaskName TEXT, GeneratorExecutable TEXT, "
               "Language TEXT, "
-              "TestExecutable TEXT, CommonFile TEXT, Score INT, "
+              "TestExecutable TEXT, BackendInterfaceFile TEXT, Score INT, "
               "TaskOperator TEXT, TaskActive BOOLEAN")
     ret = check_and_init_db_table(coursedb, "TaskConfiguration", fields)
 

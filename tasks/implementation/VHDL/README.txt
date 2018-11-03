@@ -1,6 +1,9 @@
-Each task has its own directory. 
+This repository contains the tasks developed by the TU Wien for autosub (https://github.com/autosub_team/autosub).
 
-The folder "_common" is for scripts, that can be passed to testers (definition of common functionality)
+Each task has its own directory.
+
+The folder "_backend_interfaces" is for scripts, that can be passed to testers (definition of
+functionions that allow a tester to control a backend interface)
 
 A task consists of multiple elements. The folders and common files are:
 
@@ -16,7 +19,7 @@ scripts/
 --> generateTask.py --Generates the random task, fills entity and task_description templates
 --> generateTestbench.py --Generates a testbench for gien TaskParameters
 
-exam/ --files for the exam mode 
+exam/ --files for the exam mode
 
 generator.sh --> executable that gets called from the generator thread
 
@@ -24,4 +27,4 @@ tester.sh --> executable that gets called from the worker thread
               tester.sh without prefix should be compatible to using the CommonFile API
 			  other testers should have a prefix
 
-description.txt -->message that will be sent in the task description email
+description.txt -->message that will be sent as email text in the task description email

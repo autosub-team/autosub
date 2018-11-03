@@ -6,7 +6,7 @@ import os
 import datetime
 
 #Validators
-#TaskName, CommonFile, TestExecutable, GeneratorExecutable, Language get validated with extra_validation
+#TaskName, BackendInterfaceFile, TestExecutable, GeneratorExecutable, Language get validated with extra_validation
 val={'TaskNr'              :[IS_NOT_EMPTY(),IS_DECIMAL_IN_RANGE(minimum=0)],
      'TaskStart'           :[IS_NOT_EMPTY(),IS_DATETIME(format=T('%Y-%m-%d %H:%M'), \
                              error_message='must be YYYY-MM-DD HH:MM!')],
@@ -20,7 +20,7 @@ val={'TaskNr'              :[IS_NOT_EMPTY(),IS_DECIMAL_IN_RANGE(minimum=0)],
 def extra_validation(form):
 
     tasks_dir = course(GeneralConfig.ConfigItem=='tasks_dir').select(GeneralConfig.Content)[0].Content
-    available_tasks , available_commons = __task_system_entries()
+    available_tasks , available_backend_interfaces = __task_system_entries()
 
     #validate TaskName existence
     if form.vars.TaskName not in available_tasks:
@@ -33,14 +33,14 @@ def extra_validation(form):
         form.errors.Language = "supported: " + " , ".join(available_languages)
         return
 
-    #validate CommonFile existence
-    common_file = form.vars.CommonFile.strip()
+    #validate BackendInterfaceFile existence
+    backend_interface_file = form.vars.BackendInterfaceFile.strip()
 
-    if not common_file:
+    if not backend_interface_file:
         pass
     else:
-        if not common_file in available_commons:
-            form.errors.CommomFile = "file does not exist!"
+        if not backend_interface_file in available_backend_interfaces:
+            form.errors.BackendInterFaceFile = "file does not exist!"
             return
 
     task_path = join(tasks_dir, form.vars.TaskName)
@@ -60,38 +60,38 @@ def __task_system_entries():
     tasks_dir = course(GeneralConfig.ConfigItem=='tasks_dir').select(GeneralConfig.Content)[0].Content
 
     available_tasks = [""]
-    available_commons = [""]
+    available_backend_interfaces = [""]
 
     if isdir(tasks_dir):
         # only take subfolders not files of tasks_dir
         available_tasks = sorted([d for d in listdir(tasks_dir)
                           if isdir(os.path.join(tasks_dir, d))])
 
-        if '_common' in available_tasks:
-            # delete _common out of it
-            available_tasks.remove('_common')
-            available_commons.extend(sorted(listdir(tasks_dir + "/_common")))
-            if "support_files" in available_commons:
-                available_commons.remove("support_files")
+        if '_backend_interfaces' in available_tasks:
+            # delete _backend_interfaces out of it
+            available_tasks.remove('_backend_interfaces')
+            available_backend_interfaces.extend(sorted(listdir(tasks_dir + "/_backend_interfaces")))
+            if "support_files" in available_backend_interfaces:
+                available_backend_interfaces.remove("support_files")
 
-    return (available_tasks , available_commons)
+    return (available_tasks , available_backend_interfaces)
 
 def __entries():
     rows=course().select(TaskConfiguration.ALL, orderby=TaskConfiguration.TaskNr)
     array=[]
 
     for row in rows:
-        entry={'TaskNr'              :row.TaskNr,
-               'TaskStart'           :row.TaskStart.strftime("%Y-%m-%d %H:%M"),
-               'TaskDeadline'        :row.TaskDeadline.strftime("%Y-%m-%d %H:%M"),
-               'TaskName'            :row.TaskName,
-               'GeneratorExecutable' :row.GeneratorExecutable,
-               'Language'            :"" if not row.Language else row.Language,
-               'TestExecutable'      :row.TestExecutable,
-               'CommonFile'          :"" if not row.CommonFile else row.CommonFile,
-               'Score'               :row.Score,
-               'TaskOperator'        :row.TaskOperator,
-               'TaskActive'          :"Yes" if row.TaskActive else "No"}
+        entry={'TaskNr'               :row.TaskNr,
+               'TaskStart'            :row.TaskStart.strftime("%Y-%m-%d %H:%M"),
+               'TaskDeadline'         :row.TaskDeadline.strftime("%Y-%m-%d %H:%M"),
+               'TaskName'             :row.TaskName,
+               'GeneratorExecutable'  :row.GeneratorExecutable,
+               'Language'             :"" if not row.Language else row.Language,
+               'TestExecutable'       :row.TestExecutable,
+               'BackendInterfaceFile' :"" if not row.BackendInterfaceFile else row.BackendInterfaceFile,
+               'Score'                :row.Score,
+               'TaskOperator'         :row.TaskOperator,
+               'TaskActive'           :"Yes" if row.TaskActive else "No"}
         array.append(entry)
 
     tasks_dir = course(GeneralConfig.ConfigItem=='tasks_dir').select(GeneralConfig.Content)[0].Content
@@ -99,7 +99,7 @@ def __entries():
     if not isdir(tasks_dir):
         num_found_tasks = "Invalid Path."
     else:
-       available_tasks , available_commons = __task_system_entries()
+       available_tasks , available_backend_interfaces = __task_system_entries()
        num_found_tasks = str(len(available_tasks)) + " task(s) found."
 
     return dict(entries=array, tasks_dir = tasks_dir,
@@ -145,7 +145,7 @@ def newTask():
         newTaskNr=rows.last().TaskNr+1
     returnDict.update({'newTaskNr': newTaskNr})
 
-    available_tasks , available_commons = __task_system_entries()
+    available_tasks , available_backend_interfaces = __task_system_entries()
 
     inputs = TD(newTaskNr,INPUT(_type='hidden',_name='TaskNr',_value=newTaskNr)),\
              TD(INPUT(_name='TaskStart', requires=val['TaskStart'],\
@@ -156,7 +156,7 @@ def newTask():
              TD(INPUT(_name='GeneratorExecutable', _value="generator.sh")),\
              TD(INPUT(_name='Language', _value="")),\
              TD(INPUT(_name='TestExecutable', _value="tester.sh")),\
-             TD(SELECT(_name='CommonFile', *available_commons, _value="")),\
+             TD(SELECT(_name='BackendInterfaceFile', *available_backend_interfaces, _value="")),\
              TD(INPUT(_name='Score', requires=val['Score'], _value=1)),\
              TD(INPUT(_name='TaskOperator', requires=val['TaskOperator'],\
                       _placeholder="Email")),\
@@ -174,23 +174,23 @@ def newTask():
         else:
             TaskActive = 0;
 
-        TaskConfiguration.insert(TaskNr              =form.vars.TaskNr,\
-                                 TaskStart           =form.vars.TaskStart,\
-                                 TaskDeadline        =form.vars.TaskDeadline,\
-                                 TaskName            =form.vars.TaskName,\
-                                 GeneratorExecutable =form.vars.GeneratorExecutable,\
-                                 Language            =form.vars.Language,\
-                                 TestExecutable      =form.vars.TestExecutable,\
-                                 CommonFile          =form.vars.CommonFile,\
-                                 Score               =form.vars.Score,\
-                                 TaskOperator        =form.vars.TaskOperator,\
-                                 TaskActive          =TaskActive)
+        TaskConfiguration.insert(TaskNr               =form.vars.TaskNr,\
+                                 TaskStart            =form.vars.TaskStart,\
+                                 TaskDeadline         =form.vars.TaskDeadline,\
+                                 TaskName             =form.vars.TaskName,\
+                                 GeneratorExecutable  =form.vars.GeneratorExecutable,\
+                                 Language             =form.vars.Language,\
+                                 TestExecutable       =form.vars.TestExecutable,\
+                                 BackendInterfaceFile =form.vars.BackendInterfaceFile,\
+                                 Score                =form.vars.Score,\
+                                 TaskOperator         =form.vars.TaskOperator,\
+                                 TaskActive           =TaskActive)
 
         # add a entry in TaskStats
         TaskStats.insert(TaskId=form.vars.TaskNr,
                           NrSubmissions=0,
                           NrSuccessful=0)
-        
+
         # clear all LastDones, as there was a new addidional task added
         semester.executesql("UPDATE Users SET LastDone = NULL")
 
@@ -206,7 +206,7 @@ def editTask():
     TaskNr = int(request.vars['editTaskNr'])
     entry = returnDict['entries'][TaskNr-1]
 
-    available_tasks , available_commons = __task_system_entries()
+    available_tasks , available_backend_interfaces = __task_system_entries()
 
     inputs = TD(TaskNr),\
              TD(INPUT(_name='TaskStart', _value=entry['TaskStart'],\
@@ -218,7 +218,7 @@ def editTask():
              TD(INPUT(_name='GeneratorExecutable', _value=entry['GeneratorExecutable'])),\
              TD(INPUT(_name='Language', _value=entry['Language'])),\
              TD(INPUT(_name='TestExecutable', _value=entry['TestExecutable'])),\
-             TD(SELECT(_name='CommonFile', *available_commons, value=entry['CommonFile'])),\
+             TD(SELECT(_name='BackendInterfaceFile', *available_backend_interfaces, value=entry['BackendInterfaceFile'])),\
              TD(INPUT(_name='Score',_value=entry['Score'],\
                       requires=val['Score'])),\
              TD(INPUT(_name='TaskOperator', _value=entry['TaskOperator'],\
@@ -238,16 +238,16 @@ def editTask():
             TaskActive = 0;
 
         course(TaskConfiguration.TaskNr ==TaskNr).update(\
-                    TaskStart           =form.vars.TaskStart,\
-                    TaskDeadline        =form.vars.TaskDeadline,\
-                    TaskName            =form.vars.TaskName,\
-                    GeneratorExecutable =form.vars.GeneratorExecutable,\
-                    Language            =form.vars.Language,\
-                    TestExecutable      =form.vars.TestExecutable,\
-                    CommonFile          =form.vars.CommonFile,\
-                    Score               =form.vars.Score,\
-                    TaskOperator        =form.vars.TaskOperator,\
-                    TaskActive          =TaskActive)
+                    TaskStart            =form.vars.TaskStart,\
+                    TaskDeadline         =form.vars.TaskDeadline,\
+                    TaskName             =form.vars.TaskName,\
+                    GeneratorExecutable  =form.vars.GeneratorExecutable,\
+                    Language             =form.vars.Language,\
+                    TestExecutable       =form.vars.TestExecutable,\
+                    BackendInterfaceFile =form.vars.BackendInterfaceFile,\
+                    Score                =form.vars.Score,\
+                    TaskOperator         =form.vars.TaskOperator,\
+                    TaskActive           =TaskActive)
 
         redirect(URL('index'))
 

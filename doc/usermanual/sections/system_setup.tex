@@ -208,9 +208,9 @@ Each task in the queue has to be created with the following properties:
 \item {\bf Language}: Language code of the language in which the task discription for
 	this task should be created.
 \item {\bf TestExecutable:} The name of the tester executable.
-\item {\bf CommonFile:} Name of a common script that offers a tester functionalities. This allows easy
+\item {\bf BackendInterfaceFile:} Name of a backend interface file that offers a tester functions to control a backend. This allows easy
 	switching between different simulator backends.	Such scripts have to be stored in a directory
-	{\tt ``\_common"} in the configured
+	{\tt ``\_backend\_interfaces"} in the configured
 	tasks\_dir.
 \item {\bf Score:} The score a student gets for successful completion of the task. The
     scores for all completed tasks are added and can therefore also be used for grading.
