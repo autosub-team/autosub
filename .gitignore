@@ -3,7 +3,6 @@
 !src/default.cfg
 *.pdf
 !doc/doc_pdf/*.pdf
-!tasks/implementation/VHDL/cache/static/cache.pdf
 *.log
 *.db
 *.swp
@@ -25,3 +24,5 @@ VELS_WEB/static/images/nr_mails_sent.png
 VELS_WEB/static/images/nr_questions_received.png
 VELS_WEB/static/images/nr_users.png
 tmp
+!tasks/implementation/VHDL/README.txt
+tasks/implementation/VHDL/*
