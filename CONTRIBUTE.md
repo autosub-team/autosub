@@ -6,5 +6,6 @@ doc/coding_standards/lifecycle.txt
 
 Concerning major changes ideas first write to one of the Head maintainers:
 
-Martin Mosbeck <martin.mosbeck@tuwien.ac.at> or <martin.mosbeck@gmx.at>
-Daniel Hauer <daniel.hauer@tuwien.ac.at>
+	Martin Mosbeck <martin.mosbeck@tuwien.ac.at> or <martin.mosbeck@gmx.at>
+
+	Daniel Hauer <daniel.hauer@tuwien.ac.at>
