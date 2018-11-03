@@ -3,6 +3,7 @@
 !src/default.cfg
 *.pdf
 !doc/doc_pdf/*.pdf
+!tasks/implementation/VHDL/cache/static/cache.pdf
 *.log
 *.db
 *.swp
