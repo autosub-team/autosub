@@ -15,8 +15,8 @@ import common as c
 class TaskActivator(threading.Thread):
     """
     Thread in charge of checking periodically every 30 minutes if a task should
-    activated (TaskStart < now) and initiate the task generations for users
-    waiting for this task
+    activated (TaskStart < now) or deactivated (TaskDeadline < now) and
+    initiate the task generations for users waiting for a task
     """
 
     def __init__(self, name, queues, dbs, auto_advance, allow_requests):
@@ -142,6 +142,27 @@ class TaskActivator(threading.Thread):
                         c.send_email(self.queues["sender"], str(user_email), \
                                      str(user_id), "Task", str(task_nr), "", "")
                 cons.close()
+
+        # first we need to know, which tasks are active
+        sql_cmd = "SELECT * FROM TaskConfiguration WHERE TaskActive = 1 "
+        curc.execute(sql_cmd)
+        rows_tasks = curc.fetchall()
+
+        # loop through all the active tasks
+        for row_task in rows_tasks:
+            task_nr = row_task[0]
+
+            task_deadline = datetime.datetime.strptime(row_task[2], c.format_string)
+            if task_deadline < datetime.datetime.now():
+                data = {'task_nr': task_nr}
+                sql_cmd = ("UPDATE TaskConfiguration SET TaskActive = 0 "
+                           "WHERE TaskNr = :task_nr")
+                curc.execute(sql_cmd, data)
+                conc.commit()
+
+            logmsg = "Deactivated Task {0}, deadline passed.".format(str(task_nr))
+            c.log_a_msg(self.queues["logger"], self.name, logmsg, "INFO")
+
         conc.close()
 
 ####
