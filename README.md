@@ -14,7 +14,7 @@ To get autosub clone this repository
 
 	git clone https://github.com/autosub-team/autosub.git
 
-and then fetch the VHDL tasks using the update_tasks.sh script in the root
+To fetch the existing VHDL tasks use the update_tasks.sh script in the root
 folder. In order to fetch the task you need to have the program rsync installed!
 
 # Documentation #

@@ -25,6 +25,23 @@ web interface is to clone the git repository:
 git clone https://github.com/autosub-team/autosub.git
 \end{verbatim}
 
+To fetch the latest version of the available tasks, run the script update\_tasks.sh in the autosub root folder.
+\begin{verbatim}
+./update_tasks.sh
+\end{verbatim}
+This will clone the task repositories specified in the script and move them to the folder tasks/implementation/VHDL .
+
+To fetch a newer version of the tasks at any time you can rerun the update\_tasks script with the parameter refetch. Warning: this will delete all the content inside the tasks folder (tasks/implementation/VHDL) and then fetch the new tasks.
+\begin{verbatim}
+./update_tasks.sh refetch
+\end{verbatim}
+
+If you just want to add additions done to the tasks without cleansing of the folder first, run the update\_tasks script without the parameter refetch.
+\begin{verbatim}
+./update_tasks.sh
+\end{verbatim}
+
+
 \subsection{Chosing the task queue mode} \label{sub:task_queues}
 VELS can be used in two distinct task queue modes: request mode and linear mode. \\
 \\
@@ -250,7 +267,7 @@ message, still it's nicer to get everything running without being yelled at.
 
 \subsection{The Exam Mode}\label{sub:exammode}
 In Exam Mode the students additionally get sent a minimal testbench to test their design.
-To enable test mode, change the challenge-mode to exam in the config file and restart 
+To enable test mode, change the challenge-mode to exam in the config file and restart
 the autosub daemon.
 
 Always check first if all the task you want to use support this mode!

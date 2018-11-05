@@ -5,6 +5,8 @@ are documented for Debian. The system might work with other distributions, if yo
 find the packages that have to be installed, please provide us with instructions
 so we can expand this section.
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 \subsection{Debian 7 (Wheezy)}
 
 Installs from the apt package pool:
@@ -13,7 +15,7 @@ Installs from the apt package pool:
 sudo apt-get install python3 python3-mock python3-pip python3-nose
 sudo apt-get install zip flip git gnat-4.6-base libgnat-4.6
 sudo apt-get install texlive-latex-extra pgf graphviz build-dep
-sudo apt-get install zlib1g-dev
+sudo apt-get install zlib1g-dev rsync
 \end{verbatim}
 
 Next we need to upgrade easy\_install for python3 to a newer version -- this
@@ -43,7 +45,7 @@ Installs from the apt package pool:
 sudo apt-get install python3  python3-mock python3-pip python3-nose
 sudo apt-get install zip flip git gnat-4.9-base libgnat-4.9
 sudo apt-get install texlive-latex-extra pgf graphviz  build-dep
-sudo apt-get install zlib1g-dev python3-pyqt5 python3-matplotlib
+sudo apt-get install zlib1g-dev python3-pyqt5 python3-matplotlib rsync
 \end{verbatim}
 
 The following packages need to be installed using pip:
@@ -64,7 +66,7 @@ Installs from the apt package pool:
 sudo apt-get install python3 python3-mock python3-pip python3-nose
 sudo apt-get install zip flip git gnat-6 libgnat-6
 sudo apt-get install texlive-latex-extra pgf graphviz build-essentials
-sudo apt-get install zlib1g-dev python3-pyqt5 python3-matplotlib
+sudo apt-get install zlib1g-dev python3-pyqt5 python3-matplotlib rsync
 \end{verbatim}
 
 The following packages need to be installed using pip:
@@ -75,6 +77,8 @@ pip3 install graphviz
 pip3 install jinja2
 \end{verbatim}
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 \subsection{Patches to be applied}
 Unfortunately there is a small bug in one of the latex packages that we use
 (pst-circ), therefore you need to apply a patch to that package:
@@ -84,7 +88,5 @@ cd /usr/share/texlive/texmf-dist/tex/generic/pst-circ
 patch < /path/to/autosub/doc/patch/pst-circ.tex.patch
 \end{verbatim}
 
-In case gates in the pdfs you are not beautiful as you are used to, it might have
+In case logic gates in the pdfs you are not beautiful as you are used to, it might have
 happended that an update was applied over that patch and you need to re-apply it.
-
-
