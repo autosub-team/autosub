@@ -2,12 +2,13 @@
 Autosub is an email based system for generating, submitting and automatically
 testing student assignments in courses.
 
-It includes VELS (VHDL E-Learning System) for supporting VHDL
+VELS (VHDL E-Learning System) uses autosub for supporting VHDL
 training courses. Students receive individual tasks and submit VHDL
 models by email, which are in succession automatically simulated
 and tested by testbenches on the server. Students receive email responses
 about the success or failure of the test within seconds or minutes.
-VELS comes with a set of VHDL assignments for VHDL beginners.
+VELS comes with a set of VHDL assignments for VHDL beginners and offers a
+web based configuration interface (VELS\_WEB).
 
 # How to get it #
 To get autosub clone this repository
