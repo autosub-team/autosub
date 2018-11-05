@@ -590,7 +590,7 @@ class MailSender(threading.Thread):
 
             path_to_msg = "users/{0}/Task{1}".format(user_id, task_nr)
             error_msg = self.read_text_file("{0}/error_msg".format(path_to_msg))
-            msg['Subject'] = "Task" + task_nr + ": submission rejected"
+            msg['Subject'] = "Failure Task" + task_nr
             message_text = "Error report:\n\n""" + error_msg
 
             reply_attachments = []
@@ -617,8 +617,8 @@ class MailSender(threading.Thread):
         #################
         #    SUCCESS    #
         #################
-            msg['Subject'] = "Task " + task_nr + " submitted successfully"
-            message_text = "Congratulations!"
+            msg['Subject'] = "Success Task " + task_nr
+            message_text = "You solved the task successfully. Congratulations!"
             msg = self.assemble_email(msg, message_text, '')
             self.send_out_email(recipient, msg.as_string(), message_type)
 
