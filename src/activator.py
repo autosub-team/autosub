@@ -43,8 +43,6 @@ class TaskActivator(threading.Thread):
         # loop through all the inactive tasks
         for row_task in rows_tasks:
             task_nr = row_task[0]
-            logmsg = "Task {0} is still inactive".format(str(task_nr))
-            c.log_a_msg(self.queues["logger"], self.name, logmsg, "INFO")
 
             # check if a tasks start time has come
             task_start = datetime.datetime.strptime(row_task[1], c.format_string)
@@ -160,8 +158,8 @@ class TaskActivator(threading.Thread):
                 curc.execute(sql_cmd, data)
                 conc.commit()
 
-            logmsg = "Deactivated Task {0}, deadline passed.".format(str(task_nr))
-            c.log_a_msg(self.queues["logger"], self.name, logmsg, "INFO")
+                logmsg = "Deactivated Task {0}, deadline passed.".format(str(task_nr))
+                c.log_a_msg(self.queues["logger"], self.name, logmsg, "INFO")
 
         conc.close()
 
