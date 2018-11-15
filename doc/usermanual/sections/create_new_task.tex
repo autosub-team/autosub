@@ -1,0 +1,75 @@
+\section{Creating a new task for the VELS system} \label{create_new_task}
+
+The VELS system incorporates a tool to create a new task and a generalized method for testing the submitted code of a
+user. The goal of both is to keep the necessary effort for creating a new task to the minimum. This guide uses the VHDL Task Creator Wizard. If you do not want to use it or want to gain an insight on how the tasks system works in detail look at \path{autosub/doc/CreatingTasks.txt}.
+
+\subsection{VHDL Task Creator Wizard} \label{sub:vhdltaskcreator}
+The VHDL Task Creator Wizard is a graphical user interface to set up a new task. To use the wizard you will need python3-qt5 and python3-jinja2 installed on your system:
+\begin{verbatim}
+apt-get install python3-pyqt5 python3-jinja2
+\end{verbatim}
+The tool itself can be found in the VELS system under the path \path{autosub/tasks/tools/vhdl_task_creator} and can be called by running \verb|run.sh|.
+When started the wizard will guide you through a series of windows to set up your new task. In the first window you can enter:
+
+\begin{itemize}
+\item {\bf Task name:} The name of the task. Used as the name of the task directory and in the task description for the user, the testbench\_template, in the task.cfg file and in the comments of the scripts generateTestBench.py and generateTask.py.
+\item {\bf Output directory:} The location where the task directory will be saved. In this directory a folder with the name of the task will be created.
+\item {\bf User entities:} The name of the entities the user has to write the behavior for. The user will get the declaration of an entity in a file with the name \mbox{[entity name].vhdl}. And the user will write the behavior for the entity in a file with the name \mbox{[entity name]\_beh.vhdl}
+\item {\bf Extra files:} Additional VHDL packages or entities to be analyzed and elaborated in the order named here. For example the gates task uses these extra files to provide the user with gates defined in IEEE 1164.
+\item {\bf Simulation Timeout (in s): } Time until the server hard stops the simulation of the user entities in seconds. Normally the simulation should be stopped from within the testbench well before the simulation timeout.
+\item {\bf Description languages:} Choose to create skeleton LaTeX task description files for different languages. Skeleton
+templates are taken from the folder {\tt "vhdl\_task\_creator/templates/task\_description/"}.
+\item {\bf Attach wavefile:} If the wavefile of the simulation shall be sent to the user.
+\item {\bf Use task constraint script:} If a script shall be called to check the users entities before simulation. For example the pwm task checks here if the user did use the wait statement instead of using the clock signal.
+\end{itemize}
+
+The ``next'' button brings you to a window where you can configure the inputs and outputs of the users entity. If you have defined more than one user entity then they can be configured in a following window. When adding the inputs and outputs for the entity you can set the parameters:
+
+\begin{itemize}
+\item {\bf Signal name:} The name of the signal. Any name conforming to the rules of the VHDL standard can be used here.
+\item {\bf Signal type:} The available types are: std\_logic\_vector, std\_logic, signed, unsigned and custom. Dependant on the selected type are the available configurations. For example the std\_logic type leaves no configurations open except the signal name.
+\item {\bf Length type:} The available options are: fixed, variable and single.
+\item {\bf Length (Placeholder):} The bit-length of the selected signal type shall be entered here. If the length type is fixed then an integer greater 1 is expected. If the length type is variable then a string is expected as a placeholder. This placeholder needs to be replaced by your generateTask.py (e.g \%\%LENGTH or \{\{ length \}\}). 
+\item {\bf Resulting definition:} A preview of the resulting definition is displayed here as the parameters get configured.
+\end{itemize}
+
+When all inputs and outputs are configured a summary for the to-be-created task is shown in the last window. When the ``finish'' button is pressed the task will be created in the output directory.
+
+The created structure of the task directory is:
+\begin{itemize}
+\item {\bf templates:} Directory containing files which will be changed by the system for the task. These are the
+testbench\_template.vhdl and the task\_description\_template.tex. The task\_description\_template is used for creating
+the description which is sent to the user. The testbench\_template is used before starting a simulation to create a
+unique testbench, you will need to alter this file for your own task. If the length of an entity input or output was
+chosen to be variable, then this directory will also include the file \mbox{[entity name]\_template.vhdl}.
+\item {\bf static:} Directory containing files which will not be changed by the system itself. These are the files \mbox{[entity name].vhdl} and [entity name]\_beh.vhdl. The file \mbox{[entity name].vhdl} is the declaration of the entity for the user and \mbox{[entity name]\_beh.vhdl} is where the user shall write the behavior of the corresponding entity. If the length of an entity input or output was chosen to be variable, then this directory will not include the file \mbox{[entity name].vhdl}.
+\item {\bf scripts:} Directory containing python3-scripts which generate the unique task parameters for a user the task and fill
+the template files of the task (generateTask.py) and which generate the testbench for the created task parameters (generateTestBench.py). You will need to alter these files for your own task.
+\item {\bf generator.sh} Script that is called when a task needs to be generated fo a user. Uses \LaTeX\,to create
+the task\_description PDF file for the user. Also specifies all needed files to the task description E-Mail for the user. You will need to alter this file, the comments in the file should guide you what you have to change.
+\item {\bf task.cfg:} File containing bash variables for the generalized tester.sh to the specific task.
+\item {\bf tester.sh:} Generalized bash script which sources the parameters of the task.cfg file and calls the functions of the backend interface. If you do not want to use the generalized tester you can write your own tester.
+\item {\bf description.txt:} Contains the text which is sent to the user in the task description E-Mail.
+\end{itemize}
+
+
+\subsection{Working with the generalized tester} \label{sub:testercommon}
+
+The generalized tester provides a generalized method for testing the submitted code of a user. As mentioned one goal of this generalized testing method is to reduce the effort for creating a new task. Furthermore combining the testing for all tasks in one method allows to make future improvements at one centralized point.
+
+When the VHDL Task Creator Wizard is used to create a new task (which is advised to do so) then, in the optimal situation, you will not have to directly deal with the generalized tester. When you are not using the Task Creator Wizard, or have to make further changes down the road, then the interface to work with the generalized tester is the task.cfg file. The task.cfg file is a configuration file for the tester which is located in each task directory. It gets sourced by the tester.sh script. The tester.sh script also sources the generalized tester and the task constraint check if applicable and calls functions defined in the backend interface file. The task.cfg file includes the configurations:
+\begin{itemize}
+\item {\bf task\_name:} The variable task\_name is most importantly used in the generalized tester during elaboration and simulation of the submitted VHDL code. This is because the entity of the testbench is expected to be named \mbox{[task\_name]\_tb}.
+\item {\bf userfiles:} The variable userfiles contains all the VHDL files expected to be submitted by the user. They are used to check if all files were submitted by the user and further on when the user VHDL files are analyzed.
+\item {\bf entityfiles:} Variable containing the filenames of the entity files. The entity files contain the declaration of the user entities. These entity files are not from the user. The user writes the behavior of the entities in the user files.
+\item {\bf extrafiles:} Variable containing the filenames of the extra entity files. Those extra VHDL entities are not
+from the user, but are supplied to the user in the task description. The extra files are sent to the user to provide
+ready coded VHDL entities the user can use in his task. Extra files are expected to be in the {\tt "static/"} folder of
+the task.
+\item {\bf constraintfile:} The constraintfile variable contains the path to the constraint file in the task directory. The constraint file is sourced in the tester.sh script which is located in the task directory.
+\item {\bf simulation\_timeout:} The simulation timeout is used during the simulation of the users VHDL code. If the simulation timeout is hit then the simulation process is killed.
+\item {\bf attach\_wave\_file:} If set to `1' then the wavefile of the simulation will be attached in case the simulation of the users code was not successful.
+\end{itemize}
+
+
+

@@ -17,3 +17,13 @@ def index():
     returnDict={}
     returnDict.update(__entries())
     return returnDict
+
+def delete():
+    TaskNr= request.vars['TaskNr']
+    UserId= request.vars['UserId']
+    if semester( (UserTasks.TaskNr==TaskNr) & (UserTasks.UserId==UserId) ).delete():
+        msg='Deletion of UserTask with UserId/TaskNr'+UserId+'/'+TaskNr+' succeded' 
+    else:
+        msg='Deletion of UserTask with UserId/TaskNr'+UserId+'/'+TaskNr+' failed'
+    redirect(URL('index'))
+    

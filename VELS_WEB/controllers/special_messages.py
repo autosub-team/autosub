@@ -1,12 +1,14 @@
-val={   'WELCOME'    :[IS_NOT_EMPTY()],
-        'USAGE'      :[IS_NOT_EMPTY()],
-        'QUESTION'   :[IS_NOT_EMPTY()],
-        'INVALID'    :[IS_NOT_EMPTY()],
-        'CONGRATS'   :[IS_NOT_EMPTY()],
-        'REGOVER'    :[IS_NOT_EMPTY()],
-        'NOTALLOWED' :[IS_NOT_EMPTY()],
-        'CURLAST'    :[IS_NOT_EMPTY()],
-        'DEADTASK'   :[IS_NOT_EMPTY()]}
+val={   'WELCOME'           :[IS_NOT_EMPTY()],
+        'USAGE'             :[IS_NOT_EMPTY()],
+        'QUESTION'          :[IS_NOT_EMPTY()],
+        'INVALID'           :[IS_NOT_EMPTY()],
+        'CONGRATS'          :[IS_NOT_EMPTY()],
+        'REGOVER'           :[IS_NOT_EMPTY()],
+        'NOTALLOWED'        :[IS_NOT_EMPTY()],
+        'CURLAST'           :[IS_NOT_EMPTY()],
+        'DEADTASK'          :[IS_NOT_EMPTY()],
+        'SKIPNOTPOSSIBLE'   :[IS_NOT_EMPTY()],
+        'TASKNOTSUBMITTABLE':[IS_NOT_EMPTY()]}
 
 def __entries():
     rows=course().select(SpecialMessages.ALL)
@@ -32,6 +34,8 @@ def edit():
            TR(TD("NOTALLOWED"),  TD(TEXTAREA(entries['NOTALLOWED'] ,_name='NOTALLOWED' ,_cols="80", requires=val['NOTALLOWED']))) ,\
            TR(TD("CURLAST"),     TD(TEXTAREA(entries['CURLAST']    ,_name='CURLAST'    ,_cols="80", requires=val['CURLAST']))) ,\
            TR(TD("DEADTASK"),    TD(TEXTAREA(entries['DEADTASK']   ,_name='DEADTASK'   ,_cols="80", requires=val['DEADTASK']))) ,\
+           TR(TD("SKIPNOTPOSSIBLE"),    TD(TEXTAREA(entries['SKIPNOTPOSSIBLE'] ,_name='SKIPNOTPOSSIBLE'   ,_cols="80", requires=val['SKIPNOTPOSSIBLE']))) ,\
+           TR(TD("TASKNOTSUBMITTABLE"), TD(TEXTAREA(entries['TASKNOTSUBMITTABLE'],_name='TASKNOTSUBMITTABLE'   ,_cols="80", requires=val['TASKNOTSUBMITTABLE']))) ,\
            TR(TD(INPUT(_type='submit',_label='Save'),_colspan=2))
 
     form= FORM(inputs)
@@ -46,6 +50,8 @@ def edit():
         course(SpecialMessages.EventName =='NOTALLOWED').update(EventText=form.vars.NOTALLOWED)
         course(SpecialMessages.EventName =='CURLAST').update(EventText=form.vars.CURLAST)
         course(SpecialMessages.EventName =='DEADTASK').update(EventText=form.vars.DEADTASK)
+        course(SpecialMessages.EventName =='SKIPNOTPOSSIBLE').update(EventText=form.vars.SKIPNOTPOSSIBLE)
+        course(SpecialMessages.EventName =='TASKNOTSUBMITTABLE').update(EventText=form.vars.TASKNOTSUBMITTABLE)
         redirect(URL('index'))
 
     returnDict.update({'form':form})

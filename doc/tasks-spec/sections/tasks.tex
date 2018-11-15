@@ -1,0 +1,536 @@
+\section{Truth Table} \label{truthtable}
+    \begin{tabular}{|p{2cm}|p{11cm}|}
+        \hline
+        Overview & The student has to program the behavior of an entity which behaves according to a given
+        truth table. The student learns how computations on inputs can be done and and the proper output
+        can be set.
+        \\
+        \hline
+        Description & The student receives pdf file with a truth table for 4 inputs and 1 output.
+        It is noted that the task can be solved via look up table or prior simplification via KV
+		(Karnaugh Veith)
+        algorithm. The student receives a vhdl file with the entity declaration, which should
+        not be changed and a vhdl file with for the student's behavioral implementation.
+        \\
+        \hline
+        Creation & In a 4 input system the truth table is composed of $N=2^4$ rows. Therefore
+        $2^N=2^{16}=65536$ possible truth tables can be created. In order to allow  KV optimizations
+        as a DNF(Disjunctive Normal Form) the truth table is generated and then checked if optimization
+		is possible using the Quine–McCluskey algorithm.
+        \\
+        \hline
+        Submission & The student has to submit his behavioral implementation vhdl file.
+        \\
+        \hline
+        Testing & A testbench tests the students entity with all 16 possible input combinations and compares
+        them to the given truth table via a lookup table.
+        \\
+        \hline
+        Feedback & If the syntax analysis returned errors, they are sent to the student. If one of the
+        tests results in a wrong result, the chosen operands and the proper result is sent to the student.
+        The student is informed if his solution was proper or not.
+        \\
+        \hline
+    \end{tabular}
+
+
+\section{Gates} \label{basicgates}
+    \begin{tabular}{|p{2cm}|p{11cm}|}
+        \hline
+        Overview & The student has to program the behavior of an entity which behaves according to a given
+        gate network. The student learns how to use predefined components and connect them.
+        \\
+        \hline
+        Description & The student receives a pdf file with a gate network as a picture. It is noted that the
+        tasks should be solved using IEEE 1164 gates. The student receives a vhdl file
+        with the entity declaration, which should not be changed and a vhdl file with for the behavioral
+        implementation. The to be used IEEE 1164 gates are supplied in the form of the following files: a
+        file for the entities, a file for the behavior and a package file.
+        \\
+        \hline
+         Creation & The randomly generated gate network has the following properties:
+         \begin{itemize}
+             \item 2 level depth
+             \item maximum of 4 gates per level
+             \item 4 inputs, 1 output
+             \item gate types: AND, NAND, OR, NOR, XOR, XNOR
+             \item every input can be negated
+        \end{itemize}
+        The generated network is converted to a pdf file using \LaTeX.
+        \\
+        \hline
+        Submission & The student has to submit his behavioral implementation vhdl file.
+        \\
+        \hline
+        Testing & A testbench tests the students entity with all 16 possible input combinations
+        and compares the output them to server side calculated proper values.
+        \\
+        \hline
+        Feedback & If the syntax analysis returned errors, they are sent to the student. If one of the
+        tests results in a wrong result, the chosen operands and the proper result is sent to the student.
+        The student is informed if his solution was proper or not.
+        \\
+        \hline
+    \end{tabular}
+
+
+\section{PWM(Pulse-Width Modulation) Generator}\label{pwmgenerator}
+    \begin{tabular}{|p{2cm}|p{11cm}|}
+        \hline
+        Overview &  The student has to program the behavior of an entity which produces a PWM
+        signal with a given output frequency and a given duty cycle. The output PWM signal shall
+        be generated with the help of a given input clock signal at 50 MHz. The student
+        learns how to handle clock signals for output signal generation.
+        \\
+        \hline
+        Description & The student receives information about what PWM is, the frequency of the input
+        clock (50 MHz), the frequency of the desired PWM output signal and the desired duty cycle.
+        The student receives a vhdl file with the entity declaration, which should not be changed
+        and a vhdl file with for the behavioral implementation. The student is informed that the
+                use of the keywords 'after' and 'wait' is prohibited for this task.
+        \\
+        \hline
+        Creation & Both the output frequency and duty cycle are randomly generated. The input clock is fixed
+        at 50 MHz.
+        \\
+        \hline
+        Submission & The student has to submit his behavioral implementation vhdl file.
+        \\
+        \hline
+        Testing & A test bench feeds the student's entity with the specified input frequency, tries to
+        calculate a frequency and a duty cycle of the output signal and compares it to the specified
+        frequency and duty cycle. Students' entities which use the keywords 'after' and 'wait' are rejected.
+        \\
+        \hline
+        Feedback & If the syntax analysis returned errors, they are sent to the student. The students'
+        PWM signal is tested for the specified frequency and duty cycle. If the solution is not proper,
+        the student is informed of the measured values and receives a gtkwave file containing his output
+        signal. If no continuous signal is detectable, the student is told so and also receives the
+        gtkwave file. The student is informed if his solution was proper or not.
+        \\
+        \hline
+    \end{tabular}
+
+
+\section{Arithmetic}\label{arithmetic}
+    \begin{tabular}{|p{2cm}|p{11cm}|}
+        \hline
+        Overview & The student has to program the behavior of an entity which acts as an adder or subtracter
+        for 2 operands of a given bit width and a given number representation. The student learns how simple
+        add and subtract operations can be implemented in hardware via vhdl
+        \\
+        \hline
+        Description & The student receives which type of operation for which operand bit length and number
+        representation has to be implemented. The appropriate flags (carry, overflow) for the given
+        operation are described. The student receives a vhdl file with the entity declaration,
+        which should not be changed and a vhdl file the behavioral implementation.
+        \\
+        \hline
+        Creation & The operation, the bit width of the 2 operands and number representation is randomly
+        chosen from the following choices:
+        \begin{itemize}
+            \item addition or subtraction
+            \item two's complement or unsigned
+            \item both operands have the same length between 4 and 16 bit
+        \end{itemize}
+        The appropriate flags are included as outputs of the predefined entity.
+        \\
+        \hline
+        Submission & The student has to submit his behavioral implementation vhdl file.
+        \\
+        \hline
+        Testing & A test bench tests the student's entity with random operands. All error
+        cases (overflow, carry) are at least tested once.
+        \\
+        \hline
+        Feedback & If the syntax analysis returned errors, they are sent to the student. If one of the
+        tests results in a wrong result or the appropriate flags were not set, the chosen operands
+        and the proper result including flags is sent to the student. The student is informed if
+        his solution was proper or not.
+        \\
+        \hline
+    \end{tabular}
+
+
+\section{FSM(Finite State Machine) Mealy/Moore}\label{finitestatemachine}
+    \begin{tabular}{|p{2cm}|p{11cm}|}
+        \hline
+        Overview & The student has to program the behavior of an entity which acts as a Mealy/Moore Finite
+        State Machine according to a given state diagram. The student learns how a simple Mealy/Moore Finite
+        State Machine can be implemented with vhdl using synchronous design principles.
+        \\
+        \hline
+        Description & The student receives information about Finite State Machines and synchronous
+        design and a pdf file with a picture of a state diagram. It is noted that the whole design should be
+        programmed according to synchronous design. The student receives a vhdl file with the
+        entity declaration, which should not be changed and a vhdl file with the states predefined
+        for the behavioral implementation.
+        \\
+        \hline
+        Creation &  The randomly generated state diagram has the following properties:
+        \begin{itemize}
+            \item 5 states
+            \item 2 input bits, 2 output bits
+        \end{itemize}
+        For testing the state the state machine is in is also a entity output. The generated state diagram
+        is converted to a pdf file via \LaTeX.
+        \\
+        \hline
+        Submission & The student has to submit his behavioral implementation vhdl file.
+        \\
+        \hline
+        Testing & A test bench feeds the student's entity with inputs and checks both output and state
+        transitions. The state machine is tested extensively to achieve 100\% test coverage.
+        \\
+        \hline
+        Feedback & If the syntax analysis returned errors, they are sent to the student. If the end
+        state was not reached the student receives information about the last valid state and the next
+        expected state. The student is informed if his solution was proper or not.
+        \\
+        \hline
+    \end{tabular}
+
+
+\section{CRC(Cyclic Redundancy Check Generator)}\label{crcgenerator}
+    \begin{tabular}{|p{2cm}|p{11cm}|}
+        \hline
+        Overview & The student has to program the behavior of an entity which generates the CRC for data
+        of a given bit width with a given generator polynomial. The student learns how shift register can be
+        used for calculations.
+        \\
+        \hline
+        Description & The student receives an explanation about CRC a bit width, a generator
+        polynomial and an example input and result. It is noted that shift registers should
+        be used for implementation. The student receives a vhdl file with the entity declaration,
+        which should not be changed and a vhdl file the behavioral implementation.
+        \\
+        \hline
+        Creation & The generator polynom and the message bit length is randomly generated. The message
+        bit length is chosen between 12 and 24 bit, the generator polynomial degree is chosen between 5
+        and 11. It is assured that the degree of the generator polynomial is smaller than the message
+        bit length.
+        \\
+        \hline
+        Submission & The student has to submit his behavioral implementation vhdl file.
+        \\
+        \hline
+        Testing & A test bench feeds the student's entity sequentially with multiple data words and checks the
+        resulting CRC values.
+        \\
+        \hline
+        Feedback & If the syntax analysis returned errors, they are sent to the student. If one of the
+        tests results in a wrong CRC value, the chosen data, the wrong CRC and the proper
+        solution are sent to the student. The student is informed if his solution was proper or not.
+        \\
+        \hline
+    \end{tabular}
+
+
+\section{ALU} \label{alu}
+    \begin{tabular}{|p{2cm}|p{11cm}|}
+        \hline
+        Overview & The student has to implement the behavior of ALU based on the instructions which are randomly chosen.
+        The student learns how to prepare VHDL pre-defined components and also learns how to use inputs and outputs.
+        \\
+        \hline
+        Description & The student receives a PDF file which describes the instructions and the chosen flag for each one.
+        She has to write the code in a VHDL file with the entity declaration, and she should not change it.
+        \\
+        \hline
+        Creation & Tasks are parametrized by the following parameters:
+		\begin{itemize}
+			\item 4 instructions out of \{ADD, SUB, AND, OR, XOR, Shift Left (SHL), Shift Right (SHR), Rotate Left (ROL), Rotate Right (ROR), comparator\}
+			\begin{itemize}
+				\item One instruction among ADD and SUB
+				\item Two instructions among AND, OR and XOR and comparator
+				\item One instruction among SHL, SHR, ROL and ROR
+			\end{itemize}
+			\item One flag out of \{overflow, zero, sign, carry, odd parity\}
+			\begin{itemize}
+				\item one flag out of \{overflow, zero, sign, carry\} for ADD or SUB
+				\item one flag out of \{zero, sign, odd parity\} for AND, OR or XOR
+				\item the flag is updated for SHL, SHR, ROL, ROR and comparator during the operation
+			\end{itemize}
+			\item Rising or falling edge for the clock signal
+		\end{itemize}
+	The length of data is 4 bits for all students.
+        \\
+        \hline
+        Submission & The student has to submit her behavioral implementation VHDL file.
+        \\
+        \hline
+        Testing & A test-bench is generated based on generated parameters. The correct output is generated by Python and is
+        added to the VHDL test bench. Each instruction is checked, and the result from the student's code is compared with
+        the correct result. Then, clock and enable signals are checked to work properly.
+        \\
+        \hline
+    \end{tabular}
+    \begin{tabular}{|p{2cm}|p{11cm}|}
+        \hline
+        Feedback & Student's code is analyzed to see if there is any syntax error. The error is sent to the student by email.
+        It is also simulated to be checked if it works properly. For each instruction, the first wrong error is reported: the wrong
+        and expected output and correspondent input is sent to the student. It is said the problem may be due to the incorret
+        implementation or incorrectly using the signals and variables. Then, the student is notified if there is an error in
+        using the clock signal. Finally, she receives an email if there is an error in using the enable signal.
+        \\
+        \hline
+    \end{tabular}
+
+\section{ROM} \label{rom}
+    \begin{tabular}{|p{2cm}|p{11cm}|}
+        \hline
+        Overview & The student learns how to define arrays and allocate a value to each component of that array.
+        He also learns to define the length of inputs.
+        \\
+        \hline
+        Description & The student receives a PDF file with a specification of the ROM. He also receives a VHDL code in which he should
+        implement the behavior of ROM. He also fills the ROM with the values which are randomly generated. He should be careful not to
+        change the input and output deceleration and not to add unnecessary letters or space.
+
+		ROM needs to be filled with the specified data. A specific amount of ROM size is filled with randomly generated data in a binary representation.
+		The student should write them in his code as the data existing in the ROM. The rest of location is filled with zero in a binary format.
+        \\
+        \hline
+        Creation & ROM has the following randomly generated parameters:
+		\begin{itemize}
+			\item Clock cycle: falling or rising edge
+			\item Length of address (between 8 to 16 bits)
+			\item Length of instruction (between 8 to 16 bits)
+			\item Number of data existing in the ROM (between 12 to 20 bits)
+			\item Start location of existing instructions (between 50 to 200)
+			\item Instructions which exist in the ROM are different from one student to another
+		\end{itemize}
+        \\
+        \hline
+        Submission & The student has to submit his behavioral implementation VHDL file.
+        \\
+        \hline
+        Testing & A test bench is generated based on the parameters which have been chosen for the student. First, the content of each address
+        is checked in the test-bench randomly to see whether the student correctly filled the ROM with the specified data or not. Then, the clock
+        cycle and enable signals are checked to work correctly.
+        \\
+        \hline
+        Feedback & If the syntax analysis returns errors, they are sent to the student. If the VHDL simulation does not work properly, the wrong
+        and expected outputs and correspondent inputs are sent to the student. If the clock signal is defined wrong, it is notified to him.
+        \\
+        \hline
+    \end{tabular}
+
+
+\section{RAM} \label{ram}
+    \begin{tabular}{|p{2cm}|p{11cm}|}
+        \hline
+        Overview & The student has to program a RAM with a specified size, length of instruction and address and also the number of reading and
+        writing operations at the same time.
+        \\
+        \hline
+        Description & The RAM has two address lines, one or two input data, and one or two output data lines and also read/write enables.
+        The ports of the RAM are provided in VHDL code. Based on the number of reading and writing actions, there are four states, one of
+        which is randomly selected for the student. The chosen state has a few behaviors. The student should implement the RAM based on these behaviors.
+        \\
+        \hline
+        Creation & Parameters:
+		\begin{itemize}
+			\item Length of each memory cell (an even number between 8 to 20)
+			\item Length of address (6 to 12-bit length)
+			\item Number of reading and writing actions:
+			\begin{itemize}
+				\item one reading and two writing operations
+				\item two reading and one writing operations
+				\item two reading and two writing operations
+				\item one reading and one writing operations at the same time (even to the same address)
+			\end{itemize}
+			\item Length of input: word or double word
+			\item Length of output: word or double word
+		\end{itemize}
+		The result should be produced on the rising edge of the clock signal for all students.
+        \\
+        \hline
+        Submission & The student has to submit his behavioral implementation VHDL file.
+        \\
+        \hline
+        Testing & Four test benches are provided based on those four states. In other words, each test bench is specific to the number of reading
+        and writing operations. 16 cells of the memory are randomly selected during the test bench generation, and two sets of 16 data are also
+        randomly generated. Then, the related test bench is generated. The test bench first checks the writing process for each address in RAM and
+        then reading process for each address. The tech bech inclues several parts to test each behavior specified in the description file.
+        \\
+        \hline
+    \end{tabular}
+    \begin{tabular}{|p{2cm}|p{11cm}|}
+        \hline
+        Feedback & If the syntax analysis returns errors, they are sent to the student. If the written value cannot be fetched in a reading operation,
+        an error message is sent to the student which tells him that there is an error in writing or reading operation to a specific location. If two
+        reading or two writing processes to different addresses is specified for the student, the result of testing it is sent to the student as well.
+        The result of testing other specifications like ‘double-word’ also is sent.
+        \\
+        \hline
+    \end{tabular}
+
+\newpage
+
+\section{SC\_CU(Single Cycle Control Unit)} \label{SC_CU}
+    \begin{tabular}{|p{2cm}|p{11cm}|}
+        \hline
+        Overview & The student has to program the behavior of an entity which shall function as a control unit for a single cycle CPU. The student learns how the inner parts of a single cycle CPU work together.
+        \\
+        \hline
+        Description & The student receives a pdf file with the datapath visualization for the given single cycle CPU. In the pdf file the student is informed which instructions shall be implemented and if necessary how the ALU is controlled. The student receives a vhdl file with the entity declaration, which should not be changed and a vhdl file for the behavioral implementation.
+        \\
+        \hline
+        Creation & Four instructions are chosen from a pool of 12 instructions (12 choose 4 = 495). The instructions consist of:
+        \begin{itemize}
+            \item Seven R-type instructions: add, sub, AND, OR, XOR, NOR, slt.
+            \item Four I-type instructions: lw, sw, beq, bne.
+            \item One J-type instruction: j - jump to an address.
+        \end{itemize}
+        \\
+        \hline
+        Submission & The student has to submit his behavioral implementation vhdl file.
+        \\
+        \hline
+        Testing & A test bench tests the student's entity with the chosen instructions. Conditional instructions (beq, bne) are tested for all conditions.
+        \\
+        \hline
+        Feedback & If the syntax analysis returned errors, they are sent to the student. If the student's control signals for an instruction do not achieve what is asked for, then the name of the instruction is sent to the student. The student is informed if his solution was proper or not.
+        \\
+        \hline
+    \end{tabular}
+
+\section{Register File} \label{register_file}
+    \begin{tabular}{|p{2cm}|p{11cm}|}
+        \hline
+        Overview & The student has to program the behavior of an entity which acts as a register file with one special register. The special register acts as a status register and therefore bits can be accessed separately. The student learns how to use arrays of std\verb!_!logic\verb!_!vectors and he has to understand signal delay to handle simultaneous read and write situations.
+        \\
+        \hline
+        Description & The student receives a pdf with a memory map diagram of the register file he should implement. The bit length and number of the registers is specified in the pdf and whether in a simultaneous read and write situation the input data shall be passed through immediately or at the next rising edge of the input CLK signal. The student receives a vhdl file with the entity declaration, which should not be changed and a vhdl file for the behavioral implementation.
+        \\
+        \hline
+        Creation & The width of the registers is chosen from 8, 16 and 32 bit. The number of registers is chosen within the range of 4 to 8 registers. The size of the special register is selected from within 4 to 8 bits. The handling of simultaneous read and write situations in the special register and the remaining registers is chosen separately between immediately bypassing the input value or at the next rising edge of the input CLK signal.
+        \\
+        \hline
+        Submission & The student has to submit his behavioral implementation vhdl file.
+        \\
+        \hline
+        Testing & A test bench writes unique bit strings to the register file while write access is enabled and while write access is disabled and while performing a simultaneous read from the same register and another final read from all registers to check if the data is persistent.
+        \\
+        \hline
+        Feedback & If the syntax analysis returned errors, they are sent to the student. If the solution is not proper, the student is informed whether data did not match, was written although write was not enabled, simultaneous read and write was not handled correctly or the data was not persistent. The student is informed if his solution is proper or not.
+        \\
+        \hline
+    \end{tabular}
+
+
+\section{Timing Demo} \label{timingDemo}
+    \begin{tabular}{|p{2cm}|p{13cm}|}
+        \hline
+        Overview & The student learns and analyses the timing behavior of signals in hardware programme. He or she has to implement the behavior of signals according to a provided waveform. Understanding difference from signals delay and variable assigned is the aim of this task.
+        \\
+        \hline
+        Description & The student receives a pdf which breaks into an example demo  and the task description. The timing example gives an instruction and an thorough knowledge of timing analysis in hardware programme using ModelSIM simulator. On the other hand, the second section "Timing Demo Task" gives a simulated waveform diagram of 4 signals output,N ,O ,P and E, up to 300 ns approximately. The constraints for the signals, the assignment of a variable and how two processes are triggered are specified in the pdf. The pupil also receives a vhdl file for example, a vhdl file with the entity declaration, which should not be changed and a vhdl file for the behavioral implementation.
+        \\
+        \hline
+        Creation & The assigned values of variable and signal N are randomly chosen between 20 to 110 in integer so are the delay timing for signal O, E, and P. The coefficient numbers for O, E, and P signal assigned are generated randomly between 1 to 3. The signals and variable has the following relation.
+        \begin{description}
+		\item A := A + value\_a
+		\item N \textless= N + value\_n
+		\item O \textless= c1 * A + c2 * N after delay\_o
+		\item P \textless= c3 * A - c4 * N after delay\_p
+		\item E \textless= c5 * O + c6 * E after delay\_e
+		\end{description}
+        ,where A is the variable and c1~c6 are the coefficients.
+        \\&
+        Only value\_a is given and the rest of the values has to be decided based on the waveform by the student. The generated signal waveform is converted to a pdf file via \LaTeX
+        \\
+        \hline
+        Submission & The student has to submit his behavioral implementation vhdl file.
+        \\
+        \hline
+        Testing & A test bench writes only for a checker based on the timing of given output diagram. No inputs needed.
+        \\
+        \hline
+        Feedback & If the syntax analysis returned errors, they are sent to the student. If the value of the simulated outputs is not correct at the specified timimg delay, the student receives an feedback with the expected values for 4 signals and the shown values from his/her behavioral vhdl file at the simulated time. The checker checks the design up to 400 ns. The student is informed if his/her solution is proper or not.
+        \\
+        \hline
+    \end{tabular}
+
+\section{Blockcode}
+    \begin{tabular}{|p{2cm}|p{13cm}|}
+        \hline
+        Overview & The student has to program the behavior of an entity which acts as an intermediate unit between a
+			data source and a sink. The job of this intermediate unit is to convert given datawords to codewords using
+			(n,k) blockcode encoding.
+
+			The student learns to program an entity that follows given communication constraints (synchronous,
+			possible backpressure).
+        \\
+        \hline
+        Description & The student is given an description of the communication system concerning transmission and
+			encoding. Additionally a example waveform view of a few communication cycles is given as diagram with
+			description for each cycle.
+        \\
+        \hline
+        Creation & The encoding is parameterized with the following parameters:
+			\begin{itemize}
+				\item dataword length k: between 5 and 7
+				\item codelength n: between 3 and 8 (depending on k)
+				\item random (n-k) chosen parity vectors, with at least 2 entries
+			\end{itemize}
+		\\
+        \hline
+        Submission & The student has to submit his behavioral implementation vhdl file.
+        \\
+        \hline
+        Testing & A testbench feeds the student's entity with simulated communication from a data source and checks
+			the outgoing communication in respect to right encoding and given timing constraints. Every testing also
+			tests if the student implemented the due backpressure needed FIFO by: a) filling the FIFO fully and b) fully
+			emptying the FIFO.
+        \\
+        \hline
+        Feedback & If the syntax analysis returned errors, they are sent to the student. If the behavior is wrong, the
+			student gets information about the cycle at which the behavior did not fit, expected outgoing communication
+			and received outgoing communication. Additionally the student gets the signal wave file produced by the
+			simulator to help him debug.
+        \\
+        \hline
+    \end{tabular}
+
+\section{Cache} \label{cache}
+    \begin{tabular}{|p{2cm}|p{11cm}|}
+        \hline
+        Overview & The student has to implement the reading unit of a direct mapped cache. This task relates to the lecture 'Microcomputer' at 'TU Wien' where basic knowledge about cache is taught. The student needs to understand the concept of a direct mapped cache and learns how to handle arrays of std\_logic\_vectors and how to address parts of an std\_logic\_vector.
+        \\
+        \hline
+        Description & The student receives a PDF file with a specification of the cache. First a sketch and a provided text explane the basic concept of a direct mapped cache and a cache hit or cache miss. This is followed by a detailed list of requirements, which the student should programm in the caches architecture. As the student should only programm the reading unit, a random cache content is also provided in the description.
+\newline
+The main focus of this task lies on the correct handling of the address input. Depending on the given bit widths and cache size the student has to split the address into two parts, one representing the cache index and the other the stored tag.
+
+       \\
+        \hline
+        Creation & Cache has the following randomly generated parameters:
+		\begin{itemize}
+			\item Clock cycle: falling or rising edge
+                        \item Cache size: Number of stored data entries in the cache (between 5 to 32 entries)
+                        \item Data length: Length of stored data entries (between 4 to 8 bits)
+			\item Tag length: Length of the stored tags in the cache (between 3 to 6 bits)
+			\item Address length: This can be calculated from cache size and tag length (between 6 to 11 bits)
+			\item Cache content: Random cache data and tags are generated from a random key which is individually created
+		\end{itemize}
+        \\
+        \hline
+        Submission & The student has to submit his behavioral implementation VHDL file.
+        \\
+        \hline
+    \end{tabular}
+
+    \begin{tabular}{|p{2cm}|p{11cm}|}
+	\hline
+        Testing & A testbench is generated based on the parameters which have been chosen for the student. The testbench starts by applying a correct address with a cache hit and checks, if the cache outputs the correct data and the correct flag. Then the cache is disabled and it is checked, if the outputs stay disabled while different cach hit addresses are applied. Next the cache is enabled, a cache hit address is applied and the correct behaviour is checked. Finally all possible addresses ($2^{n}$... n = length of address) are applied and for each address the correct behaviour is checked (If address is a cache hit, the cache must output the correct data and correct flag, otherwise the cache shall set the data output to high impedance and flag to zero). During all these tests it is always checked, if the outputs do not change before the next working edge (either rising or falling, depending on the chosen parameters).
+        \\
+        \hline
+        Feedback & If the syntax analysis returns errors, they are sent to the student. If the VHDL simulation does not work properly, the wrong
+        and expected outputs and corresponding inputs are sent to the student. If the clock signal is defined wrong, the student is also notified.
+        \\
+        \hline
+    \end{tabular}
+
+

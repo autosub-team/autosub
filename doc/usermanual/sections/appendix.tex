@@ -1,0 +1,383 @@
+\section{Appendix} \label{appendix}
+
+\subsection{Config file fields} \label{app:config}
+The configuration file can include the following groups and fields. Bold fields
+are mandatory, all other fields can be ommited. Default paths are in respect to
+the {\tt autosub/src} directory, if you set paths explicitely they have to be absolute.
+
+{\bf [imapserver]}\\
+\begin{tabular}{|p{2.5cm}|p{8cm}|p{2.5cm}|}
+\hline
+{\bf Field} & {\bf Description} & {\bf Default}\\
+\hline
+\hline
+\textbf{servername} & Hostname.domain of the IMAP server. & ~\\
+\hline
+\textbf{username} & Username to be used to login. & ~ \\
+\hline
+\textbf{password} & Password to be used to login. & ~ \\
+\hline
+\textbf{email} & E-Mail address to be used at the IMAP server. & ~ \\
+\hline
+security & Security protocol to be used when connecting.
+    Possible values: none ssl starttls & ssl \\
+\hline
+serverport & Port to be used. & ssl:993 else:143\\
+\hline
+\end{tabular}
+
+
+{\bf [smtpserver]}\\
+\begin{tabular}{|p{2.5cm}|p{8cm}|p{2.5cm}|}
+\hline
+{\bf Field} & {\bf Description} & {\bf Default}\\
+\hline
+\hline
+\textbf{servername} & Hostname.domain of the SMTP server. & ~ \\
+\hline
+\textbf{username }& Username to be used to login. & ~ \\
+\hline
+\textbf{password} & Password to be used to login. & ~ \\
+\hline
+\textbf{email} & E-Mail address to be used at the SMTP server. & ~ \\
+\hline
+security & Security protocol to be used when connecting.
+    Possible values: none ssl starttls & starttls\\
+\hline
+serverport & Port to be used. & ssl:465 starttls:587 none:25 \\
+\hline
+\end{tabular}
+
+{\bf [system]}\\
+\begin{tabular}{|p{2.5cm}|p{8cm}|p{2.5cm}|}
+\hline
+{\bf Field} & {\bf Description} & {\bf Default}\\
+\hline
+\hline
+\textbf{num\_workers} & Number of Worker threads. This influences how many tests can conducted
+    in parallel. & ~ \\
+\hline
+\textbf{queue\_size} & Size of the thread communication queues. & ~\\
+\hline
+poll\_period & Period in seconds at which the mailbox is checked for new E-Mails from students. & 60\\
+\hline
+semesterdb & The name and path of the semester database. & semester.db\\
+\hline
+coursedb &  The name and path of the course database. & course.db\\
+\hline
+log\_dir & Directory to put tasks and autosub log files. & logs  \\
+\hline
+\end{tabular}
+\begin{tabular}{|p{2.5cm}|p{8cm}|p{2.5cm}|}
+\hline
+log\_threshhold & Threshhold from which level up log entries should be logged.
+    Possible values: DEBUG INFO WARNING ERROR & INFO\\
+\hline
+\end{tabular}
+
+{\bf [course]}\\
+\begin{tabular}{|p{2.5cm}|p{8cm}|p{2.5cm}|}
+\hline
+{\bf Field} & {\bf Description} & {\bf Default}\\
+\hline
+\hline
+specialmsgs\_dir & Directory for messages that are sent to users on special events. &
+    SpecialMessages \\
+\hline
+\textbf{tasks\_dir} & Directory of the task implementations. & ~ \\
+\hline
+course\_name & The name of the course. & No name set \\
+\hline
+mode & The mode in which to run. Possible values: exam normal & normal \\
+\hline
+allow\_requests & Decides if the system runs in request queue mode or linear queue mode. If this is activated
+    auto\_advance is set to no. Possible values: once multiple no & no \\
+\hline
+auto\_advance & Decides if users get auto advanced to a task which is activated by its
+    TaskStart. Only possible in linear task queue mode. Possible values: yes no & no \\
+\hline
+\end{tabular}
+
+\subsection{Description of the message queues} \label{app:queues}
+
+\begin{description}
+\item [job\_queue] The job\_queue is used to trigger Worker threads to start testing
+    solutions that were received. The messages in the job\_queue are comprised of
+    the following fields:
+    \begin{itemize}
+        \item {\bf user\_id:} The unique User ID of the user who submitted this solution.
+        \item {\bf user\_email:} The E-Mail address of the user who submitted this solution.
+        \item {\bf task\_nr:} Number of the task that solution has been submitted for.
+        \item {\bf message\_id:} The unique message-id of the user E-Mail on the IMAP server,
+            which started the testing.
+    \end{itemize}
+
+\item [sender\_queue] If a thread wants to send an E-Mail to a user, the Sender thread
+    is notified via this queue. The data needed by the Sender thread is in the messages
+    in the sender\_queue. These messages consist of the following fields:
+    \begin{itemize}
+        \item {\bf user\_id:} The unique User ID of the user who shall receive this E-Mail.
+        \item {\bf recipient} E-Mail address of the recipient (the content of the
+            'To' field in the E-Mail).
+        \item {\bf message\_type} The message type is used to decide on how to format
+            the E-Mail, and whether or not additional E-Mails have to be sent out
+            (e.g. when a question is handled). Static messages that are sent to users implied by
+            the message type can be found in the directory SpecialMessages.
+            Possible values for message\_type are:
+
+            \begin{itemize}
+                \item {\tt Task} -- A task description.
+                \item {\tt Success} -- A submission for a task has been tested and returned success.
+                \item {\tt Failed} -- An error message for a failed test-run of a submission.
+                \item {\tt SecAlert} -- Scanning the code revealed that this might be an
+                    attack on the system, a message to the administrators.
+                \item {\tt TaskAlert} -- An error message to administrators for failures in task specific files.
+                \item {\tt TaskErrorNotice} -- An error message to users if a generator or tester has an error in respone to a user message.
+                \item {\tt InvalidTask} -- A submission or request for a non-existent task.
+                \item {\tt Usage} -- Message with system usage explanation for the user.
+                \item {\tt Question} -- Confirm that a question was received.
+                \item {\tt QFwd} -- Forward a question to the administrator.
+                \item {\tt Welcome} -- Welcome message to a new user.
+                \item {\tt NotAllowed} -- A user who is not on the whitelist sent a mail
+                    to the system.
+                \item {\tt TaskNotSubmittable} -- A user wants to submit to a task for which
+                    he has not received a task description yet.
+                \item {\tt TaskNotActive} -- Response to an user action concerning a task that is not active
+                    yet.
+                \item {\tt Status } -- Message containing the current status of a user in the course.
+                \item {\tt TaskList} -- List of all tasks configured in the course.
+                \item {\tt RegOver} -- Whitelisted user tries to register after registration end datetime.
+                \item {\tt NoMultipleRequest} -- User requests task he already received and course is not
+                    configured for multiple request.
+                \item {\tt CurLast} -- Message indicating all active tasks have been solved sucessfully and the
+                    next task has not started yet.
+                \item {\tt DeadTask} -- User submits to task wit deadline passed.
+
+            \end{itemize}
+
+        \item{\bf body} Body of the E-Mail that triggered the message to be sent to user/moderator/admin.
+        \item {\bf task\_nr} Number of the task that message concerns (e.g. the current
+            one if the test failed, the next one if the task description shall be sent).
+        \item {\bf message\_id:} The unique message-id of the user E-Mail on the IMAP server,
+            which triggered the message sending.
+    \end{itemize}
+
+\item [logger\_queue] Trigger the logger to write a log message about an event that happened.
+    \begin{itemize}
+        \item {\bf message:} The text that describes the event that shall be logged.
+        \item {\bf level:} The log-level of this log message; available log-levels
+            are DEBUG, INFO, WARNING and ERROR.
+        \item {\bf src:} Name of the thread that reported the event that shall be logged.
+        \item {\bf dst:} Log destination (autosub log, task message, task error).
+    \end{itemize}
+
+\item [generator\_queue] The generator\_queue is used to trigger the Generator thread
+    to generate a new (variant of) a task. That means that certain parameters of the
+    task are randomized, in order to assure that each student receives his/her very
+    own example.
+    \begin{itemize}
+        \item {\bf user\_id:} The unique UserID of the User for whom the task is generated.
+        \item {\bf user\_email:} E-Mail address of the User for whom the task is generated.
+        \item {\bf task\_nr:} Number of the task that shall be generated.
+        \item {\bf message\_id:} The unique message-id of the user E-Mail on the IMAP server,
+            which triggered the task generation.
+    \end{itemize}
+
+\item [archive\_queue] The archive\_queue is used to announce that a E-Mail has been finished
+    processing. This triggers archiving and removing task submissions from the active queue.
+    own example.
+    \begin{itemize}
+        \item {\bf message\_id:} The unique message-id of the E-Mail on the IMAP server which shall
+            be archived.
+        \item {\bf is\_finished\_job:} Flag to show that the message-id belongs to a finished
+            processed submitted task.
+    \end{itemize}
+\end{description}
+
+\newpage
+
+\subsection{Semester database semester.db} \label{app:semester.db}
+
+The database semester.db contains the following tables (and entries in those tables):
+
+\begin{tabular}{|p{3cm}|p{10cm}|}
+\hline
+Table Name & Users \\
+\hline
+Description & Used to collect all necessary information on the Students.\\
+\hline
+Table Entries & \begin{itemize}
+        \item {\bf UserId}: A unique UserID given at registration time (when the first E-Mail
+            is received from the users E-Mail address).
+        \item {\bf Name}: The name of the user as specified in the "from" field of the E-Mail.
+        \item {\bf Email}: The E-Mail address of the user as specified in the "from" field of the
+            E-Mail.
+        \item {\bf RegisteredAt}: Timestamp of the registration of the user.
+        \item {\bf LastDone}: Timestamp of the E-Mail that contained the successful solution of the
+            last task (only if this user has already finished the last task).
+        \item {\bf CurrentTask}: The task the user is currently working on.
+        \end{itemize} \\
+\hline
+\end{tabular}
+
+\begin{tabular}{|p{3cm}|p{10cm}|}
+\hline
+Table Name & TaskStats \\
+\hline
+Description & Contains one entry for each available task, collecting statistics on the individual tasks.\\
+\hline
+Table Entries & \begin{itemize}
+        \item {\bf TaskId}: Unique ID of the task.
+        \item {\bf NrSubmissions}: Number of solutions received for the task with this TaskId.
+        \item {\bf NrSuccessful}: Number of correct solutions received for the task with this TaskId.
+        \end{itemize} \\
+\hline
+\end{tabular}
+
+\begin{tabular}{|p{3cm}|p{10cm}|}
+\hline
+Table Name & TaskCounters \\
+\hline
+Description & Implements counters for certain events, examples for such events are: E-Mail received, E-Mail sent,
+question received, new user.\\
+\hline
+Table Entries & \begin{itemize}
+        \item {\bf CounterId}: Unique ID of the counter.
+        \item {\bf Name}: Name of the counter.
+        \item {\bf Value}: Value of the counter.
+        \end{itemize} \\
+\hline
+\end{tabular}
+
+\begin{tabular}{|p{3cm}|p{10cm}|}
+\hline
+Table Name & UserTasks \\
+\hline
+Description & Used to map configured tasks to users -- e.g. store the generated examples so they can be
+    fetched later on for testing.\\
+\hline
+Table Entries & \begin{itemize}
+    \item {\bf TaskNr}: Unique number of the task.
+    \item {\bf UserId}: Unique ID of the user -- the combination of TaskNr and UserId make the entry unique.
+    \item {\bf TaskParameters}: Either the parameters that describe the setting for this particular student, or a value that can be
+        used to derive the parameters from.
+    \item {\bf TaskDescription}: Message that describes the task that was specifically generated for the student.
+        and shall be sent to the student.
+    \item {\bf TaskAttachments}: List of attachments that shall be sent to the student (path+filename).
+    \item {\bf NrSubmissions}: Number of submissions the student has done for this task.
+    \item {\bf FirstSuccessful}: Number of the first successful submission.
+\end{itemize} \\
+\hline
+\end{tabular}
+
+\begin{tabular}{|p{3cm}|p{10cm}|}
+\hline
+Table Name & SuccessfulTasks \\
+\hline
+Description & Used to save the task numbers which a user has successfully completed.\\
+\hline
+Table Entries & \begin{itemize}
+    \item {\bf UserId}: ID of the user -- the combination of TaskNr and UserId make the entry unique.
+    \item {\bf TaskNr}: Number of the task. -- the combination of TaskNr and UserId make the entry unique.
+\end{itemize} \\
+\hline
+\end{tabular}
+
+
+
+\begin{tabular}{|p{3cm}|p{10cm}|}
+\hline
+Table Name & UserWhiteList \\
+\hline
+Description & A Whitelist of E-Mail addresses that shall be authorized to interact with the system.\\
+\hline
+Table Entries & \begin{itemize}
+        \item {\bf UniqueId}: Unique ID in the whitelist table.
+        \item {\bf Email}: E-mail address that shall be authorized to interact with the system.
+        \item {\bf Name}: The name the user shall be assigned instead of the value from the
+            "From" field of the registration E-Mail.
+        \end{itemize} \\
+\hline
+\end{tabular}
+
+\newpage
+
+\subsection{Course database course.db} \label{app:course.db}
+
+The database course.db contains the following tables (and entries in those tables):
+
+\begin{tabular}{|p{3cm}|p{10cm}|}
+\hline
+Table Name & TaskConfiguration \\
+\hline
+Description & Used to configure tasks, including their order, the scripts used to test
+    submissions, etc.\\
+\hline
+Table Entries & \begin{itemize}
+    \item {\bf TaskNr}: The unique number of the task -- this number is used to establish
+        the order of tasks as received by the students.
+    \item {\bf TaskStart}: Timestamp of when the task shall be available for students
+        (if any).
+    \item {\bf TaskDeadline}: The deadline until which the task has to be successfully
+        submitted (if any).
+    \item {\bf TaskName}: The name of the task folder of te task in respect to the
+    configured tasks\_directory.
+    \item {\bf GeneratorExecutable}: The executable (script, binary, etc.) used to
+        generate unique examples for each student. If this is not set, all students will
+        receive the same task.
+    \item {\bf Language}: Language code of the language in which the task discription for
+        this task should be created.
+    \item {\bf TestExecutable}: The executable (script, binary, etc.) used to test the
+        results submitted by the students.
+    \item {\bf BackendInterfaceFile}: Name of a backend interface file that offers a tester functions to control a backend.
+    \item {\bf Score:} The points the student scores by solving this task.
+    \item {\bf TaskOperator:} The E-Mail address of the course operator, who is
+        responsible for this task.
+    \end{itemize}
+
+\\
+\hline
+\end{tabular}
+
+\begin{tabular}{|p{2.5cm}|p{11cm}|}
+\hline
+Table Name & SpecialMessages \\
+\hline
+Description & A collection of texts that shall be sent, in the case special events. \\
+\hline
+Table Entries & \begin{itemize}
+    \item {\bf EventName}: Name of the event the SpecialMessage is related to. Naming is
+        uppercase of the related message\_type in the sender\_queue.
+    \item {\bf Text}: The text that shall be sent in case of the event {\bf EventName}
+        occurs.
+    \end{itemize} \\
+\hline
+\end{tabular}
+
+\begin{tabular}{|p{3cm}|p{10cm}|}
+\hline
+Table Name & GeneralConfig \\
+\hline
+Description & Store some general configuration to be accessible for the
+VELS\_WEB interface. \\
+\hline
+Table Entries & \begin{itemize}
+    \item {\bf ConfigItem}: Name of the Configuration Item.
+    \item {\bf Content}: Content of the Configuration Item.
+    \end{itemize} \\
+\hline
+\end{tabular}
+
+\subsection{Handling of concurrent testing}
+Handling of testing multiple submissions from users is handled in autosub in the following ways:
+\begin{itemize}
+\item Multiple Worker threads and seperated user tasks directories make it possible that
+    multiple task submissions can be processed at the same time.
+\item Active task submissions are put in an active queue and removed once they have been fully
+    processed and an response has been sent to the student. Active task submissions that are
+    not processed after 5 minutes are presumed dead and removed from the active queue.
+\item To prevent conflicts only one combination of user and task\_nr is allowed to be active at any
+    time. If the user submits a solution for the same task before it has been fully processed, it
+    will be put in a backlog queue. Tasks from backlog are made active once the conflicting
+    submission has been fully processed.
+\end{itemize}

@@ -1,5 +1,6 @@
 {{extend 'layout.html'}}
 <h1>Special Messages</h1>
+<b>This is the overview of different messages users can get on special events. To change them, edit the appropriate SpecialMessage file and restart your autosub daemon.</b></br></br>
 <table border="1">
 {{=TR(TD("WELCOME"),     TD(PRE(entries['WELCOME']))) }}
 {{=TR(TD("USAGE"),       TD(PRE(entries['USAGE']))) }}
@@ -10,5 +11,5 @@
 {{=TR(TD("NOTALLOWED"),  TD(PRE(entries['NOTALLOWED']))) }}
 {{=TR(TD("CURLAST"),     TD(PRE(entries['CURLAST']))) }}
 {{=TR(TD("DEADTASK"),    TD(PRE(entries['DEADTASK']))) }}
-{{=TR(TD(A('Change',_href=URL('edit')),_colspan=2))}}
+{{=TR(TD("TASKNOTSUBMITTABLE"),    TD(PRE(entries['TASKNOTSUBMITTABLE']))) }}
 </table>

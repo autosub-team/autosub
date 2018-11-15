@@ -1,7 +1,11 @@
 {{extend 'layout.html'}}
 <h1>Mass Subscription</h1>
-Add 1 email address per line
-{{pass}}
+Enter 1 address per line in format: </br>
+email;name </br> 
+or  </br>
+email </br>
+</br>
+Email addresses already in the whitelist will be ignored (no duplicate insert). 
 <table border="1">
 {{=form}}
 </table>

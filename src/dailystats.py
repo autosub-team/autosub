@@ -8,15 +8,22 @@
 # License GPL V2 or later (see http://www.gnu.org/licenses/gpl2.txt)
 ########################################################################
 
+import datetime
+import time
 import threading
+
 import matplotlib
 # Force matplotlib to not use any Xwindows backend.
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
-import datetime, time
+
 import common as c
 
 def get_statcounter_value(curst, countername):
+    """"
+    Get the current statistic number for a counter
+    """
+
     data = {'Name' : countername}
     sql_cmd = "SELECT Value FROM StatCounters WHERE Name==:Name;"
     curst.execute(sql_cmd, data)
@@ -24,12 +31,20 @@ def get_statcounter_value(curst, countername):
     return int(res[0])
 
 def insert_stat_db(curst, const, table, count):
+    """
+    Insert new statistic values
+    """
+
     data = {'Count': count, 'Now': str(datetime.datetime.now())}
     sql_cmd = "INSERT INTO {0} (TimeStamp, value) VALUES(:Now, :Count);".format(table)
     curst.execute(sql_cmd, data)
     const.commit()
 
 def plot_stat_graph(curst, tablename, filename):
+    """
+    Plot a statistical number over time as picture
+    """
+
     sql_cmd = "SELECT TimeStamp FROM {0};".format(tablename)
     curst.execute(sql_cmd)
     list_of_datetimes = curst.fetchall()
@@ -49,20 +64,31 @@ def plot_stat_graph(curst, tablename, filename):
     plt.clf()
 
 class DailystatsTask(threading.Thread):
+    """
+    Thread to generate statistic pictures from the statistical counters.
+    """
+
     def __init__(self, name, logger_queue, semesterdb):
+        """
+        Constructor for the thread.
+        """
+
         threading.Thread.__init__(self)
         self.logger_queue = logger_queue
         self.name = name
         self.semesterdb = semesterdb
 
-####
-# check_and_create_table():
-#
-# check if table exists and create if it does not exist
-####
+    ####
+    # check_and_create_table
+    ####
     def check_and_create_table(self, cur, tablename):
+        """
+        Check if table exists and create if it does not exist
+        """
+
         data = {'Table': tablename}
-        sql_cmd = "SELECT name FROM sqlite_master WHERE type == 'table' AND name == :Table;"
+        sql_cmd = ("SELECT name FROM sqlite_master "
+                   "WHERE type == 'table' AND name == :Table")
         cur.execute(sql_cmd, data)
         res = cur.fetchall()
         if res:
@@ -74,9 +100,14 @@ class DailystatsTask(threading.Thread):
             sql_cmd = "CREATE TABLE {0} (TimeStamp STRING PRIMARY KEY, value INT)".format(tablename)
             cur.execute(sql_cmd)
 
+    ####
+    # run
+    ####
     def run(self):
+        """
+        Thread code for the dailystats thread.
+        """
         while True:
-            #connect to sqlite database ...
             curs, cons = c.connect_to_db(self.semesterdb, self.logger_queue, \
                                          self.name)
 
@@ -121,5 +152,4 @@ class DailystatsTask(threading.Thread):
             cons.close()
             const.close()
 
-            #time.sleep(3600*12) #updating the images every 12h is enough
-            time.sleep(360) #updating the images every 12h is enough
+            time.sleep(3600*12) #updating the images every 12h is enough

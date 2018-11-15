@@ -15,12 +15,82 @@ format_string = '%Y-%m-%d %H:%M:%S'
 ####
 # log_a_msg
 ####
-def log_a_msg(lqueue, lname, msg, loglevel):
+def log_a_msg(lqueue, lname, message, level):
     """
     Put a message with a loglevel in a logqueue.
     """
 
-    lqueue.put(dict({"msg": msg, "type": loglevel, "loggername": lname}))
+    lqueue.put(dict({"message": message, "level": level,\
+                     "src": lname, "dst": "autosub"}))
+
+####
+# log_task_msg
+####
+def log_task_msg(lqueue, lname, message, level):
+    """
+    Put a task message with a loglevel in a logqueue.
+    """
+
+    lqueue.put(dict({"message": message, "level": level,\
+                     "src": lname, "dst": "task_msg"}))
+
+####
+# log_task_error
+####
+def log_task_error(lqueue, lname, message, level):
+    """
+    Put a task error message with a loglevel in a logqueue.
+    """
+
+    lqueue.put(dict({"message": message, "level": level,\
+                     "src": lname, "dst": "task_error"}))
+
+####
+# archive_message
+####
+def archive_message(archive_queue, message_id, is_finished_job=False):
+    """
+    trigger archivation of an e-mail
+    """
+
+    archive_queue.put(dict({"message_id": message_id, "is_finished_job": is_finished_job}))
+
+####
+# send_email
+####
+def send_email(sender_queue, recipient, user_id, message_type, task_nr, body, message_id):
+    """
+    Put a message in the sender queue.
+    """
+
+    sender_queue.put(dict({"recipient": recipient, "user_id": str(user_id), \
+                    "message_type": message_type, "task_nr": str(task_nr), \
+                    "body": body, "message_id": message_id}))
+
+####
+# generate_task
+####
+def generate_task(gen_queue, user_id, task_nr, user_email, message_id):
+    """
+    Put a job in the generator queue
+    """
+
+    gen_queue.put(dict({"user_id": str(user_id), \
+                        "user_email": str(user_email), \
+                        "task_nr": str(task_nr), \
+                        "message_id": message_id}))
+####
+# dispatch_job
+###
+def dispatch_job(job_queue, user_id, task_nr, user_email, message_id):
+    """
+    Put a job in the job queue for the workers.
+    """
+
+    job_queue.put(dict({"user_id": str(user_id), \
+                        "user_email": user_email, \
+                        "task_nr": task_nr, \
+                        "message_id": message_id}))
 
 ####
 # check_dir_mkdir
@@ -37,22 +107,11 @@ def check_dir_mkdir(directory, lqueue, lname):
         logmsg = "Created directory: " + directory
         log_a_msg(lqueue, lname, logmsg, "DEBUG")
         return 1
+
     else:
         logmsg = "Directory already exists: " + directory
-        log_a_msg(lqueue, lname, logmsg, "WARNING")
+        log_a_msg(lqueue, lname, logmsg, "INFO")
         return 0
-
-####
-# send_email
-####
-def send_email(queue, recipient, userid, messagetype, tasknr, body, messageid):
-    """
-    Send Email to a user.
-    """
-
-    queue.put(dict({"recipient": recipient, "UserId": str(userid), \
-                    "message_type": messagetype, "Task": str(tasknr), \
-                    "Body": body, "MessageId": messageid}))
 
 ####
 # connect_to_db
@@ -87,8 +146,7 @@ def increment_db_statcounter(semesterdb, countername, lqueue, lname):
 
     data = {'Name': countername}
     #change to?: SET Value = Value + 1 WHERE ...
-    sql_cmd = ("UPDATE StatCounters SET Value = (SELECT Value FROM StatCounters "
-               "WHERE Name == :Name) + 1 WHERE Name == :Name")
+    sql_cmd = "UPDATE StatCounters SET Value = Value + 1 WHERE Name == :Name"
     curs.execute(sql_cmd, data)
     cons.commit()
 
@@ -108,7 +166,8 @@ def get_task_starttime(coursedb, tasknr, lqueue, lname):
 
     try:
         data = {'TaskNr': tasknr}
-        sql_cmd = "SELECT TaskStart FROM TaskConfiguration WHERE TaskNr == :TaskNr"
+        sql_cmd = ("SELECT TaskStart FROM TaskConfiguration "
+                   "WHERE TaskNr == :TaskNr")
         curc.execute(sql_cmd, data)
         tstart_string = str(curc.fetchone()[0])
         ret = datetime.datetime.strptime(tstart_string, format_string)
@@ -126,36 +185,36 @@ def get_task_deadline(coursedb, tasknr, lqueue, lname):
     """
     Get the deadline datetime of a task.
 
-    TOTHINK: Return datetime?
+    Return datetime, if not found return unixepoch start.
     """
 
-    logmsg = "Got tasknr= {0}".format(tasknr)
-    log_a_msg(lqueue, "common.py", \
-                                    logmsg, "DEBUG")
-
     curc, conc = connect_to_db(coursedb, lqueue, lname)
-
-    data = {'TaskNr': tasknr}
-    sql_cmd = "SELECT TaskDeadline FROM TaskConfiguration WHERE TaskNr == :TaskNr"
-    curc.execute(sql_cmd, data)
-    deadline_string = str(curc.fetchone()[0])
+    try:
+        data = {'TaskNr': tasknr}
+        sql_cmd = ("SELECT TaskDeadline FROM TaskConfiguration "
+                   "WHERE TaskNr == :TaskNr")
+        curc.execute(sql_cmd, data)
+        deadline_string = str(curc.fetchone()[0])
+        ret = datetime.datetime.strptime(deadline_string, format_string)
+    except:
+        ret = datetime.datetime(1970, 1, 1, 0, 0, 0)
 
     conc.close()
 
-    #format_string='%Y-%m-%d %H:%M:%S'
-    return datetime.datetime.strptime(deadline_string, format_string)
+    return ret
+
 
 ####
 # user_set_current_task
 ####
-def user_set_current_task(semesterdb, tasknr, userid, lqueue, lname):
+def user_set_current_task(semesterdb, tasknr, user_id, lqueue, lname):
     """
     Set current task number of a user.
     """
 
     curs, cons = connect_to_db(semesterdb, lqueue, lname)
 
-    data = {'TaskNr': tasknr, 'UserId': userid}
+    data = {'TaskNr': tasknr, 'UserId': user_id}
     sql_cmd = "UPDATE Users SET CurrentTask = :TaskNr WHERE UserId == :UserId"
     curs.execute(sql_cmd, data)
     cons.commit()
@@ -166,22 +225,60 @@ def user_set_current_task(semesterdb, tasknr, userid, lqueue, lname):
 ####
 # user_get_current_task
 ####
-def user_get_current_task(semesterdb, userid, lqueue, lname):
+def user_get_current_task(semesterdb, user_id, lqueue, lname):
     """
     Get current task number of a user
     """
 
     curs, cons = connect_to_db(semesterdb, lqueue, lname)
 
-    data = {'UserId': userid}
+    data = {'UserId': user_id}
     sql_cmd = "SELECT CurrentTask FROM Users WHERE UserId == :UserId"
     curs.execute(sql_cmd, data)
     res = curs.fetchone()
 
     cons.close()
 
-    return str(res[0])
+    return int(res[0])
 
+####
+# is_valid_task_nr
+####
+def is_valid_task_nr(coursedb, task_nr, lqueue, lname):
+    """
+    Check if the given task_nr is valid by looking for it's
+    database entry
+    """
+
+    curc, conc = connect_to_db(coursedb, lqueue, lname)
+    data = {'task_nr' : task_nr}
+    sql_cmd = "SELECT TaskNr FROM TaskConfiguration WHERE TaskNr = :task_nr"
+    curc.execute(sql_cmd, data)
+    res = curc.fetchone()
+    conc.close()
+
+    return res != None
+
+####
+# user_received_task
+####
+def user_received_task(semesterdb, user_id, task_nr, lqueue, lname):
+    """
+    Check if the user already received this task
+    """
+
+    curs, cons = connect_to_db(semesterdb, lqueue, lname)
+
+    data = {"user_id": user_id,
+            "task_nr": task_nr}
+    sql_cmd = ("SELECT TaskNr FROM UserTasks "
+               "WHERE TaskNr == :task_nr AND  UserId == :user_id")
+
+    curs.execute(sql_cmd, data)
+    res = curs.fetchone()
+    cons.close()
+
+    return res != None
 
 ####
 # get_num_tasks
@@ -193,7 +290,7 @@ def get_num_tasks(coursedb, lqueue, lname):
 
     curc, conc = connect_to_db(coursedb, lqueue, lname)
 
-    sql_cmd = "SELECT Content FROM GeneralConfig WHERE ConfigItem == 'num_tasks'"
+    sql_cmd = "SELECT COUNT(*) FROM TaskConfiguration"
     curc.execute(sql_cmd)
     num_tasks = int(curc.fetchone()[0])
 

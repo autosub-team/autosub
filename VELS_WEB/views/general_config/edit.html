@@ -1,5 +1,15 @@
 {{extend 'layout.html'}}
 <h1>General Configuration</h1>
+The other parameters can only be changed via the config file and restart of
+the autosub daemon.
+</br>
+</br>
 <table border="1">
 {{=form}}
 </table>
+{{=A('Back to overview', _href=URL('index'))}}
+    <script>
+	/*jslint browser:true*/
+	/*global jQuery, document*/
+	jQuery('#RegistrationDeadline').datetimepicker({format:'Y-m-d H:i'});
+    </script>

@@ -59,10 +59,10 @@
 %\renewcommand{\contentsname}{Inhalt}
 %\renewcommand{\refname}{Referenzen}
 
-%\usepackage[acronym]{glossaries}
-%\makeglossaries
-%\input{glossar.tex}
-%\renewcommand\glsgroupskip{}
+\usepackage[acronym]{glossaries}
+\makeglossaries
+\input{glossar.tex}
+\renewcommand\glsgroupskip{}
 % Title and table of contents at start of document
 
 \AtBeginDocument{
@@ -80,11 +80,16 @@
 \vfill
 
 \noindent
-{\bf Projekt:} \hfill \docproject \\
-{\bf Autor(en):} \hfill \docauthors \\
+{\bf Project:} \hfill \docproject \\
+{\bf Author(s):} \hfill \docauthors \\
 {\bf Reviewer:} \hfill \docreviewers \\
 {\bf Version:} \hfill \docversion \\
-{\bf Datum:} \hfill \docdate \\
+{\bf Date:} \hfill \docdate \\
+\\
+{\bf Copyright:} \hfill \doccopyrighta
+
+\hfill \doccopyrightb \\
+
 %{\bf Dokument ID:} \hfill \docid \\
 
 \pagestyle{fancy} %eigener Seitenstil
@@ -93,7 +98,7 @@
 \fancyhead[C]{} %zentrierte Kopfzeile
 \fancyhead[R]{\small \docdate} %Kopfzeile rechts
 \renewcommand{\headrulewidth}{0.4pt} %obere Trennlinie
-\fancyfoot[L]{\small Institut f\"ur Computertechnik} 
+\fancyfoot[L]{\small TU Wien, Institute of Computer Technology} 
 \fancyfoot[R]{\small \thepage} %Seitennummer
 \renewcommand{\footrulewidth}{0.4pt} %untere Trennlinie
 

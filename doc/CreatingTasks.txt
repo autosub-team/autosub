@@ -1,7 +1,8 @@
 This files purpose is to give an insight how tasks are handled in the autosub system and give you information how to
-create a task.
+create a task. 
 
-
+For VHDL, tasks can be created using the vhdl task creator tool (tasks/tools/vhdl_task_creator , further instructions 
+in the usermanual)
 
 All files of a task should be stored in one directory, the minimal structure of a task is:
 1) A generator executable
@@ -22,11 +23,13 @@ The generator gets the following parameters in ordered sequence:
 - Submission Email : The configured email address to which users send their emails.
 - Mode : The task mode, currently used: normal or exam
 - SemesterDB : Path to the semester database of the system
+- Language : Parameter to specify in which human language the task description shall be created.
 
 The tester gets the following parameters in ordered sequence:
 - UserId : The UserId of the user the task has to be generated for.
 - TaskNr : The TaskNr the system has assigned for this task.
 - TaskParameters : The string which is associated as parameter for a unique version of the task.
+- BackendInterfaceFile : A file containing functions to control a chosen backend. 
 
 Minimal needed actions of the executables
 -----------------------------------------

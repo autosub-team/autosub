@@ -1,44 +1,56 @@
 {{extend 'layout.html'}}
 <br>
-User Id: {{=userInfo['UserId']}}<br>
-User Name: {{=userInfo['Name']}}<br>
-User Email: {{=userInfo['Email']}}<br>
-User First Mail: {{=userInfo['FirstMail']}}<br>
+Id: {{=userInfo['UserId']}}<br>
+Name: {{=userInfo['Name']}}<br>
+Email: {{=userInfo['Email']}}<br>
+Registered At: {{=userInfo['RegisteredAt']}}<br>
+Finished all tasks:
 {{if(userInfo['LastDone']==None):}}
-    User finished all Tasks: No
+No
 {{else:}}
-    User finished all Tasks: Yes
+Yes
 {{pass}}
 <br>
-User Score: {{=userInfo['UserScore']}} 
+Finished tasks:
+{{if(userInfo['UserNumFinished'] == 0):}}
+	None
+{{else:}}
+	{{=userInfo['UserFinishedTasks']}}
+{{pass}}
 <br>
-User Current Task: {{=userInfo['CurrentTask']}}<br>
+Score: {{=userInfo['UserScore']}} 
 <br>
-<hr>
-<hr>
-{{for taskInfo in taskInfos:}}
-    TaskNr: {{=taskInfo['TaskNr']}}<br>
-    Total Number of Submissions: {{=taskInfo['NrSubmissions']}}<br>
-
-    {{if(taskInfo['FirstSuccessful']!=None):}} 
-        Task Successfull: Yes<br>
-    {{else:}}
-        Task Successfull: No <br>
-    {{pass}}
-
-    {{for attachment in taskInfo['TaskAttachments']:}}
-       Attachment: {{=attachment}}<br>
-    {{pass}}
-
-    {{if(taskInfo['NrSubmissions']!=0):}}
-        Last Submission: users/{{=userInfo['UserId']}}/Task{{=taskInfo['TaskNr']}}/Submission_{{=taskInfo['NrSubmissions']}} <br>
-    {{pass}}
-
-    {{if(taskInfo['FirstSuccessful']!=None):}}
-       First Successful Submission: users/{{=userInfo['UserId']}}/Task{{=taskInfo['TaskNr']}}/Submission_{{=taskInfo['FirstSuccessful']}}<br>
-    {{pass}}
+Current task: {{=userInfo['CurrentTask']}}<br>
 <br>
 <hr>
+<hr>
+{{if taskInfos:}}
+	<h3>Information for Current Tasks of User:</h3>
+
+	{{for taskInfo in taskInfos:}}
+		TaskNr: {{=taskInfo['TaskNr']}}<br>
+		Total Number of Submissions: {{=taskInfo['NrSubmissions']}}<br>
+
+		{{if(taskInfo['FirstSuccessful']!=None):}} 
+			Task Successfull: Yes<br>
+		{{else:}}
+			Task Successfull: No <br>
+		{{pass}}
+
+		{{for attachment in taskInfo['TaskAttachments']:}}
+		   Attachment: {{=attachment}}<br>
+		{{pass}}
+
+		{{if(taskInfo['NrSubmissions']!=0):}}
+			Last Submission: users/{{=userInfo['UserId']}}/Task{{=taskInfo['TaskNr']}}/Submission_{{=taskInfo['NrSubmissions']}} <br>
+		{{pass}}
+
+		{{if(taskInfo['FirstSuccessful']!=None):}}
+		   First Successful Submission: users/{{=userInfo['UserId']}}/Task{{=taskInfo['TaskNr']}}/Submission_{{=taskInfo['FirstSuccessful']}}<br>
+		{{pass}}
+	<br>
+	<hr>
+	{{pass}}
 {{pass}}
 
 

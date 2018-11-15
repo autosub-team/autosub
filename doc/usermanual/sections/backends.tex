@@ -1,0 +1,70 @@
+\section{Notes on supported Backends} \label{backends}
+VELS supports multiple backends for the testers. In this section you
+find install or configuration notes concerning them.
+
+\subsection{GHDL}
+GHDL's current official releases are located at https://github.com/ghdl/ghdl/releases
+
+For Debian 7 we used the version from sourceforge:
+http://sourceforge.net/projects/ghdl-updates/files/Builds/ghdl-0.31/Debian/
+and installed it using dpkg:
+
+\begin{verbatim}
+dpkg -i Downloads/ghdl_0.31-2wheezy1_amd64.deb
+\end{verbatim}
+
+
+For Debian 8 we used the version from sourceforge:
+http://sourceforge.net/projects/ghdl-updates/files/Builds/ghdl-0.33/debian/
+and installed it using dpkg:
+
+\begin{verbatim}
+dpkg -i Downloads/ghdl_0.31-2wheezy1_amd64.deb
+\end{verbatim}
+
+Starting with Debian 9 the github releases seem to be the way to go:
+https://github.com/ghdl/ghdl/releases
+
+\subsection{Xilinx ISE 14.7}\label{ISE-install}
+The ISE (``Full Installer for Linux'') can be downloaded from Xilinx's official download page. It requires registration and licensing agreement, but there is no charge.
+
+For installing ISE to the default location /opt/Xilinx/ where the VELS system expects it to be, you need permission to write to this location. So we will use the user root to call the graphical installer. To do so we need to allow root to use the users X server. As a user run:
+
+\begin{verbatim}
+$ xhost +
+\end{verbatim}
+
+to allow root (or anyone) to connect to your users X server temporarily. Now as root start the graphical installer, located at the top of the extracted download, with
+
+\begin{verbatim}
+# ./xsetup
+\end{verbatim}
+
+In case that you are using the KDE desktop environment, you have to remove the \verb!QT_PLUGIN_PATH! environment variable before starting the graphical installer:
+
+\begin{verbatim}
+# unset QT_PLUGIN_PATH
+\end{verbatim}
+
+If you are running the VELS system on a machine without a graphical user interface, the best way we found to get Xilinx's ISE onto a remote debian server was to copy the entire installation directory after it has been installed on a non-headless machine.
+
+\subsection{Mentor QuestaSim/ModelSim}
+QuestaSim is a version of ModelSim, therefore the following notes also apply to
+ModelSim.
+
+Although QuestaSim is officially only available for RedHat, it works fine with Debian.
+After install you have to create an setup file and specify it in the common tester.
+This setup file should export the path to the binaries and set the license environment
+variable. It could look like this:
+\begin{lstlisting}[frame=single,captionpos=b,caption=QuestaSimSetup.sh, belowcaptionskip=4pt]]
+
+QUESTASIM_BIN=/eda/questasim/linux_x86_64
+export PATH="${PATH}:${QUESTASIM_BIN}"
+export MGLS_LICENSE_FILE=...
+\end{lstlisting}
+
+
+
+
+
+

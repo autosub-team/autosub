@@ -1,10 +1,15 @@
-Welcome to the course <COURSENAME>.
+Welcome to the course {{ course_name }}.
 
-You just sent your first e-mail to <SUBMISSIONEMAIL>. This way
-you subscribed to this part of the course. Very shortly you will receive
-an e-mail with your first task. But to start you need to know a little
-more than just the task. Most importantely: all e-mails sent to this
-address are automatically handled by me, a stupid little computer program.
+You just sent your first e-mail to {{ submission_email }}. This way
+you subscribed to this part of the course. 
+
+All e-mails sent to this address are automatically handled by me, a 
+stupid little computer program.
+{% if allow_requests == "no" %} 
+When the first task is active you will receive an e-mail with it.
+
+{% else %}
+{% endif -%}
 
 In order to submit your results, you need to know how to communicate with
 me. I only accept specially formatted emails, notably the subject has to
@@ -12,11 +17,24 @@ be formatted in one of the following ways:
 
 Results:
    If you want to commit a result, the Subject of your email has to contain
-   the string "result" as well as the task this submission is concerning.
+   the word "Result" as well as the task number this submission is concerning.
    So for example, if you want to submit results for Task1 your subject
    could be "Result Task1" or "I am Submitting my ReSuLtS for TAsk1"
    the exact phrase does not matter, only that some form of the string
-   "result" and "task1" are in the subject.
+   "Result" and "Task1" are in the subject.
+
+{% if allow_requests != "no" %}Request Task:
+   You can request a specific task by sending an e-mail in which the
+   subject contains the word "Request" as well as the task you want 
+   to get. So for example, if you want to get the Task1 your subject
+   could be "Request Task1" or "I want to ReQuEsT the TAsk1"
+   the exact phrase does not matter, only that some form of the string
+   "Request" and "Task1" are in the subject.
+
+{% endif -%}
+Task List:
+   If you want to know what tasks are configured for this course just 
+   send an e-mail in which the subject contains the word "List".
 
 Status:
    If you want to know your current status in the course (what tasks did
@@ -25,12 +43,11 @@ Status:
 
 Questions:
    If you have any questions that are not answered by the e-mails sent by
-   me, you can send me an e-mail that contains the string "question" in the
-   subject line. If you do so, I will redirect your e-mail to a human being
-   who will take care of it as soon as possible (this might take a couple of
-   days though!)
+   me, you can send me an e-mail in which the subject contains the word "Question".
+   If you do so, I will redirect your e-mail to a human being who will
+   take care of it as soon as possible.
    If your question is concerning a specific task, include the task number in
-   the subject line, e.g.: "Question Task 3".
+   the subject line, e.g.: "Question Task3".
 
 Other:
    If your subject does not follow the above explained rules, I will send

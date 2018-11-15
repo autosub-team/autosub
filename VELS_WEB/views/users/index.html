@@ -1,12 +1,17 @@
 {{extend 'layout.html'}}
     <h1>Existing Users</h1>
+    {{=A('Download as CSV', callback=URL('downloadAsCSV'))}} </br>
+    </br>
+    Click on a collumn to sort by that collumn.
+
     <table border="1" class="sortierbar">
        <thead>
           <tr>
              <th>UserId</th>
              <th>Name</th>
              <th>Email</th>
-             <th>First Email</th>
+             <th>Finished Tasks</th>
+             <th>Registered At</th>
              <th>Last Done</th>
              <th>Current Task</th>
              <th>View?</th>
@@ -19,7 +24,12 @@
            <td>{{=entry['UserId']}}</td>
            <td>{{=entry['Name']}}</td>
            <td>{{=entry['Email']}}</td>
-           <td>{{=entry['FirstMail']}}</td>
+		   {{if entry['NumFinished'] == 0:}}
+           <td><b>None</b></td>
+           {{else:}}
+		   <td><b>{{=entry['NumFinished']}}</b>: {{=entry['FinishedTasks']}}</td>
+		   {{pass}}
+           <td>{{=entry['RegisteredAt']}}</td>
            <td>{{=entry['LastDone']}}</td>
            <td>{{=entry['CurrentTask']}}</td>
            <td>{{=A('View', callback=URL('viewUser?UserId='+str(entry['UserId'])))}}</td>

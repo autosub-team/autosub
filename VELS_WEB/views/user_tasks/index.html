@@ -22,7 +22,8 @@
               <td>{{=entry['FirstSuccessful']}}</td>  
               <td>{{=entry['TaskDescription']}}</td>  
               <td>{{=entry['TaskAttachments']}} </td> 
-              <td>{{=entry['TaskParameters']}}</td> 
+              <td>{{=entry['TaskParameters']}}</td>
+	      <td>{{=A('Delete', _href=URL('delete?TaskNr='+str(entry['TaskNr'])+'&UserId='+str(entry['UserId'])))}}</td>
         </tr>
       {{pass}}
 </table>

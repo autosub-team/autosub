@@ -1,0 +1,329 @@
+\section{Setting up the VELS system} \label{system_setup}
+
+\subsection{Email Configuration} \label{sub:emailconfig}
+VELS has to be connected to an E-Mail account from which it can fetch E-Mails and send E-Mails.
+As VELS itself does not include an E-Mail server, you will have to set up a E-Mail server or
+create an account on an existing server. The account has to be reachable via SMTP and IMAP.
+Note possible secure connection modes (ssl/starttls), ports and connection information of
+your account/server as you will need them when you create the VELS config file (see
+Section \ref{sub:exampleconfig}).
+
+Additionally the account needs to have a folder to archive processed E-Mails, VELS by default
+expects it to be named archive (can be changed in VELS\_WEB $\rightarrow$ General Config). This way
+only non fully processed E-Mails will be in the inbox of the account. If VELS crashes
+you can set them to unread and the VELS system will process them.
+
+\textbf{Make sure the account you choose has an empty inbox when starting the autosub daemon for the
+first time, as VELS will try to process all unread E-Mails, even if no user has been whitelisted yet!}
+
+\subsection{Getting the VELS system} \label{sub:serversetup}
+
+The first thing to do when you want to install the autosub submission system and the VELS
+web interface is to clone the git repository:
+
+\begin{verbatim}
+git clone https://github.com/autosub-team/autosub.git
+\end{verbatim}
+
+To fetch the latest version of the available tasks, run the script update\_tasks.sh in the autosub root folder.
+\begin{verbatim}
+./update_tasks.sh
+\end{verbatim}
+This will clone the task repositories specified in the script and move them to the folder tasks/implementation/VHDL .
+
+To fetch a newer version of the tasks at any time you can rerun the update\_tasks script with the parameter refetch. Warning: this will delete all the content inside the tasks folder (tasks/implementation/VHDL) and then fetch the new tasks.
+\begin{verbatim}
+./update_tasks.sh refetch
+\end{verbatim}
+
+If you just want to add additions done to the tasks without cleansing of the folder first, run the update\_tasks script without the parameter refetch.
+\begin{verbatim}
+./update_tasks.sh
+\end{verbatim}
+
+
+\subsection{Chosing the task queue mode} \label{sub:task_queues}
+VELS can be used in two distinct task queue modes: request mode and linear mode. \\
+\\
+\textbf{Request mode}\\
+In this mode students request a task out of the configured tasks by request. This enables students to
+choose which tasks they want to solve. In order to choose this queue mode allow\_requests has to be set to
+once or multiple in the configuration file (see Section \ref{sub:exampleconfig}, Section \ref{app:config}).\\
+\\
+
+\underline{Example scenario with allow\_requests = multiple}\\
+To be added
+\\
+
+\underline{Example scenario with allow\_requests = once}\\
+To be added
+\\
+
+\textbf{Linear mode}\\
+In this mode students get a linear queue of tasks. In order to choose this queue mode allow\_requests has to be set to
+no in the configuration file (see Section \ref{sub:exampleconfig}, Section \ref{app:config}). In linear mode the student
+get sent the first task at registration with the system (if the task is active at that moment).\\
+
+\underline{Example scenario for linear mode}\\
+To be added
+\\
+
+This mode can be combined with auto\_advance, which auto advances users to a task once it is becoming acvive by its
+TaskStart (see Section \ref{sub:exampleconfig}, Section \ref{app:config}). \\
+
+\underline{Example scenario with auto\_advance = yes}\\
+To be added
+
+\subsection{Configuration File Creation} \label{sub:exampleconfig}
+The autosub config file is used to configure the connection to the mail server and set
+configuration parameters for the system. In order to run the autosub daemon a config file
+has to be created. The config file fields each belong to one of the groups embraced
+in [...]. An example config file can be seen below, the full list of fields and their
+meaning is described in Appendix Section \ref{app:config}.
+
+\begin{lstlisting}[frame=single,captionpos=b,caption=example.cfg, belowcaptionskip=4pt]]
+[imapserver]
+servername: imap.gmail.com
+serverport: 993
+security: ssl
+username: submission@gmail.com
+password: mysupersecurepassword
+email: submission@gmail.com
+
+[smtpserver]
+servername: smtp.gmail.com
+serverport: 587
+security: starttls
+username: submission@gmail.com
+password: mysupersecurepassword
+email: submission@gmail.com
+
+[system]
+num_workers: 20
+queue_size: 200
+poll_period: 5
+log_dir: /home/martin/autosub/src
+log_threshhold: INFO
+
+[course]
+tasks_dir: /home/martin/autosub/tasks/implementation/VHDL
+course_name: My Cool Course
+mode: normal
+auto_advance: no
+allow_requests: no
+\end{lstlisting}
+
+\subsection{Starting the Daemon}
+
+Autosub is implemented as a daemon process, that means all messages provided are written
+to files (see Section \ref{logerror} and \ref{tasklog} for details on those files) --
+nothing is written to the console. The daemon is started using a shell-script located
+in {\tt autosub/src/}:
+
+\begin{verbatim}
+./autosub.sh start
+\end{verbatim}
+
+This starts the daemon using the default configuration file named {\tt default.cfg}. If you
+wan to use your own configuration file, you have to pass the files name to the script when
+starting the daemon:
+
+\begin{verbatim}
+./autosub.sh start myconfig.cfg
+\end{verbatim}
+
+To stop the daemon just run the command:
+
+\begin{verbatim}
+./autosub.sh stop
+\end{verbatim}
+
+\subsection{Setting up the VELS\_WEB Configuration Interface}
+To use the VELS\_WEB Configuration Interface it has first to be installed and
+configured using these steps:
+
+Change to the VELS\_WEB directory.
+
+\begin{verbatim}
+python3 installer.py <pathtoautosub> <pathtoconfigfile>
+\end{verbatim}
+
+Use the same configfile you used for starting the autosub daemon! This step will
+also download web2py to the user's home folder and set needed symbolic links to
+connect VELS\_WEB to the autosub system.
+
+If you change parameters in the category $[$system$]$ in your autosub config file or need to switch to
+another config file run the installer with the reinstall flag:
+
+\begin{verbatim}
+python3 installer.py --reinstall <pathtoautosub> <pathtoconfigfile>
+\end{verbatim}
+
+To use https you have to use a SSL key. The system expects the keyfiles
+(server.crt , server.csr , server.key) to be in the web2py directory. To
+generate keys and place them run the following (this can be skipped if you
+already have keyfiles you can use!):
+
+\begin{verbatim}
+./gen_keys.sh
+\end{verbatim}
+
+To start the VELS\_WEB daemon at port <port> and with web2py admin password
+<password> (this can be set by you!) run:
+\begin{verbatim}
+./daemon.sh start <port> <password>
+\end{verbatim}
+
+After this step the VELS\_WEB interface will be reachable via your browser at
+address:
+\begin{verbatim}
+https://<server_ip>:<port>/VELS_WEB
+\end{verbatim}
+
+To stop the daemon just run the command:
+
+\begin{verbatim}
+./daemon.sh stop
+\end{verbatim}
+
+\subsection{General Configuration}\label{sub:generalconfig}
+Configuration items that can be changed dynamically are changeable in VELS\_WEB ->
+General Config. These configurable items are:
+\begin{itemize}
+\item {\bf Registration Deadline:} Users who are try to register after this deadline will
+    get an error E-Mail.
+\item {\bf Archive Directory:} Directory in which processed E-Mails are moved, this
+    directory has to be present on the IMAP server!
+\item {\bf Administration E-Mail:} E-Mail addresses which get question and system error E-Mails.
+
+\end{itemize}
+
+\subsection{Whitelisting} \label{sub:whitelisting}
+Students that participate in the course have to be whitelisted in the VELS system. If the student
+tries to write an E-Mail to the system from an E-Mail address that is not on the Whitelist, an E-Mail
+with an error message is sent to him.
+
+Whitelisting can be done in VELS\_WEB under the tab {\it Whitelist}. E-Mail addresses can be added
+one at a time or multiple at a time (mass subscription). Removal of a single E-Mail address
+can also be done in the VELS\_WEB. Names which will be used when users register can also be
+specified. This is usefull, because many users don't send E-Mails with their name configured
+in the "From" header.
+
+\subsection{Configuring the Tasks} \label{sub:configTasks}
+Existing tasks can be assembled into a task queue. This configuration is done in VELS\_WEB.
+Each task in the queue has to be created with the following properties:
+\begin{itemize}
+\item {\bf TaskStart:} The start datetime for the task. The task will automatically
+    be set to active if this datetime is reached. If auto\_advance is active (configured
+    via config file) users waiting for a task to become active will automatically
+    receive an E-Mail with the task description for that task.
+\item {\bf TaskDeadline:} The end datetime for the task. Submissions for a tasks after
+    this datetime will be rejected.
+\item {\bf TaskName:} The name of the folder with the implementation of the task in respect
+	to the configured tasks\_dir.
+\item {\bf GeneratorExecutable:} The name of the generator executable.
+\item {\bf Language}: Language code of the language in which the task discription for
+	this task should be created.
+\item {\bf TestExecutable:} The name of the tester executable.
+\item {\bf BackendInterfaceFile:} Name of a backend interface file that offers a tester functions to control a backend. This allows easy
+	switching between different simulator backends.	Such scripts have to be stored in a directory
+	{\tt ``\_backend\_interfaces"} in the configured
+	tasks\_dir.
+\item {\bf Score:} The score a student gets for successful completion of the task. The
+    scores for all completed tasks are added and can therefore also be used for grading.
+\item {\bf TaskOperator:} The E-mail(s) of the operator of the task seperated by commas.
+	These task operators are recipient of task specific questions ("Question Task N").
+\item {\bf TaskActive:} The state of the task, for inactive tasks the generator won't
+    be called. A Task is considered active when the current time is greater than the
+    TaskStart
+\end{itemize}
+
+\subsection{Notes on multiple VELS instances on the same machine}
+
+The following should be adhered if you want to use multiple VELS instances on
+one machine:
+\begin{itemize}
+\item Use different users for running the different instances. If you dont't do
+	so you migth run into problems concerning the usage of the tmp directories of
+	tasks in the test phase.
+\item Be sure to use different ports when starting the VELS\_WEB daemon.
+\end{itemize}
+
+\subsection{Configuration Checklist} \label{sub:configChecklist}
+
+\begin{enumerate}
+\item Installed all needed libraries and tools for autosub, the tasks and VELS\_WEB.
+\item Configured the E-Mail server, including an E-Mail archive folder.
+\item Created a config file for autosub.
+\item Started the autosub system via {\tt autosub.sh start <configfile>}.
+\item Started VELS\_WEB using the daemon.
+\item Configured all parameters in General Config in VELS\_WEB.
+\item Configured all Tasks in VELS\_WEB.
+\item Whitelisted all students in VELS\_WEB.
+\end{enumerate}
+
+If you forget one of this steps or misconfigure, autosub tries to generate a meaningful
+message, still it's nicer to get everything running without being yelled at.
+
+\subsection{The Exam Mode}\label{sub:exammode}
+In Exam Mode the students additionally get sent a minimal testbench to test their design.
+To enable test mode, change the challenge-mode to exam in the config file and restart
+the autosub daemon.
+
+Always check first if all the task you want to use support this mode!
+
+The remaining configuration is similar to configuration for normal mode.
+
+%\subsection{Testing VELS}\label{sub:testingvels}
+%
+%%QUESTION Martin: Can we write that semester.db and course.db have to be present?,
+%%some of my tests need them to be present..
+%% BUMP!!
+%
+%VELS has a testing suite located in {\tt "autosub/src/tests"}. It consists of unit and
+%doctests, testing both the autosub system and the tasks itself. With this test suite you
+%can test if everything is set up the right way before starting a course.To run the test
+%suite issue the following command from the {\tt "autosub/src/"} directory:
+%
+%\begin{verbatim}
+%nosetests3 --with-doctest --doctest-extension=txt --nologcapture -v
+%\end{verbatim}
+%
+%This will run all doctest as well as unittest test cases.
+%
+%If you also want the code coverage of the test-suite then run it as follows:
+%
+%\begin{verbatim}
+%nosetests3 --with-doctest --doctest-extension=txt --nologcapture -v --with-coverage
+%\end{verbatim}
+%
+%While the above commands run all of the tests, it is also possible to include or exclude only
+%specific tests. In example it is possible to only execute the load test:
+%
+%\begin{verbatim}
+%nosetests3 --nologcapture -s -v  tests/load_test.py:Test_LoadTest
+%\end{verbatim}
+%
+%or it is possible to exclude the load test (which makes sense, as that one takes a considerable
+%amount of time):
+%
+%\begin{verbatim}
+%nosetests3 --nologcapture -s -v --ignore-files=load_test.py
+%\end{verbatim}
+%
+%The following is tested by the testsuite:
+%\begin{itemize}
+%\item Connecting to the databases.
+%\item Logging a message.
+%\item Sending an E-Mail.
+%\item Functionality of the activator thread.
+%\item Functionality of the generator thread.
+%\item Functionality of the sender thread.
+%\item Functionality of the fetcher thread.
+%\item Functionality of the common used functions.
+%\item Behavior under high load (load test).
+%\item Creation off all description files for every task.
+%\item Compilation of all generated VHDL files with ghdl.
+%\item Tester functionalities for given right submissions with ghdl.
+%\end{itemize}
+

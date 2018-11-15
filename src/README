@@ -1,6 +1,8 @@
 Start the autosub daemon:
 
-./autosub.sh start
+./autosub.sh start <configfile>
+
+with <configfile> being the path to the to be used config file.
 
 Stop the autosub daemon:
 
@@ -8,20 +10,4 @@ Stop the autosub daemon:
 
 ==============
 
-If you want to run the testsuite, just go to
-
-autosub/src
-
-and run:
-
-nosetests3 --with-doctest --doctest-extension=txt --nologcapture -v
-
-this will run all doctest as well as unittest test cases.
-
-If you also want the code coverage of the test-suite then run it as follows:
-
-nosetests3 --with-doctest --doctest-extension=txt --nologcapture -v --with-coverage
-
-==============
-
-More Information can be found in the usermanual located in doc/usermanual
+More Information can be found in the usermanual located in doc/doc_pdf/usermanual.pdf

@@ -1,17 +1,22 @@
 {{extend 'layout.html'}}
     <h1>Current Task Configuration</h1>
+    <b>Configured tasks directory:</b> {{=tasks_dir}} </br>
+    <b>{{=num_found_tasks}}<b>
+    </br>
+    </br>
     <table border="1">
        <thead>
           <tr>
              <th>TaskNr</th>
              <th>Task Start</th>
              <th>Task Deadline</th>
-             <th>Path To Task</th>
+             <th>Task Name</th>
              <th>Generator Executable</th>
+             <th>Language</th>
              <th>Test Executable</th>
+             <th title="File to be passed to a generalized tester. This contains backend interface functions">Backend Interface File</th>
              <th>Score</th>
-             <th>TaskOperator</th>
-             <th>TaskActive</th>
+             <th>Task Operator</th>
              <th></th>
           </tr>
         </thead>
@@ -20,16 +25,24 @@
            <td>{{=entry['TaskNr']}}</td>
            <td>{{=entry['TaskStart']}} </td>
            <td>{{=entry['TaskDeadline']}} </td>
-           <td>{{=entry['PathToTask']}} </td>
+           <td>{{=entry['TaskName']}} </td>
            <td>{{=entry['GeneratorExecutable']}} </td>
+           <td>{{=entry['Language']}} </td>
            <td>{{=entry['TestExecutable']}} </td>
+           <td>{{=entry['BackendInterfaceFile']}} </td>
            <td>{{=entry['Score']}} </td>
            <td>{{=entry['TaskOperator']}} </td>
-           <td>{{=entry['TaskActive']}} </td>
         </tr>
     {{pass}}
          <tr>
          {{=form}}
          </tr>
     </table>
-    {{=A('Back to overview', callback=URL('index'))}}
+    {{=A('Back to overview', _href=URL('index'))}}
+
+    <script>
+	/*jslint browser:true*/
+	/*global jQuery, document*/
+	jQuery('#TaskStart').datetimepicker({format:'Y-m-d H:i'});
+	jQuery('#TaskEnd').datetimepicker({format:'Y-m-d H:i'});
+    </script>

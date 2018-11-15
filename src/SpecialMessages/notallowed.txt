@@ -1,10 +1,13 @@
 Hi,
 
-You are not registered for this course. If you think you should be, first check if
-you are using your university e-mail address, if not do so.
+you are not whitelisted for this course. If you think you should be, first check if
+you are using your university e-mail address.
 
-If you are already using your university e-mail address, drop your instructor an
-e-mail so he can take care of it.
+You are currently sending me mails from:
+[[recipient]]
+
+If this e-mail address should be on my whitelist, drop your instructor an e-mail so 
+he can take care of it.
 
 So long, and thanks for all the fish!
 
