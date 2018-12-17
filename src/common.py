@@ -130,6 +130,10 @@ def connect_to_db(dbname, lqueue, lname):
         log_a_msg(lqueue, lname, logmsg, "ERROR")
         return None, None
 
+    #enable row indexing by columnname in addition to index
+    con.row_factory(sqlite3.row)
+
+    # get db cursor
     cur = con.cursor()
 
     return cur, con
