@@ -28,7 +28,7 @@ and the [specification of the existing VHDL tasks](https://github.com/autosub-te
 
 # How to Contribute #
 
-If you want to contribute to the autosub development, have a look at [CONTRIBUTE.md](CONTRIBUTE.md) and [doc/coding_standards/lifecycle.txt](doc/coding_standards/lifecycle.txt]
+If you want to contribute to the autosub development, have a look at [CONTRIBUTE.md](CONTRIBUTE.md) and [doc/coding_standards/lifecycle.txt](doc/coding_standards/lifecycle.txt)
 
 # Publication & Citation #
 To cite VELS you can use the following bibtex entry:
