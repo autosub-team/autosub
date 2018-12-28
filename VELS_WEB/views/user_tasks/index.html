@@ -15,15 +15,18 @@
         </thead>
        {{for entry in entries:}}
           <tr>
-              <td>{{=entry['UniqueId']}}</td>         
-              <td>{{=entry['TaskNr']}}</td>            
-              <td>{{=entry['UserId']}}</td>           
+              <td>{{=entry['UniqueId']}}</td>
+              <td>{{=entry['TaskNr']}}</td>
+              <td>{{=entry['UserId']}}</td>
               <td>{{=entry['NrSubmissions']}}</td>
-              <td>{{=entry['FirstSuccessful']}}</td>  
-              <td>{{=entry['TaskDescription']}}</td>  
-              <td>{{=entry['TaskAttachments']}} </td> 
+              <td>{{=entry['FirstSuccessful']}}</td>
+              <td>{{=entry['TaskDescription']}}</td>
+              <td>{{=entry['TaskAttachments']}} </td>
               <td>{{=entry['TaskParameters']}}</td>
-	      <td>{{=A('Delete', _href=URL('delete?TaskNr='+str(entry['TaskNr'])+'&UserId='+str(entry['UserId'])))}}</td>
+	      <td>{{=BUTTON_TO('Delete',\
+		  URL('delete?TaskNr=' + str(entry['TaskNr']) + '&UserId=' + str(entry['UserId'])),\
+		  'Really delete entry for UserId=' + str(entry['UserId']) + \
+		  ' TaskNr='+ str(entry['TaskNr']) +"? This will not delete the folder on the server!")}}</td>
         </tr>
       {{pass}}
 </table>
