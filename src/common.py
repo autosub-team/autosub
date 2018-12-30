@@ -131,7 +131,7 @@ def connect_to_db(dbname, lqueue, lname):
         return None, None
 
     #enable row indexing by columnname in addition to index
-    con.row_factory(sqlite3.row)
+    con.row_factory=lite.Row
 
     # get db cursor
     cur = con.cursor()
