@@ -301,7 +301,6 @@ class MailFetcher(threading.Thread):
 
         logmsg = 'The user has a question, please take care of that!'
         c.log_a_msg(self.queues["logger"], self.name, logmsg, "DEBUG")
-        c.send_email(self.queues["sender"], user_email, "", "Question", "", "", "")
 
         # was the question asked to a specific task_nr
         search_obj = re.search('[0-9]+', mail_subject, )
@@ -310,6 +309,22 @@ class MailFetcher(threading.Thread):
 
         if (search_obj != None):
             task_nr = search_obj.group()
+
+            #task with this task_nr exists?
+            is_task = c.is_valid_task_nr(self.dbs["course"], task_nr, self.queues["logger"], \
+                                         self.name)
+
+            if not is_task:
+            # task_nr is not valid
+                c.send_email(self.queues["sender"], user_email, "", "InvalidTask", str(task_nr), \
+                             "", message_id)
+
+                logmsg = ("Question from user with email {0} contains an "
+                          "invalid TaskNr. Informing user, message dropped").format(user_email)
+                c.log_a_msg(self.queues["logger"], self.name, logmsg, "INFO")
+
+                return
+
             fwd_mails = self.get_taskoperator_emails(task_nr)
             if not fwd_mails:
                 logmsg = ("Error getting the taskoperator email for task {0}. "
@@ -326,6 +341,11 @@ class MailFetcher(threading.Thread):
                 c.log_a_msg(self.queues["logger"], self.name, logmsg, "ERROR")
                 return
 
+
+        # send Question received message to user
+        c.send_email(self.queues["sender"], user_email, "", "Question", "", "", "")
+
+        # forward email to admins/taskoperators
         mail["Reply-To"] = user_email
 
         c.send_email(self.queues["sender"], fwd_mails, user_id, "QFwd",task_nr, mail, message_id)
