@@ -50,6 +50,8 @@ Other branches with limited lifespan:
     on your machine and not pushed to the autosub repository.
 
     Naming convention: feature-foobar
+	Branches of from: autosub_devel
+	Merges into: autosub_devel
 
 -) release branches: Release branches support preparation of a new production
     release. They allow for last-minute dotting of i’s and crossing t’s.
@@ -60,6 +62,8 @@ Other branches with limited lifespan:
     release branch is deleted.
 
     Naming convention: release-X.0
+	Branches of from: autosub_devel
+	Merges into: master (squash) , autosub_devel
 
 -) hotfix branches: Hotfix branches are very much like release branches in
     that they are also meant to prepare for a new production release, albeit
@@ -72,6 +76,10 @@ Other branches with limited lifespan:
     minor version number being incremented.
 
     Naming convention: hotfix-X.Y
+	Branches of from: master
+	Merges into: master, autosub_devel
+	Changes minor version number +1
+
 
 3. How to use autosub
 ---------------------
