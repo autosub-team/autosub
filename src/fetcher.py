@@ -721,7 +721,7 @@ class MailFetcher(threading.Thread):
             return True
 
         logmsg = "Got mail from a user not on the WhiteList: " + user_email
-        c.log_a_msg(self.queues["logger"], self.name, logmsg, "Warning")
+        c.log_a_msg(self.queues["logger"], self.name, logmsg, "INFO")
         c.increment_db_statcounter(self.dbs["semester"], 'nr_non_registered', \
                                    self.queues["logger"], self.name)
 
