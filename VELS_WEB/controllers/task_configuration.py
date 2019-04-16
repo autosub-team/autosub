@@ -18,6 +18,9 @@ val={'TaskNr'              :[IS_NOT_EMPTY(),IS_DECIMAL_IN_RANGE(minimum=0)],
 
 # takes parameter, automatic private
 def extra_validation(form):
+    #strip all whitespaces from begin and end
+    for var in form.vars:
+        var = var.strip()
 
     tasks_dir = course(GeneralConfig.ConfigItem=='tasks_dir').select(GeneralConfig.Content)[0].Content
     available_tasks , available_backend_interfaces = __task_system_entries()
