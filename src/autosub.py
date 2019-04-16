@@ -55,7 +55,6 @@ smtpsecurity = None
 smtpport = None
 
 num_workers = None
-queue_size = None
 poll_period = None
 semesterdb = None
 coursedb = None
@@ -198,7 +197,7 @@ def parse_config(config):
 
     global imapserver, imapuser, imappasswd, imapmail, imapsecurity, imapport
     global smtpserver, smtpuser, smtppasswd, smtpmail, smtpsecurity, smtpport
-    global num_workers, queue_size, poll_period, semesterdb, coursedb, log_dir,\
+    global num_workers, poll_period, semesterdb, coursedb, log_dir,\
            log_threshhold
     global course_name, course_mode, tasks_dir, specialmsgs_dir
     global auto_advance, allow_requests
@@ -273,10 +272,9 @@ def parse_config(config):
     ####################
     try:
         num_workers = config.getint('system', 'num_workers')
-        queue_size = config.getint('system', 'queue_size')
     except:
-        print("Something went wrong reading your num_worker or queue_size.")
-        print("Did you specify them with numbers?")
+        print("Something went wrong reading your num_worker.")
+        print("Did you specify the number of desired workers?")
         print("Exiting...")
         sys.exit(-1)
 
@@ -371,11 +369,11 @@ def generate_queues():
 
     global job_queue, sender_queue, generator_queue, archive_queue, logger_queue
 
-    logger_queue = queue.Queue(queue_size)
-    job_queue = queue.Queue(queue_size)
-    sender_queue = queue.Queue(queue_size)
-    generator_queue = queue.Queue(queue_size)
-    archive_queue = queue.Queue(queue_size)
+    logger_queue = queue.Queue()
+    job_queue = queue.Queue()
+    sender_queue = queue.Queue()
+    generator_queue = queue.Queue()
+    archive_queue = queue.Queue()
 
 ####
 # start_logger
