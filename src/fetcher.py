@@ -31,6 +31,7 @@ import time
 import re #regex
 import datetime
 import queue
+from email.header import decode_header
 
 import common as c
 
@@ -1054,7 +1055,14 @@ class MailFetcher(threading.Thread):
             # parsing the mail content to get a mail object
             mail = email.message_from_bytes(data[0][1])
 
+            #decode subject if needed
             mail_subject = str(mail['subject'])
+
+            subject, encoding = decode_header(mail_subject)[0]
+            if encoding != None:
+                mail_subject = subject.decode(encoding)
+                mail['subject'] = mail_subject
+
             from_header = str(mail['From'])
             split_header = str(from_header).split("<")
             user_name = split_header[0]
