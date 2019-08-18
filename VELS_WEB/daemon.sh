@@ -18,6 +18,14 @@ then
 	password=$3
 fi
 
+if [ -z $1 ];
+then
+
+	echo "Usage: ./daemon.sh [start|stop] [port] [password]"
+	echo "After starting attach VELS_WEB to the given url to reach VELS_WEB"
+	exit
+fi
+
 if [ $1 = "start" ];
 then
 	python $HOME/web2py/web2py.py --nogui -i $server_ip -p $port -a $password -d $VELS_WEB_PATH/daemon.pid -c server.crt -k server.key &
@@ -29,4 +37,3 @@ else
 	echo "Usage: ./daemon.sh [start|stop] [port] [password]"
 	echo "After starting attach VELS_WEB to the given url to reach VELS_WEB"
 fi
-
