@@ -23,6 +23,7 @@ def __entriesStatCounters():
         array.append(entry)
     return dict(entriesStatCounters=array)
 
+@auth.requires_permission('view data')
 def index():
     returnDict={}
     returnDict.update(__entriesTaskStats())

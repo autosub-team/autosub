@@ -14,8 +14,6 @@
     </head>
 <body>
 
-
-
 <a href="{{=URL(c='default',f='index')}}"><div id="container">
     <div align="center">
        <div id="left" class="logos"><img src= "{{=URL('static','images/tu_logo.png')}}" height="100px"></div>
@@ -25,6 +23,14 @@
 </div></a>
      
     <hr>
+
+{{if auth.user:}}
+<div style="text-align:right;">
+<ul class="menu">
+        {{=auth.navbar()}}
+</ul>
+</div>
+
 <div style="text-align:center;">
     <ul class="menu">
         <li class="menu"><a class="menu" href="{{=URL(c='default',f='index')}}">Start</a></li>
@@ -35,13 +41,17 @@
         <li class="menu"><a class="menu" href="{{=URL(c='special_messages',f='index')}}">Special Messages</a></li>
         <li class="menu"><a class="menu" href="{{=URL(c='statistics',f='index')}}">Statistics</a></li>
         <li class="menu"><a class="menu" href="{{=URL(c='user_tasks',f='index')}}">User Tasks</a></li>
+        {{if auth.has_permission("manage users"):}}
+        <li class="menu"><a class="menu" href="{{=URL(c='vels_web_usermanage',f='index')}}">VELS_WEB Users</a></li>
+        {{pass}}
     </ul>
 </div>
-      
+{{pass}}
     <div id="content">
 
         {{include}}
 
     </div>
+
     </body>    
 </html>

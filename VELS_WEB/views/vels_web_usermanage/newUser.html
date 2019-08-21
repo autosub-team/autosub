@@ -1,0 +1,27 @@
+{{extend 'layout.html'}}
+    <h1>Existing VELS_WEB Users</h1>
+    <table border="1">
+       <thead>
+          <tr>
+             <th>Username</th>
+             <th>First Name</th>
+             <th>Last Name</th>
+             <th>Email</th>
+             <th>Group/Role</th>
+             <th>Password</th>
+             <th></th>
+          </tr>
+        </thead>
+    {{for entry in entries:}}
+       <tr>
+           <td>{{=entry['username']}}</td>
+           <td>{{=entry['first_name']}}</td>
+           <td>{{=entry['last_name']}}</td>
+           <td>{{=entry['email']}}</td>
+           <td>{{=entry['group']}}</td>
+           <td></td>
+       </tr>
+    {{pass}}
+      <tr>{{=form}}</tr>
+    </table>
+   {{=A('Back to VELS_WEB Users overview', _href=URL('index'))}}

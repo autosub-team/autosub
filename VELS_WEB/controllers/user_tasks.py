@@ -13,11 +13,13 @@ def __entries():
         array.append(entry)
     return dict(entries=array)
 
+@auth.requires_permission('view data')
 def index():
     returnDict={}
     returnDict.update(__entries())
     return returnDict
 
+@auth.requires_permission('edit data')
 def delete():
     TaskNr= request.vars['TaskNr']
     UserId= request.vars['UserId']

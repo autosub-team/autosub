@@ -1,0 +1,36 @@
+{{extend 'layout.html'}}
+    <h1>Existing VELS_WEB Users</h1>
+    </br>
+    Click on a collumn to sort by that collumn.
+
+    <table border="1" class="sortierbar">
+       <thead>
+          <tr>
+             <th>User Id</th>
+             <th>Username</th>
+             <th>First Name</th>
+             <th>Last Name</th>
+             <th>Email</th>
+             <th>Group/Role</th>
+             <th>Edit?</th>
+             <th>Set Password?</th>
+             <th>Delete?</th>
+          </tr>
+        </thead>
+    {{for entry in entries:}}
+       <tr>
+           <td>{{=entry['id']}}</td>
+           <td>{{=entry['username']}}</td>
+           <td>{{=entry['first_name']}}</td>
+           <td>{{=entry['last_name']}}</td>
+           <td>{{=entry['email']}}</td>
+           <td>{{=entry['group']}}</td>
+
+           <td>{{=A('Edit', callback=URL('editUser?user_id='+str(entry['id'])))}}</td>
+           <td>{{=A('Set Password', callback=URL('setPassword?user_id='+str(entry['id'])))}}</td>
+           <td>{{=BUTTON_TO(T('Delete'), URL('deleteUser?user_id=' + str(entry['id'])),\
+		   "Realy delete user with id=" + str(entry['id']) +"?")}}</td>
+       </tr>
+    {{pass}}
+    </table>
+   {{=A('New User', _href=URL('newUser'))}}

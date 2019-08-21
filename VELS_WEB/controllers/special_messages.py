@@ -17,11 +17,13 @@ def __entries():
         entries.update({row.EventName:row.EventText})
     return dict(entries=entries)
 
+@auth.requires_permission('view data')
 def index():
     returnDict={}
     returnDict.update(__entries())
     return returnDict
 
+@auth.requires_permission('edit  data')
 def edit():
     returnDict={}
     entries=__entries()['entries']

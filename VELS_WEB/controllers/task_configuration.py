@@ -6,7 +6,7 @@ import os
 import datetime
 
 #Validators
-#TaskName, BackendInterfaceFile, TestExecutable, GeneratorExecutable, Language get validated with extra_validation
+#TaskName, BackendInterfaceFile, TestExecutable, GeneratorExecutable, Language get validated with __extra_validation
 val={'TaskNr'              :[IS_NOT_EMPTY(),IS_DECIMAL_IN_RANGE(minimum=0)],
      'TaskStart'           :[IS_NOT_EMPTY(),IS_DATETIME(format=T('%Y-%m-%d %H:%M'), \
                              error_message='must be YYYY-MM-DD HH:MM!')],
@@ -17,7 +17,7 @@ val={'TaskNr'              :[IS_NOT_EMPTY(),IS_DECIMAL_IN_RANGE(minimum=0)],
      'TaskActive'          :[IS_NOT_EMPTY(),IS_IN_SET(['0','1'])]}
 
 # takes parameter, automatic private
-def extra_validation(form):
+def __extra_validation(form):
     #strip all whitespaces from begin and end
     for var in form.vars:
         var = var.strip()
@@ -130,12 +130,13 @@ def __available_languages(task_name):
 
     return available_languages
 
-
+@auth.requires_permission('view data')
 def index():
     returnDict={}
     returnDict.update(__entries())
     return returnDict
 
+@auth.requires_permission('edit data')
 def newTask():
     returnDict={}
     returnDict.update(__entries())
@@ -166,7 +167,7 @@ def newTask():
              TD(INPUT(_type='submit',_label='Save'))
     form=FORM(inputs)
 
-    if(form.process(onvalidation=extra_validation).accepted):
+    if(form.process(onvalidation=__extra_validation).accepted):
         #strip all whitespaces from begin and end
         for var in form.vars:
             var = var.strip()
@@ -202,6 +203,7 @@ def newTask():
     returnDict.update({'form':form})
     return returnDict
 
+@auth.requires_permission('edit data')
 def editTask():
     returnDict={}
     returnDict.update(__entries())
@@ -229,7 +231,7 @@ def editTask():
              TD(INPUT(_type='submit',_label='Save'))
     form = FORM(inputs)
 
-    if(form.process(onvalidation=extra_validation).accepted):
+    if(form.process(onvalidation=__extra_validation).accepted):
         #strip all whitespaces from begin and end
         for var in form.vars:
             var=var.strip()
@@ -257,6 +259,7 @@ def editTask():
     returnDict.update({'editTaskNr':TaskNr,'form':form})
     return returnDict
 
+@auth.requires_permission('edit data')
 def deleteTask():
     TaskNr = request.vars['TaskNr']
 
