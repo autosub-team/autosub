@@ -26,3 +26,4 @@ VELS_WEB/static/images/nr_users.png
 tmp
 !tasks/implementation/VHDL/README.txt
 tasks/implementation/VHDL/*
+*.pyc
