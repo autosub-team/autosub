@@ -18,36 +18,32 @@ Finished tasks:
 	{{=userInfo['UserFinishedTasks']}}
 {{pass}}
 <br>
-Score: {{=userInfo['UserScore']}} 
+Score: {{=userInfo['UserScore']}}
 <br>
 Current task: {{=userInfo['CurrentTask']}}<br>
 <br>
+{{=A('Back to Users overview', _href=URL('index' ))}}
 <hr>
 <hr>
 {{if taskInfos:}}
 	<h3>Information for Current Tasks of User:</h3>
 
 	{{for taskInfo in taskInfos:}}
-		TaskNr: {{=taskInfo['TaskNr']}}<br>
+		TaskNr: {{=taskInfo['TaskNr']}} ({{=taskInfo['TaskName']}})<br>
 		Total Number of Submissions: {{=taskInfo['NrSubmissions']}}<br>
 
-		{{if(taskInfo['FirstSuccessful']!=None):}} 
+		{{if(taskInfo['FirstSuccessful']!=None):}}
 			Task Successfull: Yes<br>
 		{{else:}}
 			Task Successfull: No <br>
 		{{pass}}
 
-		{{for attachment in taskInfo['TaskAttachments']:}}
-		   Attachment: {{=attachment}}<br>
-		{{pass}}
-
-		{{if(taskInfo['NrSubmissions']!=0):}}
-			Last Submission: users/{{=userInfo['UserId']}}/Task{{=taskInfo['TaskNr']}}/Submission_{{=taskInfo['NrSubmissions']}} <br>
-		{{pass}}
-
 		{{if(taskInfo['FirstSuccessful']!=None):}}
 		   First Successful Submission: users/{{=userInfo['UserId']}}/Task{{=taskInfo['TaskNr']}}/Submission_{{=taskInfo['FirstSuccessful']}}<br>
 		{{pass}}
+
+                {{=A('View user task folder', callback=URL('viewUserTaskFolder',
+		vars=dict(UserId=userInfo['UserId'],TaskNr=taskInfo['TaskNr'])))}} </br>
 	<br>
 	<hr>
 	{{pass}}

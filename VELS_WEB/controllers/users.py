@@ -1,5 +1,7 @@
 import cStringIO
 import csv
+from gluon.tools import Expose
+import os
 
 val={'Name'        :[IS_NOT_EMPTY()],
      'Email'       :[IS_NOT_EMPTY(),IS_EMAIL()],
@@ -187,11 +189,37 @@ def viewUser():
 
     taskInfosArray=[]
     for row in rows:
+        row_taskconfig= \
+            course(TaskConfiguration.TaskNr==row.TaskNr).select(TaskConfiguration.ALL).first()
         taskInfosArray.append({'TaskNr':row.TaskNr,
                      'NrSubmissions':row.NrSubmissions,
                      'FirstSuccessful':row.FirstSuccessful,
-                     'TaskAttachments':row.TaskAttachments.split()})
+                     'TaskName' : row_taskconfig.TaskName})
 
     returnDict.update(dict(taskInfos=taskInfosArray))
 
     return returnDict
+
+@auth.requires_permission('view data')
+def viewUserTaskFolder():
+    if not request.get_vars['UserId']:
+        UserId = session.viewUserId
+    else:
+        UserId= int(request.get_vars['UserId'])
+        session.viewUserId = UserId
+
+    if not request.vars['TaskNr']:
+        TaskNr = session.viewTaskNr
+    else:
+        TaskNr= int(request.vars['TaskNr'])
+        session.viewTaskNr = TaskNr
+
+    row = semester(Users.UserId == UserId).select(Users.Name).first()
+    Name = row['Name']
+
+    usersDir="/home/vels/autosub/src/users"
+
+    taskSubDir = "{0}/Task{1}".format(UserId, TaskNr)
+    absoluteDir = os.path.join(usersDir, taskSubDir)
+
+    return dict(files=Expose(base=absoluteDir, basename="basefolder"), TaskNr=TaskNr, Name=Name, UserId=UserId)
