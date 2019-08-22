@@ -38,12 +38,13 @@ def __entries():
 
     return dict(entries=array)
 
-
+@auth.requires_permission('view data')
 def index():
     returnDict={}
     returnDict.update(__entries())
     return returnDict
 
+@auth.requires_permission('view data')
 def downloadAsCSV():
     download_file = cStringIO.StringIO()
 
@@ -61,6 +62,7 @@ def downloadAsCSV():
     return download_file.getvalue()
 
 
+@auth.requires_permission('edit data')
 def newUser():
     returnDict={}
 
@@ -87,6 +89,7 @@ def newUser():
 
     return returnDict
 
+@auth.requires_permission('edit data')
 def deleteUser():
     UserId= request.vars['UserId']
     if semester(Users.UserId==UserId).delete() :
@@ -95,6 +98,7 @@ def deleteUser():
         msg='User' + UserId + ' delete failed'
     redirect(URL('index'))
 
+@auth.requires_permission('edit data')
 def editUser():
     returnDict={}
     UserId= int(request.vars['editUserId'])
@@ -124,6 +128,7 @@ def editUser():
 
     return returnDict
 
+@auth.requires_permission('view data')
 def viewUser():
     returnDict={}
     UserId= int(request.vars['UserId'])
