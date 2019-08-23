@@ -185,6 +185,17 @@ To stop the daemon just run the command:
 ./daemon.sh stop
 \end{verbatim}
 
+By default VELS\_WEB has one user of the vels\_admin group at startup:
+\begin{description}
+\item [Username:] vels\_admin
+\item [Password:] vels\_admin
+\end{description}
+You should change this password! You can manage users for VELS\_WEB using the item
+"VELS\_WEB Users". Here you can create additional users of the group
+vels\_admin or users of the group vels\_tutor, who cannot change any course
+configuration items, only view configuration items, student progress and student
+submissions.
+
 \subsection{General Configuration}\label{sub:generalconfig}
 Configuration items that can be changed dynamically are changeable in VELS\_WEB ->
 General Config. These configurable items are:

@@ -3,16 +3,32 @@
 The configuration and status web interface VELS\_WEB was designed as an easy interface
 for a course operator to view and change course parameters and monitor the course progress.
 It is implemented with web2py and can be run as a daemon accessing the datastores of the
-autosub submission system. This web interface was only 
-designed for internal operator use! Therefore it should only be reachable via 
+autosub submission system. This web interface was only
+designed for internal operator use! Therefore it should only be reachable via
 the internal networks using a web browser.
+
+VELS\_WEB uses Role-Based Access Control (RBAC) with the following groups:
+\begin{itemize}
+\item \textbf{vels\_tutor}: Can view information about the course, the students
+and their submissions.
+\item \textbf{vels\_admin}: Can additionally change course configuration items
+(e.g. tasks, whitelist) and manage users for VELS\_WEB access.
+\end{itemize}
+
+By default a user of the group vels\_admin is available at first startup:
+\begin{description}
+\item [Username:] vels\_admin
+\item [Password:] vels\_admin
+\end{description}
+You should change this password!
+\vspace{0.5cm}
 
 The menu items of the VELS\_WEB are the following:
 \begin{description}
 \item [Start:] The start page.
 \item [Users:] View of the registered students, allows to change or a student via the
-    "Edit" button, delete a student via the "Delete" button  and show the progress of
-    a student in the course via the "View" button. The table is sortable by column by
+    "Edit" button, delete a student via the "Delete" button  and show the
+	progress and submissions of a student in the course via the "View" button. The table is sortable by column by
     clicking on the head of the column.
 \item [Tasks:] The task configuration, will be discussed in Section \ref{sub:configTasks}.
 \item [Whitelist:] Change whitelisting for students, will be discussed in Section
@@ -22,6 +38,8 @@ The menu items of the VELS\_WEB are the following:
 \item [Statistics:] View statistics about sent and received emails and task success of
     the students.
 \item [User Tasks:] View mappings from students to individual tasks.
+\item [VELS\_WEB Users:] This item is only available for users in the vels\_admin
+group. Here VELS\_WEB users can be created and managed.
 \end{description}
 
 Usage of the VELS\_WEB interface will be discussed with system setup in Section \ref{system_setup}.
