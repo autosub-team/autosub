@@ -29,9 +29,9 @@ echo -e "Updating all tasks\n------------------\n"
 
 for task_repo in ${task_repos_VHDL[@]}; do
     git clone $task_repo temp
-	rm -f temp/.git
+	rm -rf temp/.git
 	rm -f temp/.gitignore
 	rsync -avh temp/ tasks/implementation/VHDL/
-	rm -r temp
+	rm -rf temp
 	echo -e "\n============================\n"
 done
