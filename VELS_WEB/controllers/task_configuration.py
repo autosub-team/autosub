@@ -271,4 +271,10 @@ def deleteTask():
     # also delete the TaskStats entry
     semester(TaskStats.TaskId==TaskNr).delete()
 
+    # also delete from SuccessfulTasks
+    # This does not work, so use raw sql query:
+    #semester(SuccessfulTasks.TaskNr==TaskNr).delete()
+    semester.executesql("DELETE FROM SuccessfulTasks WHERE TaskNr=?"
+        ,placeholders=TaskNr)
+
     redirect(URL('index'))

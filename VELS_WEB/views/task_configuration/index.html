@@ -38,7 +38,9 @@
            <td>{{=A('Edit', _href=URL('editTask?editTaskNr='+str(entry['TaskNr'])))}}</td>
            <td>{{=BUTTON_TO('Delete',\
 		   URL('deleteTask?TaskNr='+str(entry['TaskNr'])),\
-		   'Really delete task with TaskNr=' + str(entry['TaskNr']) + ' ?')}}</td>
+		   'Really delete task with TaskNr=' + str(entry['TaskNr']) + ' ? This ' + \
+		   'will also delete statistics & entries that users finished this task ' + \
+		   'successfully!')}}</td>
        </tr>
     {{pass}}
     </table>
