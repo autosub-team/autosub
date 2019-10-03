@@ -6,22 +6,37 @@ import os
 import datetime
 
 #Validators
-#TaskName, BackendInterfaceFile, TestExecutable, GeneratorExecutable, Language get validated with __extra_validation
-val={'TaskNr'              :[IS_NOT_EMPTY(),IS_DECIMAL_IN_RANGE(minimum=0)],
-     'TaskStart'           :[IS_NOT_EMPTY(),IS_DATETIME(format=T('%Y-%m-%d %H:%M'), \
+val={'TaskStart'           :[IS_NOT_EMPTY(), CLEANUP(),
+                             IS_DATETIME(format=T('%Y-%m-%d %H:%M'),
                              error_message='must be YYYY-MM-DD HH:MM!')],
-     'TaskDeadline'        :[IS_NOT_EMPTY(),IS_DATETIME(format=T('%Y-%m-%d %H:%M'), \
+
+     'TaskDeadline'        :[IS_NOT_EMPTY(), CLEANUP(),
+                             IS_DATETIME(format=T('%Y-%m-%d %H:%M'),
                              error_message='must be YYYY-MM-DD HH:MM!')],
-     'Score'               :[IS_NOT_EMPTY(),IS_DECIMAL_IN_RANGE(minimum=1)],
-     'TaskOperator'        :[IS_NOT_EMPTY(),IS_EMAIL_LIST()],
-     'TaskActive'          :[IS_NOT_EMPTY(),IS_IN_SET(['0','1'])]}
+
+     'Score'               :[IS_NOT_EMPTY(), CLEANUP(),
+                             IS_DECIMAL_IN_RANGE(minimum=1)],
+
+     'TaskOperator'        :[IS_NOT_EMPTY(), CLEANUP(),
+                             IS_EMAIL_LIST()],
+
+     'TaskActive'          :[IS_NOT_EMPTY(), CLEANUP(),
+                             IS_IN_SET(['0','1'])],
+
+     # the following will be extra validated in __extra_validation
+     'TaskName'            :[CLEANUP()],
+
+     'GeneratorExecutable' :[CLEANUP()],
+
+     'Language'            :[CLEANUP()],
+
+     'TestExecutable'      :[CLEANUP()],
+
+     'BackendInterfaceFile':[CLEANUP()],
+    }
 
 # takes parameter, automatic private
 def __extra_validation(form):
-    #strip all whitespaces from begin and end
-    for var in form.vars:
-        var = var.strip()
-
     tasks_dir = course(GeneralConfig.ConfigItem=='tasks_dir').select(GeneralConfig.Content)[0].Content
     available_tasks , available_backend_interfaces = __task_system_entries()
 
@@ -37,7 +52,7 @@ def __extra_validation(form):
         return
 
     #validate BackendInterfaceFile existence
-    backend_interface_file = form.vars.BackendInterfaceFile.strip()
+    backend_interface_file = form.vars.BackendInterfaceFile
 
     if not backend_interface_file:
         pass
@@ -152,15 +167,19 @@ def newTask():
     available_tasks , available_backend_interfaces = __task_system_entries()
 
     inputs = TD(newTaskNr,INPUT(_type='hidden',_name='TaskNr',_value=newTaskNr)),\
-             TD(INPUT(_name='TaskStart', requires=val['TaskStart'],\
+             TD(INPUT(_name='TaskStart', requires=val['TaskStart'],
                       _placeholder="YYYY-MM-DD HH:MM", _id = 'TaskStart')),\
-             TD(INPUT(_name='TaskDeadline', requires=val['TaskDeadline'],\
+             TD(INPUT(_name='TaskDeadline', requires=val['TaskDeadline'],
                       _placeholder="YYYY-MM-DD HH:MM",_id = 'TaskEnd')),\
-             TD(SELECT(_name="TaskName", *available_tasks)),\
-             TD(INPUT(_name='GeneratorExecutable', _value="generator.sh")),\
-             TD(INPUT(_name='Language', _value="")),\
-             TD(INPUT(_name='TestExecutable', _value="tester.sh")),\
-             TD(SELECT(_name='BackendInterfaceFile', *available_backend_interfaces, _value="")),\
+             TD(SELECT(_name="TaskName", requires=val['TaskName'],
+                       *available_tasks)),\
+             TD(INPUT(_name='GeneratorExecutable', _value="generator.sh",
+                      requires=val['GeneratorExecutable'])),\
+             TD(INPUT(_name='Language',requires=val['Language'], _value="")),\
+             TD(INPUT(_name='TestExecutable', requires=val['TestExecutable'],
+                      _value="tester.sh")),\
+             TD(SELECT(_name='BackendInterfaceFile', *available_backend_interfaces,
+                       requires=val['BackendInterfaceFile'], _value="")),\
              TD(INPUT(_name='Score', requires=val['Score'], _value=1)),\
              TD(INPUT(_name='TaskOperator', requires=val['TaskOperator'],\
                       _placeholder="Email")),\
@@ -168,10 +187,6 @@ def newTask():
     form=FORM(inputs)
 
     if(form.process(onvalidation=__extra_validation).accepted):
-        #strip all whitespaces from begin and end
-        for var in form.vars:
-            var = var.strip()
-
         #Set TaskActive based on the StartTime
         if(form.vars.TaskStart < datetime.datetime.now()):
             TaskActive = 1;
@@ -214,28 +229,30 @@ def editTask():
     available_tasks , available_backend_interfaces = __task_system_entries()
 
     inputs = TD(TaskNr),\
-             TD(INPUT(_name='TaskStart', _value=entry['TaskStart'],\
+             TD(INPUT(_name='TaskStart', _value=entry['TaskStart'],
                       requires=val['TaskStart'], _id ='TaskStart', )),\
-             TD(INPUT(_name='TaskDeadline', _value=entry['TaskDeadline'],\
+             TD(INPUT(_name='TaskDeadline', _value=entry['TaskDeadline'],
                       requires=val['TaskDeadline'], _id = 'TaskEnd')),\
-             TD(SELECT(_name="TaskName", value = entry['TaskName'],\
-                       *available_tasks)),\
-             TD(INPUT(_name='GeneratorExecutable', _value=entry['GeneratorExecutable'])),\
-             TD(INPUT(_name='Language', _value=entry['Language'])),\
-             TD(INPUT(_name='TestExecutable', _value=entry['TestExecutable'])),\
-             TD(SELECT(_name='BackendInterfaceFile', *available_backend_interfaces, value=entry['BackendInterfaceFile'])),\
-             TD(INPUT(_name='Score',_value=entry['Score'],\
+             TD(SELECT(_name="TaskName", value=entry['TaskName'],
+                       requires=val['TaskName'], *available_tasks)),\
+             TD(INPUT(_name='GeneratorExecutable',
+                      _value=entry['GeneratorExecutable'],
+                      requires=val['GeneratorExecutable'])),\
+             TD(INPUT(_name='Language', _value=entry['Language'],
+                      requires=val['Language'])),\
+             TD(INPUT(_name='TestExecutable', _value=entry['TestExecutable'],
+                      requires=val['TestExecutable'])),\
+             TD(SELECT(_name='BackendInterfaceFile', *available_backend_interfaces,
+                       value=entry['BackendInterfaceFile'],
+                       requires=val['BackendInterfaceFile'])),\
+             TD(INPUT(_name='Score',_value=entry['Score'],
                       requires=val['Score'])),\
-             TD(INPUT(_name='TaskOperator', _value=entry['TaskOperator'],\
+             TD(INPUT(_name='TaskOperator', _value=entry['TaskOperator'],
                       requires=val['TaskOperator'], _placeholder="Email")),\
              TD(INPUT(_type='submit',_label='Save'))
     form = FORM(inputs)
 
     if(form.process(onvalidation=__extra_validation).accepted):
-        #strip all whitespaces from begin and end
-        for var in form.vars:
-            var=var.strip()
-
         #Set TaskActive based on the StartTime
         if(form.vars.TaskStart < datetime.datetime.now()):
             TaskActive = 1;
