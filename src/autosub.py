@@ -646,6 +646,7 @@ def check_init_ressources():
     set_general_config_param('course_name', course_name)
     set_general_config_param('submission_email', imapmail)
     set_general_config_param('tasks_dir', tasks_dir)
+    set_general_config_param('log_dir', log_dir)
     set_general_config_param('auto_advance', auto_advance)
     set_general_config_param('allow_requests', allow_requests)
 
