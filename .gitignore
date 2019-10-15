@@ -16,7 +16,7 @@ tasks.stderr
 __pycache__
 daemon.pid
 autosub.pid
-users
+src/users
 VELS_WEB/errors/
 VELS_WEB/sessions/
 VELS_WEB/static/images/nr_mails_received.png
