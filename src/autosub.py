@@ -641,7 +641,7 @@ def check_init_ressources():
         set_general_config_param('archive_dir', 'archive')
         set_general_config_param('admin_email', '')
 
-    # values that are read and replaced at every new start of autosub
+    # values that are read/calculated and replaced at every new start of autosub
     set_general_config_param('course_mode', course_mode)
     set_general_config_param('course_name', course_name)
     set_general_config_param('submission_email', imapmail)
@@ -649,6 +649,10 @@ def check_init_ressources():
     set_general_config_param('log_dir', log_dir)
     set_general_config_param('auto_advance', auto_advance)
     set_general_config_param('allow_requests', allow_requests)
+
+    this_script_path = os.path.dirname(os.path.realpath(__file__))
+    users_dir = os.path.join(this_script_path,"users")
+    set_general_config_param('users_dir', users_dir)
 
 ##########################
 #         MAIN           #

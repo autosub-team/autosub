@@ -217,7 +217,8 @@ def viewUserTaskFolder():
     row = semester(Users.UserId == UserId).select(Users.Name).first()
     Name = row['Name']
 
-    usersDir="/home/vels/autosub/src/users"
+    row=course(GeneralConfig.ConfigItem == 'users_dir').select(GeneralConfig.ALL).first()
+    usersDir = row.Content
 
     taskSubDir = "{0}/Task{1}".format(UserId, TaskNr)
     absoluteDir = os.path.join(usersDir, taskSubDir)
