@@ -100,7 +100,7 @@ def sig_handler(signum, frame):
 ####
 # check_and_init_db_table
 ####
-def check_and_init_db_table(dbname, tablename, fields):
+def check_and_init_db_table(dbname, tablename, fields, clear_on_create = False):
     """
     Check if a table exists, if not create it with fields.
     """
@@ -116,6 +116,16 @@ def check_and_init_db_table(dbname, tablename, fields):
     if res:
         logmsg = 'table ' + tablename + ' exists'
         c.log_a_msg(logger_queue, "autosub.py", logmsg, "DEBUG")
+
+        if clear_on_create:
+            sql_cmd = "DELETE FROM {0}".format(tablename)
+            cur.execute(sql_cmd, data)
+            con.commit()
+
+            logmsg = 'cleared table ' + tablename
+            c.log_a_msg(logger_queue, "autosub.py", logmsg, "DEBUG")
+
+            con.close()
 
         return 0
 
@@ -166,6 +176,34 @@ def set_general_config_param(configitem, content):
     conc.commit()
 
     conc.close()
+
+###
+# set_plugin_data
+###
+def set_plugin_data(plugin_data):
+    """
+    Set the parameters for plugins, given in the config
+    into the table PluginData
+    """
+    cur, con = c.connect_to_db(coursedb, logger_queue, "autosub.py")
+
+    db_items = []
+
+    for plugin_name, items in plugin_data.items():
+        for item in items:
+            parameter_name = item[0]
+            value = item[1]
+            db_items.append( (plugin_name, parameter_name, value) )
+
+    sql_cmd = ("INSERT INTO PluginData (PluginName, ParameterName, Value) "
+               "VALUES (?,?,?)")
+    cur.executemany(sql_cmd, db_items)
+    con.commit()
+
+    logmsg = 'Set parameters for plugins'
+    c.log_a_msg(logger_queue, "autosub.py", logmsg, "DEBUG")
+
+    con.close()
 
 ####
 # load_specialmessage_to_db
@@ -656,6 +694,15 @@ def check_init_ressources():
     filename = 'nomultiplerequest.txt'
     load_specialmessage_to_db(env, 'NOMULTIPLEREQUEST', filename)
 
+    ### PluginData ###
+    table_name = "PluginData"
+    fields = ("PluginName TEXT, ParameterName, Value TEXT, "
+              "PRIMARY KEY (PluginName,ParameterName)")
+    clear_on_create = True
+    ret = check_and_init_db_table(coursedb, table_name, fields, clear_on_create)
+
+    set_plugin_data(plugin_data)
+
     ### GeneralConfig ##
     fields = "ConfigItem Text PRIMARY KEY, Content TEXT"
     ret = check_and_init_db_table(coursedb, "GeneralConfig", fields)
@@ -680,15 +727,11 @@ def check_init_ressources():
     users_dir = os.path.join(this_script_path,"users")
     set_general_config_param('users_dir', users_dir)
 
-    # values from the plugins, TODO: into own table better?
+    # configure, which plugins are active
     if plugins:
         set_general_config_param('plugins', ','.join(plugins))
     else:
         set_general_config_param('plugins', '')
-    for plugin_name, items in plugin_data.items():
-        for item in items:
-            set_general_config_param(plugin_name + "_" + item[0], item[1])
-
 
 ##########################
 #         MAIN           #

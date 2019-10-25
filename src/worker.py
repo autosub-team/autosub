@@ -54,7 +54,7 @@ class Worker(threading.Thread):
         return params
 
     ####
-    # get_plugins
+    # get_configured_plugins
     ####
     def get_configured_plugins(self, task_nr):
         """
@@ -63,19 +63,51 @@ class Worker(threading.Thread):
 
         curc, conc = c.connect_to_db(self.dbs["course"], self.queues["logger"], self.name)
 
-        data = {'task_nr': task_nr} #TODO: FUTURE
-
         sql_cmd = ("SELECT Content FROM GeneralConfig "
                    "WHERE ConfigItem == 'plugins'")
         curc.execute(sql_cmd)
         plugins = curc.fetchone()[0]
-        if plugins:
-            plugins_list = plugins.split(",")
+
+        if plugins == "":
+            plugins_ist = None
         else:
-            plugins_list = None
+            plugins_list = plugins.split(",")
+
         conc.close()
 
         return plugins_list
+
+    ####
+    # get_plugin_data
+    ####
+    def get_plugin_data(self, plugin_list):
+        """
+        Get the parameters for the configured plugins as dict for each plugin
+        """
+
+        curc, conc = c.connect_to_db(self.dbs["course"], self.queues["logger"], self.name)
+
+        plugin_data_by_plugin = {k:[] for k in plugin_list}
+
+        for plugin_name in plugin_list:
+            sql_cmd = ("SELECT ParameterName, Value FROM PluginData "
+                       "WHERE PluginName = :PluginName ")
+            data = {"PluginName" : plugin_name}
+            curc.execute(sql_cmd, data)
+
+            rows = curc.fetchall()
+
+            if not rows:
+                break # error will be handled in execute_plugins
+
+            for row in rows:
+                parameter_name = row["ParameterName"]
+                value = row["Value"]
+                plugin_data_by_plugin[plugin_name].append((parameter_name, value))
+
+            conc.close()
+
+        return plugin_data_by_plugin
 
     ####
     # get_configured_backend_interface
@@ -267,33 +299,33 @@ class Worker(threading.Thread):
         user_task_dir = "users/{0}/Task{1}".format(user_id, task_nr)
         task_dir = self.get_task_dir(task_nr)
 
-        curc, conc = c.connect_to_db(self.dbs["course"], self.queues["logger"], self.name)
+        plugin_data = self.get_plugin_data(plugins)
 
         for plugin_name in plugins:
             # check if plugin script exists
-            plugin_script="plugins/"+plugin_name + ".py"
+            plugin_script= os.path.join("plugins/", plugin_name, plugin_name + ".py")
             if not os.path.isfile(plugin_script):
-                logmsg = "Plugin script for plugin {} does not exist".format(plugin_name)
+                logmsg = "Plugin script {} for plugin {} does not exist"\
+                    .format(plugin_script, plugin_name)
                 c.log_a_msg(self.queues["logger"], self.name, logmsg, "ERROR")
                 self.create_error_plugin_msg(user_task_dir, user_id, task_nr)
                 return
 
-            # get configutation
-            plugin_prefix = plugin_name + "_"
-            sql_cmd = ("SELECT ConfigItem, Content FROM GeneralConfig "
-                       " WHERE ConfigItem LIKE :plugin_prefix")
-            data = {"plugin_prefix" : plugin_prefix + "%"}
+            if not plugin_data[plugin_name]:
+                logmsg = "Could not get parameters from database for plugin {}"\
+                         .format(plugin_name)
+                c.log_a_msg(self.queues["logger"], self.name, logmsg, "ERROR")
+                self.create_error_plugin_msg(user_task_dir, user_id, task_nr)
+                return
 
-            curc.execute(sql_cmd, data)
-            rows = curc.fetchall()
             plugin_params = {"user_task_dir": user_task_dir,
                              "task_dir" : task_dir,
                              "user_id": user_id,
                              "task_nr": task_nr}
 
-            for row in rows:
-                key = row["ConfigItem"].replace(plugin_prefix,"")
-                value = row["Content"]
+            for parameter in plugin_data[plugin_name] :
+                key = parameter[0]
+                value = parameter[1]
 
                 plugin_params.update({key:value})
 
