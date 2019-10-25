@@ -77,6 +77,9 @@ archive_queue = None
 exit_flag = False
 threads = []
 
+plugins = None
+plugin_data = {}
+
 ####
 # sig_handler
 ####
@@ -201,6 +204,9 @@ def parse_config(config):
            log_threshhold
     global course_name, course_mode, tasks_dir, specialmsgs_dir
     global auto_advance, allow_requests
+
+    global plugins
+    global plugin_data
 
 
     ####################
@@ -358,6 +364,26 @@ def parse_config(config):
             allow_requests = "no"
     except:
         allow_requests = "no"
+
+    ####################
+    #     PLUGINS      #
+    ####################
+    if config.has_option('course', 'plugins'):
+        plugins = [x.strip() for x in config.get('course', 'plugins').split(',')]
+    else:
+        plugins = []
+
+    if plugins:
+        for plugin_name in plugins:
+            if not config.has_section(plugin_name):
+                print("Found no section for plugin {}. Skipping this plugin"\
+                    .format(plugin_name))
+                plugins.remove(plugin_name)
+                continue
+
+            plugin_items = config.items(plugin_name)
+
+            plugin_data.update({plugin_name : plugin_items})
 
 ####
 # generate_queues
@@ -653,6 +679,16 @@ def check_init_ressources():
     this_script_path = os.path.dirname(os.path.realpath(__file__))
     users_dir = os.path.join(this_script_path,"users")
     set_general_config_param('users_dir', users_dir)
+
+    # values from the plugins, TODO: into own table better?
+    if plugins:
+        set_general_config_param('plugins', ','.join(plugins))
+    else:
+        set_general_config_param('plugins', '')
+    for plugin_name, items in plugin_data.items():
+        for item in items:
+            set_general_config_param(plugin_name + "_" + item[0], item[1])
+
 
 ##########################
 #         MAIN           #

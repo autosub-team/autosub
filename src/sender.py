@@ -14,6 +14,7 @@ import threading
 import smtplib
 import os
 import time
+import json
 
 from email.mime.multipart import MIMEMultipart
 from email.mime.base import MIMEBase
@@ -642,6 +643,80 @@ class MailSender(threading.Thread):
 
             # archive and notify that worker finished
             self.archive_message(message_id, is_finished_job=True)
+
+        elif message_type == "PluginResult":
+        ######################
+        #    PLUGINRESULT    #
+        ######################
+            path_to_msg = "users/{0}/Task{1}".format(user_id, task_nr)
+            plugin_msg_file = "{0}/plugin_msg.json".format(path_to_msg)
+            plugin_error = False
+            is_success = False
+
+            # Does the json file exist?
+            if not os.path.isfile(plugin_msg_file):
+                logmsg = ("Found no json file while assembling plugin result "
+                    "message for Task {0} and User {1}!").format(task_nr, user_id)
+                c.log_a_msg(self.queues["logger"], self.name, logmsg, "ERROR")
+                plugin_error = True
+
+            # json file exists
+            else:
+                # try open and read json file
+                try:
+                    with open(plugin_msg_file) as f:
+                        plugin_msg_data = json.loads(f.read())
+                        if "Subject" not in plugin_msg_data or \
+                           "Message" not in plugin_msg_data or \
+                           "IsSuccess" not in plugin_msg_data:
+                            raise Exception("Message, Subject or IsSuccess not defined!")
+
+                        msg['Subject'] = plugin_msg_data['Subject']
+                        message_text = plugin_msg_data['Message']
+                        is_success = plugin_msg_data['IsSuccess']
+
+                except Exception as error:
+                    logmsg = ("Error reading plugin result json file for "
+                        "Task {0} and User {1}: {2}!")\
+                        .format(task_nr, user_id, str(error))
+                    c.log_a_msg(self.queues["logger"], self.name, logmsg, "ERROR")
+                    plugin_error = True
+
+            # handle errors and alert to admins
+            if plugin_error:
+                msg['Subject'] = "Plugin Error Task" + task_nr
+                message_text = ("There is no feedback from the plugin. "
+                    "Please contact the course admin")
+
+                c.send_email(self.queues["sender"], "", user_id, \
+                             "TaskAlert", task_nr, "", message_id)
+
+            # collect error_attachments
+            reply_attachments = []
+
+            try:
+                logmsg = "searching attachments in: {0}/error_attachments"\
+                    .format(path_to_msg)
+                c.log_a_msg(self.queues["logger"], self.name, logmsg, "DEBUG")
+                ats = os.listdir("{0}/error_attachments".format(path_to_msg))
+                logmsg = "got the following attachments: {0}".format(ats)
+                c.log_a_msg(self.queues["logger"], self.name, logmsg, "DEBUG")
+                for next_attachment in ats:
+                    reply_attachments.append("{0}/error_attachments/{1}"\
+                        .format(path_to_msg, next_attachment))
+            except:
+                logmsg = "no attachments for task."
+                c.log_a_msg(self.queues["logger"], self.name, logmsg, "DEBUG")
+
+            # send out email
+            msg = self.assemble_email(msg, message_text, reply_attachments)
+            self.send_out_email(recipient, msg.as_string(), message_type)
+
+            # archive and notify that worker finished
+            self.archive_message(message_id, is_finished_job=True)
+
+            # set first successfull, TODO: this is based on simulation for now
+            self.check_and_set_first_successful(user_id, task_nr)
 
         elif message_type == "SecAlert":
         #################
