@@ -4,6 +4,7 @@ from os.path import join
 from os import listdir
 import os
 import datetime
+import shutil
 
 #Validators
 val={'TaskStart'           :[IS_NOT_EMPTY(), CLEANUP(),
@@ -280,6 +281,41 @@ def editTask():
 def deleteTask():
     TaskNr = request.vars['TaskNr']
 
+    ###########################
+    # MOVE USERS TASK FOLDERS #
+    ###########################
+    row = course(TaskConfiguration.TaskNr==TaskNr).select(TaskConfiguration.TaskName).first()
+    TaskName = row['TaskName']
+
+    row = course(GeneralConfig.ConfigItem=='users_dir').select(GeneralConfig.ALL).first()
+    usersDir = row.Content
+
+    now = datetime.datetime.now()
+
+    timestamp = now.strftime("%Y-%m-%d_%H:%M:%S")
+
+    rows = semester.executesql("SELECT UserId FROM UserTasks WHERE TaskNr=?"
+        ,placeholders=TaskNr, as_dict=True)
+
+    for row in rows:
+        UserId = row['UserId']
+
+        srcSubDir = "{0}/Task{1}".format(UserId, TaskNr)
+        srcAbsoluteDir = os.path.join(usersDir, srcSubDir)
+
+
+        tgtSubDir = "{0}/deletedTasks/{1}_{2}"\
+            .format(UserId, TaskName, timestamp)
+        tgtAbsoluteDir = os.path.join(usersDir, tgtSubDir)
+
+        if not os.path.exists(tgtAbsoluteDir):
+            os.makedirs(tgtAbsoluteDir)
+
+        shutil.move(srcAbsoluteDir, tgtAbsoluteDir)
+
+    ###########################
+    #  DELETE ENTRIES FROM DB #
+    ###########################
     if course(TaskConfiguration.TaskNr==TaskNr).delete() :
         msg ='Task with number' + TaskNr + ' deleted'
     else:
@@ -292,6 +328,10 @@ def deleteTask():
     # This does not work, so use raw sql query:
     #semester(SuccessfulTasks.TaskNr==TaskNr).delete()
     semester.executesql("DELETE FROM SuccessfulTasks WHERE TaskNr=?"
+        ,placeholders=TaskNr)
+
+    # also delete all User <-> Task entries from UserTasks
+    semester.executesql("DELETE FROM UserTasks WHERE TaskNr=?"
         ,placeholders=TaskNr)
 
     redirect(URL('index'))
