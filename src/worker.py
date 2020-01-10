@@ -69,7 +69,7 @@ class Worker(threading.Thread):
         plugins = curc.fetchone()[0]
 
         if plugins == "":
-            plugins_ist = None
+            plugins_list = None
         else:
             plugins_list = plugins.split(",")
 

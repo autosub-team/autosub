@@ -407,7 +407,11 @@ def parse_config(config):
     #     PLUGINS      #
     ####################
     if config.has_option('course', 'plugins'):
-        plugins = [x.strip() for x in config.get('course', 'plugins').split(',')]
+        value = config.get('course', 'plugins')
+        if not value.strip(): #empty string as value
+            plugins = []
+        else:
+            plugins = [x.strip() for x in config.get('course', 'plugins').split(',')]
     else:
         plugins = []
 
@@ -700,8 +704,8 @@ def check_init_ressources():
               "PRIMARY KEY (PluginName,ParameterName)")
     clear_on_create = True
     ret = check_and_init_db_table(coursedb, table_name, fields, clear_on_create)
-
-    set_plugin_data(plugin_data)
+    if plugins:
+        set_plugin_data(plugin_data)
 
     ### GeneralConfig ##
     fields = "ConfigItem Text PRIMARY KEY, Content TEXT"
