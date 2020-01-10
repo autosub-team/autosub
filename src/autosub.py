@@ -60,6 +60,8 @@ semesterdb = None
 coursedb = None
 log_dir = None
 log_threshhold = None
+server_timeout = None
+mail_retries = None
 
 course_name = None
 course_mode = None
@@ -198,7 +200,7 @@ def parse_config(config):
     global imapserver, imapuser, imappasswd, imapmail, imapsecurity, imapport
     global smtpserver, smtpuser, smtppasswd, smtpmail, smtpsecurity, smtpport
     global num_workers, poll_period, semesterdb, coursedb, log_dir,\
-           log_threshhold
+           log_threshhold, server_timeout, mail_retries
     global course_name, course_mode, tasks_dir, specialmsgs_dir
     global auto_advance, allow_requests
 
@@ -309,6 +311,16 @@ def parse_config(config):
     except:
         log_threshhold = "INFO"
 
+    try:
+        server_timeout = config.getint('system', 'server_timeout')
+    except:
+        server_timeout = 20
+
+    try:
+        mail_retries = config.getint('system', 'mail_retries')
+    except:
+        mail_retries = 5
+
     ####################
     #      COURSE      #
     ####################
@@ -418,7 +430,8 @@ def start_threads():
                  "user": smtpuser, \
                  "passwd": smtppasswd, \
                  "port" :smtpport, \
-                 "security": smtpsecurity}
+                 "security": smtpsecurity, \
+                 "mail_retries": mail_retries}
 
     course_info = {"name": course_name, "mail": imapmail, "tasks_dir": tasks_dir}
 
@@ -445,7 +458,8 @@ def start_threads():
                  "user": imapuser, \
                  "passwd": imappasswd, \
                  "port" :imapport, \
-                 "security": imapsecurity}
+                 "security": imapsecurity, \
+                 "timeout": server_timeout}
 
     fetcher_t = fetcher.MailFetcher("fetcher", queues, dbs, imap_info, \
                                     poll_period, allow_requests)
