@@ -2,7 +2,7 @@ val={'username'  : [IS_NOT_EMPTY()],
      'first_name': [IS_NOT_EMPTY()],
      'last_name' : [IS_NOT_EMPTY()],
      'email'     : [IS_NOT_EMPTY(),IS_EMAIL()],
-     'password'  : [IS_STRONG(entropy=50.0)]}
+     'password'  : [IS_STRONG(entropy=40.0)]}
 
 def __entries():
     rows=authdb().select(auth_user.ALL)
