@@ -32,6 +32,7 @@ import re #regex
 import datetime
 import queue
 from email.header import decode_header
+import socket
 
 import common as c
 
@@ -547,6 +548,9 @@ class MailFetcher(threading.Thread):
         """
         Connect to configured IMAP server.
         """
+        # Debug Log Message
+        logmsg = ("Start connecting to imap server")
+        c.log_a_msg(self.queues["logger"], self.name, logmsg, "DEBUG")
 
         try:
             # connecting to the imap server
@@ -590,6 +594,9 @@ class MailFetcher(threading.Thread):
         """
         Disconnect from existing imap connection
         """
+        # Debug Log Message
+        logmsg = ("Start disconnecting from imag server")
+        c.log_a_msg(self.queues["logger"], self.name, logmsg, "DEBUG")
 
         # m==0 is only possible in test-code (e.g. load_test.py)
         if m != 0:
@@ -614,6 +621,9 @@ class MailFetcher(threading.Thread):
 
         Note: This is done with read rights. All unread flags are unset.
         """
+        # Debug Log Message
+        logmsg = ("Start looking for unseen mails")
+        c.log_a_msg(self.queues["logger"], self.name, logmsg, "DEBUG")
 
         try:
             m.select("Inbox", readonly=False)
@@ -663,6 +673,9 @@ class MailFetcher(threading.Thread):
 
         Note: This is done readonly to preserve unread flags.
         """
+        # Debug Log Message
+        logmsg = ("Start looking for all mails")
+        c.log_a_msg(self.queues["logger"], self.name, logmsg, "DEBUG")
 
         try:
             m.select(mailbox='Inbox', readonly=True)
@@ -673,6 +686,10 @@ class MailFetcher(threading.Thread):
 
         idmap = dict()
 
+        # Debug Log Message
+        logmsg = ("Mailbox selected")
+        c.log_a_msg(self.queues["logger"], self.name, logmsg, "DEBUG")
+
         try:
             resp, items = m.uid('search', None, "ALL")
         except Exception as e:
@@ -680,9 +697,22 @@ class MailFetcher(threading.Thread):
             c.log_a_msg(self.queues["logger"], self.name, logmsg, "ERROR")
             return {}
 
+        # Debug Log Message
+        logmsg = ("All mails searched")
+        c.log_a_msg(self.queues["logger"], self.name, logmsg, "DEBUG")
+
         if resp == 'OK':
+            # Debug Log Message
+            logmsg = ("Server response OK, looping through items")
+            c.log_a_msg(self.queues["logger"], self.name, logmsg, "DEBUG")
+
             for uid in items[0].split():
                 try:
+
+                    # Debug Log Message
+                    logmsg = ("Trying to fetch item with uid=" + str(uid))
+                    c.log_a_msg(self.queues["logger"], self.name, logmsg, "DEBUG")
+
                     typ, msg_data = m.uid('fetch', uid, "(BODY[HEADER])")
                 except Exception as e:
                     logmsg = ("Failed to fetch message with uid {0} from "
@@ -690,8 +720,21 @@ class MailFetcher(threading.Thread):
                     c.log_a_msg(self.queues["logger"], self.name, logmsg, "ERROR")
                     return {}
 
-                mail = email.message_from_bytes(msg_data[0][1])
-                idmap[mail['Message-ID']] = uid
+                # Debug Log Message
+                logmsg = ("Fetch success for item with uid=" + str(uid))
+                c.log_a_msg(self.queues["logger"], self.name, logmsg, "DEBUG")
+
+                try:
+                    # Debug Log Message
+                    logmsg = ("Trying to get message_from_bytes for item with uid=" + str(uid))
+                    c.log_a_msg(self.queues["logger"], self.name, logmsg, "DEBUG")
+
+                    mail = email.message_from_bytes(msg_data[0][1])
+                    idmap[mail['Message-ID']] = uid
+                except Exception as e:
+                    logmsg = ("Failed to get msg from bytes for uid {0} from "
+                              "with error {1} ").format(uid, str(e))
+                    c.log_a_msg(self.queues["logger"], self.name, logmsg, "ERROR")
 
             return idmap
 
@@ -842,6 +885,9 @@ class MailFetcher(threading.Thread):
         Handle backlogged result emails. Only one (user_id, task_nr) job
         tuple can be dispatched at the same time.
         """
+        # Debug Log Message
+        logmsg = ("Start handling backlogged")
+        c.log_a_msg(self.queues["logger"], self.name, logmsg, "DEBUG")
 
         if not self.jobs_backlog:
             return
@@ -929,6 +975,9 @@ class MailFetcher(threading.Thread):
         Archive mails which are in the archive queue and therefore have been
         fully processed (copy & delete = move).
         """
+        # Debug Log Message
+        logmsg = ("Start handling archived")
+        c.log_a_msg(self.queues["logger"], self.name, logmsg, "DEBUG")
 
         archive_dir = self.get_archive_dir()
         uid_of_mid = self.idmap_all_emails(m)
@@ -944,11 +993,17 @@ class MailFetcher(threading.Thread):
             except queue.Empty:
                 return
 
-            # We need read rights to move a email
-            m.select(mailbox='Inbox', readonly=False)
-
             message_id = next_archive_msg.get('message_id')
             is_finished_job = next_archive_msg.get('is_finished_job')
+
+            # We need read rights to move a email
+            try:
+                m.select(mailbox='Inbox', readonly=False)
+            except Exception as e:
+                logmsg = ("Error selecting Inbox while archiving message with" 
+                          "ID: {0}. Threw exception: {1}.").format(message_id, str(e))
+                c.log_a_msg(self.queues["logger"], self.name, logmsg, "ERROR")
+
 
             # find uid for the mid
             logmsg = "Moving Message with ID: {0}".format(message_id)
@@ -958,8 +1013,7 @@ class MailFetcher(threading.Thread):
             except KeyError:
                 logmsg = ("Error moving message: could not find uid for Message"
                           "with ID: {0}").format(message_id)
-                c.log_a_msg(self.queues["logger"], self.name, \
-                            logmsg, "ERROR")
+                c.log_a_msg(self.queues["logger"], self.name, logmsg, "ERROR")
                 continue
 
             if is_finished_job:
@@ -982,8 +1036,14 @@ class MailFetcher(threading.Thread):
 
             # delete
             if result[0] == 'OK':
-                m.uid('STORE', uid, '+FLAGS', '(\Deleted)')
-                m.expunge()
+                try:
+                    m.uid('STORE', uid, '+FLAGS', '(\Deleted)')
+                    m.expunge()
+                except Exception as e:
+                    logmsg = ("Error deleting original message with ID: {0} during"
+                              "archiving. Threw exception: {1}.").format(message_id, str(e))
+                    c.log_a_msg(self.queues["logger"], self.name, logmsg, "ERROR")
+                    continue
             else:
                 logmsg = ("Error moving a message. Is the "
                           "configured archive_dir '{0}' existing "
@@ -991,6 +1051,10 @@ class MailFetcher(threading.Thread):
                 c.log_a_msg(self.queues["logger"], self.name, \
                             logmsg, "ERROR")
                 continue
+            
+            # Debug Log Message
+            logmsg = ("Handled one archived mail")
+            c.log_a_msg(self.queues["logger"], self.name, logmsg, "DEBUG")
 
     ####
     # handle_timeout
@@ -1027,6 +1091,10 @@ class MailFetcher(threading.Thread):
         """
         Fetch new emails and initiate appropriate action
         """
+
+        # Debug Log Message
+        logmsg = ("Start fetching new emails")
+        c.log_a_msg(self.queues["logger"], self.name, logmsg, "DEBUG")
 
         uid_of_mid = self.idmap_new_emails(m)
 
@@ -1152,6 +1220,10 @@ class MailFetcher(threading.Thread):
             self.handle_new(m)
             self.disconnect_from_imapserver(m)
 
+        # Debug Log Message
+        logmsg = ("Start new sleep period")
+        c.log_a_msg(self.queues["logger"], self.name, logmsg, "DEBUG")
+
         time.sleep(self.poll_period)
 
     ####
@@ -1166,6 +1238,13 @@ class MailFetcher(threading.Thread):
 
         logmsg = "Imapserver: '" + self.imap_info["server"] + "'"
         c.log_a_msg(self.queues["logger"], self.name, logmsg, "DEBUG")
+
+        # Setting server timeout for mail server
+        socket.setdefaulttimeout(self.imap_info["timeout"])
+
+        logmsg = "Setting server timeout for mail server to {0} seconds".format(self.imap_info["timeout"])
+        c.log_a_msg(self.queues["logger"], self.name, logmsg, "DEBUG")
+
 
         # This thread is running as a daemon thread, this is the while(1) loop that is
         # running until the thread is stopped by the main thread

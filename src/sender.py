@@ -347,12 +347,18 @@ class MailSender(threading.Thread):
 ####
 # send_out_email
 ####
-    def send_out_email(self, recipient, message, msg_type):
+    def send_out_email(self, recipient, message, msg_type, retry_cnt):
         """
         connect to the smtp server and send out an e-mail
         """
 
         try:
+            logmsg=""
+
+            # DEBUG: Just a debug excpetion for testing failed email sending
+            #if msg_type == "Status":
+            #    raise Exception("Fake Exception for testing resending")
+
             # connecting to smtp server
             if self.smtp_info["security"] == 'ssl':
                 server = smtplib.SMTP_SSL(self.smtp_info["server"], int(self.smtp_info["port"]))
@@ -379,10 +385,28 @@ class MailSender(threading.Thread):
             logmsg = "Error with server connection with security= " + \
                      self.smtp_info["security"] + " , port= " + str(self.smtp_info["port"])
             c.log_a_msg(self.queues["logger"], self.name, logmsg, "ERROR")
+        finally:
+            if logmsg != "":
+                # failed to send the mail, retry according to config
+                self.resend_mail(msg_type,recipient,message,retry_cnt)
+
+                try:
+                     server.close()
+                except Exception as exc:
+                    logmsg = str(exc)
+                    c.log_a_msg(self.queues["logger"], self.name, logmsg, "ERROR")
+                return
 
         try:
+            # DEBUG: Just a debug exception for testing failed email sending
+            #if msg_type == "NoMultipleRequest":
+            #    raise Exception("Fake Exception for testing resending")
+            #if msg_type == "RetrySendingFailedMail":
+            #    if retry_cnt<9:
+            #        raise Exception("Fake Exception for testing resending")
+
             server.sendmail(self.smtp_info["mail"], recipient.split(','), message)
-            server.close()
+
             c.log_a_msg(self.queues["logger"], self.name,\
             "Successfully sent an e-mail of type '{0}' to {1}!".format(msg_type, recipient), "INFO")
             c.increment_db_statcounter(self.dbs["semester"], 'nr_mails_sent', \
@@ -390,7 +414,51 @@ class MailSender(threading.Thread):
         except Exception as exc:
             logmsg = str(exc)
             c.log_a_msg(self.queues["logger"], self.name, logmsg, "ERROR")
-            c.log_a_msg(self.queues["logger"], self.name, "Failed to send out an e-mail of type '{0}'!".format(msg_type), "ERROR")
+            c.log_a_msg(self.queues["logger"], self.name, ("Failed to send out an e-mail of type "
+                        "'{0} for user {1}'!").format(msg_type,recipient), "ERROR")
+
+            # failed to send the mail, retry according to config
+            self.resend_mail(msg_type, recipient, message,retry_cnt)
+            try:
+                server.close()
+            except Exception as exc:
+                logmsg = str(exc)
+                c.log_a_msg(self.queues["logger"], self.name, logmsg, "ERROR")
+            return
+
+        try:
+            server.close()
+        except Exception as exc:
+            logmsg = str(exc)
+            c.log_a_msg(self.queues["logger"], self.name, logmsg, "ERROR")
+
+
+
+####
+# handle resending a failed mail
+####
+    def resend_mail(self, msg_type, recipient, message,retry_cnt):
+
+        if msg_type == "RetrySendingFailedMail":
+            if retry_cnt < self.smtp_info["mail_retries"]:
+                retry_cnt =retry_cnt+1
+                time.sleep(5)
+                c.log_a_msg(self.queues["logger"], self.name, ("Retrying to send out of type '{0} "
+                            "for user {1}' for {2} time!").format(msg_type,recipient,retry_cnt), "INFO")
+                self.queues["sender"].put(dict({"recipient": recipient, "user_id": "",
+                    "message_type": "RetrySendingFailedMail", "task_nr": "", "body": message,
+                    "message_id": "", "retry_cnt": retry_cnt}))
+            else:
+                c.log_a_msg(self.queues["logger"], self.name, ("Could not resend email of type '{0} "
+                    "for user {1}'. Reached maximum retry number!").format(msg_type,recipient), "ERROR")
+
+        else:
+            c.log_a_msg(self.queues["logger"], self.name, ("Retrying to send out of type '{0} for "
+                " user {1}'!").format(msg_type,recipient), "INFO")
+            self.queues["sender"].put(dict({"recipient": recipient, "user_id": "",
+                "message_type": "RetrySendingFailedMail", "task_nr": "", "body": message,
+                "message_id": "", "retry_cnt": 0}))
+        return
 
 ####
 # read_text_file
@@ -463,6 +531,9 @@ class MailSender(threading.Thread):
         recipient = str(next_send_msg.get('recipient'))
         message_type = str(next_send_msg.get('message_type'))
 
+        if message_type == "RetrySendingFailedMail":
+            retry_cnt = int(next_send_msg.get('retry_cnt'))
+
         curs, cons = c.connect_to_db(self.dbs["semester"], self.queues["logger"], \
                                      self.name)
         curc, conc = c.connect_to_db(self.dbs["course"], self.queues["logger"], \
@@ -521,7 +592,7 @@ class MailSender(threading.Thread):
                                 "configuration of Task {0}").format(task_nr)
                 msg = self.assemble_email(msg, message_text, '')
                 self.send_out_email(recipient, msg.as_string(), \
-                                    message_type)
+                                    message_type, 0)
                 self.archive_message(message_id)
 
                 return
@@ -539,7 +610,7 @@ class MailSender(threading.Thread):
                                 "probably misconfiguration or missing"
                                 "configuration of Task {0}").format(task_nr)
                 msg = self.assemble_email(msg, message_text, '')
-                self.send_out_email(recipient, msg.as_string(), message_type)
+                self.send_out_email(recipient, msg.as_string(), message_type, 0)
                 self.archive_message(message_id)
                 return
 
@@ -566,7 +637,7 @@ class MailSender(threading.Thread):
                 attachments = ""
 
             msg = self.assemble_email(msg, message_text, attachments)
-            self.send_out_email(recipient, msg.as_string(), message_type)
+            self.send_out_email(recipient, msg.as_string(), message_type, 0)
             self.archive_message(message_id)
 
             # Everything went okay -> adjust cur_task_nr
@@ -609,7 +680,7 @@ class MailSender(threading.Thread):
                 c.log_a_msg(self.queues["logger"], self.name, logmsg, "DEBUG")
 
             msg = self.assemble_email(msg, message_text, reply_attachments)
-            self.send_out_email(recipient, msg.as_string(), message_type)
+            self.send_out_email(recipient, msg.as_string(), message_type, 0)
 
             # archive and notify that worker finished
             self.archive_message(message_id, is_finished_job=True)
@@ -621,7 +692,7 @@ class MailSender(threading.Thread):
             msg['Subject'] = "Success Task " + task_nr
             message_text = "You solved the task successfully. Congratulations!"
             msg = self.assemble_email(msg, message_text, '')
-            self.send_out_email(recipient, msg.as_string(), message_type)
+            self.send_out_email(recipient, msg.as_string(), message_type, 0)
 
             #set first done if not set yet
             self.check_and_set_first_successful(user_id, task_nr)
@@ -639,7 +710,7 @@ class MailSender(threading.Thread):
                 message_text = self.read_specialmessage('CONGRATS')
                 msg['Subject'] = "Congratulations on solving all Tasks!"
                 msg = self.assemble_email(msg, message_text, '')
-                self.send_out_email(recipient, msg.as_string(), "LastSolved")
+                self.send_out_email(recipient, msg.as_string(), "LastSolved", 0)
 
             # archive and notify that worker finished
             self.archive_message(message_id, is_finished_job=True)
@@ -730,7 +801,7 @@ class MailSender(threading.Thread):
                 msg['Subject'] = "Security Alert User:" + recipient
                 message_text = "Error report:\n\n""" + error_msg
                 msg = self.assemble_email(msg, message_text, '')
-                self.send_out_email(admin_mail, msg.as_string(), message_type)
+                self.send_out_email(admin_mail, msg.as_string(), message_type, 0)
 
         elif message_type == "TaskAlert":
         #################
@@ -745,7 +816,7 @@ class MailSender(threading.Thread):
                                 "and User {1}. Check the logfiles(tasks.stderr, tasks.stdout, "
                                 "autosub.log) to find what caused it.").format(task_nr, user_id)
                 msg = self.assemble_email(msg, message_text, '')
-                self.send_out_email(admin_mail, msg.as_string(), message_type)
+                self.send_out_email(admin_mail, msg.as_string(), message_type, 0)
 
         elif message_type == "TaskErrorNotice":
         ####################
@@ -757,7 +828,7 @@ class MailSender(threading.Thread):
                             "email to the administrators {0} and tell them about the time and what you did last. "
                             "They will work on resolving the issue as soon as possible.").format(admins)
             msg = self.assemble_email(msg, message_text, '')
-            self.send_out_email(recipient, msg.as_string(), message_type)
+            self.send_out_email(recipient, msg.as_string(), message_type, 0)
 
             # archive, is_finished_job=True for tester errors, so the job can be
             # deleted from the active jobs
@@ -788,11 +859,11 @@ class MailSender(threading.Thread):
                 if res:
                     attachments = str(res[0]).split()
                 msg = self.assemble_email(msg, message_text, attachments)
-                self.send_out_email(recipient, msg.as_string(), message_type)
+                self.send_out_email(recipient, msg.as_string(), message_type, 0)
                 self.archive_message(message_id)
             else:
                 msg = self.assemble_email(msg, message_text, attachments)
-                self.send_out_email(recipient, msg.as_string(), message_type)
+                self.send_out_email(recipient, msg.as_string(), message_type, 0)
                 self.archive_message(message_id)
 
         elif message_type == "TasksList":
@@ -802,7 +873,7 @@ class MailSender(threading.Thread):
             msg['Subject'] = "List of tasks"
             message_text = self.generate_tasks_list()
             msg = self.assemble_email(msg, message_text, attachments)
-            self.send_out_email(recipient, msg.as_string(), message_type)
+            self.send_out_email(recipient, msg.as_string(), message_type, 0)
             self.archive_message(message_id)
 
         elif message_type == "InvalidTask":
@@ -812,7 +883,7 @@ class MailSender(threading.Thread):
             msg['Subject'] = "Invalid Task Number"
             message_text = self.read_specialmessage('INVALID')
             msg = self.assemble_email(msg, message_text, '')
-            self.send_out_email(recipient, msg.as_string(), message_type)
+            self.send_out_email(recipient, msg.as_string(), message_type, 0)
             self.archive_message(message_id)
 
         elif message_type == "TaskNotSubmittable":
@@ -822,7 +893,7 @@ class MailSender(threading.Thread):
             msg['Subject'] = "Submission for Task{0} not possible".format(str(task_nr))
             message_text = self.read_specialmessage('TASKNOTSUBMITTABLE')
             msg = self.assemble_email(msg, message_text, '')
-            self.send_out_email(recipient, msg.as_string(), message_type)
+            self.send_out_email(recipient, msg.as_string(), message_type, 0)
             self.archive_message(message_id)
 
         elif message_type == "TaskNotActive":
@@ -832,18 +903,29 @@ class MailSender(threading.Thread):
             msg['Subject'] = "Task{0} not active yet".format(str(task_nr))
             message_text = self.read_specialmessage('TASKNOTACTIVE')
             msg = self.assemble_email(msg, message_text, '')
-            self.send_out_email(recipient, msg.as_string(), message_type)
+            self.send_out_email(recipient, msg.as_string(), message_type, 0)
             self.archive_message(message_id)
 
         elif message_type == "NoMultipleRequest":
         #########################
         #  NO MULTIPLE REQUEST  #
         #########################
-            msg['Subject'] = "Already received Task{0}".format(str(task_nr))
+	    # also attach task variant (e.g. if user lost it)
+            data = {'task_nr': str(task_nr), 'user_id': user_id}
+            sql_cmd = ("SELECT TaskAttachments FROM UserTasks "
+                       "WHERE TaskNr == :task_nr AND UserId == :user_id")
+            curs.execute(sql_cmd, data)
+            res = curs.fetchone()
+            logmsg = "got the following attachments: " + str(res)
+            c.log_a_msg(self.queues["logger"], self.name, logmsg, "DEBUG")
+            if res:
+                attachments = str(res[0]).split()
 
+            # assemble mail
+            msg['Subject'] = "Already received Task{0}".format(str(task_nr))
             message_text = self.read_specialmessage('NOMULTIPLEREQUEST')
-            msg = self.assemble_email(msg, message_text, '')
-            self.send_out_email(recipient, msg.as_string(), message_type)
+            msg = self.assemble_email(msg, message_text, attachments)
+            self.send_out_email(recipient, msg.as_string(), message_type, 0)
             self.archive_message(message_id)
 
         elif message_type == "CurLast":
@@ -859,7 +941,7 @@ class MailSender(threading.Thread):
                    c.get_task_starttime(self.dbs["course"], str(task_nr), \
                    self.queues["logger"], self.name))
             msg = self.assemble_email(msg, message_text, '')
-            self.send_out_email(recipient, msg.as_string(), message_type)
+            self.send_out_email(recipient, msg.as_string(), message_type, 0)
             self.archive_message(message_id)
 
         elif message_type == "DeadTask":
@@ -869,7 +951,7 @@ class MailSender(threading.Thread):
             msg['Subject'] = "Deadline for Task{0} has passed.".format(str(task_nr))
             message_text = self.read_specialmessage('DEADTASK')
             msg = self.assemble_email(msg, message_text, '')
-            self.send_out_email(recipient, msg.as_string(), message_type)
+            self.send_out_email(recipient, msg.as_string(), message_type, 0)
             self.archive_message(message_id)
 
         elif message_type == "Usage":
@@ -879,7 +961,7 @@ class MailSender(threading.Thread):
             msg['Subject'] = "Usage"
             message_text = self.read_specialmessage('USAGE')
             msg = self.assemble_email(msg, message_text, '')
-            self.send_out_email(recipient, msg.as_string(), message_type)
+            self.send_out_email(recipient, msg.as_string(), message_type, 0)
             self.archive_message(message_id)
 
         elif message_type == "Question":
@@ -889,7 +971,7 @@ class MailSender(threading.Thread):
             msg['Subject'] = "Question received"
             message_text = self.read_specialmessage('QUESTION')
             msg = self.assemble_email(msg, message_text, '')
-            self.send_out_email(recipient, msg.as_string(), message_type)
+            self.send_out_email(recipient, msg.as_string(), message_type, 0)
 
         elif message_type == "QFwd":
         #################
@@ -906,7 +988,7 @@ class MailSender(threading.Thread):
             else:
                 orig_mail.replace_header("Subject", "Question from " + orig_from)
 
-            self.send_out_email(recipient, orig_mail.as_string(), message_type)
+            self.send_out_email(recipient, orig_mail.as_string(), message_type, 0)
             self.archive_message(message_id)
 
         elif message_type == "Welcome":
@@ -916,7 +998,7 @@ class MailSender(threading.Thread):
             msg['Subject'] = "Welcome!"
             message_text = self.read_specialmessage('WELCOME')
             msg = self.assemble_email(msg, message_text, '')
-            self.send_out_email(recipient, msg.as_string(), message_type)
+            self.send_out_email(recipient, msg.as_string(), message_type, 0)
             self.archive_message(message_id)
 
         elif message_type == "RegOver":
@@ -926,7 +1008,7 @@ class MailSender(threading.Thread):
             msg['Subject'] = "Registration Deadline has passed"
             message_text = self.read_specialmessage('REGOVER')
             msg = self.assemble_email(msg, message_text, '')
-            self.send_out_email(recipient, msg.as_string(), message_type)
+            self.send_out_email(recipient, msg.as_string(), message_type, 0)
             self.archive_message(message_id)
 
         elif message_type == "NotAllowed":
@@ -937,7 +1019,7 @@ class MailSender(threading.Thread):
             message_text = self.read_specialmessage('NOTALLOWED')
             message_text = message_text.replace("[[recipient]]",recipient)
             msg = self.assemble_email(msg, message_text, '')
-            self.send_out_email(recipient, msg.as_string(), message_type)
+            self.send_out_email(recipient, msg.as_string(), message_type, 0)
             self.archive_message(message_id)
 
         elif message_type == "DeletedFromWhitelist":
@@ -947,9 +1029,15 @@ class MailSender(threading.Thread):
             msg['Subject'] = "Not whitelisted anymore"
             message_text = self.read_specialmessage('DeletedFromWhitelist')
             msg = self.assemble_email(msg, message_text, '')
-            self.send_out_email(recipient, msg.as_string(), message_type)
+            self.send_out_email(recipient, msg.as_string(), message_type, 0)
             self.archive_message(message_id)
 
+        elif message_type == "RetrySendingFailedMail":
+        #################################
+        #  RETRY SENDING A FAILED MAIL  #
+        #################################
+            orig_mail = next_send_msg.get('body')
+            self.send_out_email(recipient, orig_mail, message_type,retry_cnt)
         else:
         #################
         #   UNKNOWN    #
@@ -957,7 +1045,7 @@ class MailSender(threading.Thread):
             c.log_a_msg(self.queues["logger"], self.name, \
                         "Unkown Message Type in the sender_queue!", "ERROR")
             msg = self.assemble_email(msg, message_text, '')
-            self.send_out_email(recipient, msg.as_string(), message_type)
+            self.send_out_email(recipient, msg.as_string(), message_type, 0)
             self.archive_message(message_id)
 
         cons.close()
