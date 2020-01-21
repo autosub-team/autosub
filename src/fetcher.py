@@ -449,7 +449,11 @@ class MailFetcher(threading.Thread):
 
             else:
                 # save the attached files to user task directory
-                self.save_submission_user_dir(user_id, task_nr, mail)
+                try:
+                    self.save_submission_user_dir(user_id, task_nr, mail)
+                except Exception as e:
+                    logmsg = ("Failed to save submission for user {0} and task {1} with  error: {2}").format(user_id,task_nr,str(e))
+                    c.log_a_msg(self.queues["logger"], self.name, logmsg, "ERROR")
 
                 c.dispatch_job(self.queues["job"], user_id, task_nr, \
                                    user_email, message_id)
