@@ -793,30 +793,35 @@ class MailSender(threading.Thread):
         #################
         #  SEC ALERT    #
         #################
-            admin_mails = self.get_admin_emails()
-            for admin_mail in admin_mails:
-                msg['To'] = admin_mail
-                path_to_msg = "users/"+ user_id + "/Task" + task_nr + "/error_msg"
-                error_msg = self.read_text_file(path_to_msg)
-                msg['Subject'] = "Security Alert User:" + recipient
-                message_text = "Error report:\n\n""" + error_msg
-                msg = self.assemble_email(msg, message_text, '')
-                self.send_out_email(admin_mail, msg.as_string(), message_type, 0)
 
+            # get error log
+            path_to_msg = "users/{0}/Task{1}".format(user_id, task_nr)
+            error_msg = self.read_text_file("{0}/error_msg".format(path_to_msg))
+           
+            # send security alert to admins
+            admin_mails = ",".join(self.get_admin_emails())
+            msg['To'] = admin_mails
+            message_text = ("Security Alert: User {}, Task {}:\n\n""").format(user_id,task_nr) 
+            message_text = message_text+ error_msg
+            msg['Subject'] = "Security Alert User: " + recipient
+            msg = self.assemble_email(msg, message_text, '')
+
+            self.send_out_email(admin_mails, msg.as_string(), message_type, 0)
+        
         elif message_type == "TaskAlert":
         #################
         #   TASK ALERT  #
         #################
-            admin_mails = self.get_admin_emails()
-            for admin_mail in admin_mails:
-                msg['To'] = admin_mail
-                msg['Subject'] = "Task Error Alert Task{0} User{1}".format( \
-                                 str(task_nr), str(user_id))
-                message_text = ("There was an error with the Task {0} " \
-                                "and User {1}. Check the logfiles(tasks.stderr, tasks.stdout, "
-                                "autosub.log) to find what caused it.").format(task_nr, user_id)
-                msg = self.assemble_email(msg, message_text, '')
-                self.send_out_email(admin_mail, msg.as_string(), message_type, 0)
+            admin_mails = ",".join(self.get_admin_emails())
+
+            msg['To'] = admin_mails
+            msg['Subject'] = "Task Error Alert Task{0} User{1}".format( \
+                             str(task_nr), str(user_id))
+            message_text = ("There was an error with the Task {0} " \
+                            "and User {1}. Check the logfiles(tasks.stderr, tasks.stdout, "
+                            "autosub.log) to find what caused it.").format(task_nr, user_id)
+            msg = self.assemble_email(msg, message_text, '')
+            self.send_out_email(admin_mails, msg.as_string(), message_type, 0)
 
         elif message_type == "TaskErrorNotice":
         ####################

@@ -229,6 +229,9 @@ class Worker(threading.Thread):
             logmsg = "SecAlert: This test failed due to probable attack by user!"
             c.log_a_msg(self.queues["logger"], self.name, logmsg, "INFO")
 
+            c.send_email(self.queues["sender"], user_email, user_id, \
+                        "Failed", task_nr, "", message_id)
+
             c.send_email(self.queues["sender"], "", user_id, \
                          "SecAlert", task_nr, "", message_id)
 
