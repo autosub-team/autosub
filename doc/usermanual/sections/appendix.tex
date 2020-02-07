@@ -35,7 +35,7 @@ serverport & Port to be used. & ssl:993 else:143\\
 \hline
 \textbf{servername} & Hostname.domain of the SMTP server. & ~ \\
 \hline
-\textbf{username }& Username to be used to login. & ~ \\
+\textbf{username}& Username to be used to login. & ~ \\
 \hline
 \textbf{password} & Password to be used to login. & ~ \\
 \hline
@@ -70,6 +70,12 @@ log\_dir & Directory to put tasks and autosub log files. & logs  \\
 \hline
 log\_threshhold & Threshhold from which level up log entries should be logged.
     Possible values: DEBUG INFO WARNING ERROR & INFO\\
+\hline
+\hline
+server\_timout & Timout for all Mail server requests [s]. & 20  \\
+\hline
+\hline
+mail\_retries & Describes how often VELS tries to resend an E-Mail, which was not send out correctly & 5  \\
 \hline
 \end{tabular}
 

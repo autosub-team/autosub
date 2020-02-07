@@ -103,6 +103,8 @@ num_workers: 10
 poll_period: 5
 log_dir: /home/martin/autosub/src
 log_threshhold: INFO
+server_timeout: 20
+mail_retries: 5
 
 [course]
 tasks_dir: /home/martin/autosub/tasks/implementation/VHDL
@@ -283,6 +285,15 @@ the autosub daemon.
 Always check first if all the task you want to use support this mode!
 
 The remaining configuration is similar to configuration for normal mode.
+
+\subsection{Security Features}\label{sub:securityfeatures}
+Since unknown code is being executed, there is a potential risk that it has malicious content.
+Therefore, a list of forbidden keywords can be defined. If one of these keywords is found in one of 
+the user's filed, the code will not be excecuted, the user will be informed and a security alert 
+will be send to the admins.
+
+The list of illegal words (illegal\_words.txt) can be found in the subfolder 'support\_files' of the 
+backend directory. Every line in that file represents one keyword (including all whitespaces etc.).
 
 %\subsection{Testing VELS}\label{sub:testingvels}
 %
