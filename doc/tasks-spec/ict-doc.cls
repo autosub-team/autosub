@@ -23,10 +23,10 @@
 \usepackage{fancyhdr}
 \usepackage[labelfont=bf,font=footnotesize]{caption} % Beschriftung von captions fett
 
-\usepackage[english]{babel} %language 
+\usepackage[english]{babel} %language
 
-\setkomafont{sectioning}{\bfseries} 
-\setkomafont{descriptionlabel}{\bfseries} 
+\setkomafont{sectioning}{\bfseries}
+\setkomafont{descriptionlabel}{\bfseries}
 
 \definecolor{TUBlue}{HTML}{0F6799}
 
@@ -81,7 +81,8 @@
 
 \noindent
 {\bf Project:} \hfill \docproject \\
-{\bf Author(s):} \hfill \docauthors \\
+{\bf Author(s):} \hfill \docauthorsa \\
+{\hspace*{\fill} \docauthorsb} \\
 {\bf Reviewer:} \hfill \docreviewers \\
 {\bf Version:} \hfill \docversion \\
 {\bf Date:} \hfill \docdate \\
@@ -98,7 +99,7 @@
 \fancyhead[C]{} %zentrierte Kopfzeile
 \fancyhead[R]{\small \docdate} %Kopfzeile rechts
 \renewcommand{\headrulewidth}{0.4pt} %obere Trennlinie
-\fancyfoot[L]{\small TU Wien, Institute of Computer Technology} 
+\fancyfoot[L]{\small TU Wien, Institute of Computer Technology}
 \fancyfoot[R]{\small \thepage} %Seitennummer
 \renewcommand{\footrulewidth}{0.4pt} %untere Trennlinie
 
