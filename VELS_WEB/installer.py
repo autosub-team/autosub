@@ -61,7 +61,7 @@ if args.reinstall:
 
 #get paths to databases from configfile
 config = configparser.ConfigParser()
-config.readfp(open(configfile))
+config.read_file(open(configfile))
 
 try:
     semesterdb_file = config.get('system', 'semesterdb')
