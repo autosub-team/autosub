@@ -11,6 +11,8 @@ import datetime
 from subprocess import Popen, PIPE
 import os
 
+import json
+
 import common as c
 
 class Worker(threading.Thread):
@@ -50,6 +52,62 @@ class Worker(threading.Thread):
         params = curs.fetchone()[0]
         cons.close()
         return params
+
+    ####
+    # get_configured_plugins
+    ####
+    def get_configured_plugins(self, task_nr):
+        """
+        Get the configured plugins for a task
+        """
+
+        curc, conc = c.connect_to_db(self.dbs["course"], self.queues["logger"], self.name)
+
+        sql_cmd = ("SELECT Content FROM GeneralConfig "
+                   "WHERE ConfigItem == 'plugins'")
+        curc.execute(sql_cmd)
+        plugins = curc.fetchone()[0]
+
+        if plugins == "":
+            plugins_list = None
+        else:
+            plugins_list = plugins.split(",")
+
+        conc.close()
+
+        return plugins_list
+
+    ####
+    # get_plugin_data
+    ####
+    def get_plugin_data(self, plugin_list):
+        """
+        Get the parameters for the configured plugins as dict for each plugin
+        """
+
+        curc, conc = c.connect_to_db(self.dbs["course"], self.queues["logger"], self.name)
+
+        plugin_data_by_plugin = {k:[] for k in plugin_list}
+
+        for plugin_name in plugin_list:
+            sql_cmd = ("SELECT ParameterName, Value FROM PluginData "
+                       "WHERE PluginName = :PluginName ")
+            data = {"PluginName" : plugin_name}
+            curc.execute(sql_cmd, data)
+
+            rows = curc.fetchall()
+
+            if not rows:
+                break # error will be handled in execute_plugins
+
+            for row in rows:
+                parameter_name = row["ParameterName"]
+                value = row["Value"]
+                plugin_data_by_plugin[plugin_name].append((parameter_name, value))
+
+            conc.close()
+
+        return plugin_data_by_plugin
 
     ####
     # get_configured_backend_interface
@@ -103,6 +161,44 @@ class Worker(threading.Thread):
         return scriptpath
 
     ####
+    # get_task_dir
+    ####
+    def get_task_dir(self, task_nr):
+        """
+        Get the path to taskfolder of task_nr.
+        Returns None if not proper config.
+        """
+
+        curc, conc = c.connect_to_db(self.dbs["course"], self.queues["logger"], self.name)
+
+        data = {'task_nr': task_nr}
+        sql_cmd = ("SELECT TaskName FROM TaskConfiguration "
+                   "WHERE TaskNr == :task_nr")
+        curc.execute(sql_cmd, data)
+        res = curc.fetchone()
+
+        if not res:
+            logmsg = ("Failed to fetch Configuration for TaskNr: {0} from the "
+                      "database! Table TaskConfiguration corrupted?").format(task_nr)
+            c.log_a_msg(self.queues["logger"], self.name, logmsg, "ERROR")
+            return None
+
+        else:
+            task_name = res[0]
+
+        sql_cmd = ("SELECT Content FROM GeneralConfig "
+                   "WHERE ConfigItem == 'tasks_dir'")
+        curc.execute(sql_cmd, data)
+        res = curc.fetchone()
+
+        tasks_dir = res[0]
+        #TODO: Error check
+
+        task_dir = os.path.join(tasks_dir, task_name)
+
+        return task_dir
+
+    ####
     # handle_test_result
     ####
     def handle_test_result(self, test_res, user_id, user_email, task_nr, message_id):
@@ -133,6 +229,9 @@ class Worker(threading.Thread):
             logmsg = "SecAlert: This test failed due to probable attack by user!"
             c.log_a_msg(self.queues["logger"], self.name, logmsg, "INFO")
 
+            c.send_email(self.queues["sender"], user_email, user_id, \
+                        "Failed", task_nr, "", message_id)
+
             c.send_email(self.queues["sender"], "", user_id, \
                          "SecAlert", task_nr, "", message_id)
 
@@ -159,9 +258,17 @@ class Worker(threading.Thread):
             logmsg = "Test succeeded! User: {0} Task: {1}".format(user_id, task_nr)
             c.log_a_msg(self.queues["logger"], self.name, logmsg, "INFO")
 
-            # Notify, the user that the submission was successful
-            c.send_email(self.queues["sender"], user_email, user_id, \
+            plugins = self.get_configured_plugins(task_nr)
+
+            if not plugins:
+                # Notify, the user that the submission was successful
+                c.send_email(self.queues["sender"], user_email, user_id, \
                          "Success", task_nr, "", message_id)
+            else:
+                self.execute_plugins(user_id,task_nr, plugins)
+
+                c.send_email(self.queues["sender"], user_email, user_id, \
+                         "PluginResult", task_nr, "", message_id)
 
 
             # no initiate creation of next task if allow_requests set
@@ -171,6 +278,90 @@ class Worker(threading.Thread):
             # initiate generation of next higher task_nr task for user (if possible)
             next_task_nr = int(task_nr) + 1
             self.initiate_next_task(user_id, user_email, int(task_nr), next_task_nr)
+
+    ####
+    # create_error_plugin_msg
+    ####
+    def create_error_plugin_msg(self, user_task_dir, user_id, task_nr):
+        json_data = {
+            "Subject" : "Plugin Error Task{}".format(task_nr),
+            "Message" : ("There is no feedback from the plugin. "
+                         "Please contact the course admin"),
+            "IsSuccess" : False \
+        }
+
+        file_name = os.path.join(user_task_dir, "plugin_msg.json")
+
+        with open(file_name, "w") as f:
+            json.dump(json_data, f)
+
+    ####
+    # execute_plugins
+    ####
+    def execute_plugins(self, user_id, task_nr, plugins):
+        user_task_dir = "users/{0}/Task{1}".format(user_id, task_nr)
+        task_dir = self.get_task_dir(task_nr)
+
+        plugin_data = self.get_plugin_data(plugins)
+
+        for plugin_name in plugins:
+            # check if plugin script exists
+            plugin_script= os.path.join("plugins/", plugin_name, plugin_name + ".py")
+            if not os.path.isfile(plugin_script):
+                logmsg = "Plugin script {} for plugin {} does not exist"\
+                    .format(plugin_script, plugin_name)
+                c.log_a_msg(self.queues["logger"], self.name, logmsg, "ERROR")
+                self.create_error_plugin_msg(user_task_dir, user_id, task_nr)
+                return
+
+            if not plugin_data[plugin_name]:
+                logmsg = "Could not get parameters from database for plugin {}"\
+                         .format(plugin_name)
+                c.log_a_msg(self.queues["logger"], self.name, logmsg, "ERROR")
+                self.create_error_plugin_msg(user_task_dir, user_id, task_nr)
+                return
+
+            plugin_params = {"user_task_dir": user_task_dir,
+                             "task_dir" : task_dir,
+                             "user_id": user_id,
+                             "task_nr": task_nr}
+
+            for parameter in plugin_data[plugin_name] :
+                key = parameter[0]
+                value = parameter[1]
+
+                plugin_params.update({key:value})
+
+            plugin_command = []
+            plugin_command.append("python3")
+            plugin_command.append(plugin_script)
+
+            for key, value in plugin_params.items():
+                plugin_command.append("--" + key)
+                plugin_command.append(value)
+
+            # run the plugin script and log the stderr and stdout
+            logmsg = "Running plugin script with arguments:{0}"\
+                .format(plugin_command)
+            c.log_a_msg(self.queues["logger"], self.name, logmsg, "DEBUG")
+
+            # Popen in asynch, but communicate waits
+            process = Popen(plugin_command, stdout=PIPE, stderr=PIPE)
+            plugin_msg, plugin_error = process.communicate()
+            plugin_msg = plugin_msg.decode('UTF-8')
+            plugin_error = plugin_error.decode('UTF-8')
+            plugin_res = process.returncode
+            log_src = "Plugin-{}{}({})".format(plugin_name,str(task_nr),str(user_id))
+
+            if plugin_msg:
+                c.log_task_msg(self.queues["logger"], log_src, plugin_msg, "INFO")
+            if plugin_error:
+                c.log_task_error(self.queues["logger"], log_src, plugin_error, "ERROR")
+
+            logmsg = "Plugin returned with " + str(plugin_res)
+            c.log_a_msg(self.queues["logger"], self.name, logmsg, "DEBUG")
+            if plugin_res: #not 0
+                self.create_error_plugin_msg(user_task_dir, user_id, task_nr)
 
     ####
     # initiate_next_task

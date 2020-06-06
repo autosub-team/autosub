@@ -9,6 +9,8 @@ import os
 import sys
 import urllib.request
 import zipfile
+import subprocess
+import shutil
 
 arg_parser = argparse.ArgumentParser()
 arg_parser.add_argument("autosub_path", help="absoulute path to autosub")
@@ -25,13 +27,13 @@ configfile = args.configfile
 #check if valid path
 if  not os.path.isdir(autosub_path):
     print("Your autosub_path is not a valid path: " + autosub_path)
-    print("Install Failed")
+    print("Install failed")
     sys.exit(1)
 
 #check if config file exists
 if not os.path.isfile(configfile):
     print("Your config file does not exist: " + configfile)
-    print("Install Failed")
+    print("Install failed")
     sys.exit(1)
 
 #strip trailing / from autosub_path
@@ -57,10 +59,9 @@ if args.reinstall:
         if os.path.islink(path):
             os.remove(path)
 
-
 #get paths to databases from configfile
 config = configparser.ConfigParser()
-config.readfp(open(configfile))
+config.read_file(open(configfile))
 
 try:
     semesterdb_file = config.get('system', 'semesterdb')
@@ -83,19 +84,42 @@ web2py_url = "http://www.web2py.com/examples/static/web2py_src.zip"
 
 local_file = user_home_path + "/web2py.zip"
 
+if os.path.isfile(local_file):
+    os.remove(local_file)
+    print("Deleted old web2py.zip")
+
 print("Downloading web2py to " + local_file)
 urllib.request.urlretrieve(web2py_url, local_file)
 print("Download finished")
 
-print("Extracting web2py to " + user_home_path)
+if os.path.exists(user_home_path + "/web2py"):
+    shutil.rmtree(user_home_path + "/web2py")
+    print("Deleted old web2py installation")
+
+print("Extracting web2py to " + user_home_path +"/web2py")
 zip_ref = zipfile.ZipFile(local_file, 'r')
 zip_ref.extractall(user_home_path)
 zip_ref.close()
-print("Unzip complete")
+print("Extracting completed")
+
+#patch web2py, delete session forget for gloun tools Expose
+print("Patching web2py")
+exit_code = subprocess.call(["patch","-N",user_home_path +"/web2py/gluon/tools.py", "web2py.patch"], \
+    stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+
+if(exit_code == 0):
+        print("Patch applied")
+elif(exit_code == 1):
+    print("Patch already applied")
+else:
+    print("Error patching. Installer stopped, please report this as issue")
+    sys.exit(1)
+
+print("Patching completed")
 
 #Set all the needed symlinks
 
-print("Setting up web2py")
+print("Setting up web2py and VELS_WEB")
 os.symlink(vels_web_path, user_home_path + "/web2py/applications/VELS_WEB")
 
 os.makedirs(vels_web_path + "/databases", exist_ok=True)

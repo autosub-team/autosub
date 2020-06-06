@@ -24,13 +24,13 @@ architecture behavior of {{ task_name }}_tb is
     {% for comp in components %}
     component {{ comp.entity_name }}
         port(
-	{% for input in comp.inputs %}
+    {% for input in comp.inputs %}
             {{ input.name }}  : in   {{ input.type }};
-	{% endfor %}
-	{% for output in comp.outputs %}
-	    {{ output.name }}  : out  {{ output.type }}{{ ";" if not loop.last }}
-	{% endfor %}
-	);
+    {% endfor %}
+    {% for output in comp.outputs %}
+        {{ output.name }}  : out  {{ output.type }}{{ ";" if not loop.last }}
+    {% endfor %}
+    );
     end component;
 
     {% endfor %}
@@ -49,5 +49,25 @@ begin
         wait for clk_period/2;
     end process;
 
-    --put your code here
+    -------------------------
+    -- MAIN TESTING PROCES --
+    -------------------------
+    process
+    begin
+        --put your code here
+
+        -- output, that shall be in the error_msg has to be put between §{ }§
+        -- you can use \n to put in a newline
+        write(OUTPUT,string'("§{Error:"));
+        write(OUTPUT,string'("\n"));
+        write(OUTPUT,string'("Testerror }§"));
+
+        -- exit the simulation in case of tests failing
+        report "Simulation error" severity failure;
+        {% raw %}
+        -- exit the simulation in case of tests suceeded
+        report "Success_{{random_tag}}" severity failure;
+        {% endraw %}
+    end process;
+
 end behavior;

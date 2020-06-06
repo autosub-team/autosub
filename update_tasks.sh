@@ -14,10 +14,14 @@ then
     if [ $1 = "refetch" ]
     then
     	echo "Deleting all content first to do total refetch"
-    	echo -e "--------------------------------------------\n"
+    	echo "----------------------------------------------"
     	cd tasks/implementation/VHDL
-    	find . -type f ! -regex ".*/\(README.txt\)" -delete
+		#delete all ignoring the README.txt
+		GLOBIGNORE="README.txt"
+		rm -rf *
+		unset GLOBIGNORE
     	cd - > /dev/null
+		echo -e "Done\n"
     fi
 fi
 
@@ -26,7 +30,8 @@ echo -e "Updating all tasks\n------------------\n"
 for task_repo in ${task_repos_VHDL[@]}; do
     git clone $task_repo temp
 	rm -rf temp/.git
+	rm -f temp/.gitignore
 	rsync -avh temp/ tasks/implementation/VHDL/
-	rm -r temp
+	rm -rf temp
 	echo -e "\n============================\n"
 done

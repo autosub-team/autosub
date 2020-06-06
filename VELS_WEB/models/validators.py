@@ -9,12 +9,18 @@ class IS_EMAIL_LIST(object):
         self.sep = sep
 
     def __call__(self, value):
-            emails = value.strip().split(self.sep)
-            for email in emails:
-                email = email.strip()
-                if IS_EMAIL()(email)[1] != None:
-                    return (email, self.error_message % email)
-            return (value, None)
+        emails = value.split(self.sep)
+        emails_stripped = []
+
+        for email in emails:
+            email_stripped = email.strip()
+
+            if IS_EMAIL()(email_stripped)[1] != None:
+                return (email_stripped, self.error_message % email_stripped)
+
+            emails_stripped.append(email_stripped)
+
+        return (",".join(emails_stripped), None)
 
 class IS_EMAIL_MASS(object):
     def __init__(self, error_message="Email %s is invalid", sep="\n"):
@@ -22,14 +28,21 @@ class IS_EMAIL_MASS(object):
         self.sep = sep
 
     def __call__(self, value):
-            lines = value.strip().split(self.sep)
+            lines = value.split(self.sep)
+            lines_stripped = []
+
             for line in lines:
-		line= line.strip("\r ")
-            	elements = line.split(';')
-            	email= elements[0].strip()
+                line_stripped= line.strip("\r ")
+
+                elements = line_stripped.split(';')
+                email= elements[0].strip()
+
                 if IS_EMAIL()(email)[1] != None:
                     return (email, self.error_message % email)
-            return (value, None)
+
+                lines_stripped.append(line_stripped)
+
+            return ("\n".join(lines_stripped), None)
 
 class FILE_EXISTS(object):
     def __init__(self, error_message="File does not exist"):

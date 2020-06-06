@@ -1,0 +1,6 @@
+5611,5612c5611,5612
+<         if current.session and callable(current.session.forget):
+<             current.session.forget()
+---
+>         #if current.session and callable(current.session.forget):
+>         #    current.session.forget()

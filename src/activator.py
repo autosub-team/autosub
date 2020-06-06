@@ -46,7 +46,10 @@ class TaskActivator(threading.Thread):
 
             # check if a tasks start time has come
             task_start = datetime.datetime.strptime(row_task[1], c.format_string)
-            if task_start < datetime.datetime.now():
+            task_deadline = datetime.datetime.strptime(row_task[2], c.format_string)
+            time_now = datetime.datetime.now()
+
+            if (task_start < time_now) and (time_now < task_deadline):
                 # first, let's set the task active!
                 data = {'task_nr': task_nr}
                 sql_cmd = ("UPDATE TaskConfiguration SET TaskActive = 1 "

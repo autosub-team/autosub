@@ -14,11 +14,13 @@ from jinja2 import FileSystemLoader, Environment
 #################################################################
 
 task_parameters=sys.argv[1] 
+random_tag=sys.argv[2]
 
 ###################################
 #   GENERATE TESTBENCH/VECTORS    #
 ###################################
 params = {}
+params.update({"random_tag":random_tag})
 # ADD HERE: generation of testbench parts / parameters
 
 ######################################

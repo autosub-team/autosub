@@ -35,7 +35,7 @@ serverport & Port to be used. & ssl:993 else:143\\
 \hline
 \textbf{servername} & Hostname.domain of the SMTP server. & ~ \\
 \hline
-\textbf{username }& Username to be used to login. & ~ \\
+\textbf{username}& Username to be used to login. & ~ \\
 \hline
 \textbf{password} & Password to be used to login. & ~ \\
 \hline
@@ -57,8 +57,6 @@ serverport & Port to be used. & ssl:465 starttls:587 none:25 \\
 \textbf{num\_workers} & Number of Worker threads. This influences how many tests can conducted
     in parallel. & ~ \\
 \hline
-\textbf{queue\_size} & Size of the thread communication queues. & ~\\
-\hline
 poll\_period & Period in seconds at which the mailbox is checked for new E-Mails from students. & 60\\
 \hline
 semesterdb & The name and path of the semester database. & semester.db\\
@@ -72,6 +70,12 @@ log\_dir & Directory to put tasks and autosub log files. & logs  \\
 \hline
 log\_threshhold & Threshhold from which level up log entries should be logged.
     Possible values: DEBUG INFO WARNING ERROR & INFO\\
+\hline
+\hline
+server\_timout & Timout for all Mail server requests [s]. & 20  \\
+\hline
+\hline
+mail\_retries & Describes how often VELS tries to resend an E-Mail, which was not send out correctly & 5  \\
 \hline
 \end{tabular}
 
@@ -102,10 +106,9 @@ auto\_advance & Decides if users get auto advanced to a task which is activated 
 
 \begin{description}
 \item [job\_queue] The job\_queue is used to trigger Worker threads to start testing
-    solutions that were received. The messages in the job\_queue are comprised of
-    the following fields:
+    solutions that were received.
     \begin{itemize}
-        \item {\bf user\_id:} The unique User ID of the user who submitted this solution.
+        \item {\bf user\_id:} The unique UserID of the user who submitted this solution.
         \item {\bf user\_email:} The E-Mail address of the user who submitted this solution.
         \item {\bf task\_nr:} Number of the task that solution has been submitted for.
         \item {\bf message\_id:} The unique message-id of the user E-Mail on the IMAP server,
@@ -114,16 +117,16 @@ auto\_advance & Decides if users get auto advanced to a task which is activated 
 
 \item [sender\_queue] If a thread wants to send an E-Mail to a user, the Sender thread
     is notified via this queue. The data needed by the Sender thread is in the messages
-    in the sender\_queue. These messages consist of the following fields:
+    in the sender\_queue.
     \begin{itemize}
-        \item {\bf user\_id:} The unique User ID of the user who shall receive this E-Mail.
+        \item {\bf user\_id:} The unique UserID of the user who shall receive this E-Mail.
         \item {\bf recipient} E-Mail address of the recipient (the content of the
             'To' field in the E-Mail).
         \item {\bf message\_type} The message type is used to decide on how to format
-            the E-Mail, and whether or not additional E-Mails have to be sent out
-            (e.g. when a question is handled). Static messages that are sent to users implied by
-            the message type can be found in the directory SpecialMessages.
-            Possible values for message\_type are:
+			the E-Mail, and whether or not additional E-Mails have to be sent
+			out (e.g. when a question is handled). Static messages that are sent
+			to users implied by the message type can be found in the directory
+			SpecialMessages.  Possible values for message\_type are:
 
             \begin{itemize}
                 \item {\tt Task} -- A task description.
@@ -172,10 +175,8 @@ auto\_advance & Decides if users get auto advanced to a task which is activated 
     \end{itemize}
 
 \item [generator\_queue] The generator\_queue is used to trigger the Generator thread
-    to generate a new (variant of) a task. That means that certain parameters of the
-    task are randomized, in order to assure that each student receives his/her very
-    own example.
-    \begin{itemize}
+    to generate a new (variant of) a task for a given user.
+	\begin{itemize}
         \item {\bf user\_id:} The unique UserID of the User for whom the task is generated.
         \item {\bf user\_email:} E-Mail address of the User for whom the task is generated.
         \item {\bf task\_nr:} Number of the task that shall be generated.
@@ -183,15 +184,17 @@ auto\_advance & Decides if users get auto advanced to a task which is activated 
             which triggered the task generation.
     \end{itemize}
 
-\item [archive\_queue] The archive\_queue is used to announce that a E-Mail has been finished
-    processing. This triggers archiving and removing task submissions from the active queue.
-    own example.
-    \begin{itemize}
-        \item {\bf message\_id:} The unique message-id of the E-Mail on the IMAP server which shall
-            be archived.
-        \item {\bf is\_finished\_job:} Flag to show that the message-id belongs to a finished
-            processed submitted task.
-    \end{itemize}
+\item [archive\_queue] The archive\_queue is used to announce that a E-Mail has
+	been finished processing. This triggers archiving of the E-Mail on the
+	E-Mail server. If the flag is\_finished\_job is set, the message-id is also
+	removed from the jobs\_active map, that keeps track of task submissions
+	that are being processed.
+	\begin{itemize}
+		\item {\bf message\_id:} The unique message-id of the E-Mail on the IMAP
+			server which shall be archived.
+		\item {\bf is\_finished\_job:} Flag to show that the message-id belongs
+			to a finished processed submitted task.
+	\end{itemize}
 \end{description}
 
 \newpage

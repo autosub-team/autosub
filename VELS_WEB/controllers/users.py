@@ -1,5 +1,7 @@
 import cStringIO
 import csv
+from gluon.tools import Expose
+import os
 
 val={'Name'        :[IS_NOT_EMPTY()],
      'Email'       :[IS_NOT_EMPTY(),IS_EMAIL()],
@@ -38,12 +40,13 @@ def __entries():
 
     return dict(entries=array)
 
-
+@auth.requires_permission('view data')
 def index():
     returnDict={}
     returnDict.update(__entries())
     return returnDict
 
+@auth.requires_permission('view data')
 def downloadAsCSV():
     download_file = cStringIO.StringIO()
 
@@ -61,6 +64,7 @@ def downloadAsCSV():
     return download_file.getvalue()
 
 
+@auth.requires_permission('edit data')
 def newUser():
     returnDict={}
 
@@ -87,6 +91,7 @@ def newUser():
 
     return returnDict
 
+@auth.requires_permission('edit data')
 def deleteUser():
     UserId= request.vars['UserId']
     if semester(Users.UserId==UserId).delete() :
@@ -95,6 +100,7 @@ def deleteUser():
         msg='User' + UserId + ' delete failed'
     redirect(URL('index'))
 
+@auth.requires_permission('edit data')
 def editUser():
     returnDict={}
     UserId= int(request.vars['editUserId'])
@@ -124,6 +130,7 @@ def editUser():
 
     return returnDict
 
+@auth.requires_permission('view data')
 def viewUser():
     returnDict={}
     UserId= int(request.vars['UserId'])
@@ -182,11 +189,38 @@ def viewUser():
 
     taskInfosArray=[]
     for row in rows:
+        row_taskconfig= \
+            course(TaskConfiguration.TaskNr==row.TaskNr).select(TaskConfiguration.ALL).first()
         taskInfosArray.append({'TaskNr':row.TaskNr,
                      'NrSubmissions':row.NrSubmissions,
                      'FirstSuccessful':row.FirstSuccessful,
-                     'TaskAttachments':row.TaskAttachments.split()})
+                     'TaskName' : row_taskconfig.TaskName})
 
     returnDict.update(dict(taskInfos=taskInfosArray))
 
     return returnDict
+
+@auth.requires_permission('view data')
+def viewUserTaskFolder():
+    if not request.get_vars['UserId']:
+        UserId = session.viewUserId
+    else:
+        UserId= int(request.get_vars['UserId'])
+        session.viewUserId = UserId
+
+    if not request.vars['TaskNr']:
+        TaskNr = session.viewTaskNr
+    else:
+        TaskNr= int(request.vars['TaskNr'])
+        session.viewTaskNr = TaskNr
+
+    row = semester(Users.UserId == UserId).select(Users.Name).first()
+    Name = row['Name']
+
+    row=course(GeneralConfig.ConfigItem == 'users_dir').select(GeneralConfig.ALL).first()
+    usersDir = row.Content
+
+    taskSubDir = "{0}/Task{1}".format(UserId, TaskNr)
+    absoluteDir = os.path.join(usersDir, taskSubDir)
+
+    return dict(files=Expose(base=absoluteDir, basename="basefolder"), TaskNr=TaskNr, Name=Name, UserId=UserId)

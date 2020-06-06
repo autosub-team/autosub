@@ -12,7 +12,9 @@
        <tr>
            <td>{{=entry['Email']}}</td>
            <td>{{=entry['Name']}}</td>
-           <td>{{=A('Delete', callback=URL('deleteEmail?UniqueId='+str(entry['UniqueId'])))}}</td>
+           <td>{{=BUTTON_TO(T('Delete'),\
+		   URL('deleteEmail?UniqueId='+str(entry['UniqueId'])),
+		   'Realy delete ' + entry['Email'] + ' from whitelist?')}}</td>
        </tr>
     {{pass}}
     </table>

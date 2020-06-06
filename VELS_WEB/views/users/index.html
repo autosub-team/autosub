@@ -34,7 +34,8 @@
            <td>{{=entry['CurrentTask']}}</td>
            <td>{{=A('View', callback=URL('viewUser?UserId='+str(entry['UserId'])))}}</td>
            <td>{{=A('Edit', callback=URL('editUser?editUserId='+str(entry['UserId'])))}}</td>
-           <td>{{=A('Delete', callback=URL('deleteUser?UserId='+str(entry['UserId'])))}}</td>
+		   <td>{{=BUTTON_TO(T('Delete'), URL('deleteUser?UserId=' + str(entry['UserId'])),\
+		   "Realy delete user with UserId=" + str(entry['UserId']) +"?")}}</td>
        </tr>
     {{pass}}
     </table>

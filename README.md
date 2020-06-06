@@ -15,19 +15,39 @@ To get autosub clone this repository
 
 	git clone https://github.com/autosub-team/autosub.git
 
-To fetch the existing VHDL tasks use the update_tasks.sh script in the root
-folder. In order to fetch the task you need to have the program rsync installed!
+To fetch the existing VHDL tasks use the 
+
+	update_tasks.sh 
+
+script in the root folder. In order to fetch the task you need to have the program rsync installed!
 
 # Documentation #
 
-For documenation, please refer to our user manual
-(https://github.com/autosub-team/autosub/blob/master/doc/doc_pdf/usermanual.pdf)
-and the specification of the existing VHDL tasks
-(https://github.com/autosub-team/autosub/blob/master/doc/doc_pdf/tasks-specification.pdf)
+For documenation, please refer to our [user manual](https://github.com/autosub-team/autosub/blob/master/doc/doc_pdf/usermanual.pdf)
+and the [specification of the existing VHDL tasks](https://github.com/autosub-team/autosub/blob/master/doc/doc_pdf/tasks-specification.pdf)
 
 # How to Contribute #
 
-If you want to contribute to the autosub development, have a look at CONTRIBUTE.md
+If you want to contribute to the autosub development, have a look at [CONTRIBUTE.md](CONTRIBUTE.md) and [doc/coding_standards/lifecycle.txt](doc/coding_standards/lifecycle.txt)
+
+# Publication & Citation #
+To cite VELS you can use the following bibtex entry:
+
+
+    @INPROCEEDINGS{VELS,
+    author={M. Mosbeck and D. Hauer and A. Jantsch},
+    booktitle={2018 IEEE Nordic Circuits and Systems Conference (NORCAS): NORCHIP and International Symposium of System-on-Chip (SoC)},
+    title={VELS: VHDL E-Learning System for Automatic Generation and Evaluation of Per-Student Randomized Assignments},
+    year={2018},
+    volume={},
+    number={},
+    pages={1-7},
+    doi={10.1109/NORCHIP.2018.8573455},
+    ISSN={},
+    month={Oct},}
+
+
+The full paper can be found at: https://ieeexplore.ieee.org/document/8573455
 
 # Credits #
 

@@ -18,6 +18,7 @@ backend_interface_file=$4
 # return values of a tester
 SUCCESS=0
 TASKERROR=3
+SECURITYALERT=2
 FAILURE=1
 
 # root path of the task itself

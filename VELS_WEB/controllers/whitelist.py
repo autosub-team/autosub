@@ -13,11 +13,13 @@ def __entries():
         array.append(entry)
     return dict(entries=array)
 
+@auth.requires_permission('view data')
 def index():
     returnDict= {}
     returnDict.update(__entries())
     return returnDict
 
+@auth.requires_permission('edit data')
 def newEmail():
     returnDict= {}
 
@@ -42,6 +44,7 @@ def newEmail():
 
     return returnDict
 
+@auth.requires_permission('edit data')
 def deleteEmail():
     UniqueId= request.vars['UniqueId']
     if semester(Whitelist.UniqueId==UniqueId).delete() :
@@ -50,6 +53,7 @@ def deleteEmail():
         msg= 'Email delete failed'
     redirect(URL('index'))
 
+@auth.requires_permission('edit data')
 def massEmail():
     returnDict= {}
 

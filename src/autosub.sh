@@ -37,7 +37,7 @@ then
    else
        kill -30 $PID
        rm autosub.pid
-       echo "Killed autosub"
+       echo "Killed autosub with process id $PID"
    fi
 
 ############################
@@ -54,7 +54,7 @@ then
    else
        kill -30 $PID
        rm autosub.pid
-       echo "Killed autosub"
+       echo "Killed autosub with process id $PID"
    fi
 
    # start #

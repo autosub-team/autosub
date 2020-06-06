@@ -1,3 +1,8 @@
 {{extend 'layout.html'}}
 <h1>Welcome to the VELS Configuration Interface for the course named "{{=course_name}}"</h1>
 
+<h2>Last log entries to autosub.log (reload site to view newer)</h2>
+{{for log_line in log_lines:}}
+	{{=log_line}}
+	</br>
+{{pass}}

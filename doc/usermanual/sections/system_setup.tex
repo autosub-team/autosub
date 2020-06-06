@@ -99,11 +99,12 @@ password: mysupersecurepassword
 email: submission@gmail.com
 
 [system]
-num_workers: 20
-queue_size: 200
+num_workers: 10
 poll_period: 5
 log_dir: /home/martin/autosub/src
 log_threshhold: INFO
+server_timeout: 20
+mail_retries: 5
 
 [course]
 tasks_dir: /home/martin/autosub/tasks/implementation/VHDL
@@ -185,6 +186,17 @@ To stop the daemon just run the command:
 \begin{verbatim}
 ./daemon.sh stop
 \end{verbatim}
+
+By default VELS\_WEB has one user of the vels\_admin group at startup:
+\begin{description}
+\item [Username:] vels\_admin
+\item [Password:] vels\_admin
+\end{description}
+You should change this password! You can manage users for VELS\_WEB using the item
+"VELS\_WEB Users". Here you can create additional users of the group
+vels\_admin or users of the group vels\_tutor, who cannot change any course
+configuration items, only view configuration items, student progress and student
+submissions.
 
 \subsection{General Configuration}\label{sub:generalconfig}
 Configuration items that can be changed dynamically are changeable in VELS\_WEB ->
@@ -273,6 +285,15 @@ the autosub daemon.
 Always check first if all the task you want to use support this mode!
 
 The remaining configuration is similar to configuration for normal mode.
+
+\subsection{Security Features}\label{sub:securityfeatures}
+Since unknown code is being executed, there is a potential risk that it has malicious content.
+Therefore, a list of forbidden keywords can be defined. If one of these keywords is found in one of 
+the user's filed, the code will not be excecuted, the user will be informed and a security alert 
+will be send to the admins.
+
+The list of illegal words (illegal\_words.txt) can be found in the subfolder 'support\_files' of the 
+backend directory. Every line in that file represents one keyword (including all whitespaces etc.).
 
 %\subsection{Testing VELS}\label{sub:testingvels}
 %

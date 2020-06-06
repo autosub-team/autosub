@@ -55,12 +55,13 @@ smtpsecurity = None
 smtpport = None
 
 num_workers = None
-queue_size = None
 poll_period = None
 semesterdb = None
 coursedb = None
 log_dir = None
 log_threshhold = None
+server_timeout = None
+mail_retries = None
 
 course_name = None
 course_mode = None
@@ -77,6 +78,9 @@ archive_queue = None
 
 exit_flag = False
 threads = []
+
+plugins = None
+plugin_data = {}
 
 ####
 # sig_handler
@@ -98,7 +102,7 @@ def sig_handler(signum, frame):
 ####
 # check_and_init_db_table
 ####
-def check_and_init_db_table(dbname, tablename, fields):
+def check_and_init_db_table(dbname, tablename, fields, clear_on_create = False):
     """
     Check if a table exists, if not create it with fields.
     """
@@ -114,6 +118,16 @@ def check_and_init_db_table(dbname, tablename, fields):
     if res:
         logmsg = 'table ' + tablename + ' exists'
         c.log_a_msg(logger_queue, "autosub.py", logmsg, "DEBUG")
+
+        if clear_on_create:
+            sql_cmd = "DELETE FROM {0}".format(tablename)
+            cur.execute(sql_cmd, data)
+            con.commit()
+
+            logmsg = 'cleared table ' + tablename
+            c.log_a_msg(logger_queue, "autosub.py", logmsg, "DEBUG")
+
+            con.close()
 
         return 0
 
@@ -165,6 +179,34 @@ def set_general_config_param(configitem, content):
 
     conc.close()
 
+###
+# set_plugin_data
+###
+def set_plugin_data(plugin_data):
+    """
+    Set the parameters for plugins, given in the config
+    into the table PluginData
+    """
+    cur, con = c.connect_to_db(coursedb, logger_queue, "autosub.py")
+
+    db_items = []
+
+    for plugin_name, items in plugin_data.items():
+        for item in items:
+            parameter_name = item[0]
+            value = item[1]
+            db_items.append( (plugin_name, parameter_name, value) )
+
+    sql_cmd = ("INSERT INTO PluginData (PluginName, ParameterName, Value) "
+               "VALUES (?,?,?)")
+    cur.executemany(sql_cmd, db_items)
+    con.commit()
+
+    logmsg = 'Set parameters for plugins'
+    c.log_a_msg(logger_queue, "autosub.py", logmsg, "DEBUG")
+
+    con.close()
+
 ####
 # load_specialmessage_to_db
 ####
@@ -198,10 +240,13 @@ def parse_config(config):
 
     global imapserver, imapuser, imappasswd, imapmail, imapsecurity, imapport
     global smtpserver, smtpuser, smtppasswd, smtpmail, smtpsecurity, smtpport
-    global num_workers, queue_size, poll_period, semesterdb, coursedb, log_dir,\
-           log_threshhold
+    global num_workers, poll_period, semesterdb, coursedb, log_dir,\
+           log_threshhold, server_timeout, mail_retries
     global course_name, course_mode, tasks_dir, specialmsgs_dir
     global auto_advance, allow_requests
+
+    global plugins
+    global plugin_data
 
 
     ####################
@@ -273,10 +318,9 @@ def parse_config(config):
     ####################
     try:
         num_workers = config.getint('system', 'num_workers')
-        queue_size = config.getint('system', 'queue_size')
     except:
-        print("Something went wrong reading your num_worker or queue_size.")
-        print("Did you specify them with numbers?")
+        print("Something went wrong reading your num_worker.")
+        print("Did you specify the number of desired workers?")
         print("Exiting...")
         sys.exit(-1)
 
@@ -310,6 +354,16 @@ def parse_config(config):
             log_threshhold = 'INFO'
     except:
         log_threshhold = "INFO"
+
+    try:
+        server_timeout = config.getint('system', 'server_timeout')
+    except:
+        server_timeout = 20
+
+    try:
+        mail_retries = config.getint('system', 'mail_retries')
+    except:
+        mail_retries = 5
 
     ####################
     #      COURSE      #
@@ -361,6 +415,30 @@ def parse_config(config):
     except:
         allow_requests = "no"
 
+    ####################
+    #     PLUGINS      #
+    ####################
+    if config.has_option('course', 'plugins'):
+        value = config.get('course', 'plugins')
+        if not value.strip(): #empty string as value
+            plugins = []
+        else:
+            plugins = [x.strip() for x in config.get('course', 'plugins').split(',')]
+    else:
+        plugins = []
+
+    if plugins:
+        for plugin_name in plugins:
+            if not config.has_section(plugin_name):
+                print("Found no section for plugin {}. Skipping this plugin"\
+                    .format(plugin_name))
+                plugins.remove(plugin_name)
+                continue
+
+            plugin_items = config.items(plugin_name)
+
+            plugin_data.update({plugin_name : plugin_items})
+
 ####
 # generate_queues
 ####
@@ -371,11 +449,11 @@ def generate_queues():
 
     global job_queue, sender_queue, generator_queue, archive_queue, logger_queue
 
-    logger_queue = queue.Queue(queue_size)
-    job_queue = queue.Queue(queue_size)
-    sender_queue = queue.Queue(queue_size)
-    generator_queue = queue.Queue(queue_size)
-    archive_queue = queue.Queue(queue_size)
+    logger_queue = queue.Queue()
+    job_queue = queue.Queue()
+    sender_queue = queue.Queue()
+    generator_queue = queue.Queue()
+    archive_queue = queue.Queue()
 
 ####
 # start_logger
@@ -420,7 +498,8 @@ def start_threads():
                  "user": smtpuser, \
                  "passwd": smtppasswd, \
                  "port" :smtpport, \
-                 "security": smtpsecurity}
+                 "security": smtpsecurity, \
+                 "mail_retries": mail_retries}
 
     course_info = {"name": course_name, "mail": imapmail, "tasks_dir": tasks_dir}
 
@@ -447,7 +526,8 @@ def start_threads():
                  "user": imapuser, \
                  "passwd": imappasswd, \
                  "port" :imapport, \
-                 "security": imapsecurity}
+                 "security": imapsecurity, \
+                 "timeout": server_timeout}
 
     fetcher_t = fetcher.MailFetcher("fetcher", queues, dbs, imap_info, \
                                     poll_period, allow_requests)
@@ -632,6 +712,15 @@ def check_init_ressources():
     filename = 'nomultiplerequest.txt'
     load_specialmessage_to_db(env, 'NOMULTIPLEREQUEST', filename)
 
+    ### PluginData ###
+    table_name = "PluginData"
+    fields = ("PluginName TEXT, ParameterName, Value TEXT, "
+              "PRIMARY KEY (PluginName,ParameterName)")
+    clear_on_create = True
+    ret = check_and_init_db_table(coursedb, table_name, fields, clear_on_create)
+    if plugins:
+        set_plugin_data(plugin_data)
+
     ### GeneralConfig ##
     fields = "ConfigItem Text PRIMARY KEY, Content TEXT"
     ret = check_and_init_db_table(coursedb, "GeneralConfig", fields)
@@ -643,13 +732,24 @@ def check_init_ressources():
         set_general_config_param('archive_dir', 'archive')
         set_general_config_param('admin_email', '')
 
-    # values that are read and replaced at every new start of autosub
+    # values that are read/calculated and replaced at every new start of autosub
     set_general_config_param('course_mode', course_mode)
     set_general_config_param('course_name', course_name)
     set_general_config_param('submission_email', imapmail)
     set_general_config_param('tasks_dir', tasks_dir)
+    set_general_config_param('log_dir', log_dir)
     set_general_config_param('auto_advance', auto_advance)
     set_general_config_param('allow_requests', allow_requests)
+
+    this_script_path = os.path.dirname(os.path.realpath(__file__))
+    users_dir = os.path.join(this_script_path,"users")
+    set_general_config_param('users_dir', users_dir)
+
+    # configure, which plugins are active
+    if plugins:
+        set_general_config_param('plugins', ','.join(plugins))
+    else:
+        set_general_config_param('plugins', '')
 
 ##########################
 #         MAIN           #
@@ -670,7 +770,7 @@ if __name__ == '__main__':
     config = configparser.ConfigParser()
 
     try:
-        config.readfp(open(opts.configfile))
+        config.read_file(open(opts.configfile))
     except:
         print("Error reading your configfile\ndaemon exited...")
         sys.exit(-1)
