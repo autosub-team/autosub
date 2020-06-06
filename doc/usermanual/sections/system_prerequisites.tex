@@ -79,13 +79,30 @@ pip3 install jinja2
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+\subsection{Debian 10 (Buster)}
+Installs from the apt package pool:
+
+\begin{verbatim}
+sudo apt install python3 python3-mock python3-pip python3-nose \
+python3-pyqt5 zip flip git locales-all tex-common \
+texlive-latex-base texlive-latex-extra texlive-pstricks \
+texlive-lang-german graphviz zlib1g-dev rsync build-essential \
+libpgf-dev libpgf6 gnat
+\end{verbatim}
+
+The following packages need to be installed using pip:
+
+\begin{verbatim}
+pip3 install bitstring matplotlib graphviz jinja2
+\end{verbatim}
+
 \subsection{Patches to be applied}
 Unfortunately there is a small bug in one of the latex packages that we use
 (pst-circ), therefore you need to apply a patch to that package:
 
 \begin{verbatim}
 cd /usr/share/texlive/texmf-dist/tex/generic/pst-circ
-patch < /path/to/autosub/doc/patch/pst-circ.tex.patch
+sudo patch < <path-to-autosub>/doc/patch/pst-circ.tex.patch
 \end{verbatim}
 
 In case logic gates in the pdfs you are not beautiful as you are used to, it might have
