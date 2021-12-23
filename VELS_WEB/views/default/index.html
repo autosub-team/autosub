@@ -1,8 +1,27 @@
 {{extend 'layout.html'}}
+
+<style>
+.dot {
+  height: 20px;
+  width: 20px;
+  background-color: {{=vels_status_color}};
+  border-radius: 50%;
+  display: inline-block;
+}
+</style>
+
 <h1>Welcome to the VELS Configuration Interface for the course named "{{=course_name}}"</h1>
+
+<h2>VELS Status: <span class="dot"></span> {{=vels_status}}</h2>
 
 <h2>Last log entries to autosub.log (reload site to view newer)</h2>
 {{for log_line in log_lines:}}
 	{{=log_line}}
+	</br>
+{{pass}}
+
+<h2>Last erros</h2>
+{{for error_line in error_lines:}}
+	{{=error_line}}
 	</br>
 {{pass}}
