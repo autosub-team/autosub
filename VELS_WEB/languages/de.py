@@ -103,7 +103,7 @@
 'Internal State': 'Innerer Zustand',
 'Introduction': 'Einführung',
 'Invalid email': 'Ungültige Email',
-'Invalid login': 'Invalid login',
+'Invalid login': 'Ungültiger Login',
 'Invalid Query': 'Ungültige Query',
 'invalid request': 'Ungültiger Request',
 'Is Active': 'Ist aktiv',
