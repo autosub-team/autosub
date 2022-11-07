@@ -604,7 +604,7 @@ def start_threads():
 ####
 # check_init_ressources
 ####
-def check_init_ressources():
+def check_init_ressources(config_file):
     """
     Check the ressources of autosub if they need to be created and
     initialized: databases, directories.
@@ -742,6 +742,9 @@ def check_init_ressources():
     set_general_config_param('allow_requests', allow_requests)
 
     this_script_path = os.path.dirname(os.path.realpath(__file__))
+    config_file_path = os.path.join(this_script_path,config_file)
+    set_general_config_param('current_config', config_file_path)
+
     users_dir = os.path.join(this_script_path,"users")
     set_general_config_param('users_dir', users_dir)
 
@@ -770,7 +773,7 @@ if __name__ == '__main__':
     config = configparser.ConfigParser()
 
     try:
-        config.read_file(open(opts.configfile))
+        config.readfp(open(opts.configfile))
     except:
         print("Error reading your configfile\ndaemon exited...")
         sys.exit(-1)
@@ -778,7 +781,7 @@ if __name__ == '__main__':
     parse_config(config)
     generate_queues()
     start_logger()
-    check_init_ressources()
+    check_init_ressources(opts.configfile)
     start_threads()
 
     logmsg = "System startup successfull using configfile '" \
