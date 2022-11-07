@@ -278,7 +278,7 @@ class MailSender(threading.Thread):
 
         #Last done?
         if self.has_last_done(user_id):
-            msg = msg + "\nYou solved all the tasks for this course\n"
+            msg = msg + "\nYou solved all the tasks for this course for now.\n"
 
         # Commented because we need to find a better way for when skipping
         # Is activated, for now we assume the students get the deadline somwhere
@@ -781,7 +781,7 @@ class MailSender(threading.Thread):
 
             # send out email
             msg = self.assemble_email(msg, message_text, reply_attachments)
-            self.send_out_email(recipient, msg.as_string(), message_type)
+            self.send_out_email(recipient, msg.as_string(), message_type, 0)
 
             # archive and notify that worker finished
             self.archive_message(message_id, is_finished_job=True)
