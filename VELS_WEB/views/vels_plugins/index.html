@@ -1,0 +1,46 @@
+{{extend 'layout.html'}}
+<h1>Active Plugins</h1>
+<b>This list gives an overview of the active plugins and the corresponding parameters for this course. To change them, edit the configuration file and restart the autosub daemon.</b>
+<br></br>
+
+<table border="1">
+    <thead>
+          <tr>
+             <th>PluginName</th>
+             <th>Parameters</th>
+
+         </tr>
+        </thead>
+       {{for plugin_name in ActivePlugins:}}
+          <tr>
+              <td>{{=plugin_name}}</td>
+              <td>{{for index,parameter in enumerate(PluginParameter[plugin_name]):}} 
+		       {{if index > 0:}}
+                           ,&nbsp;
+                       {{pass}}    
+                       {{=parameter}}
+                   {{pass}}
+              </td>     
+        </tr>
+      {{pass}}
+</table>
+
+{{if 'vels_ob' in ActivePlugins:}}
+        <h1>VELS on Board</h1>
+
+<h3> Active VELS-OB users </h3>
+
+<table border="1">
+<thead>
+<tr>
+<th>User</th>
+<th>Task</th>
+<th>Status</th>
+<th>Stop</th>
+</tr>
+</thead>
+</table>
+
+XXX Button close all XXX
+
+{{pass}}

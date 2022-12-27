@@ -41,6 +41,7 @@
         <li class="menu"><a class="menu" href="{{=URL(c='special_messages',f='index')}}">Special Messages</a></li>
         <li class="menu"><a class="menu" href="{{=URL(c='statistics',f='index')}}">Statistics</a></li>
         <li class="menu"><a class="menu" href="{{=URL(c='user_tasks',f='index')}}">User Tasks</a></li>
+        <li class="menu"><a class="menu" href="{{=URL(c='vels_plugins',f='index')}}">Active Plugins</a></li>
         {{if auth.has_permission("manage users"):}}
         <li class="menu"><a class="menu" href="{{=URL(c='vels_web_usermanage',f='index')}}">VELS_WEB Users</a></li>
         {{pass}}

@@ -85,3 +85,10 @@ course.define_table('GeneralConfig',
     Field('Content', 'string'),
     migrate=False, primarykey=['ConfigItem'])
 GeneralConfig= course.GeneralConfig
+
+course.define_table('PluginData',
+    Field('PluginName', 'string'),
+    Field('ParameterName', 'string'),
+    Field('Value', 'string'),
+    migrate=False, primarykey=['PluginName'])
+PluginData = course.PluginData
