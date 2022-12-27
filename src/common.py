@@ -103,7 +103,7 @@ def check_dir_mkdir(directory, lqueue, lname):
     """
 
     if not os.path.exists(directory):
-        os.mkdir(directory)
+        os.makedirs(directory)
         logmsg = "Created directory: " + directory
         log_a_msg(lqueue, lname, logmsg, "DEBUG")
         return 1
