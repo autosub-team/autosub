@@ -1,4 +1,4 @@
-import cStringIO
+from io import StringIO
 import csv
 from gluon.tools import Expose
 import os
@@ -48,7 +48,7 @@ def index():
 
 @auth.requires_permission('view data')
 def downloadAsCSV():
-    download_file = cStringIO.StringIO()
+    download_file = StringIO()
 
     fields= ['UserId','Name','Email','NumFinished','FinishedTasks','CurrentTask','RegisteredAt','LastDone']
     csv_file = csv.DictWriter(download_file, delimiter = ';', fieldnames=fields)
