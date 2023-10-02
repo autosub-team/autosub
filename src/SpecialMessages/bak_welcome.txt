@@ -1,0 +1,47 @@
+Welcome to the course {{ course_name }}.
+
+The basic e-mail communication with me works exactly the same way as with VELS.
+
+There are just a few new rules for MELODI:
+
+1) Task Request:
+    You cannot request a task on your own. You will get the first task
+    automatically (should already be in your mailbox, cause I am fast).
+    After sucessful submission, you will receive the next task on the list.
+
+2) Guided Task Version:
+    You will always get a guided version of any MELODI task first.
+    Here you have to program a certain behavior, which is analyzed by me.
+    I will give you behavioral feedback and only if your submission is correct,
+    I will forward it to my hardware.
+    BE AWARE that my analysis might take some time (up to a few minutes), so please
+    do not use me for syntax checking but only submit solutions, which you have 
+    tested well before.
+
+3) Open Task Version:
+    After finishing the guided version, you will automatically get an open version.
+    Here you can add any behavior you want and I will forward it to the hardware.
+    BE AWARE that the hardware might not react, when your submission is nonsense.
+    And of course: Don't be evil!
+
+4) Web-Interface
+    On my web-interface you will be greeted with a loading bar and a webcam stream.
+    When the synthesis has finished, you can interact with your entity via the 
+    Write-Buttons and Read-Fields. You have a maximum of 15 minutes to access the
+    website. After opening the website, I will block my hardware for you for
+    15 minutes. You have the chance to renew the timer on the website. If time 
+    is over or if you leave the website, I will kick you out of my hardware.
+
+5) BETA Status:
+    I am still in beta status, so don't hate me when I might be confused 
+    sometimes or decide to crash.
+    Please always provide my human creators with feedback so that they can 
+    flip one or two of my bits and help me to improve!
+
+Hope this clears things on how to communicate with me! Now I am looking
+forward to hearing from you in a structured and (for me!) understandable
+way!
+
+
+
+So long, and thanks for all the fish!

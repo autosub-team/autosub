@@ -22,11 +22,11 @@ parser.add_option("--port", dest="port", type="string")
 
 (options, args) = parser.parse_args()
 
-#TODO: check if all params passed
+# TODO: check if all params passed
 
 user_task_dir = options.user_task_dir
 task_dir = options.task_dir
-user_id  = options.user_id
+user_id = options.user_id
 task_nr = options.task_nr
 password = options.password
 server = options.server
@@ -52,7 +52,7 @@ with open(ent_file) as f:
 with open(settings_file) as f:
     settings = json.loads(f.read())
 
-beh_file = os.path.join(user_task_dir,settings["beh_file"])
+beh_file = os.path.join(user_task_dir, settings["beh_file"])
 with open(beh_file) as f:
     beh = f.read().splitlines(True)
 
@@ -60,7 +60,7 @@ with open(beh_file) as f:
 # ADJUST THE BEH FILE #
 #######################
 index_to_insert = None
-for index in range(0,len(beh)):
+for index in range(0, len(beh)):
     if "architecture behavior" in beh[index]:
         index_to_insert = index
         break
@@ -68,9 +68,28 @@ for index in range(0,len(beh)):
 if not index_to_insert:
     sys.stderr.write("Could not find architecture line")
     sys.exit(1)
+    
+#### insert entity from entity.vhdl
+beh.insert(index_to_insert - 1, "\n")
+beh.insert(index_to_insert - 1, entity_ob)
+beh.insert(index_to_insert - 1, "\n")
 
+index_to_insert = None
+for index in range(0, len(beh)):
+    if "architecture behavior" in beh[index]:
+        index_to_insert = index
+        break
+    
+if not index_to_insert:
+    sys.stderr.write("Could not find architecture line")
+    sys.exit(1)
+
+#### insert alias mapping from settings.json
+beh.insert(index_to_insert + 1, "\n")
 for alias in settings["aliases"]:
-    beh.insert(index_to_insert+1,alias+"\n")
+    beh.insert(index_to_insert + 1, alias + "\n")
+    print(index_to_insert)
+beh.insert(index_to_insert + 1, "\n")
 
 #######################
 # ASSEMBLE FINAL FILE #
@@ -78,7 +97,6 @@ for alias in settings["aliases"]:
 final_file_name = os.path.join(user_task_dir, "vels_ob_{}.vhd".format(user_id))
 
 with open(final_file_name, "w") as f:
-    f.write(entity_ob)
     f.write("".join(beh))
 
 ############################
@@ -87,7 +105,8 @@ with open(final_file_name, "w") as f:
 try:
     result = task_instance.create_a_new_task(str(user_id), final_file_name)
     print("Rest API returned " + str(result))
-
+    #print("success, mko!")
+  
 except ApiException as e:
     sys.stderr.write("Error with REST API")
     sys.stderr.write(str(e))
@@ -98,7 +117,7 @@ except ApiException as e:
 ###############
 json_data = {
      "Subject" : "Synthesis Result for Task{}".format(str(task_nr)),
-     "Message" : server +":" + str(port) + "/"+str(user_id),
+     "Message" : server + ":" + str(port) + "/" + str(user_id),
      "IsSuccess" : True \
 }
 file_name = os.path.join(user_task_dir, "plugin_msg.json")
