@@ -53,11 +53,18 @@
         <td>
             {{=task.progress}}
         </td>
-        <td>
-        </td>
+        <td>{{=BUTTON_TO('Delete',\
+            URL('delete?UserId=' + str(task.user_id)),\
+            'Really delete entry for UserId=' + str(task.user_id) + \
+             "? This will send a request to VELS_OB!")}}</td>
     </tr>
     {{pass}}
 
 </table>
+{{=SCRIPT('const queryString = window.location.search; \n \
+const urlParams = new URLSearchParams(queryString); \n \
+const error = urlParams.get(\'error\')\n \
+if(error){alert(error);} \
+', _type='text/javascript' )}}
 
 {{pass}}
