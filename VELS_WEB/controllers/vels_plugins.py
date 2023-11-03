@@ -42,14 +42,17 @@ def __assemble_plugin(plugin_name, returnDict):
         
         MelodiURL = returnDict.get("PluginParameter").get(plugin_name).get("server")
         MelodiPort = returnDict.get("PluginParameter").get(plugin_name).get("port")
-        MelodiPassword = returnDict.get("PluginParameter").get(plugin_name).get("password")
 
         api_con = api_vels_ob.Configuration()
         api_con.host = "{}:{}/api".format(MelodiURL, MelodiPort)
         task_instance = api_vels_ob.TaskApi(api_vels_ob.ApiClient(api_con))
-        all_tasks = task_instance.list_of_tasks()
+        try:
+            all_tasks = task_instance.list_of_tasks()
+            returnDict.update({'vels_ob_tasks': all_tasks})
+        except ApiException as e:
+            print("Exception: %s\n" % e)
         
-        returnDict.update({'vels_ob_tasks': all_tasks})
+
     return returnDict
 
 
@@ -70,6 +73,7 @@ def delete():
     # Config Parameter
     MelodiURL = returnDict.get("PluginParameter").get("vels_ob").get("server")
     MelodiPort = returnDict.get("PluginParameter").get("vels_ob").get("port")
+    MelodiUser = returnDict.get("PluginParameter").get("vels_ob").get("user")
     MelodiPassword = returnDict.get("PluginParameter").get("vels_ob").get("password")
 
     # Swagger Client config
@@ -81,8 +85,7 @@ def delete():
     auth_instance = api_vels_ob.AuthApi(api_vels_ob.ApiClient(api_con))
     task_instance = api_vels_ob.TaskApi(api_vels_ob.ApiClient(api_con))
 
-    # TODO handle admin username
-    payload = api_vels_ob.AuthDetails(email="string", password=MelodiPassword)
+    payload = api_vels_ob.AuthDetails(email=MelodiUser, password=MelodiPassword)
     try:
         result = auth_instance.user_login(payload)
         api_con.api_key['Authorization'] = result.authorization
