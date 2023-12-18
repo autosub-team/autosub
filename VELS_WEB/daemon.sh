@@ -7,7 +7,8 @@ port=8000 #default port
 password="notSecure" #default password
 
 VELS_WEB_PATH=$HOME/web2py/applications/VELS_WEB
-server_ip=$(ip addr | grep -Eo 'inet (addr:)?([0-9]*\.){3}[0-9]*' | grep -Eo '([0-9]*\.){3}[0-9]*' | grep -v '127.0.0.1')
+server_ip=$(ip -json -family inet addr show scope global | python3 -c "import sys, json; print(json.load(sys.stdin)[0]['addr_info'][0]['local'])")
+
 if [ -n $2 ]; #port given
 then
 	port=$2
