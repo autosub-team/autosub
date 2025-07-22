@@ -7,7 +7,7 @@ import argparse
 import configparser
 import os
 import sys
-import urllib.request
+# import urllib.request
 import zipfile
 import subprocess
 import shutil
@@ -80,7 +80,7 @@ except:
 
 #download and place web2py
 
-web2py_url = "http://www.web2py.com/examples/static/web2py_src.zip"
+#web2py_url = "http://www.web2py.com/examples/static/web2py_src.zip"
 
 local_file = user_home_path + "/web2py.zip"
 
@@ -88,9 +88,11 @@ if os.path.isfile(local_file):
     os.remove(local_file)
     print("Deleted old web2py.zip")
 
-print("Downloading web2py to " + local_file)
-urllib.request.urlretrieve(web2py_url, local_file)
-print("Download finished")
+shutil.copy(vels_web_path + "/web2py_src.zip", local_file)
+
+#print("Downloading web2py to " + local_file)
+#urllib.request.urlretrieve(web2py_url, local_file)
+#print("Download finished")
 
 if os.path.exists(user_home_path + "/web2py"):
     shutil.rmtree(user_home_path + "/web2py")
