@@ -773,7 +773,7 @@ if __name__ == '__main__':
     config = configparser.ConfigParser()
 
     try:
-        config.read_file(open(opts.configfile))
+        config.readfp(open(opts.configfile))
     except:
         print("Error reading your configfile\ndaemon exited...")
         sys.exit(-1)

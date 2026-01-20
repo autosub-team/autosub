@@ -13,12 +13,12 @@ if [ $1 = "start" ]
 then
    if [ -z "$2" ]
    then
-      python3 autosub.py &
+      python3 autosub.py & 
       echo $! > autosub.pid
       echo "No config file specified, using default.cfg!"
       echo "Started autosub with process id $PID"
    else
-      python3 autosub.py --config-file $2 &
+      python3 autosub.py --config-file $2 &  
       echo $! > autosub.pid
       PID=$(cat autosub.pid 2> /dev/null)
       echo "Started autosub with process id $PID"

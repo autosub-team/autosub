@@ -1,46 +1,70 @@
 {{extend 'layout.html'}}
 <h1>Active Plugins</h1>
-<b>This list gives an overview of the active plugins and the corresponding parameters for this course. To change them, edit the configuration file and restart the autosub daemon.</b>
+<b>This list gives an overview of the active plugins and the corresponding parameters for this course. To change them,
+    edit the configuration file and restart the autosub daemon.</b>
 <br></br>
 
 <table border="1">
     <thead>
-          <tr>
-             <th>PluginName</th>
-             <th>Parameters</th>
+        <tr>
+            <th>PluginName</th>
+            <th>Parameters</th>
 
-         </tr>
-        </thead>
-       {{for plugin_name in ActivePlugins:}}
-          <tr>
-              <td>{{=plugin_name}}</td>
-              <td>{{for index,parameter in enumerate(PluginParameter[plugin_name]):}} 
-		       {{if index > 0:}}
-                           ,&nbsp;
-                       {{pass}}    
-                       {{=parameter}}
-                   {{pass}}
-              </td>     
         </tr>
-      {{pass}}
+    </thead>
+    {{for plugin_name in ActivePlugins:}}
+    <tr>
+        <td>{{=plugin_name}}</td>
+        <td>{{for index,(parameter, value) in enumerate(PluginParameter[plugin_name].items()):}}
+            {{if index > 0:}}
+            ,&nbsp;
+            {{pass}}
+            {{=parameter}}
+            =
+            {{=value}}
+            {{pass}}
+        </td>
+    </tr>
+    {{pass}}
 </table>
 
 {{if 'vels_ob' in ActivePlugins:}}
-        <h1>VELS on Board</h1>
+<h1>VELS on Board</h1>
 
 <h3> Active VELS-OB users </h3>
 
 <table border="1">
-<thead>
-<tr>
-<th>User</th>
-<th>Task</th>
-<th>Status</th>
-<th>Stop</th>
-</tr>
-</thead>
-</table>
+    <thead>
+        <tr>
+            <th>User</th>
+            <th>Task</th>
+            <th>Status</th>
+            <th>Stop</th>
+        </tr>
+    </thead>
+    {{for task in vels_ob_tasks:}}
+    <tr>
+        <td>
+            {{=task.user_id}}
+        </td>
+        <td>
+            {{=task.hdl_file}}
+        </td>
+        <td>
+            {{=task.progress}}
+        </td>
+        <td>{{=BUTTON_TO('Delete',\
+            URL('delete?UserId=' + str(task.user_id)),\
+            'Really delete entry for UserId=' + str(task.user_id) + \
+             "? This will send a request to VELS_OB!")}}</td>
+    </tr>
+    {{pass}}
 
-XXX Button close all XXX
+</table>
+{{=SCRIPT('const queryString = window.location.search; \n \
+const urlParams = new URLSearchParams(queryString); \n \
+const error = urlParams.get(\'error\')\n \
+if(error){alert(error);} \
+', _type='text/javascript' )}}
 
 {{pass}}

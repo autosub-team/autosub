@@ -1,62 +1,46 @@
 Welcome to the course {{ course_name }}.
 
-You just sent your first e-mail to {{ submission_email }}. This way
-you subscribed to this part of the course. 
+The basic e-mail communication with me works exactly the same way as with VELS.
 
-All e-mails sent to this address are automatically handled by me, a 
-stupid little computer program.
-{% if allow_requests == "no" %} 
-When the first task is active you will receive an e-mail with it.
+There are just a few new rules for MELODI:
 
-{% else %}
-{% endif -%}
+1) Guided Task Version (Beginner Level):
+    You always get a guided version of a MELODI task first. There I have divided them
+    according to levels, which reflect the degree of complexity. You start with the
+    most minor level (level 1) and work your way up level by level. 
+    You have to program a specific behavior at each level, which I analyze for you.
+    I will give you behavioral feedback, and I will forward it to my hardware only 
+    if your submission is correct.
+    BE AWARE that my analysis might take some time (up to a few minutes)! 
+    Therefore, please do not use me for syntax checking! 
+    Only submit solutions you have tested sufficiently beforehand!
 
-In order to submit your results, you need to know how to communicate with
-me. I only accept specially formatted emails, notably the subject has to
-be formatted in one of the following ways:
+2) Open Task Version (Expert Level):
+    To participate in the Expert Level, you must have completed all Beginner Levels.
+    You can add any behaviors to these tasks, which I will then pass on to the hardware. 
+    Let your creativity run wild and come up with outstanding solutions. We'll reward
+    fancy implementations with sweet bonus points! Be aware that the hardware 
+    may not respond if your input is nonsensical.
+    And, of course, don't be evil!
 
-Results:
-   If you want to commit a result, the Subject of your email has to contain
-   the word "Result" as well as the task number this submission is concerning.
-   So for example, if you want to submit results for Task1 your subject
-   could be "Result Task1" or "I am Submitting my ReSuLtS for TAsk1"
-   the exact phrase does not matter, only that some form of the string
-   "Result" and "Task1" are in the subject.
+3) Web-Interface
+    You will be greeted with a loading bar and webcam stream on my web interface. 
+    When the synthesis has finished, you can interact with your entity through
+    the Write-Buttons and Read-Fields. You have a maximum of 15 minutes to access 
+    the website. After you open the website, I will lock my hardware for you for 
+    15 minutes. You have the option to extend the timer on the website. 
+    When the time is up or you leave the website, I will kick you out of my hardware.
 
-{% if allow_requests != "no" %}Request Task:
-   You can request a specific task by sending an e-mail in which the
-   subject contains the word "Request" as well as the task you want 
-   to get. So for example, if you want to get the Task1 your subject
-   could be "Request Task1" or "I want to ReQuEsT the TAsk1"
-   the exact phrase does not matter, only that some form of the string
-   "Request" and "Task1" are in the subject.
-
-{% endif -%}
-Task List:
-   If you want to know what tasks are configured for this course just 
-   send an e-mail in which the subject contains the word "List".
-
-Status:
-   If you want to know your current status in the course (what tasks did
-   you complete, how many points do you have, etc.), just send an e-mail
-   in which the subject contains the word "Status".
-
-Questions:
-   If you have any questions that are not answered by the e-mails sent by
-   me, you can send me an e-mail in which the subject contains the word "Question".
-   If you do so, I will redirect your e-mail to a human being who will
-   take care of it as soon as possible.
-   If your question is concerning a specific task, include the task number in
-   the subject line, e.g.: "Question Task3".
-
-Other:
-   If your subject does not follow the above explained rules, I will send
-   you an e-mail similar to this one, because clearly you did not understand
-   how to communicate with me.
+4) BETA Status:
+    I am still in beta status, so don't hate me when I might be confused 
+    sometimes or decide to crash.
+    Please always provide my human creators with feedback so that they can 
+    flip one or two of my bits and help me to improve (melodi@tuwien.ac.at)!
 
 Hope this clears things on how to communicate with me! Now I am looking
 forward to hearing from you in a structured and (for me!) understandable
 way!
+
 
 
 So long, and thanks for all the fish!
